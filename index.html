@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/hero-1280.webp" fetchpriority="high">
-<link rel="stylesheet" href="css/main.css?v=20260914g">
+<link rel="stylesheet" href="css/main.css?v=20260920c">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Dr. Stephen de Wit",
@@ -41,7 +41,7 @@
 
 <!-- Nav -->
 <header class="nav" id="nav">
-  <a class="brand" href="/">Dr. Stephen de Wit</a>
+  <a class="brand" href="#main">Dr. Stephen de Wit</a>
   <div class="nav-right">
     <nav class="nav-links" aria-label="Primary">
       <a href="#speaking">Speaking</a>
@@ -66,8 +66,8 @@
 
 <main id="main">
 
-  <!-- HERO - sticky track drives the framed-card handoff -->
-  <div class="hero-track">
+  <!-- HERO - static full-bleed scene (the framed-card handoff was lifted
+       out on 2026-09-20 and saved to js|css/effects/frame-card.*) -->
   <section class="hero" id="speaking">
     <div class="media media--plum">
       <!-- Instant poster / reduced-motion + fallback layer -->
@@ -84,17 +84,14 @@
     <div class="hero__inner">
       <h1 class="reveal">Connection <em>changes</em> everything.</h1>
       <div class="hero__actions reveal" data-d="2">
-        <button class="play" data-video="" aria-label="Watch Stephen speak">
+        <button class="play" data-video="assets/video/reel-720.mp4" aria-label="Watch Stephen speak">
           <span class="play__ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
           <span class="play__label">Watch Stephen speak<small>The reel</small></span>
         </button>
-        <a class="textlink" href="#contact">Bring Stephen to your event
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       </div>
     </div>
     <div class="hero__meta"><span>Human connection &amp; relational intelligence</span><span><b>170+</b> keynotes · Toronto to worldwide</span></div>
   </section>
-  </div>
 
   <!-- The through-line -->
   <section class="thread" id="thread" aria-label="What the work is about">
@@ -217,6 +214,9 @@
       <div class="pgrid" id="pgrid">
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-trust-860.webp"
+               srcset="assets/img/pat-trust-520.webp 520w, assets/img/pat-trust-860.webp 860w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -229,6 +229,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-avoidance-394.webp"
+               srcset="assets/img/pat-avoidance-394.webp 394w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -241,6 +244,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/keynote-860.webp"
+               srcset="assets/img/keynote-520.webp 520w, assets/img/keynote-860.webp 860w, assets/img/keynote-1280.webp 1280w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -253,6 +259,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-vulnerability-507.webp"
+               srcset="assets/img/pat-vulnerability-507.webp 507w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -265,6 +274,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-resentment-860.webp"
+               srcset="assets/img/pat-resentment-520.webp 520w, assets/img/pat-resentment-860.webp 860w, assets/img/pat-resentment-1280.webp 1280w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -277,6 +289,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-responsibility-860.webp"
+               srcset="assets/img/pat-responsibility-520.webp 520w, assets/img/pat-responsibility-860.webp 860w, assets/img/pat-responsibility-1280.webp 1280w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -289,6 +304,9 @@
         </button>
 
         <button class="pcard" type="button" aria-pressed="false">
+          <img class="pcard__bg" src="assets/img/pat-repair-860.webp"
+               srcset="assets/img/pat-repair-520.webp 520w, assets/img/pat-repair-860.webp 860w, assets/img/pat-repair-1280.webp 1280w"
+               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
           <span class="pcard__plus" aria-hidden="true">+</span>
           <span class="pface psurface">
             <span class="lbl">The pattern</span>
@@ -332,21 +350,18 @@
       <div class="truth__head reveal">
         <h2>What people say, and what they're carrying.</h2>
       </div>
-      <div class="truth__grid reveal" data-d="1">
-        <button class="tcard" type="button" aria-pressed="false">
-          <span class="tcard__plus">+</span>
-          <span class="face surface"><span class="lbl">On the surface</span><span class="q">"I'm fine."</span></span>
-          <span class="face truth-f"><span class="lbl">Underneath</span><span class="q">I'm carrying all of it.</span></span>
+      <div class="trows">
+        <button class="trow" type="button" aria-pressed="false">
+          <span class="trow__surface"><span class="trow__strike" aria-hidden="true"></span>&ldquo;I&rsquo;m fine.&rdquo;</span>
+          <span class="trow__under">I&rsquo;m carrying all of it.</span>
         </button>
-        <button class="tcard" type="button" aria-pressed="false">
-          <span class="tcard__plus">+</span>
-          <span class="face surface"><span class="lbl">On the surface</span><span class="q">"We're aligned."</span></span>
-          <span class="face truth-f"><span class="lbl">Underneath</span><span class="q">No one has said the real thing.</span></span>
+        <button class="trow" type="button" aria-pressed="false">
+          <span class="trow__surface"><span class="trow__strike" aria-hidden="true"></span>&ldquo;We&rsquo;re aligned.&rdquo;</span>
+          <span class="trow__under">No one has said the real thing.</span>
         </button>
-        <button class="tcard" type="button" aria-pressed="false">
-          <span class="tcard__plus">+</span>
-          <span class="face surface"><span class="lbl">On the surface</span><span class="q">"It's handled."</span></span>
-          <span class="face truth-f"><span class="lbl">Underneath</span><span class="q">We're running on empty.</span></span>
+        <button class="trow" type="button" aria-pressed="false">
+          <span class="trow__surface"><span class="trow__strike" aria-hidden="true"></span>&ldquo;It&rsquo;s handled.&rdquo;</span>
+          <span class="trow__under">We&rsquo;re running on empty.</span>
         </button>
       </div>
     </div>
@@ -391,6 +406,7 @@
 
   <!-- Proof in numbers, as a sentence -->
   <section class="stats">
+    <p class="eyebrow eyebrow--inv stats__eyebrow reveal">The results are human.</p>
     <p class="stats__line reveal">
       <span class="stats__n"><span data-count="7000" data-suffix="+">0</span></span> leaders in the room.
       <span class="stats__n"><span data-count="170">0</span></span> keynotes delivered.
@@ -398,35 +414,35 @@
     </p>
   </section>
 
-  <!-- Credibility ribbon: worked with / as seen on (traveling spotlight) -->
+  <!-- Credibility ribbon: trusted by / as seen on (timed spotlight) -->
   <section class="orgband" aria-label="Organizations Stephen has worked with, and media features">
     <div class="cred__lane" data-cred-lane data-speed="0.35">
-      <span class="cred__label">Worked with</span>
+      <p class="cred__label">Trusted by</p>
       <div class="cred__viewport">
         <div class="cred__track">
-          <img src="assets/logos/U-of-T-Logo-Blue-Horiz.png" alt="University of Toronto">
-          <img src="assets/logos/George_Brown_College_logo.svg" alt="George Brown College">
-          <img src="assets/logos/tmu-logo-full-colour.jpg" alt="Toronto Metropolitan University">
-          <img src="assets/logos/laurentian-university-vector-logo.png" alt="Laurentian University">
-          <img src="assets/logos/Lakeridge-new-logo-617x360.jpg" alt="Lakeridge Health">
-          <img src="assets/logos/Reckitt-Logo.jpg" alt="Reckitt">
-          <img src="assets/logos/mdrt-logo.jpg" alt="MDRT">
-          <img src="assets/logos/toronto-academy-of-dentistry.png" alt="Toronto Academy of Dentistry">
-          <img src="assets/logos/NESO_Logo_Vert_CMYK.jpg" alt="NESO">
-          <img src="assets/logos/OSOT.png" alt="Ontario Society of Occupational Therapists">
+            <img src="assets/logos/U-of-T-Logo-Blue-Horiz.png" alt="University of Toronto" data-knockout>
+            <img src="assets/logos/George_Brown_College_logo.svg" alt="George Brown College" data-plate>
+            <img src="assets/logos/tmu-logo-full-colour-ko.png" alt="Toronto Metropolitan University">
+            <img src="assets/logos/laurentian-university-vector-logo-ko.png" alt="Laurentian University">
+            <img src="assets/logos/Lakeridge-new-logo-617x360-ko.png" alt="Lakeridge Health">
+            <img src="assets/logos/Reckitt-Logo-ko.png" alt="Reckitt">
+            <img src="assets/logos/mdrt-logo-ko.png" alt="MDRT">
+            <img src="assets/logos/toronto-academy-of-dentistry.png" alt="Toronto Academy of Dentistry" data-knockout>
+            <img src="assets/logos/NESO_Logo_Vert_CMYK-ko.png" alt="NESO">
+            <img src="assets/logos/OSOT.png" alt="Ontario Society of Occupational Therapists">
         </div>
       </div>
     </div>
     <div class="cred__lane cred__lane--sm" data-cred-lane data-speed="-0.28">
-      <span class="cred__label">As seen on</span>
+      <p class="cred__label">As seen on</p>
       <div class="cred__viewport">
         <div class="cred__track">
-          <img src="assets/logos/GMA_(Good_Morning_America)_logo_2021.png" alt="Good Morning America">
-          <img src="assets/logos/CBC.png" alt="CBC">
-          <img src="assets/logos/Showtime.svg.png" alt="Showtime">
-          <img src="assets/logos/Men_s_Health.svg.png" alt="Men's Health">
-          <img src="assets/logos/TGAM-Square-RGB-2019-SM.png" alt="The Globe and Mail">
-          <img src="assets/logos/1200px-Marilyn_Logo.svg.png" alt="Marilyn">
+            <img src="assets/logos/GMA_(Good_Morning_America)_logo_2021.png" alt="Good Morning America">
+            <img src="assets/logos/CBC.png" alt="CBC" data-knockout>
+            <img src="assets/logos/Showtime.svg.png" alt="Showtime">
+            <img src="assets/logos/Men_s_Health.svg.png" alt="Men's Health">
+            <img src="assets/logos/TGAM-Square-RGB-2019-SM-ko.png" alt="The Globe and Mail">
+            <img src="assets/logos/1200px-Marilyn_Logo.svg.png" alt="Marilyn">
         </div>
       </div>
     </div>
@@ -544,35 +560,6 @@
     </div>
   </section>
 
-  <!-- Proof -->
-  <section class="proof">
-    <div class="proof__head reveal">
-      <h2>The results are human.</h2>
-    </div>
-    <div class="proof__band">
-      <div class="media media--plum">
-        <img data-parallax data-reveal-focus src="assets/img/results-860.webp"
-             srcset="assets/img/results-520.webp 520w, assets/img/results-860.webp 860w, assets/img/results-920.webp 920w"
-             sizes="100vw" alt="The room, mid-talk" loading="lazy">
-      </div>
-      <p class="proof__cap">The room, mid-talk. Where the change starts, long before it reaches a report.</p>
-    </div>
-  </section>
-
-  <!-- Approach: the walk toward the stage (scroll-scrub) -->
-  <section class="approach" aria-label="The room before a keynote">
-    <div class="approach__track" data-scrub>
-      <div class="approach__sticky">
-        <canvas class="approach__canvas" aria-hidden="true"></canvas>
-        <div class="approach__grade" aria-hidden="true"></div>
-        <div class="approach__copy">
-          <p class="eyebrow eyebrow--inv">Before the keynote</p>
-          <h2>Every room starts empty.<em> Then he walks out.</em></h2>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Final CTA -->
   <section class="final" id="contact">
     <div class="final__inner reveal">
@@ -580,7 +567,7 @@
       <p class="lead lead--inv" style="margin-top:1.4rem;max-width:52ch;margin-inline:auto">Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.</p>
       <div class="final__actions">
         <a class="btn btn--lg" href="mailto:info@drdewit.com?subject=Speaking%20inquiry%20for%20Dr.%20Stephen%20de%20Wit">Bring Stephen to your event</a>
-        <button class="btn btn--inv btn--lg" data-video="">Watch Stephen speak</button>
+        <button class="btn btn--inv btn--lg" data-video="assets/video/reel-720.mp4">Watch Stephen speak</button>
       </div>
       <div class="final__contact">
         <a href="tel:+16474834490">647.483.4490</a>
@@ -621,6 +608,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=20260914g" defer></script>
+<script src="js/main.js?v=20260920c" defer></script>
 </body>
 </html>

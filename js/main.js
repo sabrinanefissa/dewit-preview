@@ -20,21 +20,29 @@
   }
 
   /* ---- Nav solid on scroll past hero ----
-     Two inputs, one writer: the hero observer and the hero card scrub both
-     feed syncNav() so they never fight over the .is-solid class. */
+     Two inputs, one writer: the hero observer and the scroll position both
+     feed syncNav() so they never fight over the .is-solid class. The hero is
+     a static scene now, so the second input is simply scrollY. */
   var nav = document.querySelector(".nav");
   var hero = document.querySelector(".hero");
   var heroRatio = 1; // last intersectionRatio reported for the hero
-  var heroP = 0;     // hero -> framed-card progress, 0..1
   function syncNav() {
     if (!nav) return;
-    nav.classList.toggle("is-solid", heroRatio < 0.12 || heroP > 0.25);
+    nav.classList.toggle("is-solid", heroRatio < 0.12 || window.scrollY > 40);
   }
   if (nav && hero && "IntersectionObserver" in window) {
     new IntersectionObserver(function (e) {
       heroRatio = e[0].intersectionRatio; syncNav();
     }, { threshold: [0, 0.12, 1], rootMargin: "-72px 0px 0px 0px" }).observe(hero);
   } else if (nav) { nav.classList.add("is-solid"); }
+  if (nav) {
+    var navTick = false;
+    addEventListener("scroll", function () {
+      if (navTick) return; navTick = true;
+      requestAnimationFrame(function () { navTick = false; syncNav(); });
+    }, { passive: true });
+    syncNav();
+  }
 
   /* ---- Reveals (.reveal + .lines) ---- */
   var revealEls = document.querySelectorAll(".reveal, .lines");
@@ -106,32 +114,6 @@
     document.addEventListener("visibilitychange", function () { if (!document.hidden) kick(); });
   }
 
-  /* ---- Hero to framed-card handoff ----
-     Scrubs --hp from 0 to 1 over the first 0.6 viewport heights while the hero
-     is pinned by .hero-track. CSS turns --hp into the clip-path inset that
-     contracts the media into a rounded card, and fades the hero copy out. */
-  var heroTrack = document.querySelector(".hero-track");
-  if (hero && heroTrack && !reduce) {
-    var hpTick = false, hpLast = -1;
-    var setHeroProgress = function () {
-      hpTick = false;
-      var span = 0.6 * window.innerHeight;
-      var raw = span > 0 ? window.scrollY / span : 0;
-      var p = raw < 0 ? 0 : (raw > 1 ? 1 : raw);
-      p = 1 - Math.pow(1 - p, 3); // ease-out cubic
-      if (Math.abs(p - hpLast) <= 0.001) return;
-      hpLast = p; heroP = p;
-      hero.style.setProperty("--hp", p.toFixed(4));
-      syncNav();
-    };
-    var onHeroScroll = function () {
-      if (hpTick) return; hpTick = true; requestAnimationFrame(setHeroProgress);
-    };
-    addEventListener("scroll", onHeroScroll, { passive: true });
-    addEventListener("resize", onHeroScroll, { passive: true });
-    setHeroProgress();
-  }
-
   /* ---- Video lightbox ---- */
   var lb = document.querySelector(".lb"), lbFrame = lb && lb.querySelector(".lb__frame"), last = null;
   function openLB(src) {
@@ -159,66 +141,6 @@
     lb.addEventListener("click", function (e) { if (e.target === lb) closeLB(); });
     var cb = lb.querySelector(".lb__close"); if (cb) cb.addEventListener("click", closeLB);
     addEventListener("keydown", function (e) { if (e.key === "Escape") closeLB(); });
-  }
-
-  /* ---- Approach: scroll-scrub walk toward the stage ---- */
-  var scrub = document.querySelector(".approach__track[data-scrub]");
-  if (scrub) {
-    var canvas = scrub.querySelector(".approach__canvas");
-    var ctx = canvas.getContext("2d", { alpha: false });
-    var TOTAL = 120, frames = new Array(TOTAL), loaded = 0;
-    var pad = function (n) { return ("00" + n).slice(-3); };
-    function sizeCanvas() {
-      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.round(canvas.clientWidth * dpr);
-      canvas.height = Math.round(canvas.clientHeight * dpr);
-    }
-    function drawCover(im) {
-      if (!im || !im.complete || !im.naturalWidth) return;
-      var cw = canvas.width, ch = canvas.height, iw = im.naturalWidth, ih = im.naturalHeight;
-      var s = Math.max(cw / iw, ch / ih), w = iw * s, h = ih * s;
-      ctx.drawImage(im, (cw - w) / 2, (ch - h) / 2, w, h);
-    }
-    var current = -1;
-    function render(idx) {
-      idx = Math.max(0, Math.min(TOTAL - 1, idx));
-      var im = frames[idx];
-      if (im && im.complete && im.naturalWidth) { drawCover(im); current = idx; }
-      else if (current >= 0) { drawCover(frames[current]); }
-    }
-    var ticking = false;
-    function onScrub() {
-      if (ticking) return; ticking = true;
-      requestAnimationFrame(function () {
-        var r = scrub.getBoundingClientRect(), span = r.height - window.innerHeight;
-        var p = span > 0 ? Math.min(Math.max(-r.top / span, 0), 1) : 0;
-        render(Math.round(p * (TOTAL - 1)));
-        ticking = false;
-      });
-    }
-    function loadFrame(i, cb) {
-      var im = new Image();
-      im.onload = function () { loaded++; if (cb) cb(im); };
-      im.src = "assets/scrub/f" + pad(i + 1) + ".webp";
-      frames[i] = im;
-    }
-    sizeCanvas();
-    window.addEventListener("resize", function () { sizeCanvas(); if (current >= 0) drawCover(frames[current]); else onScrub(); });
-    if (reduce || !("IntersectionObserver" in window)) {
-      // Reduced motion: no pin/scrub - show the arrival frame as a still.
-      loadFrame(TOTAL - 1, function (im) { current = TOTAL - 1; drawCover(im); });
-    } else {
-      var started = false;
-      var io = new IntersectionObserver(function (e) {
-        if (!e[0].isIntersecting || started) return; started = true; io.disconnect();
-        for (var i = 0; i < TOTAL; i++) {
-          loadFrame(i, function () { if (loaded === 1) onScrub(); if (loaded === TOTAL) onScrub(); });
-        }
-        window.addEventListener("scroll", onScrub, { passive: true });
-        onScrub();
-      }, { rootMargin: "800px 0px" });
-      io.observe(scrub);
-    }
   }
 
   /* ---- Mobile drawer ---- */
@@ -504,8 +426,13 @@
     var cards = [].slice.call(grid.querySelectorAll(".pcard:not(.pcard--cta)"));
     var bar   = pat.querySelector(".ctx__bar");
 
-    var PERIOD = 5000;                     /* ms between automatic room changes */
-    var atWork = false;
+    var PERIOD = 5000;                     /* ms between automatic word changes */
+    /* The loop and the room are two different things. `word` is what the
+       headline is showing and it rolls on its own; `room` is only set by a
+       visitor and it is the one that retints the section, the cards, the
+       under labels and the "+" rings. Until a choice is made the section
+       simply holds at home. */
+    var word = "home", room = null;
     var stopped = false, paused = false, inView = false, auto = 0;
 
     /* --- render ------------------------------------------------- */
@@ -516,22 +443,33 @@
       if (auto) pat.classList.add("is-cycling");
     }
 
-    function render() {
-      pat.classList.toggle("is-work", atWork);
-      pat.classList.toggle("is-home", !atWork);
-
+    /* The headline word only. Nothing else on the section moves. The word
+       carries its own colour state, so "at work" reads violet even while
+       the room is still home. */
+    function renderWord() {
+      pat.classList.toggle("is-word-work", word === "work");
       spans.forEach(function (s) {
         var isHome = s.textContent.indexOf("home") > -1;
-        var show = atWork ? !isHome : isHome;
+        var show = (word === "home") ? isHome : !isHome;
         if (show) { s.setAttribute("data-on", ""); s.removeAttribute("data-off"); s.removeAttribute("aria-hidden"); }
         else { s.setAttribute("data-off", ""); s.removeAttribute("data-on"); s.setAttribute("aria-hidden", "true"); }
       });
+    }
+
+    function render() {
+      /* No room chosen yet: the section stays at home, whatever the word
+         is showing. Once chosen, the room is what the section follows. */
+      var atWork = room === "work";
+      pat.classList.toggle("is-work", atWork);
+      pat.classList.toggle("is-home", !atWork);
+
+      renderWord();
 
       /* A tab fuses to the panel only once the room is set. While the
          headline is still rolling, both tabs stay lowered and unselected. */
       tabs.forEach(function (b) {
         var isRoom = (b.getAttribute("data-room") === "work") === atWork;
-        var on = stopped && isRoom;
+        var on = !!room && isRoom;
         b.classList.toggle("is-on", on);
         b.setAttribute("aria-selected", on ? "true" : "false");
         if (isRoom) panel.setAttribute("aria-labelledby", b.id);
@@ -540,8 +478,12 @@
       restartTimer();
     }
 
-    /* --- the loop ----------------------------------------------- */
-    function roll() { atWork = !atWork; render(); }
+    /* --- the loop: the word rolls, the timer restarts, nothing else -- */
+    function roll() {
+      word = (word === "home") ? "work" : "home";
+      renderWord();
+      restartTimer();
+    }
 
     function startAuto() {
       if (reduce || stopped || auto || !inView || paused) return;
@@ -566,9 +508,10 @@
       startAuto();
     }
 
-    /* A room the visitor sets is the room it stays in. */
+    /* A room the visitor sets is the room it stays in, and the loop is over. */
     function choose(work) {
-      atWork = work;
+      room = work ? "work" : "home";
+      word = room;
       stopped = true;
       stopAuto();
       pat.classList.add("is-stopped");
@@ -581,10 +524,15 @@
       b.addEventListener("click", function () { choose(b.getAttribute("data-room") === "work"); });
     });
     /* The word settles on the room it is showing, never the opposite one. */
-    ctxBtn.addEventListener("click", function () { choose(atWork); });
+    ctxBtn.addEventListener("click", function () { choose(word === "work"); });
 
-    grid.addEventListener("pointerenter", pause);
-    grid.addEventListener("pointerleave", resume);
+    /* The loop holds while the visitor is on the word itself, so it cannot
+       roll out from under a click. The countdown bar holds with it. The grid
+       no longer pauses anything: opening a card is not a reason to stop. */
+    ctxBtn.addEventListener("pointerenter", pause);
+    ctxBtn.addEventListener("pointerleave", resume);
+    ctxBtn.addEventListener("focus", pause);
+    ctxBtn.addEventListener("blur", resume);
 
     /* Touch: the card itself is the control. Pointer devices use hover. */
     var canHover = window.matchMedia("(hover: hover)").matches;
@@ -652,7 +600,8 @@
 
     /* exposed for verification */
     window.__patterns = {
-      room:     function () { return atWork ? "work" : "home"; },
+      room:     function () { return room; },
+      word:     function () { return word; },
       stopped:  function () { return stopped; },
       paused:   function () { return paused; },
       cycling:  function () { return !!auto; },
@@ -663,13 +612,46 @@
     };
   })();
 
-  /* --- Truth cards: tap toggle (hover handled by CSS) --- */
-  document.querySelectorAll(".tcard").forEach(function (c) {
-    c.addEventListener("click", function () {
-      var on = c.classList.toggle("is-on");
-      c.setAttribute("aria-pressed", on ? "true" : "false");
+  /* --- Truth rows: the strike draws, the line underneath rises ---
+     One IntersectionObserver trigger per row, one way. Hover, focus and
+     press replay the same reveal from zero. */
+  (function () {
+    var rows = [].slice.call(document.querySelectorAll(".trow"));
+    if (!rows.length) return;
+
+    function show(r) { r.classList.add("is-revealed"); }
+    function replay(r) {
+      if (reduce) { show(r); return; }
+      r.classList.remove("is-revealed");
+      void r.offsetWidth;                       /* restart the transitions */
+      show(r);
+    }
+
+    if (reduce || !("IntersectionObserver" in window)) {
+      rows.forEach(show);
+    } else {
+      var io = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          show(e.target); obs.unobserve(e.target);
+        });
+      }, { threshold: 0.45 });
+      rows.forEach(function (r) { io.observe(r); });
+    }
+
+    rows.forEach(function (r) {
+      r.addEventListener("pointerenter", function (e) {
+        if (e.pointerType === "touch") return;
+        replay(r);
+      });
+      r.addEventListener("focus", function () { replay(r); });
+      r.addEventListener("click", function () {
+        var on = r.getAttribute("aria-pressed") !== "true";
+        r.setAttribute("aria-pressed", on ? "true" : "false");
+        replay(r);
+      });
     });
-  });
+  })();
 
   /* --- Constellation --- */
   var canvas = document.getElementById("net");
@@ -760,29 +742,50 @@
   check();
 })();
 
-/* ===== Credibility ribbon: drifting logos with a traveling spotlight ===== */
+/* ===== Credibility ribbon: drifting lanes, timed spotlight =====
+   The lane keeps drifting. The highlight is no longer "whatever is nearest
+   the centre this frame" - it is a timed tick with two slots, so a logo
+   ignites, holds, and fades on its own clock and two ignitions are never
+   simultaneous. Lane two runs half a tick out of phase with lane one. */
 (function () {
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lanes = [].slice.call(document.querySelectorAll("[data-cred-lane]"));
   if (!lanes.length) return;
 
-  lanes.forEach(function (lane) {
+  var small = window.matchMedia("(max-width: 700px)").matches;
+  var TICK  = small ? 1000 : 1100;   /* ms between ignitions on a lane */
+  var SPELL = 2200;                  /* ms a logo stays lit (in 520, hold, out 640) */
+  /* Small screens hold two or three logos in view at once, so the neighbour
+     rule starves a narrow window: the candidate band opens to the inner 92%
+     and the tick runs a little quicker. Desktop is unchanged. */
+  var INNER = small ? 0.92 : 0.76;   /* candidates must sit inside this much of the viewport */
+  var HISTORY = 3;                   /* never re-light one of the last 3 */
+  var FADE  = 640;                   /* ms a logo takes to fall back to rest */
+
+  lanes.forEach(function (lane, laneIndex) {
     var vp = lane.querySelector(".cred__viewport");
     var track = lane.querySelector(".cred__track");
     if (!vp || !track) return;
     var speed = parseFloat(lane.getAttribute("data-speed"));
     if (isNaN(speed)) speed = 0.3;
 
-    // Duplicate the set once so it can loop seamlessly.
+    // Repeat the set until it covers the viewport twice over, so the wrap
+    // never opens a gap on a short lane.
     var originalCount = track.children.length;
-    for (var k = 0; k < originalCount; k++) {
-      var c = track.children[k].cloneNode(true);
-      c.setAttribute("aria-hidden", "true");
-      track.appendChild(c);
+    var originals = [].slice.call(track.children);
+    function addSet() {
+      for (var k = 0; k < originalCount; k++) {
+        var c = originals[k].cloneNode(true);
+        c.setAttribute("aria-hidden", "true");
+        track.appendChild(c);
+      }
     }
+    addSet();
+    var guard = 0;
+    while (track.scrollWidth < vp.clientWidth * 2 + 40 && guard++ < 8) addSet();
     var imgs = [].slice.call(track.children);
-    var setW = 0, pos = 0, lit = null, rafId = null;
+    var setW = 0, pos = 0, rafId = null;
 
     function measure() {
       setW = imgs[originalCount].offsetLeft - imgs[0].offsetLeft;
@@ -792,29 +795,141 @@
       pos -= speed;
       if (setW > 0) { if (pos <= -setW) pos += setW; else if (pos > 0) pos -= setW; }
       track.style.transform = "translate3d(" + pos.toFixed(2) + "px,0,0)";
-      var r = vp.getBoundingClientRect();
-      var focal = r.left + r.width * 0.5;
-      var best = null, bestD = Infinity;
-      for (var i = 0; i < imgs.length; i++) {
-        var d = Math.abs(r.left + pos + imgs[i]._cx - focal);
-        if (d < bestD) { bestD = d; best = imgs[i]; }
-      }
-      if (best !== lit) { if (lit) lit.classList.remove("lit"); if (best) best.classList.add("lit"); lit = best; }
       rafId = requestAnimationFrame(frame);
     }
 
     measure();
     window.addEventListener("resize", function () { measure(); });
 
-    if (reduce) return; // static, calm grayscale (CSS handles look)
+    if (reduce) return; // static, calm grayscale (CSS handles the look)
+
+    /* ---- the spotlight -------------------------------------------- */
+    var slots = [null, null];        /* A and B */
+    var recent = [];                 /* the last HISTORY lit elements */
+    var timers = [];
+    var tickId = null, phaseId = null, tickCount = 0;
+    var hoverHeld = null;
+
+    function isLit(el) { return el && el.classList.contains("lit"); }
+    /* Lit, held by the pointer, or still on its way back down. At these
+       scales a neighbour that is only half-way home still collides. */
+    function isBusy(el) {
+      if (!el) return false;
+      if (isLit(el) || el === hoverHeld) return true;
+      return !!el._fadeUntil && el._fadeUntil > now();
+    }
+    function now() {
+      return (window.performance && performance.now) ? performance.now() : Date.now();
+    }
+
+    function extinguish(slot) {
+      var el = slots[slot];
+      if (!el) return;
+      slots[slot] = null;
+      if (el === hoverHeld) return;  /* the pointer is still on it */
+      el.classList.remove("lit");
+      el._fadeUntil = now() + FADE;
+      setTimeout(function () {
+        if (!el.classList.contains("lit")) el.classList.remove("next");
+      }, FADE);
+    }
+
+    function pick() {
+      var r = vp.getBoundingClientRect();
+      if (!r.width) return null;
+      var centre = r.width / 2;
+      var lo = r.width * (1 - INNER) / 2, hi = r.width - lo;
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < imgs.length; i++) {
+        var el = imgs[i];
+        if (isBusy(el)) continue;
+        if (recent.indexOf(el) > -1) continue;
+        /* never ignite next to something that is lit or still fading */
+        if (isBusy(imgs[i - 1]) || isBusy(imgs[i + 1])) continue;
+        var x = pos + el._cx;                       /* centre, viewport relative */
+        if (x < lo || x > hi) continue;
+        var d = Math.abs(x - centre);
+        if (d < bestD) { bestD = d; best = el; }
+      }
+      return best;
+    }
+
+    function ignite(slot) {
+      var el = pick();
+      if (!el) return;
+      extinguish(slot);
+      slots[slot] = el;
+      recent.push(el);
+      while (recent.length > HISTORY) recent.shift();
+      /* queued first, so the compositing hint lands a frame before the move */
+      el.classList.add("next");
+      requestAnimationFrame(function () {
+        if (slots[slot] !== el) return;
+        el._fadeUntil = 0;
+        el.classList.add("lit");
+        el.classList.remove("next");
+      });
+      timers.push(setTimeout(function () {
+        if (slots[slot] === el) extinguish(slot);
+      }, SPELL));
+      if (timers.length > 8) timers.splice(0, timers.length - 8);
+    }
+
+    function tick() { ignite(tickCount++ % 2); }
+
+    function startTicks() {
+      if (tickId || phaseId) return;
+      /* lane two ignites half a tick after lane one */
+      var offset = laneIndex % 2 ? Math.round(TICK / 2) : 0;
+      phaseId = setTimeout(function () {
+        phaseId = null;
+        tick();
+        tickId = setInterval(tick, TICK);
+      }, offset);
+    }
+    function stopTicks() {
+      if (phaseId) { clearTimeout(phaseId); phaseId = null; }
+      if (tickId) { clearInterval(tickId); tickId = null; }
+      timers.forEach(clearTimeout); timers = [];
+      extinguish(0); extinguish(1);
+    }
+
+    /* Hover on a pointer device takes a slot and holds it. */
+    if (window.matchMedia("(hover: hover)").matches) {
+      imgs.forEach(function (el) {
+        el.addEventListener("pointerenter", function (e) {
+          if (e.pointerType === "touch") return;
+          hoverHeld = el;
+          el.classList.add("lit");
+        });
+        el.addEventListener("pointerleave", function () {
+          if (hoverHeld !== el) return;
+          hoverHeld = null;
+          if (slots[0] !== el && slots[1] !== el) {
+            el.classList.remove("lit");
+            el._fadeUntil = now() + FADE;
+          }
+        });
+      });
+    }
+
+    var inView = false;
+    function sync() {
+      var run = inView && !document.hidden;
+      if (run) {
+        if (rafId == null) { measure(); rafId = requestAnimationFrame(frame); }
+        startTicks();
+      } else {
+        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        stopTicks();
+      }
+    }
 
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (e) {
-        if (e[0].isIntersecting) { if (rafId == null) { measure(); rafId = requestAnimationFrame(frame); } }
-        else if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        inView = e[0].isIntersecting; sync();
       }, { threshold: 0 }).observe(lane);
-    } else {
-      rafId = requestAnimationFrame(frame);
-    }
+    } else { inView = true; sync(); }
+    document.addEventListener("visibilitychange", sync);
   });
 })();
