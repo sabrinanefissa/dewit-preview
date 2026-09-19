@@ -1,0 +1,88 @@
+/* =====================================================================
+   Dr. Stephen de Wit — Design System Tokens
+   Brand anchor: royal violet #552B9D (sampled from logo wordmark)
+   Canvas: warm paper + deep plum ink (editorial / cinematic)
+   ===================================================================== */
+
+:root {
+  /* --- Brand ------------------------------------------------------- */
+  --violet:        #552B9D;   /* primary brand (logo) */
+  --violet-600:    #6A38BF;
+  --violet-500:    #7C4DE0;   /* interactive on dark */
+  --violet-300:    #A985E6;
+  --violet-100:    #E7DCF6;
+
+  /* Expressive secondary palette (from brand palette sheet) — used
+     sparingly, one accent per section/keynote, never all at once. */
+  --magenta:       #C2208C;
+  --coral:         #F0544F;
+  --gold:          #E3A93C;
+  --teal:          #1E8F82;
+  --blue:          #2F60C4;
+
+  /* --- Canvas ------------------------------------------------------ */
+  --paper:         #F5F0E7;   /* default light background (warm bone) */
+  --paper-2:       #ECE3D5;   /* sectional shift */
+  --paper-3:       #E2D6C4;
+
+  --plum:          #1A1026;   /* deep dark section */
+  --plum-2:        #120A1C;   /* deepest */
+  --ink:           #191320;   /* warm near-black text */
+
+  /* --- Text -------------------------------------------------------- */
+  --tx:            #191320;              /* text on paper */
+  --tx-soft:       rgba(25,19,32,0.64);  /* muted on paper */
+  --tx-faint:      rgba(25,19,32,0.40);
+  --tx-inv:        #F4ECDE;              /* text on plum */
+  --tx-inv-soft:   rgba(244,236,222,0.66);
+  --tx-inv-faint:  rgba(244,236,222,0.40);
+
+  /* --- Lines / surfaces ------------------------------------------- */
+  --line:          rgba(25,19,32,0.14);
+  --line-strong:   rgba(25,19,32,0.28);
+  --line-inv:      rgba(244,236,222,0.16);
+  --line-inv-strong: rgba(244,236,222,0.30);
+
+  /* --- Type -------------------------------------------------------- */
+  --f-display: "Fraunces", "Georgia", "Times New Roman", serif;
+  --f-text:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Fluid scale — pushed to editorial/cinematic scale */
+  --step--1: clamp(0.80rem, 0.78rem + 0.12vw, 0.90rem);
+  --step-0:  clamp(1.00rem, 0.95rem + 0.24vw, 1.20rem);
+  --step-1:  clamp(1.25rem, 1.10rem + 0.65vw, 1.75rem);
+  --step-2:  clamp(1.70rem, 1.30rem + 1.70vw, 3.10rem);
+  --step-3:  clamp(2.30rem, 1.55rem + 3.30vw, 5.20rem);
+  --step-4:  clamp(3.00rem, 1.70rem + 5.80vw, 8.20rem);
+  --step-5:  clamp(3.60rem, 1.40rem + 9.80vw, 12.5rem);   /* big statements */
+  --step-6:  clamp(4.20rem, 0.60rem + 15.5vw, 20rem);     /* name-as-graphic / hero */
+
+  --lh-tight: 0.92;
+  --lh-snug:  1.04;
+  --lh-text:  1.6;
+
+  /* --- Space (8px base, fluid section rhythm) --------------------- */
+  --sp-1: 0.5rem;  --sp-2: 1rem;   --sp-3: 1.5rem;  --sp-4: 2rem;
+  --sp-5: 3rem;    --sp-6: 4.5rem; --sp-7: 6.5rem;  --sp-8: 9rem;
+  --section-y: clamp(4.5rem, 3rem + 7vw, 11rem);
+
+  /* --- Layout ------------------------------------------------------ */
+  --wrap:      min(94vw, 1500px);
+  --wrap-text: min(90vw, 720px);
+  --gutter:    clamp(1.25rem, 4vw, 3.5rem);
+  --radius:    2px;      /* restrained — brand avoids rounded-rect look */
+
+  /* --- Filmic image grade (cohesion across mixed photography) ------ */
+  --img-filter: contrast(1.06) saturate(0.9) brightness(0.97);
+  --grade-plum: linear-gradient(180deg, rgba(26,16,38,0.10), rgba(18,10,28,0.42));
+  --grade-warm: linear-gradient(200deg, rgba(120,60,30,0.14), rgba(26,16,38,0.30));
+
+  /* --- Motion ------------------------------------------------------ */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);     /* entrances */
+  --ease-amb:   cubic-bezier(0.40, 0, 0.20, 1);     /* ambient */
+  --dur-fast:   0.28s;
+  --dur:        0.6s;
+  --dur-slow:   1s;
+
+  --shadow-soft: 0 24px 60px -30px rgba(20,10,40,0.45);
+}
