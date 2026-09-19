@@ -237,12 +237,15 @@ html.no-js .loader, .loader[hidden] { display:none; }
 
 .station .still { margin:0; grid-row:1; will-change: transform; }
 .station .still img { width:100%; max-width:520px; aspect-ratio:4/3; object-fit:cover;
-  border:1px solid var(--line-inv);
-  filter: var(--img-filter) saturate(.8);
+  /* No frame: the edges feather into the section and the still is graded
+     toward plum until its station is active. */
+  -webkit-mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
+          mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
+  filter: var(--img-filter) sepia(.22) hue-rotate(222deg) saturate(.7) brightness(.82);
   clip-path: inset(0 0 100% 0); transform: scale(1.04);
   transition: clip-path .9s var(--ease-out), transform 1.2s var(--ease-out), filter .5s var(--ease-out); }
 .station.is-lit .still img { clip-path: inset(0); transform:none; }
-.station.is-active .still img { filter: var(--img-filter) saturate(1); }
+.station.is-active .still img { filter: var(--img-filter) sepia(0) hue-rotate(0deg) saturate(1) brightness(1); }
 
 .station .knot { grid-row:1; grid-column: 6 / 8; align-self:center; z-index:2; }
 .station .dot { display:block; width:12px; height:12px; border-radius:50%;
@@ -285,7 +288,7 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .station.is-even .gloss { margin-left:auto; }
 
 /* Hover: colour returns, the node glows, the label takes the brand */
-.station:hover .still img { filter: var(--img-filter) saturate(1); }
+.station:hover .still img { filter: var(--img-filter) sepia(0) hue-rotate(0deg) saturate(1) brightness(1); }
 .station:hover.is-lit .dot { box-shadow: 0 0 0 16px rgba(169,133,230,.14); }
 .station:hover.is-lit .label span { color: var(--violet-300); }
 
@@ -556,316 +559,199 @@ html.no-js .loader, .loader[hidden] { display:none; }
    INTERACTIVE MOMENTS (reduced-text, visual-led)
    ===================================================================== */
 
-/* --- Same patterns: rolling headline word, folder tabs, word cards ---
-   Ported from mockups/patterns-v4b.html. Every rule is scoped under
-   .patterns so the generic names inside it (.lbl and the face family)
-   cannot reach the Truth section or the reveal system. */
-.patterns { position:relative; overflow:hidden; color: var(--tx-inv);
-  padding-block: clamp(5rem,10vw,9rem);
-  background-color: var(--plum);
-  transition: background-color 1.2s var(--ease-amb); }
-/* Room tint, now inside the plum family. The plain colour is the fallback
-   for engines without color-mix, the second declaration wins elsewhere. */
-.patterns.is-home { background-color: var(--plum);
-  background-color: color-mix(in oklab, var(--gold) 6%, var(--plum)); }
-.patterns.is-work { background-color: var(--plum);
-  background-color: color-mix(in oklab, var(--violet) 12%, var(--plum)); }
+/* --- Same patterns: one rolling word, two cards that hide a photo ------
+   "How [Word] shows up." on one line. Seven patterns roll on a 5s period;
+   the gold underline under the word is the timer, and the word's slot
+   eases to each new width so "How" and "shows up." glide. The controls
+   sit centred under the line: prev, "03 / 07", next. An arrow or the
+   word pins it; only the word resumes it. Below, two cards, each hiding
+   a still of Stephen that the pointer lights. From 768 up the whole
+   section fits one screen under the nav. Every rule is scoped under
+   .patterns. */
+.patterns { position:relative; overflow:hidden; color: var(--tx-inv); text-align:center;
+  padding-block: clamp(2.5rem, 5vh, 4rem);
+  background-color: var(--plum); }
 
-/* Spotlight: one moving glow, in the room colour. It replaces the pair of
-   fixed corner washes so the section only ever carries one gradient.
-   --mx / --my come from the pointer, the drift keyframes take over when
-   there is no pointer on the section. */
-.patterns__spot { position:absolute; inset:0; pointer-events:none; z-index:0; }
-.patterns__spot::before, .patterns__spot::after { content:""; position:absolute; inset:0;
-  opacity:0; transition: opacity 1.2s var(--ease-amb); }
-.patterns__spot::before { background: radial-gradient(38vw 38vw at var(--mx,50%) var(--my,40%),
-  rgba(227,169,60,.14), rgba(227,169,60,0) 70%); }
-.patterns__spot::after { background: radial-gradient(38vw 38vw at var(--mx,50%) var(--my,40%),
-  rgba(124,77,224,.12), rgba(124,77,224,0) 70%); }
-.patterns.is-home .patterns__spot::before { opacity:1; }
-.patterns.is-work .patterns__spot::after { opacity:1; }
-.patterns.is-drifting .patterns__spot { animation: spotDrift 18s ease-in-out infinite; }
-@keyframes spotDrift {
-  0%   { transform: translate3d(-25%, -10%, 0); }
-  50%  { transform: translate3d(25%, 20%, 0); }
-  100% { transform: translate3d(-25%, -10%, 0); }
-}
+/* Glow: one light, gold core in a violet halo, on a slow idle drift only.
+   JS moves it with a transform; it does not react to the pointer. */
+.patterns__spot { position:absolute; left:0; top:0; z-index:0; pointer-events:none;
+  width:76vw; height:76vw; margin:-38vw 0 0 -38vw;
+  background: radial-gradient(closest-side, rgba(227,169,60,.12), rgba(227,169,60,.04) 45%,
+    rgba(124,77,224,.056) 65%, rgba(124,77,224,0));
+  transform: translate3d(50vw, 40%, 0); will-change: transform; }
+
+.patterns__sr { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
 
 .patterns__inner { position:relative; z-index:1; width: var(--wrap); margin-inline:auto; }
 
-/* Head ------------------------------------------------------------- */
-.patterns__line { margin:0; font-family: var(--f-display); font-weight:330; font-size: var(--step-4);
-  line-height:1.0; letter-spacing:-0.035em; text-align:left; }
+/* Stage: title, word, underline, controls, the cards ------------------- */
+.patterns__stage { min-width:0; container-type: inline-size; }
 
-.patterns .ctx { position:relative; display:inline-block; vertical-align:baseline; text-align:left; }
-.patterns .ctx button { font:inherit; letter-spacing:inherit; color: var(--gold); border:0; background:none;
-  cursor:pointer; position:relative; padding:0; transition: color 1.2s var(--ease-amb); }
-/* The rolling word takes the colour of the WORD it is showing, not of the
-   room. While the loop runs the room holds at home, so the word has to be
-   able to go violet on its own. After a choice the two agree. */
-.patterns.is-word-work .ctx button { color: var(--violet-300); }
-.patterns .ctx__swap { position:relative; display:inline-grid; }
-.patterns .ctx__swap > span { grid-area:1/1; font-style:italic;
-  transition: opacity .55s var(--ease-out), transform .55s var(--ease-out); }
-.patterns .ctx__swap > span[data-off] { opacity:0; transform: translateY(0.35em); }
-.patterns .ctx__swap > span[data-on]  { opacity:1; transform:none; }
+/* One line at every width: "How Responsibility shows up." is about 11.6em,
+   so 8.2cqi keeps it inside the stage; the vh term keeps the section to
+   one screen. Optical size is held so the width per em never changes. */
+.patterns__title { margin:0; white-space:nowrap; text-align:center;
+  font-family: var(--f-display); font-weight:330; font-style:normal;
+  font-optical-sizing:none; font-variation-settings:"opsz" 144;
+  font-size: min(8.6cqi, 11.5vh); line-height:1.12; letter-spacing:-0.025em; color: var(--tx-inv); }
 
-/* The underline under the rolling word is the countdown. While the loop
-   runs it fills left to right over one period; once a room is set it is
-   fully drawn and still. */
-.patterns .ctx__bar { position:absolute; left:0; right:0; bottom:-.12em; height:2px;
+/* The word's slot. Its width is set by script in em and eased, so the
+   words either side glide; the underline is its width, the word only. */
+.patterns .ctx { position:relative; display:inline-block; vertical-align:baseline; margin-right:.12em;
+  transition: width .55s var(--ease-out); }
+
+.patterns__word { position:relative; display:inline-flex; justify-content:center; width:100%;
+  padding:0; border:0; background:none;
+  font:inherit; font-style:italic; font-weight:460; letter-spacing:inherit; text-align:left;
+  font-optical-sizing:none; font-variation-settings:"opsz" 144;
+  color: var(--tx-inv); cursor:pointer; }
+.patterns__word:focus-visible { outline:2px solid var(--violet-300); outline-offset:.08em; }
+
+/* One span per word. The current one sits in flow; the others wait on
+   top of it, centred in the slot like it, so a change cross-fades in
+   place while the slot eases to the new width. */
+.patterns__glyphs { display:inline-block; white-space:nowrap; hyphens:manual; flex:0 0 auto;
+  position:absolute; top:0; opacity:0; transform: translateY(.06em);
+  transition: opacity .3s var(--ease-out), transform .3s var(--ease-out); }
+/* The word takes the colour of the room being lit: gold home, violet work. */
+.patterns:has(.patterns__room--home.is-lit, .patterns__room--home.is-full) .patterns__glyphs { color:#E8BB68; }
+.patterns:has(.patterns__room--work.is-lit, .patterns__room--work.is-full) .patterns__glyphs { color:#CDBDF2; }
+.patterns__glyphs.is-on { position:relative; opacity:1; transform:none;
+  transition: opacity .55s var(--ease-out) .12s, transform .55s var(--ease-out) .12s, color .35s var(--ease-out); }
+
+.patterns .ctx__bar { position:absolute; left:0; right:0; bottom:0; height:2px;
   transform-origin:left center; transform: scaleX(1); opacity:.55;
-  background-color: var(--gold);
-  transition: opacity .35s var(--ease-out), background-color 1.2s var(--ease-amb); }
-.patterns.is-word-work .ctx__bar { background-color: var(--violet-300); }
+  background-color: var(--gold); transition: opacity .35s var(--ease-out); }
 .patterns.is-cycling .ctx__bar { animation: ctxTimer 5s linear infinite; }
 .patterns.is-paused .ctx__bar { animation-play-state: paused; }
-.patterns.is-stopped .ctx__bar { animation:none; transform: scaleX(1); opacity:1; }
-.patterns .ctx:has(button:hover) .ctx__bar,
-.patterns .ctx:has(button:focus-visible) .ctx__bar { opacity:1; }
+.patterns.is-pinned .ctx__bar { animation:none; transform: scaleX(1); opacity:1; }
+.patterns .ctx:has(.patterns__word:hover) .ctx__bar,
+.patterns .ctx:has(.patterns__word:focus-visible) .ctx__bar { opacity:1; }
 @keyframes ctxTimer { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
-/* Folder tabs ------------------------------------------------------- */
-.ptabs { display:flex; justify-content:space-between; align-items:flex-end; gap:1.5rem;
-  margin-top: clamp(2.5rem, 5vw, 4rem); }
-.ptabs__set { display:flex; align-items:flex-end; gap:.4rem; }
-.ptabs__note { margin:0; padding-bottom:.9rem; font-family: var(--f-display);
-  font-style:italic; font-size: var(--step-0); font-weight:360; line-height:1.2;
-  letter-spacing:-0.01em; color: var(--tx-inv-soft); text-align:right; }
-.ptabs__note--below { display:none; }
+/* Controls: one centred 40px row under the underline, in DOM order:
+   prev, the count (plain text), next. */
+.patterns__ctrl { display:flex; justify-content:center; align-items:center; gap:1.25rem;
+  height:40px; margin-top:.5rem; }
+.patterns__arrow { flex:0 0 auto; width:44px; height:44px; padding:0; border:0; background:none;
+  display:grid; place-items:center; cursor:pointer;
+  color: rgba(244,236,222,.7); transition: color var(--dur-fast) var(--ease-out); }
+.patterns__arrow svg { width:24px; height:24px; overflow:visible; }
+.patterns__arrow path { stroke-width:1.25px; vector-effect: non-scaling-stroke; }
+.patterns__arrow--prev svg { transform: scaleX(-1); }
+.patterns__arrow:hover, .patterns__arrow:focus-visible { color: var(--gold); }
+.patterns__arrow:focus-visible { outline:2px solid var(--violet-300); outline-offset:0; }
 
-/* Both tabs sit lowered while the loop runs. One rises and fuses to the
-   panel only once a visitor sets a room. */
-.ptab { position:relative; min-width:11rem; padding:1rem 1.4rem;
-  display:flex; align-items:center; gap:.62em; text-align:left;
-  font-family: var(--f-display); font-size: var(--step-2); font-weight:360;
-  letter-spacing:-0.02em; line-height:1.08;
-  background: #0b0511;
-  background: color-mix(in oklab, #000 34%, var(--plum-2));
-  color: var(--tx-inv-soft);
-  border:1px solid var(--line-inv);
-  border-radius: var(--radius) var(--radius) 0 0;
-  cursor:pointer; transform: translateY(6px);
-  transition: background-color .45s var(--ease-out), transform .45s var(--ease-out),
-              border-color .45s var(--ease-out), color .45s var(--ease-out); }
-.ptab:hover { transform: translateY(2px); color: var(--tx-inv); }
-.ptab:focus-visible { outline:2px solid var(--violet-300); outline-offset:-4px; }
-.ptab__sw { flex:0 0 auto; width:10px; height:10px; border-radius: var(--radius);
-  background: var(--gold); }
-.ptab[data-room="work"] .ptab__sw { background: var(--violet-300); }
-.ptab.is-on, .ptab.is-on:hover { background: var(--plum-2); color: var(--tx-inv);
-  transform: translateY(0); margin-bottom:-1px; z-index:2;
-  border-bottom-color: var(--plum-2); cursor:default; }
+.patterns__count { font-family: var(--f-text); font-size:.875rem; font-weight:500; line-height:1; letter-spacing:.04em;
+  font-variant-numeric: tabular-nums; color: rgba(244,236,222,.65); }
 
-/* Panel ------------------------------------------------------------- */
-.ppanel { position:relative; z-index:1;
-  border:1px solid var(--line-inv); border-radius: var(--radius); padding:1.1rem;
-  background-color: var(--plum-2); }
+/* Cards: decorative containers, each hiding a still -------------------- */
+@property --pat-lit   { syntax:"<number>"; inherits:true; initial-value:0; }
+@property --pat-floor { syntax:"<number>"; inherits:true; initial-value:0; }
 
-/* Grid -------------------------------------------------------------- */
-.pgrid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:1.1rem; }
-@media (min-width: 1024px) { .pgrid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+.patterns__cards { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:1.5rem;
+  max-width:1120px; margin: 3vh auto 0; }
+.patterns__card { position:relative; overflow:hidden; isolation:isolate;
+  height: clamp(240px, 40vh, 400px); padding: clamp(1.25rem, 3vh, 2rem);
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(227,169,60,.3); border-radius:4px;
+  /* Bright layer only: --pat-lit = alpha inside the light, --pat-floor = alpha
+     outside it. The dark layer underneath never changes. */
+  --x:50%; --y:50%; --pat-lit:0; --pat-floor:0;
+  transition: --pat-lit .55s var(--ease-out), --pat-floor .6s var(--ease-out); }
+.patterns__card.is-lit { --pat-lit:1; transition: --pat-lit .35s var(--ease-out), --pat-floor .6s var(--ease-out); }
+.patterns__card.is-full { --pat-lit:1; --pat-floor:1; }
 
-/* Word card --------------------------------------------------------- */
-.pcard { position:relative; aspect-ratio: 4/3; margin:0; overflow:hidden;
-  border:1px solid var(--line-inv); border-radius: var(--radius);
-  background: var(--plum-2); cursor:pointer; container-type: inline-size;
-  font:inherit; color:inherit; text-align:left; padding:0; display:block;
-  transition: transform .4s var(--ease-out); }
-.pcard:active { transform: scale(0.99); }
-.pcard:focus-visible { outline:2px solid var(--violet-300); outline-offset:2px; }
+/* The stills are darkened hard, lit and resting alike, so the words sit
+   straight on the photo with no scrim or shadow: --pat-dim is set so the
+   bone lines and both labels hold 4.5:1 over the brightest lit pixel. */
+.patterns__photo { position:absolute; inset:0; z-index:0; --pat-dim:.16; --pat-r:210px;
+  filter: brightness(var(--pat-dim)) saturate(.55); opacity:.2; }
+/* The light: the same still at full brightness, shown only inside the
+   pointer's pool (or everywhere when tapped on touch). */
+.patterns__photo--lit { z-index:1; filter:none; opacity:1;
+  -webkit-mask-image: radial-gradient(var(--pat-r) circle at var(--x) var(--y),
+    rgba(0,0,0,var(--pat-lit)) 0%, rgba(0,0,0,calc(var(--pat-lit) * .72 + var(--pat-floor) * .28)) 28%, rgba(0,0,0,calc(var(--pat-lit) * .32 + var(--pat-floor) * .68)) 58%, rgba(0,0,0,var(--pat-floor)) 100%);
+          mask-image: radial-gradient(var(--pat-r) circle at var(--x) var(--y),
+    rgba(0,0,0,var(--pat-lit)) 0%, rgba(0,0,0,calc(var(--pat-lit) * .72 + var(--pat-floor) * .28)) 28%, rgba(0,0,0,calc(var(--pat-lit) * .32 + var(--pat-floor) * .68)) 58%, rgba(0,0,0,var(--pat-floor)) 100%); }
+.patterns__photo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  object-position: center 33%; opacity:0;
+  transition: opacity .45s var(--ease-out); }
+.patterns__photo img.is-on { opacity:1; transition-delay:.12s; }
+.patterns__room--work .patterns__photo img.is-on { transition-delay:.2s; }
 
-/* Resting face carries the room: a graded still of Stephen behind the word.
-   Three layers sit between the picture and the type - the picture itself, a
-   flat plum sheet, and the bottom-up plum grade - so the display word and the
-   small caps clear 4.5:1 on the lightest pixel any of these stills can make. */
-.pcard__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  z-index:0; filter: grayscale(.85) contrast(1.05) brightness(.55); opacity:.38;
-  transition: opacity .5s var(--ease-out); }
-.pcard:not(.pcard--cta)::before { content:""; position:absolute; inset:0; z-index:1;
-  pointer-events:none; background: rgba(18,10,28,.62); }
-.pcard:not(.pcard--cta)::after { content:""; position:absolute; inset:0; z-index:1;
-  pointer-events:none;
-  background: linear-gradient(0deg, rgba(18,10,28,.55), rgba(18,10,28,0) 62%); }
-.patterns .pface { z-index:2; }
-/* Open, the picture steps back behind the under face. */
-.pcard:hover .pcard__bg, .pcard:focus-visible .pcard__bg,
-.pcard.is-on .pcard__bg { opacity:.15; }
+.patterns__text { position:relative; z-index:2; margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.patterns__label { font-family: var(--f-display); font-style:italic; font-weight:460;
+  font-optical-sizing:none; font-variation-settings:"opsz" 144;
+  font-size: clamp(2.5rem, 5vh, 3.5rem); line-height:1.1; letter-spacing:-0.01em;
+  /* --gold lifted 27% toward bone */
+  color: #E8BB68; }
+.patterns__room--work .patterns__label { color: #CDBDF2; }
+.patterns__lines { display:grid; margin-top:.5rem; max-width:22ch; font-family: var(--f-display);
+  font-size: clamp(1.5rem, 3vh, 2.125rem); font-weight:360; font-style:normal; line-height:1.25;
+  letter-spacing:-0.01em; color: var(--tx-inv); text-align:center; }
+.patterns__lines > span { grid-area:1/1; opacity:0; transform: translateY(.25rem);
+  transition: opacity .26s var(--ease-out), transform .26s var(--ease-out); }
+.patterns__lines > span.is-on { opacity:1; transform:none; }
+.patterns__lines > span.is-out { opacity:0; transform: translateY(-.25rem); }
+.patterns__room--work .patterns__lines > span { transition-delay:.08s; }
 
-/* Both faces are centred, so the two states of a card sit on one axis. */
-.patterns .pface { position:absolute; inset:0; display:flex; flex-direction:column;
-  justify-content:center; padding:1.6rem;
-  transition: opacity .55s var(--ease-out), transform .55s var(--ease-out), filter .55s var(--ease-out); }
+/* Roll pulse: on each word change both borders bloom and settle. */
+.patterns__card.is-pulse { animation: patPulseHome .75s var(--ease-out); }
+.patterns__room--work.is-pulse { animation-name: patPulseWork; }
+@keyframes patPulseHome {
+  0%   { box-shadow: 0 0 0 0 rgba(227,169,60,0); border-color: rgba(227,169,60,.3); }
+  20%  { box-shadow: 0 0 12px 0 rgba(227,169,60,.22); border-color: rgba(227,169,60,1); }
+  100% { box-shadow: 0 0 0 0 rgba(227,169,60,0); border-color: rgba(227,169,60,.3); } }
+@keyframes patPulseWork {
+  0%   { box-shadow: 0 0 0 0 rgba(169,133,230,0); border-color: rgba(227,169,60,.3); }
+  20%  { box-shadow: 0 0 12px 0 rgba(169,133,230,.22); border-color: rgba(169,133,230,1); }
+  100% { box-shadow: 0 0 0 0 rgba(169,133,230,0); border-color: rgba(227,169,60,.3); } }
 
-/* The label box stops short of the ring in the top right corner, on both
-   faces and at every width, so a centred face can never run a line of small
-   caps under it. */
-.patterns .lbl { font-family: var(--f-text); font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;
-  margin-bottom:.7rem; line-height:1.2; max-width: calc(100% - 2.6rem);
-  transition: color .9s var(--ease-amb); }
-.patterns .psurface .lbl { color: var(--tx-inv-soft); }
-.patterns.is-home .punder .lbl { color: var(--gold); }
-.patterns.is-work .punder .lbl { color: var(--violet-300); }
-
-.pword { font-family: var(--f-display); font-weight:360; font-size: var(--step-3);
-  line-height:1.02; letter-spacing:-0.02em; color: var(--tx-inv);
-  /* the soft hyphens stay in the markup so a narrow phone can still break
-     Responsibility and Vulnerability; the size cap keeps them on one line
-     from tablet width up. */
-  hyphens: auto; }
-.patterns .plines { font-family: var(--f-text); font-size: var(--step-1); line-height:1.3; color:#fff; }
-@supports (width: 1cqw) {
-  .pword { font-size: min(var(--step-3), 12.5cqw); }
-  .patterns .plines { font-size: min(var(--step-1), 9cqw); }
-  /* the room label is the longest string on the under face, so it scales
-     with the cell below tablet width and holds its cap above it */
-  .patterns .lbl { font-size: min(.72rem, 5.2cqw); }
-}
-
-/* Four-up width: the room label and the call to action label are the strings
-   long enough to wrap inside their column, so both are cut a little and hold
-   one line from 1280 up. */
-@media (min-width: 1024px) {
-  .patterns .punder .lbl, .patterns .pcard--cta .lbl { font-size: .57rem; }
-}
-
-.punder { opacity:0; transform: translateY(14px); filter: blur(8px);
-  background: linear-gradient(0deg, rgba(61,20,63,0.75), rgba(18,10,28,0.4));
-  transition: opacity .55s var(--ease-out), transform .55s var(--ease-out),
-              filter .55s var(--ease-out), background .9s var(--ease-amb); }
-.patterns.is-home .punder {
-  background: linear-gradient(0deg, rgba(70,45,20,0.55), rgba(18,10,28,0.4)); }
-
-.pcard:hover .psurface, .pcard:focus-visible .psurface,
-.pcard.is-on .psurface { opacity:0; transform: translateY(-14px); }
-.pcard:hover .punder, .pcard:focus-visible .punder,
-.pcard.is-on .punder { opacity:1; transform:none; filter: blur(0); }
-
-.pcard__plus { position:absolute; top:1.2rem; right:1.3rem; width:1.9rem; height:1.9rem; border-radius:50%;
-  border:1px solid var(--line-inv-strong); display:grid; place-items:center; color: var(--tx-inv-soft);
-  font-size:1rem; line-height:1; z-index:2;
-  transition: transform .5s var(--ease-out), background .4s, color .4s,
-              border-color 1.2s var(--ease-amb); }
-/* Closed, the ring carries the room colour, so a shut grid still registers
-   the change from one room to the other. */
-.patterns.is-home .pcard__plus { border-color: var(--gold); }
-.patterns.is-work .pcard__plus { border-color: var(--violet-300); }
-.pcard:hover .pcard__plus, .pcard:focus-visible .pcard__plus,
-.pcard.is-on .pcard__plus {
-  transform: rotate(135deg); background: var(--violet); color:#fff; }
-
-/* Room roll: labels and context lines cross-fade on the room change */
-.proll { display:inline-grid; }
-.patterns .plines { display:grid; }
-.proll > span, .patterns .plines > span { grid-area:1/1;
-  transition: opacity .55s var(--ease-out), transform .55s var(--ease-out); }
-.patterns.is-home .proll > [data-work], .patterns.is-work .proll > [data-home],
-.patterns.is-home .plines > [data-work], .patterns.is-work .plines > [data-home] {
-  opacity:0; transform: translateY(.5em); pointer-events:none; }
-.patterns.is-home .proll > [data-home], .patterns.is-work .proll > [data-work],
-.patterns.is-home .plines > [data-home], .patterns.is-work .plines > [data-work] {
-  opacity:1; transform:none; }
-
-/* Eighth cell: the call to action ----------------------------------- */
-.pcard--cta { display:block; container-type: inline-size; }
-/* The frame is 2:1 and the cell is 4:3, so two thirds of the source width
-   is visible. Holding the window at the left edge of the frame puts the
-   face in the right third of the cell, clear of the text column. */
-.pcard--cta img { position:absolute; inset:0; width:100%; height:100%; display:block;
-  object-fit:cover; object-position: 4% 35%; filter: var(--img-filter);
-  transform-origin: 80% 25%; transition: transform .6s ease-out; }
-.pcard--cta:hover img { transform: scale(1.04); }
-/* Plum grade, so the photograph sits in the card family */
-.pcard--cta::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background: linear-gradient(0deg, rgba(18,10,28,.78), rgba(18,10,28,.28));
-  transition: opacity .6s ease-out; }
-.pcard--cta:hover::after { opacity:.84; }
-/* Room tint, a flat second layer so it can cross-fade on the ambient ease */
-.pcard--cta::before { content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
-  background-color: transparent; transition: background-color 1.2s var(--ease-amb); }
-.patterns.is-home .pcard--cta::before { background-color: rgba(227,169,60,.16); }
-.patterns.is-work .pcard--cta::before { background-color: rgba(85,43,157,.20); }
-
-/* The wall behind him is light, so the words carry a shade that runs left
-   to right and clears the frame before it reaches his face. The text column
-   stops short of the right third for the same reason. */
-.pcta__body { position:absolute; inset:0; z-index:3; display:flex; flex-direction:column;
-  justify-content:center; align-items:flex-start; padding:1.6rem; padding-right:34%;
-  background: linear-gradient(90deg, rgba(18,10,28,.86) 0%, rgba(18,10,28,.76) 66%,
-    rgba(18,10,28,.22) 78%, rgba(18,10,28,0) 90%); }
-.patterns.is-home .pcard--cta .lbl { color: var(--gold); }
-.patterns.is-work .pcard--cta .lbl { color: var(--violet-300); }
-/* Same language as .textlink: a rule under the words, an arrow that steps
-   out. The rule is a text decoration so it follows a wrapped second line
-   instead of stretching across the cell. */
-.pcta__link { font-family: var(--f-display); font-size: var(--step-1); font-weight:360;
-  line-height:1.22; color: var(--tx-inv);
+/* Close: one centred line under a gold hairline the width of the cards. */
+.patterns__cta { max-width:1120px; margin: 2.5vh auto 0; padding-top:1.5vh;
+  border-top:1px solid rgba(227,169,60,.3);
+  font-family: var(--f-display); font-size: clamp(1.25rem, 1.8vw, 1.625rem); font-weight:360;
+  line-height:1.3; }
+.patterns__cta-lead { color: rgba(244,236,222,.65); }
+.patterns__cta-link { color: var(--tx-inv); white-space:nowrap;
   text-decoration: underline; text-decoration-thickness:1px; text-underline-offset:.2em;
-  text-decoration-color: rgba(244,236,222,.55);
-  transition: text-decoration-color var(--dur-fast) var(--ease-out); }
-@supports (width: 1cqw) {
-  /* the link holds to two lines in the cell rather than breaking to three */
-  .pcta__link { font-size: min(var(--step-1), 9.5cqw); }
-}
-/* the arrow never falls to a line of its own */
-.pcta__end { white-space: nowrap; }
-.pcta__link .arrow { display:inline-block; vertical-align:-.06em; margin-left:.35em;
+  text-decoration-color: currentColor;
+  transition: color var(--dur-fast) var(--ease-out); }
+.patterns__cta-link .arrow { display:inline-block; width:1em; height:1em; vertical-align:-.12em; margin-left:.3em;
   transition: transform var(--dur-fast) var(--ease-out); }
-.pcard--cta:hover .pcta__link { text-decoration-color: currentColor; }
-.pcard--cta:hover .pcta__link .arrow { transform: translateX(.35em); }
+.patterns__cta-link:hover, .patterns__cta-link:focus-visible { color: var(--gold); }
+.patterns__cta-link:hover .arrow { transform: translateX(.35em); }
+.patterns__cta-link:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; }
 
-/* Mobile ------------------------------------------------------------ */
-@media (max-width: 1023px) {
-  .ptabs { display:block; }
-  .ptabs__set { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:.35rem; }
-  .ptab { min-width:0; justify-content:center; text-align:center; padding:.85rem 1rem;
-    font-size: var(--step-1); }
-  .ppanel { padding:.8rem; }
-  /* eight equal cells make four even rows, so nothing spans */
-  .ptabs__note { display:none; }
-  .ptabs__note--below { display:block; margin-top:1rem; padding-bottom:0; text-align:left; }
-}
-
-@media (max-width: 1279px) {
-  .patterns .punder .lbl { margin-bottom:.5rem; }
-}
-@media (max-width: 480px) {
-  .patterns .pface { padding:1.1rem; }
-  .pcta__body { padding:1.1rem; padding-right:34%; }
-  .pcard__plus { top:.9rem; right:.9rem; width:1.7rem; height:1.7rem; }
-  @supports (width: 1cqw) {
-    .pword { font-size: min(var(--step-2), 15cqw); }
-    .patterns .plines { font-size: min(var(--step-0), 8cqw); }
-  }
-}
-@media (max-width: 440px) {
-  .patterns__line { font-size: clamp(2.4rem, 10.5vw, 3rem); }
+/* Below 768: no chasing the fold. The line, then the cards full width.
+   The one-line headline is small here, so the labels and lines step down
+   to stay under it. --------------------------------------------------- */
+@media (max-width: 767px) {
+  .patterns__cards { grid-template-columns: minmax(0,1fr); gap:1rem; margin-top:2rem; }
+  .patterns__card { height:auto; min-height:180px; }
+  .patterns__photo { --pat-r:160px; }
+  .patterns__label { font-size: min(1.875rem, 6.4cqi); }
+  .patterns__lines { font-size: min(1.25rem, 5.2cqi); }
+  .patterns__cta { margin-top:2rem; padding-top:1rem; }
 }
 
-/* Reduced motion: no cycle, no drift, both rooms on every card ------- */
+/* Reduced motion: no roll, no pointer light, no pulse; the stills rest a
+   little brighter and cross-fade linearly; the lines fade only. ------- */
 @media (prefers-reduced-motion: reduce) {
-  .patterns, .patterns__spot::before, .patterns__spot::after,
-  .patterns .ctx button, .patterns .ctx__swap > span { transition:none; }
-  .patterns.is-drifting .patterns__spot { animation:none; }
+  .patterns__glyphs, .patterns__arrow, .patterns__cta-link, .patterns__cta-link .arrow,
+  .patterns .ctx, .patterns .ctx__bar { transition:none !important; }
+  .patterns__glyphs { transform:none; }
+  .patterns__lines > span, .patterns__lines > span.is-out { transform:none;
+    transition: opacity .26s linear; }
   .patterns .ctx__bar, .patterns.is-cycling .ctx__bar { animation:none; transform: scaleX(1); opacity:1; }
-  .ptab { transition: background-color .3s linear, transform .3s linear,
-                      border-color .3s linear, color .3s linear; }
-
-  .pcard { aspect-ratio:auto; display:block; cursor:default; padding:1.4rem; }
-  .pcard__bg { transition:none; }
-  .pcard:hover .pcard__bg, .pcard.is-on .pcard__bg { opacity:.38; }
-  .patterns .pface { position:static; inset:auto; padding:0; display:block;
-    opacity:1 !important; transform:none !important; filter:none !important; transition:none; }
-  .patterns.is-home .punder, .patterns.is-work .punder { background:none; margin-top:1rem; }
-  .patterns .pcard:not(.pcard--cta) .lbl, .pcard__plus { display:none; }
-  .patterns .plines { display:grid; gap:.45rem; }
-  .patterns .plines > span { grid-area:auto; opacity:1 !important; transform:none !important; transition:none; }
-  .patterns .plines > [data-home]::before { content:"Home "; }
-  .patterns .plines > [data-work]::before { content:"Work "; }
-  .patterns .plines > span::before { display:block; color: var(--tx-inv-faint); font-size: var(--step--1);
-    letter-spacing:.14em; text-transform:uppercase; }
-  .pcard--cta { aspect-ratio: 4/3; padding:0; }
-  .pcard--cta:hover img { transform:none; }
+  .patterns__card { --pat-lit:0; --pat-floor:0; transition:none; }
+  .patterns__photo { opacity:.25; }
+  .patterns__photo--lit { opacity:1; }
+  .patterns__card.is-full { --pat-lit:1; --pat-floor:1; }
+  .patterns__card.is-pulse { animation:none; }
+  .patterns__photo img, .patterns__photo img.is-on { transition: opacity .2s linear; transition-delay:0s; }
 }
 
 /* --- Surface -> truth cards --- */
@@ -1002,9 +888,11 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 /* Credentials without the decorative numbering */
 .creds .cred { gap: 0; }
 
-/* ---- What happens when you book: sticky step list ---- */
+/* ---- What happens when you book: sticky step list ----
+   Five steps, then a sixth stage in which the scene becomes the final
+   call to action (the old section.final). Each stage is 70vh of scroll. */
 .steps { position:relative; background: var(--plum-2); color: var(--tx-inv); }
-.steps__track { height: calc(5 * 70vh); }
+.steps__track { height: calc(6 * 70vh); }
 .steps__sticky { position:sticky; top:0; height:100vh; overflow:hidden; background: var(--plum-2); }
 .steps__media { position:absolute; inset:0; }
 .steps__still { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 40%;
@@ -1016,7 +904,8 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
     linear-gradient(95deg, rgba(14,8,22,.93) 0%, rgba(14,8,22,.78) 34%, rgba(14,8,22,.34) 58%, rgba(14,8,22,0) 78%),
     linear-gradient(0deg, rgba(14,8,22,.72), rgba(14,8,22,0) 52%); }
 .steps__copy { position:absolute; left: var(--gutter); top:50%; transform: translateY(-50%); z-index:2;
-  width: min(46rem, calc(100% - 2 * var(--gutter))); }
+  width: min(46rem, calc(100% - 2 * var(--gutter)));
+  transition: opacity .6s var(--ease-out), translate .6s var(--ease-out); }
 .steps__copy .eyebrow { display:block; margin-bottom: .9rem; }
 .steps__copy h2 { font-size: var(--step-3); font-weight:320; line-height:1.0; letter-spacing:-0.035em;
   max-width: 16ch; margin-bottom: clamp(1.8rem, 3vw, 2.6rem); }
@@ -1038,6 +927,25 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 .steps__list li.is-on .steps__d { opacity:1; max-height:8rem; }
 .steps__copy .textlink { margin-top: clamp(1.6rem, 3vw, 2.4rem); display:inline-flex; }
 .textlink--inv { color: var(--tx-inv); }
+
+/* Stage 6. The final call to action is a second sticky layer laid over the
+   pinned scene (same track, pulled up by its own height). It keeps every
+   .final rule, so once in it looks exactly like the old section.final:
+   the plum ground crossfades in on the stills' .9s, the content rises
+   .25rem over .6s, and the step copy lifts away. Without script it is
+   a normal block after the steps. */
+.js .steps__final { position:sticky; top:0; height:100vh; margin-top:-100vh; z-index:3;
+  display:flex; align-items:center; justify-content:center; padding-top: 4.75rem;
+  opacity:0; pointer-events:none; transition: opacity .9s var(--ease-out); }
+.js .steps__final .final__inner { padding-block:0; opacity:0; transform: translateY(.25rem);
+  transition: opacity .6s var(--ease-out) .15s, transform .6s var(--ease-out) .15s; }
+.js .steps.is-final .steps__final { opacity:1; pointer-events:auto; }
+.js .steps.is-final .steps__final .final__inner { opacity:1; transform:none; }
+.js .steps.is-final .steps__copy { opacity:0; translate: 0 -.25rem; pointer-events:none; }
+@media (max-width: 720px) { .js .steps__final { padding-top: 3.25rem; } }
+/* A short screen cannot hold the full-size line inside one pinned stage,
+   so there the headline steps down to fit; 900px and taller are unchanged. */
+@media (max-height: 860px) { .js .steps__final h2 { font-size: min(var(--step-5), 17vh); } }
 
 @media (max-width: 720px) {
   .steps__copy { top:auto; bottom: clamp(2rem, 6vh, 4rem); transform:none; }
@@ -1081,6 +989,11 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
   .steps__list li { color: var(--tx-inv); transition:none; }
   .steps__d { opacity:1; max-height:none; transition:none; }
   .steps__list li.is-on .steps__d { max-height:none; }
+  /* no pin: the call to action is a normal block after step 05 */
+  .js .steps__final { position:relative; height:auto; margin-top:0; padding-top:0; display:block;
+    opacity:1; pointer-events:auto; transition:none; }
+  .js .steps__final .final__inner { padding-block: clamp(6rem,12vw,12rem); opacity:1; transform:none; transition:none; }
+  .js .steps__final h2 { font-size: var(--step-5); }
 }
 /* ---- Credibility ribbon: label above the lane, timed spotlight ---- */
 .orgband { background: var(--plum); color: var(--tx-inv);
@@ -1110,14 +1023,14 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 .cred__track img { height: clamp(26px,3vw,42px); width:auto; object-fit:contain; flex:0 0 auto;
   user-select:none; position:relative; z-index:1;
   filter: grayscale(1) brightness(1.6) opacity(.42);
-  transition: filter 640ms cubic-bezier(.4,0,.2,1), transform 640ms cubic-bezier(.4,0,.2,1); }
+  transition: filter 1100ms cubic-bezier(.4,0,.2,1), transform 1100ms cubic-bezier(.4,0,.2,1); }
 .cred__lane--sm .cred__track img { height: clamp(20px,2.4vw,32px); }
 /* only the lit logo and the one queued next carry the compositing hint */
 .cred__track img.lit, .cred__track img.next { will-change: transform, filter; }
 
 .cred__track img.lit { filter:none; z-index:2;
   transform-origin: 50% 60%; transform: translateY(-8px) scale(1.9);
-  transition: filter 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1); }
+  transition: filter 900ms cubic-bezier(.22,1,.36,1), transform 900ms cubic-bezier(.22,1,.36,1); }
 .cred__lane--sm .cred__track img.lit { transform: translateY(-8px) scale(2.15); }
 
 /* Logos delivered as ink on an opaque white plate: inverted and screened so

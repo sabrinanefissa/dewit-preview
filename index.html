@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/hero-1280.webp" fetchpriority="high">
-<link rel="stylesheet" href="css/main.css?v=20260921d">
+<link rel="stylesheet" href="css/main.css?v=20260921x">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Person","name":"Dr. Stephen de Wit",
@@ -190,152 +190,76 @@
     </div>
   </section>
 
-  <!-- Same patterns: one rolling word, two folder tabs, seven word cards -->
-  <section class="patterns is-home" id="patterns" aria-label="The same patterns at home and at work">
+  <!-- Same patterns: "How [Word] shows up." on one line, the word rolling, its
+       controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. -->
+  <section class="patterns" id="patterns" aria-label="The same patterns at home and at work">
     <div class="patterns__spot" aria-hidden="true"></div>
 
     <div class="patterns__inner reveal">
 
-      <div class="patterns__head">
-        <p class="patterns__line">The same patterns<br>show up <span class="ctx"><button type="button" id="ctxBtn"><span class="ctx__swap"><span data-on>at&nbsp;home</span><span data-off aria-hidden="true">at&nbsp;work</span></span></button><i class="ctx__bar" aria-hidden="true"></i></span>.</p>
-      </div>
+      <div class="patterns__stage" id="patStage">
+        <h2 class="patterns__title" id="patTitle" aria-label="How Trust shows up."><span class="patterns__how">How</span> <span class="ctx"><button type="button" class="patterns__word" id="patWord" aria-pressed="false" aria-describedby="patHint"><span class="patterns__glyphs is-on" data-i="0">Trust</span><span class="patterns__glyphs" data-i="1" aria-hidden="true">Avoidance</span><span class="patterns__glyphs" data-i="2" aria-hidden="true">Fear</span><span class="patterns__glyphs" data-i="3" aria-hidden="true">Vulnera&shy;bility</span><span class="patterns__glyphs" data-i="4" aria-hidden="true">Resentment</span><span class="patterns__glyphs" data-i="5" aria-hidden="true">Responsi&shy;bility</span><span class="patterns__glyphs" data-i="6" aria-hidden="true">Repair</span></button><i class="ctx__bar" aria-hidden="true"></i></span> <span class="patterns__tail">shows up.</span></h2>
+        <span class="patterns__sr" id="patHint">Holds this pattern. Select the word again to resume.</span>
 
-      <div class="ptabs">
-        <div class="ptabs__set" id="ptabs" role="tablist">
-          <button class="ptab" type="button" role="tab" id="tab-home" data-room="home"
-                  aria-selected="false" aria-controls="ppanel"><span class="ptab__sw" aria-hidden="true"></span>At home</button>
-          <button class="ptab" type="button" role="tab" id="tab-work" data-room="work"
-                  aria-selected="false" aria-controls="ppanel"><span class="ptab__sw" aria-hidden="true"></span>At work</button>
+        <div class="patterns__ctrl">
+          <button type="button" class="patterns__arrow patterns__arrow--prev" id="patPrev" aria-label="Previous pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <span class="patterns__count" id="patCount">01 / 07</span>
+          <button type="button" class="patterns__arrow patterns__arrow--next" id="patNext" aria-label="Next pattern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         </div>
-        <p class="ptabs__note">One skill set. Every room.</p>
+
+        <!-- Every word and both rooms, for screen readers, all the time -->
+        <dl class="patterns__sr">
+          <dt>Trust</dt><dd>At home: Who you call first.</dd><dd>At work: Who you tell first.</dd>
+          <dt>Avoidance</dt><dd>At home: The conversation you keep putting off.</dd><dd>At work: The meeting nobody books.</dd>
+          <dt>Fear</dt><dd>At home: Of being too much.</dd><dd>At work: Of being found out.</dd>
+          <dt>Vulnerability</dt><dd>At home: Saying the thing out loud.</dd><dd>At work: Saying &ldquo;I don&rsquo;t know&rdquo; in the room.</dd>
+          <dt>Resentment</dt><dd>At home: The score nobody admits keeping.</dd><dd>At work: The credit that went to someone else.</dd>
+          <dt>Responsibility</dt><dd>At home: Owning your part of the mess.</dd><dd>At work: Owning the miss before the review does.</dd>
+          <dt>Repair</dt><dd>At home: Coming back after the door slams.</dd><dd>At work: Coming back after the email.</dd>
+        </dl>
+        <!-- Two cards, decorative (the sr-only list above carries the words).
+             Each hides a still of Stephen that the pointer lights; the
+             photos are mapped in main.js, PHOTOS ("Replace photos here"). -->
+        <div class="patterns__cards" aria-hidden="true">
+          <div class="patterns__card patterns__room--home">
+            <div class="patterns__photo"></div>
+            <div class="patterns__photo patterns__photo--lit"></div>
+            <p class="patterns__text">
+              <span class="patterns__label">At home</span>
+              <span class="patterns__lines">
+                <span data-i="0" class="is-on">Who you call first.</span>
+                <span data-i="1">The conversation you keep putting off.</span>
+                <span data-i="2">Of being too much.</span>
+                <span data-i="3">Saying the thing out loud.</span>
+                <span data-i="4">The score nobody admits keeping.</span>
+                <span data-i="5">Owning your part of the mess.</span>
+                <span data-i="6">Coming back after the door slams.</span>
+              </span>
+            </p>
+          </div>
+          <div class="patterns__card patterns__room--work">
+            <div class="patterns__photo"></div>
+            <div class="patterns__photo patterns__photo--lit"></div>
+            <p class="patterns__text">
+              <span class="patterns__label">At work</span>
+              <span class="patterns__lines">
+                <span data-i="0" class="is-on">Who you tell first.</span>
+                <span data-i="1">The meeting nobody books.</span>
+                <span data-i="2">Of being found out.</span>
+                <span data-i="3">Saying &ldquo;I don&rsquo;t know&rdquo; in the room.</span>
+                <span data-i="4">The credit that went to someone else.</span>
+                <span data-i="5">Owning the miss before the review does.</span>
+                <span data-i="6">Coming back after the email.</span>
+              </span>
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div class="ppanel" id="ppanel" role="tabpanel" aria-labelledby="tab-home">
-      <div class="pgrid" id="pgrid">
+      <p class="patterns__cta"><span class="patterns__cta-lead">It can be taught.</span>
+        <a class="patterns__cta-link" href="#keynotes">See the keynotes <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
 
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-trust-860.webp"
-               srcset="assets/img/pat-trust-520.webp 520w, assets/img/pat-trust-860.webp 860w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Trust</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>Who you call first.</span><span data-work>Who you tell first.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-avoidance-394.webp"
-               srcset="assets/img/pat-avoidance-394.webp 394w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Avoidance</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>The conversation you keep putting off.</span><span data-work>The meeting nobody books.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/keynote-860.webp"
-               srcset="assets/img/keynote-520.webp 520w, assets/img/keynote-860.webp 860w, assets/img/keynote-1280.webp 1280w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Fear</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>Of being too much.</span><span data-work>Of being found out.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-vulnerability-507.webp"
-               srcset="assets/img/pat-vulnerability-507.webp 507w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Vulnera&shy;bility</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>Saying the thing out loud.</span><span data-work>Saying &ldquo;I don&rsquo;t know&rdquo; in the room.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-resentment-860.webp"
-               srcset="assets/img/pat-resentment-520.webp 520w, assets/img/pat-resentment-860.webp 860w, assets/img/pat-resentment-1280.webp 1280w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Resentment</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>The score nobody admits keeping.</span><span data-work>The credit that went to someone else.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-responsibility-860.webp"
-               srcset="assets/img/pat-responsibility-520.webp 520w, assets/img/pat-responsibility-860.webp 860w, assets/img/pat-responsibility-1280.webp 1280w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Responsi&shy;bility</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>Owning your part of the mess.</span><span data-work>Owning the miss before the review does.</span></span>
-          </span>
-        </button>
-
-        <button class="pcard" type="button" aria-pressed="false">
-          <img class="pcard__bg" src="assets/img/pat-repair-860.webp"
-               srcset="assets/img/pat-repair-520.webp 520w, assets/img/pat-repair-860.webp 860w, assets/img/pat-repair-1280.webp 1280w"
-               sizes="(min-width:1024px) 25vw, 50vw" alt="" loading="lazy" aria-hidden="true">
-          <span class="pcard__plus" aria-hidden="true">+</span>
-          <span class="pface psurface">
-            <span class="lbl">The pattern</span>
-            <span class="pword">Repair</span>
-          </span>
-          <span class="pface punder">
-            <span class="lbl"><span class="proll"><span data-home>How it shows up at home</span><span data-work>How it shows up at work</span></span></span>
-            <span class="plines"><span data-home>Coming back after the door slams.</span><span data-work>Coming back after the email.</span></span>
-          </span>
-        </button>
-
-        <a class="pcard pcard--cta" href="#keynotes">
-          <img src="assets/img/meet-860.webp"
-               srcset="assets/img/meet-520.webp 520w,
-                       assets/img/meet-860.webp 860w,
-                       assets/img/meet-1280.webp 1280w,
-                       assets/img/meet-1920.webp 1920w"
-               sizes="(min-width:1024px) 25vw, 50vw"
-               alt="Dr. Stephen de Wit smiling in a doorway" loading="lazy">
-          <span class="pcta__body">
-            <span class="lbl">It can be taught</span>
-            <span class="pcta__link">See the <span class="pcta__end">keynotes <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span>
-          </span>
-        </a>
-
-      </div>
-      </div>
-
-      <p class="ptabs__note ptabs__note--below">One skill set. Every room.</p>
+      <p class="patterns__sr" id="patLive" aria-live="off" aria-atomic="true"></p>
     </div>
   </section>
 
@@ -502,7 +426,28 @@
     </div>
   </section>
 
-  <!-- What happens when you book: sticky step list -->
+  <!-- Healthcare -->
+  <section class="care" id="healthcare">
+    <div class="media media--warm">
+      <img data-reveal-clip src="assets/img/results-860.webp"
+           srcset="assets/img/results-520.webp 520w, assets/img/results-860.webp 860w, assets/img/results-920.webp 920w"
+           sizes="(max-width:1024px) 100vw, 48vw" alt="An engaged audience during Stephen's talk" decoding="async">
+    </div>
+    <div class="care__inner">
+      <div class="care__body reveal">
+        <h2>Care deeply, without <em>carrying it all</em>.</h2>
+        <p class="lead lead--inv" style="margin-top:1.2rem;max-width:42ch">For hospitals, long-term care, and the caregivers who hold emotionally demanding work together.</p>
+        <ul class="care__list">
+          <li>Caregiver load</li><li>Difficult conversations</li><li>Compassion &amp; boundaries</li>
+          <li>Trust under pressure</li><li>Staying connected</li>
+        </ul>
+        <div class="care__cta"><a class="btn btn--inv" href="#contact">See the healthcare work</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What happens when you book: sticky step list; a sixth stage turns the
+       scene into the final call to action -->
   <section class="steps" id="how" aria-label="What happens when you book">
     <div class="steps__track" data-steps>
       <div class="steps__sticky">
@@ -537,43 +482,22 @@
           <a class="textlink textlink--inv" href="#contact">Start with an email <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Healthcare -->
-  <section class="care" id="healthcare">
-    <div class="media media--warm">
-      <img data-reveal-clip src="assets/img/results-860.webp"
-           srcset="assets/img/results-520.webp 520w, assets/img/results-860.webp 860w, assets/img/results-920.webp 920w"
-           sizes="(max-width:1024px) 100vw, 48vw" alt="An engaged audience during Stephen's talk" decoding="async">
-    </div>
-    <div class="care__inner">
-      <div class="care__body reveal">
-        <h2>Care deeply, without <em>carrying it all</em>.</h2>
-        <p class="lead lead--inv" style="margin-top:1.2rem;max-width:42ch">For hospitals, long-term care, and the caregivers who hold emotionally demanding work together.</p>
-        <ul class="care__list">
-          <li>Caregiver load</li><li>Difficult conversations</li><li>Compassion &amp; boundaries</li>
-          <li>Trust under pressure</li><li>Staying connected</li>
-        </ul>
-        <div class="care__cta"><a class="btn btn--inv" href="#contact">See the healthcare work</a></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Final CTA -->
-  <section class="final" id="contact">
-    <div class="final__inner reveal">
-      <h2>Let's put this in front of <em>your people</em>.</h2>
-      <p class="lead lead--inv" style="margin-top:1.4rem;max-width:52ch;margin-inline:auto">Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.</p>
-      <div class="final__actions">
-        <a class="btn btn--lg" href="mailto:info@drdewit.com?subject=Speaking%20inquiry%20for%20Dr.%20Stephen%20de%20Wit">Bring Stephen to your event</a>
-        <button class="btn btn--inv btn--lg" data-video="assets/video/reel-720.mp4">Watch Stephen speak</button>
-      </div>
-      <div class="final__contact">
-        <a href="tel:+16474834490">647.483.4490</a>
-        <a href="mailto:info@drdewit.com">info@drdewit.com</a>
-        <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+      <!-- Stage 6: the scene becomes the final call to action (was section.final) -->
+      <div class="final steps__final" id="contact">
+        <div class="final__inner">
+          <h2>Let's put this in front of <em>your people</em>.</h2>
+          <p class="lead lead--inv" style="margin-top:1.4rem;max-width:52ch;margin-inline:auto">Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.</p>
+          <div class="final__actions">
+            <a class="btn btn--lg" href="mailto:info@drdewit.com?subject=Speaking%20inquiry%20for%20Dr.%20Stephen%20de%20Wit">Bring Stephen to your event</a>
+            <button class="btn btn--inv btn--lg" data-video="assets/video/reel-720.mp4">Watch Stephen speak</button>
+          </div>
+          <div class="final__contact">
+            <a href="tel:+16474834490">647.483.4490</a>
+            <a href="mailto:info@drdewit.com">info@drdewit.com</a>
+            <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -608,6 +532,6 @@
   </div>
 </div>
 
-<script src="js/main.js?v=20260921d" defer></script>
+<script src="js/main.js?v=20260921x" defer></script>
 </body>
 </html>

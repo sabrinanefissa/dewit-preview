@@ -346,7 +346,10 @@
   };
 })();
 
-/* ===== What happens when you book: sticky step list ===== */
+/* ===== What happens when you book: sticky step list =====
+   Five steps, then a sixth stage in which the scene becomes the final call
+   to action (#contact). Links to #contact land on that stage; keyboard
+   focus that enters it brings it on screen. */
 (function () {
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -358,14 +361,21 @@
   var TOTAL = Math.min(stills.length, items.length);
   if (!TOTAL) return;
 
+  var scene = track.closest(".steps");
+  var fin = document.getElementById("contact");
+  var copy = track.querySelector(".steps__copy");
+  var STAGES = TOTAL + (fin && track.contains(fin) ? 1 : 0);
+
   var current = -1, ticking = false;
 
   function setActive(idx) {
     if (idx === current) return;
+    var step = Math.min(idx, TOTAL - 1);   /* the last still holds under stage 6 */
     for (var i = 0; i < TOTAL; i++) {
-      stills[i].classList.toggle("is-on", i === idx);
-      items[i].classList.toggle("is-on", i === idx);
+      stills[i].classList.toggle("is-on", i === step);
+      items[i].classList.toggle("is-on", i === step);
     }
+    if (scene) scene.classList.toggle("is-final", idx === TOTAL);
     current = idx;
   }
 
@@ -373,7 +383,37 @@
     ticking = false;
     var r = track.getBoundingClientRect(), span = track.offsetHeight - window.innerHeight;
     var p = span > 0 ? Math.min(Math.max(-r.top / span, 0), 1) : 0;
-    setActive(Math.min(TOTAL - 1, Math.floor(p * TOTAL)));
+    setActive(Math.min(STAGES - 1, Math.floor(p * STAGES)));
+  }
+
+  /* page y at which the scene sits at progress p (0..1) */
+  function yAt(p) {
+    var top = track.getBoundingClientRect().top + window.pageYOffset;
+    return top + p * Math.max(track.offsetHeight - window.innerHeight, 0);
+  }
+  function goTo(p, instant) {
+    window.scrollTo({ top: yAt(p), behavior: instant ? "instant" : "smooth" });
+    requestAnimationFrame(measure);
+  }
+
+  if (STAGES > TOTAL) {
+    /* every link to #contact lands on stage 6, fully shown */
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest('a[href="#contact"]');
+      if (!a) return;
+      e.preventDefault();
+      goTo(1, false);
+      if (history.pushState) history.pushState(null, "", "#contact");
+    });
+    /* keyboard: tabbing into the call to action brings stage 6 up; tabbing
+       back into the step copy while stage 6 shows returns to step 05 */
+    fin.addEventListener("focusin", function () { if (current !== TOTAL) goTo(1, true); });
+    if (copy) copy.addEventListener("focusin", function () {
+      if (current === TOTAL) goTo((TOTAL - 0.5) / STAGES, true);
+    });
+    if (location.hash === "#contact") {
+      addEventListener("load", function () { setTimeout(function () { goTo(1, true); }, 50); });
+    }
   }
 
   function onScroll() {
@@ -410,205 +450,344 @@
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* --- Same patterns: rolling headline word, folder tabs, word cards ---
-     The loop lives in the headline word and its underline. While it runs,
-     neither tab is live. A tab, or the word itself, sets the room for good.
-     A room change only retints the section; no card ever opens on its own. */
+  /* --- Same patterns: one rolling word, two cards that hide a photo ---
+     Seven words roll on a 5s period; the gold underline is the timer.
+     An arrow steps to the previous or next word and pins it (the
+     underline freezes full); a click on the word pins the word showing.
+     A pin holds until the visitor selects the word again; nothing
+     releases it on a timer. The
+     roll holds while the pointer is
+     on the stage (cards included), while keyboard focus is in the
+     section, while the section is off screen and while the tab is hidden.
+     Each card hides a still of Stephen: the pointer lights it through a
+     soft mask; on touch a tap reveals it whole. Every word change makes
+     both card borders bloom once. */
   (function () {
-    var pat    = document.getElementById("patterns");
-    var ctxBtn = document.getElementById("ctxBtn");
-    var grid   = document.getElementById("pgrid");
-    var panel  = document.getElementById("ppanel");
-    if (!pat || !ctxBtn || !grid || !panel) return;
+    /* Replace photos here. One still per pattern and room, in the order of
+       the seven words. Each entry is a base name in assets/img/: the page
+       loads <base>-560.webp and <base>-1120.webp. Placeholders for now. */
+    var PHOTOS = [
+      { home: "card-trust-home",          work: "card-trust-work" },
+      { home: "card-avoidance-home",      work: "card-avoidance-work" },
+      { home: "card-fear-home",           work: "card-fear-work" },
+      { home: "card-vulnerability-home",  work: "card-vulnerability-work" },
+      { home: "card-resentment-home",     work: "card-resentment-work" },
+      { home: "card-responsibility-home", work: "card-responsibility-work" },
+      { home: "card-repair-home",         work: "card-repair-work" }
+    ];
+    var IMG_DIR = "assets/img/";
 
-    var spans = ctxBtn.querySelectorAll(".ctx__swap > span");
-    var tabs  = [].slice.call(pat.querySelectorAll(".ptab"));
-    var cards = [].slice.call(grid.querySelectorAll(".pcard:not(.pcard--cta)"));
-    var bar   = pat.querySelector(".ctx__bar");
+    var pat   = document.getElementById("patterns");
+    var btn   = document.getElementById("patWord");
+    var title = document.getElementById("patTitle");
+    var stage = document.getElementById("patStage");
+    var prev  = document.getElementById("patPrev");
+    var nxt   = document.getElementById("patNext");
+    var count = document.getElementById("patCount");
+    var hint  = document.getElementById("patHint");
+    var live  = document.getElementById("patLive");
+    if (!pat || !btn || !stage || !prev || !nxt || !count) return;
+
+    var spot   = pat.querySelector(".patterns__spot");
+    var bar    = pat.querySelector(".ctx__bar");
+    var slot   = btn.parentNode;           /* .ctx: the word's slot in the line */
+    var glyphs = [].slice.call(btn.querySelectorAll(".patterns__glyphs"));
+    var homeL  = [].slice.call(pat.querySelectorAll(".patterns__room--home .patterns__lines > span"));
+    var workL  = [].slice.call(pat.querySelectorAll(".patterns__room--work .patterns__lines > span"));
+    var cards  = [].slice.call(pat.querySelectorAll(".patterns__card"));
+    var N = glyphs.length;
+    if (!N) return;
 
     var PERIOD = 5000;                     /* ms between automatic word changes */
-    /* The loop and the room are two different things. `word` is what the
-       headline is showing and it rolls on its own; `room` is only set by a
-       visitor and it is the one that retints the section, the cards, the
-       under labels and the "+" rings. Until a choice is made the section
-       simply holds at home. */
-    var word = "home", room = null;
-    var stopped = false, paused = false, inView = false, auto = 0;
+    var cur = 0, pinned = false, hover = false, focus = false;
+    var inView = false, onScreen = false, auto = 0, outT = 0;
+
+    function pad(n) { return (n < 10 ? "0" : "") + n; }
+    function name(i) { return glyphs[i].textContent.replace(/\u00ad/g, ""); }
+    function wrap(i) { return ((i % N) + N) % N; }
+
+    /* --- card stills ----------------------------------------------
+       Seven <img> per card, one per word, cross-faded. The current and
+       next pattern load when the section is close; the rest decode once
+       the section has been seen. */
+    var near = false;
+    /* Each card has two photo layers (dark, and the bright one the light
+       reveals); both carry the same seven stills, so the files load once. */
+    var stills = [];
+    cards.forEach(function (card) {
+      var room = card.classList.contains("patterns__room--work") ? "work" : "home";
+      Array.prototype.forEach.call(card.querySelectorAll(".patterns__photo"), function (box) {
+        stills.push(PHOTOS.slice(0, N).map(function (p, k) {
+          var img = document.createElement("img");
+          img.alt = ""; img.decoding = "async";
+          img.setAttribute("data-base", IMG_DIR + p[room]);
+          if (k === 0) img.className = "is-on";
+          box.appendChild(img);
+          return img;
+        }));
+      });
+    });
+    function loadStill(i) {
+      stills.forEach(function (set) {
+        var img = set[wrap(i)];
+        if (!img || img.getAttribute("src")) return;
+        var b = img.getAttribute("data-base");
+        img.sizes = "(max-width: 767px) 94vw, 560px";
+        img.srcset = b + "-560.webp 560w, " + b + "-1120.webp 1120w";
+        img.src = b + "-560.webp";
+      });
+    }
+    function loadNear() { if (!near) return; loadStill(cur); loadStill(cur + 1); }
+    function loadAll() { for (var k = 0; k < N; k++) loadStill(k); }
+
+    function say(i) {
+      if (!live) return;
+      live.setAttribute("aria-live", "polite");
+      var text = name(i) + ". At home: " + homeL[i].textContent + " At work: " + workL[i].textContent;
+      setTimeout(function () { live.textContent = text; }, 60);
+    }
+
+    /* Lines: the outgoing one lifts away, the incoming one rises in. */
+    function swapLines(list, i) {
+      list.forEach(function (s, k) {
+        var was = s.classList.contains("is-on");
+        s.classList.toggle("is-on", k === i);
+        s.classList.toggle("is-out", was && k !== i);
+      });
+    }
+
+    /* Both borders bloom once per word change. */
+    function pulse() {
+      if (reduce) return;
+      cards.forEach(function (c) {
+        c.classList.remove("is-pulse");
+        void c.offsetWidth;
+        c.classList.add("is-pulse");
+      });
+    }
+    cards.forEach(function (c) {
+      c.addEventListener("animationend", function () { c.classList.remove("is-pulse"); });
+    });
 
     /* --- render ------------------------------------------------- */
+    /* The slot takes the new word's width, in em so it holds on resize;
+       CSS eases it, so "How" and "shows up." glide. */
+    function fitSlot(instant) {
+      var g = glyphs[cur]; if (!g || !slot) return;
+      var fs = parseFloat(getComputedStyle(slot).fontSize) || 16;
+      var w = g.getBoundingClientRect().width / fs;
+      if (instant) slot.style.transition = "none";
+      slot.style.width = w.toFixed(4) + "em";
+      if (instant) { void slot.offsetWidth; slot.style.transition = ""; }
+    }
+
+    function render(i, byUser) {
+      var changed = cur !== -1 && i !== cur;   /* the first paint does not pulse */
+      cur = i;
+      glyphs.forEach(function (g, k) {
+        var on = k === i;
+        g.classList.toggle("is-on", on);
+        if (on) g.removeAttribute("aria-hidden"); else g.setAttribute("aria-hidden", "true");
+      });
+      swapLines(homeL, i); swapLines(workL, i);
+      clearTimeout(outT);
+      outT = setTimeout(function () {
+        homeL.concat(workL).forEach(function (s) { s.classList.remove("is-out"); });
+      }, 400);
+      loadNear();
+      stills.forEach(function (set) {
+        set.forEach(function (img, k) { img.classList.toggle("is-on", k === i); });
+      });
+      if (changed) pulse();
+
+      count.textContent = pad(i + 1) + " / " + pad(N);
+      btn.setAttribute("aria-pressed", pinned ? "true" : "false");
+      pat.classList.toggle("is-pinned", pinned);
+      fitSlot(!changed);
+      /* the heading's name follows the word on a visitor's change only,
+         in step with the live region */
+      if (title) title.setAttribute("aria-label", "How " + name(i) + " shows up.");
+      if (byUser) say(i);
+      else if (live) live.setAttribute("aria-live", "off");
+    }
+
+    /* --- the loop ------------------------------------------------ */
     function restartTimer() {
       if (reduce || !bar) return;
       pat.classList.remove("is-cycling");
       void bar.offsetWidth;                /* reflow so the fill restarts */
       if (auto) pat.classList.add("is-cycling");
     }
+    function next() { render((cur + 1) % N, false); restartTimer(); }
 
-    /* The headline word only. Nothing else on the section moves. The word
-       carries its own colour state, so "at work" reads violet even while
-       the room is still home. */
-    function renderWord() {
-      pat.classList.toggle("is-word-work", word === "work");
-      spans.forEach(function (s) {
-        var isHome = s.textContent.indexOf("home") > -1;
-        var show = (word === "home") ? isHome : !isHome;
-        if (show) { s.setAttribute("data-on", ""); s.removeAttribute("data-off"); s.removeAttribute("aria-hidden"); }
-        else { s.setAttribute("data-off", ""); s.removeAttribute("data-on"); s.setAttribute("aria-hidden", "true"); }
-      });
-    }
-
-    function render() {
-      /* No room chosen yet: the section stays at home, whatever the word
-         is showing. Once chosen, the room is what the section follows. */
-      var atWork = room === "work";
-      pat.classList.toggle("is-work", atWork);
-      pat.classList.toggle("is-home", !atWork);
-
-      renderWord();
-
-      /* A tab fuses to the panel only once the room is set. While the
-         headline is still rolling, both tabs stay lowered and unselected. */
-      tabs.forEach(function (b) {
-        var isRoom = (b.getAttribute("data-room") === "work") === atWork;
-        var on = !!room && isRoom;
-        b.classList.toggle("is-on", on);
-        b.setAttribute("aria-selected", on ? "true" : "false");
-        if (isRoom) panel.setAttribute("aria-labelledby", b.id);
-      });
-
-      restartTimer();
-    }
-
-    /* --- the loop: the word rolls, the timer restarts, nothing else -- */
-    function roll() {
-      word = (word === "home") ? "work" : "home";
-      renderWord();
-      restartTimer();
-    }
-
-    function startAuto() {
-      if (reduce || stopped || auto || !inView || paused) return;
-      auto = setInterval(roll, PERIOD);
-      restartTimer();
-    }
-    function stopAuto() {
-      clearInterval(auto); auto = 0;
-      pat.classList.remove("is-cycling");
-    }
-    /* The pointer over the grid holds the room still; the bar keeps
-       its position rather than resetting. */
-    function pause() {
-      if (paused || stopped) return;
-      paused = true; pat.classList.add("is-paused");
-      clearInterval(auto); auto = 0;
-    }
-    function resume() {
-      if (!paused) return;
-      paused = false; pat.classList.remove("is-paused");
-      pat.classList.remove("is-cycling");
-      startAuto();
-    }
-
-    /* A room the visitor sets is the room it stays in, and the loop is over. */
-    function choose(work) {
-      room = work ? "work" : "home";
-      word = room;
-      stopped = true;
-      stopAuto();
-      pat.classList.add("is-stopped");
-      pat.classList.remove("is-paused");
-      render();
-    }
-
-    /* --- controls ----------------------------------------------- */
-    tabs.forEach(function (b) {
-      b.addEventListener("click", function () { choose(b.getAttribute("data-room") === "work"); });
-    });
-    /* The word settles on the room it is showing, never the opposite one. */
-    ctxBtn.addEventListener("click", function () { choose(word === "work"); });
-
-    /* The loop holds while the visitor is on the word itself, so it cannot
-       roll out from under a click. The countdown bar holds with it. The grid
-       no longer pauses anything: opening a card is not a reason to stop. */
-    ctxBtn.addEventListener("pointerenter", pause);
-    ctxBtn.addEventListener("pointerleave", resume);
-    ctxBtn.addEventListener("focus", pause);
-    ctxBtn.addEventListener("blur", resume);
-
-    /* Touch: the card itself is the control. Pointer devices use hover. */
-    var canHover = window.matchMedia("(hover: hover)").matches;
-    cards.forEach(function (c) {
-      c.addEventListener("click", function () {
-        if (canHover || reduce) return;
-        var on = !c.classList.contains("is-on");
-        cards.forEach(function (o) { o.classList.remove("is-on"); o.setAttribute("aria-pressed", "false"); });
-        c.classList.toggle("is-on", on);
-        c.setAttribute("aria-pressed", on ? "true" : "false");
-      });
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key !== "Escape") return;
-      cards.forEach(function (o) { o.classList.remove("is-on"); o.setAttribute("aria-pressed", "false"); });
-    });
-
-    render();
-
-    /* --- spotlight ----------------------------------------------
-       The glow eases toward the pointer at 0.12 per frame, so it glides
-       rather than snapping. With no pointer on the section it drifts on
-       the keyframed path instead. */
-    if (!reduce) {
-      pat.classList.add("is-drifting");
-
-      var tx = 50, ty = 40, cx = 50, cy = 40, spotRaf = 0;
-
-      function step() {
-        cx += (tx - cx) * 0.12;
-        cy += (ty - cy) * 0.12;
-        pat.style.setProperty("--mx", cx.toFixed(2) + "%");
-        pat.style.setProperty("--my", cy.toFixed(2) + "%");
-        if (Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) spotRaf = requestAnimationFrame(step);
-        else spotRaf = 0;
+    /* One place decides whether the loop runs. Held (pointer or keyboard
+       focus) freezes the underline where it is; off screen, hidden tab or
+       pinned clears it. */
+    function sync() {
+      var run  = !reduce && !pinned && inView && !document.hidden;
+      var held = hover || focus;
+      if (run && !held) {
+        if (!auto) {
+          pat.classList.remove("is-paused");
+          auto = setInterval(next, PERIOD);
+          restartTimer();
+        }
+        return;
       }
-      function nudge() { if (!spotRaf) spotRaf = requestAnimationFrame(step); }
-
-      pat.addEventListener("pointermove", function (e) {
-        if (e.pointerType === "touch") return;
-        var r = pat.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-        tx = ((e.clientX - r.left) / r.width) * 100;
-        ty = ((e.clientY - r.top) / r.height) * 100;
-        pat.classList.remove("is-drifting");
-        nudge();
-      }, { passive: true });
-
-      pat.addEventListener("pointerleave", function () {
-        pat.classList.add("is-drifting");
-        tx = 50; ty = 40;
-        nudge();
-      }, { passive: true });
+      if (auto) { clearInterval(auto); auto = 0; }
+      if (run && held) pat.classList.add("is-paused");
+      else pat.classList.remove("is-cycling", "is-paused");
     }
+
+    /* A pin is the visitor's; only the visitor lets it go. */
+    function pin(i) { pinned = true; render(wrap(i), true); sync(); }
+    function unpin() {
+      pinned = false; render(cur, false); sync();
+      if (live) {                          /* one polite line on resume */
+        /* while pointer or keyboard focus still holds the roll, it has not
+           started yet, so the message says so */
+        var msg = (hover || focus) ? "Rolling will resume." : "Rolling resumed.";
+        live.setAttribute("aria-live", "polite");
+        setTimeout(function () { live.textContent = msg; }, 60);
+      }
+    }
+
+    prev.addEventListener("click", function () { pin(cur - 1); });
+    nxt.addEventListener("click", function () { pin(cur + 1); });
+    btn.addEventListener("click", function () { if (pinned) unpin(); else pin(cur); });
+    /* Nothing rolls under reduced motion: the hint keeps only its first
+       sentence. */
+    if (reduce && hint) hint.textContent = "Holds this pattern.";
+
+    stage.addEventListener("pointerenter", function (e) {
+      if (e.pointerType === "touch") return;
+      hover = true; sync();
+    });
+    stage.addEventListener("pointerleave", function (e) {
+      if (e.pointerType === "touch") return;
+      hover = false; sync();
+    });
+    /* Keyboard focus holds the loop; a mouse click on a button does not. */
+    pat.addEventListener("focusin", function (e) {
+      var fv = false;
+      try { fv = e.target.matches(":focus-visible"); } catch (err) { fv = true; }
+      focus = fv; sync();
+    });
+    pat.addEventListener("focusout", function (e) {
+      if (!pat.contains(e.relatedTarget)) { focus = false; sync(); }
+    });
+    document.addEventListener("visibilitychange", function () { sync(); drift(); });
+
+    cur = -1; render(0, false);
+    /* the web font changes the word's width once it arrives */
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitSlot(true); });
+
+    /* --- the pointer light in the cards ---------------------------
+       Mouse and pen: the light follows the pointer inside the card it is
+       on, easing 0.14 per frame, fading in on enter and out on leave (the
+       CSS transitions carry the fade; the light parks where it was). One
+       shared loop runs only while a card is hovered or still settling.
+       Touch: a tap reveals the whole still; a second tap, or a tap on the
+       other card, puts it back. */
+    var lights = cards.map(function (c) { return { el: c, tx: 50, ty: 50, x: 50, y: 50, on: false }; });
+    var lraf = 0;
+    function lstep() {
+      lraf = 0;
+      var busy = false;
+      lights.forEach(function (l) {
+        l.x += (l.tx - l.x) * 0.14; l.y += (l.ty - l.y) * 0.14;
+        var settling = Math.abs(l.tx - l.x) > 0.05 || Math.abs(l.ty - l.y) > 0.05;
+        l.el.style.setProperty("--x", l.x.toFixed(2) + "%");
+        l.el.style.setProperty("--y", l.y.toFixed(2) + "%");
+        if (l.on || settling) busy = true;
+      });
+      if (busy) lraf = requestAnimationFrame(lstep);
+    }
+    function lwake() { if (!lraf) lraf = requestAnimationFrame(lstep); }
+
+    var touchOnly = window.matchMedia("(hover: none)").matches;
+    lights.forEach(function (l) {
+      var c = l.el;
+      function aim(e) {
+        var r = c.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        l.tx = ((e.clientX - r.left) / r.width) * 100;
+        l.ty = ((e.clientY - r.top) / r.height) * 100;
+      }
+      if (!reduce) {
+        c.addEventListener("pointerenter", function (e) {
+          if (e.pointerType === "touch") return;
+          aim(e); l.x = l.tx; l.y = l.ty;          /* the light starts under the pointer */
+          l.on = true; c.classList.add("is-lit"); lwake();
+        });
+        c.addEventListener("pointermove", function (e) {
+          if (e.pointerType === "touch") return;
+          aim(e); lwake();
+        }, { passive: true });
+        c.addEventListener("pointerleave", function (e) {
+          if (e.pointerType === "touch") return;
+          l.on = false; c.classList.remove("is-lit"); lwake();
+        });
+      }
+      c.addEventListener("click", function (e) {
+        if (!(touchOnly || e.pointerType === "touch")) return;
+        var full = !c.classList.contains("is-full");
+        cards.forEach(function (o) { o.classList.remove("is-full"); });
+        c.classList.toggle("is-full", full);
+      });
+    });
+
+    /* --- the section glow: a slow idle drift, nothing else ---------- */
+    var raf = 0, sw = 1, sh = 1;
+    function measure() { var r = pat.getBoundingClientRect(); sw = r.width || 1; sh = r.height || 1; }
+    function place(cx, cy) {
+      if (spot) spot.style.transform = "translate3d(" + (cx / 100 * sw).toFixed(1) + "px," +
+                                       (cy / 100 * sh).toFixed(1) + "px,0)";
+    }
+    function frame(now) {
+      raf = 0;
+      var a = (now % 18000) / 18000 * Math.PI * 2;
+      place(50 - 25 * Math.cos(a), 45 - 15 * Math.cos(a));
+      if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+    }
+    function drift() {
+      if (reduce) return;
+      if (onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame);
+    }
+
+    measure();
+    if (reduce) place(50, 40);             /* static: the glow parked */
+    addEventListener("resize", function () { measure(); if (reduce) place(50, 40); }, { passive: true });
 
     /* --- visibility ---------------------------------------------- */
-    if (!reduce && "IntersectionObserver" in window) {
+    if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (e) {
-        inView = e[0].isIntersecting;
-        if (inView) startAuto(); else stopAuto();
-      }, { threshold: 0.25 }).observe(pat);
-    } else if (!reduce) {
-      inView = true; startAuto();
+        if (!e[0].isIntersecting) return;
+        near = true; loadNear();
+      }, { rootMargin: "800px 0px" }).observe(pat);
+      var seen = false;
+      new IntersectionObserver(function (e) {
+        onScreen = e[0].isIntersecting;
+        inView = e[0].intersectionRatio >= 0.25;
+        if (inView && !seen) { seen = true; setTimeout(loadAll, 1200); }
+        measure(); sync(); drift();
+      }, { threshold: [0, 0.25] }).observe(pat);
+    } else {
+      near = true; loadNear(); loadAll();
+      onScreen = inView = true; sync(); drift();
     }
 
     /* exposed for verification */
     window.__patterns = {
-      room:     function () { return room; },
-      word:     function () { return word; },
-      stopped:  function () { return stopped; },
-      paused:   function () { return paused; },
-      cycling:  function () { return !!auto; },
-      interval: function () { return auto; },
-      period:   PERIOD,
-      choose:   choose,
-      flip:     roll
+      current: function () { return cur; },
+      pinned:  function () { return pinned; },
+      cycling: function () { return !!auto; },
+      held:    function () { return hover || focus; },
+      lightLoop: function () { return !!lraf; },
+      period:  PERIOD,
+      pin:     pin,
+      unpin:   unpin,
+      next:    next
     };
   })();
 
@@ -653,14 +832,29 @@
     });
   })();
 
-  /* --- Constellation --- */
+  /* --- Constellation ---
+     The pointer is a gold node that joins the network. At rest (and on touch,
+     unless a finger is down) a ghost pointer wanders and links nodes, so the
+     behaviour is shown before anyone touches it. */
   var canvas = document.getElementById("net");
   if (canvas && canvas.getContext) {
     var host = canvas.closest(".bleed");
     var ctx = canvas.getContext("2d");
     canvas.style.pointerEvents = "none";
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var W = 0, H = 0, nodes = [], raf = null, pointer = { x: -999, y: -999 }, visible = true;
+    var W = 0, H = 0, nodes = [], visible = true;
+    var LINK = 160, LINK2 = LINK * LINK, REACH = 240, REACH2 = REACH * REACH, PUSH = 120, PUSH2 = PUSH * PUSH;
+    /* real pointer target, drawn (trailing) position, and intensity 0.6 ghost .. 1 real */
+    var real = { on: false, x: 0, y: 0 }, cur = { x: 0, y: 0 }, amp = 0.6;
+    var ghostT0 = performance.now(), ghostPhase = 0, ghostBlend = 1, leftAt = 0;
+    var halo = document.createElement("canvas");
+    (function () {
+      var R = 28; halo.width = halo.height = R * 2 * dpr;
+      var h = halo.getContext("2d"); h.scale(dpr, dpr);
+      var g = h.createRadialGradient(R, R, 0, R, R, R);
+      g.addColorStop(0, "rgba(232,187,104,.18)"); g.addColorStop(1, "rgba(232,187,104,0)");
+      h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
+    })();
     function size() {
       var r = host.getBoundingClientRect();
       W = r.width; H = r.height;
@@ -673,49 +867,103 @@
         nodes.push({ x: Math.random() * W, y: Math.random() * H,
           vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 });
       }
+      cur.x = W * 0.35; cur.y = H * 0.55;
     }
-    var D = 160;
-    function frame(move) {
+    function ghostAt(t) {
+      var k = (t - ghostT0) + ghostPhase;
+      return { x: W * (0.5 + 0.32 * Math.sin(k * 0.00021)), y: H * (0.5 + 0.28 * Math.sin(k * 0.00033 + 1.3)) };
+    }
+    function ease(x) { return 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3); }
+    function draw(move, px, py, a) {
       ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < nodes.length; i++) {
-        var a = nodes[i];
+      var i, j, n = nodes.length;
+      for (i = 0; i < n; i++) {
+        var p = nodes[i];
         if (move) {
-          a.x += a.vx; a.y += a.vy;
-          if (a.x < 0 || a.x > W) a.vx *= -1;
-          if (a.y < 0 || a.y > H) a.vy *= -1;
-          var dxp = a.x - pointer.x, dyp = a.y - pointer.y, dp = Math.hypot(dxp, dyp);
-          if (dp < 200) { a.x += dxp / dp * 0.6; a.y += dyp / dp * 0.6; }
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+          var ex = p.x - px, ey = p.y - py, e2 = ex * ex + ey * ey;
+          if (e2 < PUSH2 && e2 > 1) { var e = Math.sqrt(e2); p.x += ex / e * 0.4; p.y += ey / e * 0.4; }
         }
-        for (var j = i + 1; j < nodes.length; j++) {
-          var b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d < D) {
-            ctx.strokeStyle = "rgba(124,77,224," + (0.5 * (1 - d / D)).toFixed(3) + ")";
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      for (i = 0; i < n; i++) {
+        var A = nodes[i];
+        for (j = i + 1; j < n; j++) {
+          var B = nodes[j], dx = A.x - B.x, dy = A.y - B.y, d2 = dx * dx + dy * dy;
+          if (d2 < LINK2) {
+            ctx.strokeStyle = "rgba(124,77,224," + (0.5 * (1 - Math.sqrt(d2) / LINK)).toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
           }
         }
-        var dpx = Math.hypot(a.x - pointer.x, a.y - pointer.y);
-        if (dpx < 220) {
-          ctx.strokeStyle = "rgba(169,133,230," + (0.55 * (1 - dpx / 220)).toFixed(3) + ")";
-          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(pointer.x, pointer.y); ctx.stroke();
-        }
-        ctx.fillStyle = "rgba(199,178,236,0.85)";
-        ctx.beginPath(); ctx.arc(a.x, a.y, 2, 0, 6.2832); ctx.fill();
       }
+      ctx.lineWidth = 1.25;
+      for (i = 0; i < n; i++) {
+        var q = nodes[i], qx = q.x - px, qy = q.y - py, q2 = qx * qx + qy * qy, k = 0;
+        if (q2 < REACH2) {
+          k = 1 - Math.sqrt(q2) / REACH;
+          ctx.strokeStyle = "rgba(169,133,230," + (0.8 * k * a).toFixed(3) + ")";
+          ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(px, py); ctx.stroke();
+        }
+        var kk = k * a;
+        ctx.fillStyle = "rgba(225,212,248," + (0.85 + 0.15 * kk).toFixed(3) + ")";
+        ctx.beginPath(); ctx.arc(q.x, q.y, 2 + 1.5 * kk, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalAlpha = a;
+      ctx.drawImage(halo, px - 28, py - 28, 56, 56);
+      ctx.fillStyle = "#E8BB68";
+      ctx.beginPath(); ctx.arc(px, py, 3.5, 0, 6.2832); ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    function loop() { if (visible) frame(true); raf = requestAnimationFrame(loop); }
+    var realSince = 0;
+    function loop(t) {
+      if (visible && !document.hidden) {
+        var g = ghostAt(t);
+        if (real.on) {
+          var h = ease((t - realSince) / 450);
+          ghostBlend = 1 - h; amp = 0.6 + 0.4 * h;
+        } else if (leftAt) {
+          var r = ease((t - leftAt - 1500) / 800);
+          ghostBlend = r; amp = 1 - 0.4 * r;
+        } else { ghostBlend = 1; amp = 0.6; }
+        var tx = real.on ? real.x : cur.x, ty = real.on ? real.y : cur.y;
+        tx = tx + (g.x - tx) * ghostBlend; ty = ty + (g.y - ty) * ghostBlend;
+        cur.x += (tx - cur.x) * 0.18; cur.y += (ty - cur.y) * 0.18;
+        draw(true, cur.x, cur.y, amp);
+      }
+      requestAnimationFrame(loop);
+    }
     size();
-    if (reduce) { frame(false); }
+    if (reduce) { draw(false, W * 0.35, H * 0.55, 1); }
     else {
-      host.addEventListener("mousemove", function (e) {
-        var r = host.getBoundingClientRect(); pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top;
-      });
-      host.addEventListener("mouseleave", function () { pointer.x = -999; pointer.y = -999; });
+      var touch = false;
+      function setReal(e) {
+        var r = host.getBoundingClientRect();
+        real.x = e.clientX - r.left; real.y = e.clientY - r.top;
+        if (!real.on) { real.on = true; realSince = performance.now(); leftAt = 0; }
+      }
+      function release() {
+        if (!real.on) return;
+        real.on = false; leftAt = performance.now();
+        /* the ghost resumes from where the pointer left */
+        ghostT0 = leftAt + 1500;
+        ghostPhase = 0;
+        cur.x = real.x; cur.y = real.y;
+      }
+      host.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { touch = true; setReal(e); } }, { passive: true });
+      host.addEventListener("pointermove", function (e) {
+        if (e.pointerType === "mouse") setReal(e);
+        else if (touch) setReal(e);
+      }, { passive: true });
+      host.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { touch = false; release(); } }, { passive: true });
+      host.addEventListener("pointercancel", function () { touch = false; release(); }, { passive: true });
+      host.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") release(); }, { passive: true });
       var resT; window.addEventListener("resize", function () { clearTimeout(resT); resT = setTimeout(size, 200); });
       if ("IntersectionObserver" in window) {
         new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.05 }).observe(host);
       }
-      loop();
+      requestAnimationFrame(loop);
     }
   }
 })();
@@ -754,14 +1002,14 @@
   if (!lanes.length) return;
 
   var small = window.matchMedia("(max-width: 700px)").matches;
-  var TICK  = small ? 1000 : 1100;   /* ms between ignitions on a lane */
-  var SPELL = 2200;                  /* ms a logo stays lit (in 520, hold, out 640) */
+  var TICK  = small ? 2400 : 2600;   /* ms between ignitions on a lane */
+  var SPELL = 4200;                  /* ms a logo stays lit (in 900, hold, out 1100) */
   /* Small screens hold two or three logos in view at once, so the neighbour
      rule starves a narrow window: the candidate band opens to the inner 92%
      and the tick runs a little quicker. Desktop is unchanged. */
   var INNER = small ? 0.92 : 0.76;   /* candidates must sit inside this much of the viewport */
   var HISTORY = 3;                   /* never re-light one of the last 3 */
-  var FADE  = 640;                   /* ms a logo takes to fall back to rest */
+  var FADE  = 1100;                  /* ms a logo takes to fall back to rest */
 
   lanes.forEach(function (lane, laneIndex) {
     var vp = lane.querySelector(".cred__viewport");
