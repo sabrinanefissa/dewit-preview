@@ -26,18 +26,9 @@
   var nav = document.querySelector(".nav");
   var hero = document.querySelector(".hero");
   var heroRatio = 1; // last intersectionRatio reported for the hero
-  var lastY = window.scrollY;
   function syncNav() {
     if (!nav) return;
-    var y = window.scrollY;
-    nav.classList.toggle("is-solid", heroRatio < 0.12 || y > 40);
-    // Get out of the way: show over the hero and at the very top, hide while
-    // scrolling down into content, slide back when scrolling up — so the fixed
-    // chrome never sits over the page's content and text.
-    if (y < 80) { nav.classList.remove("is-hidden"); }
-    else if (y > lastY + 4) { nav.classList.add("is-hidden"); }
-    else if (y < lastY - 4) { nav.classList.remove("is-hidden"); }
-    lastY = y;
+    nav.classList.toggle("is-solid", heroRatio < 0.12 || window.scrollY > 40);
   }
   if (nav && hero && "IntersectionObserver" in window) {
     new IntersectionObserver(function (e) {
