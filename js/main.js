@@ -1755,244 +1755,46 @@
   }
 })();
 
-/* ===== 3. The turn: the page's one pin =====
-   Five pairs, ONE on screen at a time. Per pair, over its own segment of
-   the scrollable span (s = 0..1):
-     0   – .12  the photo panel's lights come up, the from-phrase rises
-     .12 – .40  the strike draws left to right with a travelling ripple
-     .40 – .62  the to-word resolves out of blur
-     .62 – .86  held beat — nothing changes
-     .86 – 1    the pair lifts away and the next one takes the cell
-   The strike is the same line vocabulary as the hero voice line: one SVG
-   path whose `d` is rewritten per frame while the ripple is alive, then set
-   back to its flat authored `d` and left alone. A struck pair is never
-   replayed while it is on screen; it re-arms only when it comes back.
-   Phones and reduced motion drop the pin entirely. */
+/* ===== 3. What the room walks out with: five words, five lights, once =====
+   No pin. When 40% of the section is in view the five words arrive 380ms
+   apart, each rising out of blur with a pool of light behind it; when the
+   fifth has landed (380ms × 4 + the 600ms rise) the house lights come up
+   on the still. Fires once and never replays. Reduced motion, or no
+   IntersectionObserver: everything shown at once, lit. */
 (function () {
   "use strict";
-  var sec = document.querySelector(".spk-turn");
+  var sec = document.querySelector(".spk-out");
   if (!sec) return;
-  var track = document.getElementById("spkTurnTrack");
-  var stage = document.getElementById("spkTurnStage");
-  var list  = document.getElementById("spkTurnList");
-  var pairs = [].slice.call(sec.querySelectorAll(".spk-turn__pair"));
-  if (!track || !stage || !list || !pairs.length) return;
+  var words = [].slice.call(sec.querySelectorAll(".spk-out__word"));
+  var still = sec.querySelector(".spk-out__media .spk-lights");
+  if (!words.length) return;
 
-  var rmq   = window.matchMedia("(prefers-reduced-motion: reduce)");
-  var phone = window.matchMedia("(max-width: 640px)");
-  var N = pairs.length;
-  sec.style.setProperty("--turn-n", String(N));
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var STEP = 380, RISE = 600;
 
-  var PTS = 24, LAM = 22, SIG = 18, DECAY = 220, DRAW = 700;
-  function amp() {
-    var w = window.innerWidth;
-    return w >= 1200 ? 3.5 : (w >= 641 ? 3.0 : 2.5);
+  function showAll() {
+    words.forEach(function (w) { w.classList.add("is-on"); });
+    if (still) still.classList.add("is-lit");
   }
+  if (reduce || !("IntersectionObserver" in window)) { showAll(); return; }
 
-  var recs = pairs.map(function (el) {
-    var path = el.querySelector(".spk-turn__strike path");
-    return {
-      el: el,
-      img: el.querySelector(".spk-lights"),
-      path: path,
-      flat: path ? path.getAttribute("d") : "",
-      state: "next",   /* next | drawing | decay | struck */
-      t0: 0
-    };
-  });
-
-  /* Flat, preallocated geometry: nothing is allocated per frame except the
-     one `d` string the SVG attribute needs. */
-  var XS = new Float64Array(PTS), YS = new Float64Array(PTS);
-  for (var q = 0; q < PTS; q++) XS[q] = (q / (PTS - 1)) * 100;
-
-  function buildD(head, a) {
-    var i;
-    for (i = 0; i < PTS; i++) {
-      var dx = XS[i] - head, e = dx / SIG;
-      YS[i] = 6 + a * Math.sin(2 * Math.PI * dx / LAM) * Math.exp(-e * e);
-    }
-    var d = "M" + XS[0].toFixed(2) + " " + YS[0].toFixed(3);
-    for (i = 0; i < PTS - 1; i++) {
-      var i0 = i > 0 ? i - 1 : 0, i2 = i + 1, i3 = (i + 2 < PTS) ? i + 2 : PTS - 1;
-      d += "C" + (XS[i] + (XS[i2] - XS[i0]) / 6).toFixed(2) + " " +
-                 (YS[i] + (YS[i2] - YS[i0]) / 6).toFixed(3) + " " +
-                 (XS[i2] - (XS[i3] - XS[i]) / 6).toFixed(2) + " " +
-                 (YS[i2] - (YS[i3] - YS[i]) / 6).toFixed(3) + " " +
-                 XS[i2].toFixed(2) + " " + YS[i2].toFixed(3);
-    }
-    return d;
-  }
-
-  function arm(rec) {
-    rec.state = "next"; rec.t0 = 0;
-    if (rec.path) { rec.path.style.strokeDashoffset = "1"; rec.path.setAttribute("d", rec.flat); }
-  }
-  function flatten(rec) {
-    rec.state = "struck";
-    if (rec.path) rec.path.setAttribute("d", rec.flat);
-  }
-  function reset(rec) {
-    rec.el.classList.remove("is-live", "is-resolved");
-    rec.el.style.removeProperty("--in");
-    rec.el.style.removeProperty("--out");
-    if (rec.img) rec.img.classList.remove("is-lit");
-    arm(rec);
-  }
-  function resolveAll() {
-    recs.forEach(function (rec) {
-      rec.el.classList.remove("is-live");
-      rec.el.classList.add("is-resolved");
-      rec.el.style.removeProperty("--in");
-      rec.el.style.removeProperty("--out");
-      if (rec.img) rec.img.classList.add("is-lit");
-      if (rec.path) { rec.path.style.strokeDashoffset = "0"; rec.path.setAttribute("d", rec.flat); }
-      rec.state = "struck";
+  var fired = false;
+  function run() {
+    if (fired) return;
+    fired = true;
+    words.forEach(function (w, i) {
+      setTimeout(function () { w.classList.add("is-on"); }, i * STEP);
     });
-  }
-
-  /* ---- no pin: one observer per pair, one way, time-based strike ---- */
-  var io = null, phoneRafs = [];
-  function stopPhone() {
-    if (io) { io.disconnect(); io = null; }
-    phoneRafs.forEach(function (h) { cancelAnimationFrame(h); });
-    phoneRafs = [];
-  }
-  function phoneStrike(rec) {
-    if (!rec.path) return;
-    var A = amp(), t0 = 0;
-    rec.path.style.strokeDashoffset = "1";
-    function tick(now) {
-      if (!t0) t0 = now;
-      var dt = now - t0;
-      if (dt < DRAW) {
-        var k = 1 - Math.pow(1 - dt / DRAW, 3);
-        rec.path.style.strokeDashoffset = (1 - k).toFixed(4);
-        rec.path.setAttribute("d", buildD(k * 100, A));
-      } else {
-        rec.path.style.strokeDashoffset = "0";
-        var a = A * Math.exp(-(dt - DRAW) / DECAY);
-        if (a < 0.05) { flatten(rec); return; }
-        rec.path.setAttribute("d", buildD(100, a));
-      }
-      phoneRafs.push(requestAnimationFrame(tick));
-    }
-    phoneRafs.push(requestAnimationFrame(tick));
-  }
-  function startPhone() {
-    if (!("IntersectionObserver" in window)) { resolveAll(); return; }
-    recs.forEach(function (rec) {
-      rec.el.classList.remove("is-live", "is-resolved");
-      rec.el.style.removeProperty("--in"); rec.el.style.removeProperty("--out");
-      if (rec.img) rec.img.classList.remove("is-lit");
-      arm(rec);
-    });
-    io = new IntersectionObserver(function (es, obs) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        var rec = recs[pairs.indexOf(e.target)];
-        obs.unobserve(e.target);
-        if (!rec) return;
-        rec.el.classList.add("is-resolved");
-        if (rec.img) rec.img.classList.add("is-lit");
-        phoneStrike(rec);
-      });
-    }, { threshold: 0.55 });
-    pairs.forEach(function (p) { io.observe(p); });
-  }
-
-  /* ---- pinned ---- */
-  var raf = 0, onScreen = false, lastIdx = -1;
-  function measure(now) {
-    var r = track.getBoundingClientRect();
-    var span = track.offsetHeight - window.innerHeight;
-    var p = span > 0 ? Math.min(Math.max(-r.top / span, 0), 1) : 0;
-    var idx = Math.min(N - 1, Math.floor(p * N));
-    var s = Math.min(1, Math.max(0, p * N - idx));
-
-    if (idx !== lastIdx) {
-      for (var n = 0; n < N; n++) if (n !== idx) reset(recs[n]);
-      recs[idx].el.classList.add("is-live");
-      if (lastIdx !== -1) arm(recs[idx]);     /* re-arm only on the entry edge */
-      lastIdx = idx;
-    }
-
-    var rec = recs[idx];
-
-    /* 0 – .12: the lights and the from-phrase */
-    rec.el.style.setProperty("--in", Math.min(1, s / 0.12).toFixed(3));
-    if (rec.img) rec.img.classList.toggle("is-lit", s > 0.004);
-
-    /* .12 – .40: the strike, scroll-linked, reversible while it is alive */
-    var dp = Math.min(1, Math.max(0, (s - 0.12) / 0.28));
-    if (rec.path) rec.path.style.strokeDashoffset = (1 - dp).toFixed(4);
-    if (rec.state !== "struck" && rec.path) {
-      if (dp <= 0) {
-        rec.state = "next";
-      } else if (dp < 1) {
-        rec.state = "drawing"; rec.t0 = 0;
-        rec.path.setAttribute("d", buildD(dp * 100, amp()));
-      } else {
-        if (rec.state !== "decay") { rec.state = "decay"; rec.t0 = now; }
-        var a = amp() * Math.exp(-(now - rec.t0) / DECAY);
-        if (a < 0.05) flatten(rec);
-        else rec.path.setAttribute("d", buildD(100, a));
-      }
-    }
-
-    /* .40 – .62: the to-word resolves. .62 – .86: the held beat. */
-    rec.el.classList.toggle("is-resolved", s >= 0.40);
-
-    /* .86 – 1: the pair lifts away */
-    rec.el.style.setProperty("--out", (s <= 0.86 ? 0 : Math.min(1, (s - 0.86) / 0.14)).toFixed(3));
-  }
-  function frame(now) {
-    raf = 0;
-    if (mode !== "pin") return;
-    measure(now);
-    if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
-  }
-  function wake() {
-    if (mode === "pin" && onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame);
-  }
-  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e) {
-      onScreen = e[0].isIntersecting;
-      if (onScreen) wake(); else sleep();
-    }, { threshold: 0.05 }).observe(sec);
-  } else { onScreen = true; }
-  document.addEventListener("visibilitychange", function () {
-    if (document.hidden) sleep(); else wake();
-  });
-
-  /* Three modes: "static" (reduced motion — every pair resolved, no
-     handlers), "phone" (no pin, one observer per pair) and "pin". Either
-     media query can flip mid-visit, so the mode is torn down and rebuilt
-     rather than decided once at load. */
-  var mode = null;
-  function setMode() {
-    var want = rmq.matches ? "static" : (phone.matches ? "phone" : "pin");
-    if (want === mode) return;
-    if (mode === "phone") stopPhone();
-    if (mode === "pin") sleep();
-    mode = want;
-    lastIdx = -1;
-    if (want === "static") { resolveAll(); }
-    else if (want === "phone") { startPhone(); }
-    else {
-      recs.forEach(function (rec) { reset(rec); });
-      measure(performance.now());
-      wake();
+    if (still) {
+      setTimeout(function () { still.classList.add("is-lit"); }, (words.length - 1) * STEP + RISE);
     }
   }
-
-  setMode();
-  window.addEventListener("resize", function () { setMode(); wake(); }, { passive: true });
-  if (phone.addEventListener) phone.addEventListener("change", setMode);
-  if (rmq.addEventListener) rmq.addEventListener("change", setMode);
-  else if (rmq.addListener) rmq.addListener(setMode);
+  var io = new IntersectionObserver(function (e) {
+    if (!e[0].isIntersecting) return;
+    io.disconnect();
+    run();
+  }, { threshold: 0.4 });
+  io.observe(sec);
 })();
 
 /* ===== 4. The voice line: the reel's own audio, drawn as one open line =====
@@ -2544,7 +2346,7 @@
   else if (rmq.addListener) rmq.addListener(setMode);
 })();
 
-/* ===== 6. Bio: the portrait's lights, and one rolling credential ===== */
+/* ===== 6. Bio: the portrait's lights ===== */
 (function () {
   "use strict";
   var bio = document.querySelector(".spk-bio");
@@ -2564,88 +2366,6 @@
     }
   }
 
-  /* --- one credential at a time ---
-     4 s each. The six are always in the DOM as the sr-only list, which is
-     what a screen reader reads; the rolling line is aria-hidden. Hover and
-     keyboard focus hold the roll. An arrow PINS the line and nothing ever
-     puts it back on a timer (WCAG 2.2.2), so the live region only speaks on
-     a visitor's change. */
-  var wrap  = document.getElementById("spkCreds");
-  var stage = document.getElementById("spkCredsStage");
-  var prev  = document.getElementById("spkCredsPrev");
-  var nxt   = document.getElementById("spkCredsNext");
-  var count = document.getElementById("spkCredsCount");
-  var live  = document.getElementById("spkCredsLive");
-  if (!wrap || !stage || !prev || !nxt || !count) return;
-
-  var items = [].slice.call(stage.children);
-  var N = items.length;
-  if (!N) return;
-
-  if (reduce) { wrap.classList.add("is-static"); return; }
-
-  var PERIOD = 4000;
-  var cur = 0, pinned = false, hover = false, focus = false;
-  var inView = false, auto = 0, outT = 0;
-
-  function pad(i) { return (i < 10 ? "0" : "") + i; }
-  function wrapi(i) { return ((i % N) + N) % N; }
-
-  function render(i, byUser) {
-    cur = wrapi(i);
-    items.forEach(function (s, k) {
-      var was = s.classList.contains("is-on");
-      s.classList.toggle("is-on", k === cur);
-      s.classList.toggle("is-out", was && k !== cur);
-    });
-    clearTimeout(outT);
-    outT = setTimeout(function () {
-      items.forEach(function (s) { s.classList.remove("is-out"); });
-    }, 620);
-    count.textContent = pad(cur + 1) + " / " + pad(N);
-    if (live) {
-      if (byUser) {
-        live.setAttribute("aria-live", "polite");
-        var text = items[cur].textContent;
-        setTimeout(function () { live.textContent = text; }, 60);
-      } else {
-        live.setAttribute("aria-live", "off");
-        live.textContent = "";
-      }
-    }
-  }
-
-  function sync() {
-    var run = !pinned && inView && !document.hidden && !hover && !focus;
-    if (run) { if (!auto) auto = setInterval(function () { render(cur + 1, false); }, PERIOD); return; }
-    if (auto) { clearInterval(auto); auto = 0; }
-  }
-
-  /* an arrow pins the line for good — nothing releases it on a timer */
-  function pin(i) { pinned = true; render(i, true); sync(); }
-  prev.addEventListener("click", function () { pin(cur - 1); });
-  nxt.addEventListener("click", function () { pin(cur + 1); });
-
-  wrap.addEventListener("pointerenter", function (e) {
-    if (e.pointerType === "touch") return;
-    hover = true; sync();
-  });
-  wrap.addEventListener("pointerleave", function (e) {
-    if (e.pointerType === "touch") return;
-    hover = false; sync();
-  });
-  wrap.addEventListener("focusin", function () { focus = true; sync(); });
-  wrap.addEventListener("focusout", function (e) {
-    if (!wrap.contains(e.relatedTarget)) { focus = false; sync(); }
-  });
-  document.addEventListener("visibilitychange", sync);
-
-  render(0, false);
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e) {
-      inView = e[0].intersectionRatio >= 0.25; sync();
-    }, { threshold: [0, 0.25] }).observe(wrap);
-  } else { inView = true; sync(); }
 })();
 
 /* ===== 7. A. What he talks about: one line at a time =====

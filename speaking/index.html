@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="../assets/img/reel-poster-1280.webp" imagesrcset="../assets/img/reel-poster-860.webp 860w, ../assets/img/reel-poster-1280.webp 1280w, ../assets/img/reel-poster-1920.webp 1920w" imagesizes="100vw" fetchpriority="high">
-<link rel="stylesheet" href="../css/main.css?v=20260922f">
+<link rel="stylesheet" href="../css/main.css?v=20260924a">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 </head>
 <body>
@@ -373,70 +373,25 @@
   <!-- ==============================================================
        4. THE TURN - the one pin on this page
        ============================================================== -->
-  <!-- Five pairs, one on screen at a time. Each pair carries its own photo
-       as a centred panel that lights as the pair resolves, and its own strike
-       SVG: authored straight, so with no script (or reduced motion) every
-       pair is simply resolved with a plain rule through the from-word. -->
-  <section class="spk-turn" aria-labelledby="spkTurnH">
-    <div class="spk-turn__track" id="spkTurnTrack">
-      <div class="spk-turn__stage" id="spkTurnStage">
-        <div class="spk-turn__glow" aria-hidden="true"></div>
-
-        <h2 class="spk-turn__h" id="spkTurnH">What the room walks out with.</h2>
-
-        <ol class="spk-turn__list" id="spkTurnList">
-          <li class="spk-turn__pair">
-            <div class="spk-turn__media media media--plum" aria-hidden="true">
-              <img class="spk-lights" src="../assets/img/card-trust-work-1120.webp"
-                   srcset="../assets/img/card-trust-work-560.webp 560w, ../assets/img/card-trust-work-1120.webp 1120w"
-                   sizes="(max-width: 640px) 94vw, min(52vw, 720px)" alt="" decoding="async">
-            </div>
-            <div class="spk-turn__words">
-              <span class="spk-turn__from">Disconnection<svg class="spk-turn__strike" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 6 H100"/></svg></span><span class="spk-sr"> becomes </span><span class="spk-turn__to">Trust</span>
-            </div>
-          </li>
-          <li class="spk-turn__pair">
-            <div class="spk-turn__media media media--plum" aria-hidden="true">
-              <img class="spk-lights" src="../assets/img/card-avoidance-work-1120.webp"
-                   srcset="../assets/img/card-avoidance-work-560.webp 560w, ../assets/img/card-avoidance-work-1120.webp 1120w"
-                   sizes="(max-width: 640px) 94vw, min(52vw, 720px)" alt="" loading="lazy" decoding="async">
-            </div>
-            <div class="spk-turn__words">
-              <span class="spk-turn__from">Avoidance<svg class="spk-turn__strike" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 6 H100"/></svg></span><span class="spk-sr"> becomes </span><span class="spk-turn__to">Honest conversation</span>
-            </div>
-          </li>
-          <li class="spk-turn__pair">
-            <div class="spk-turn__media media media--plum" aria-hidden="true">
-              <img class="spk-lights" src="../assets/img/card-fear-work-1120.webp"
-                   srcset="../assets/img/card-fear-work-560.webp 560w, ../assets/img/card-fear-work-1120.webp 1120w"
-                   sizes="(max-width: 640px) 94vw, min(52vw, 720px)" alt="" loading="lazy" decoding="async">
-            </div>
-            <div class="spk-turn__words">
-              <span class="spk-turn__from">Assumption<svg class="spk-turn__strike" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 6 H100"/></svg></span><span class="spk-sr"> becomes </span><span class="spk-turn__to">Curiosity</span>
-            </div>
-          </li>
-          <li class="spk-turn__pair">
-            <div class="spk-turn__media media media--plum" aria-hidden="true">
-              <img class="spk-lights" src="../assets/img/card-responsibility-work-1120.webp"
-                   srcset="../assets/img/card-responsibility-work-560.webp 560w, ../assets/img/card-responsibility-work-1120.webp 1120w"
-                   sizes="(max-width: 640px) 94vw, min(52vw, 720px)" alt="" loading="lazy" decoding="async">
-            </div>
-            <div class="spk-turn__words">
-              <span class="spk-turn__from">Carrying it alone<svg class="spk-turn__strike" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 6 H100"/></svg></span><span class="spk-sr"> becomes </span><span class="spk-turn__to">Shared responsibility</span>
-            </div>
-          </li>
-          <li class="spk-turn__pair">
-            <div class="spk-turn__media media media--plum" aria-hidden="true">
-              <img class="spk-lights" src="../assets/img/card-repair-work-1120.webp"
-                   srcset="../assets/img/card-repair-work-560.webp 560w, ../assets/img/card-repair-work-1120.webp 1120w"
-                   sizes="(max-width: 640px) 94vw, min(52vw, 720px)" alt="" loading="lazy" decoding="async">
-            </div>
-            <div class="spk-turn__words">
-              <span class="spk-turn__from">Silence<svg class="spk-turn__strike" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M0 6 H100"/></svg></span><span class="spk-sr"> becomes </span><span class="spk-turn__to">Openness</span>
-            </div>
-          </li>
-        </ol>
-      </div>
+  <!-- What the room walks out with: no pin. A dark room and five words that
+       arrive as five lights, once, when the section comes into view; the
+       fifth brings the house lights up on the photo. With no script, or
+       under reduced motion, the five simply stand there, lit. -->
+  <section class="spk-out" id="walkout" aria-labelledby="spkOutH">
+    <div class="media media--plum spk-out__media" aria-hidden="true">
+      <img class="spk-lights" src="../assets/img/step-05-1280.webp"
+           srcset="../assets/img/step-05-860.webp 860w, ../assets/img/step-05-1280.webp 1280w, ../assets/img/step-05-1920.webp 1920w"
+           sizes="100vw" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="spk-out__inner">
+      <h2 class="spk-out__h" id="spkOutH">What the room walks out with.</h2>
+      <ul class="spk-out__list">
+        <li class="spk-out__word spk-out__word--front" style="--x:26%;--y:70%"><span class="spk-out__t">Trust</span></li>
+        <li class="spk-out__word spk-out__word--back"  style="--x:34%;--y:44%"><span class="spk-out__t">Honest conversation</span></li>
+        <li class="spk-out__word spk-out__word--front" style="--x:50%;--y:70%"><span class="spk-out__t">Curiosity</span></li>
+        <li class="spk-out__word spk-out__word--back"  style="--x:66%;--y:44%"><span class="spk-out__t">Shared responsibility</span></li>
+        <li class="spk-out__word spk-out__word--front" style="--x:74%;--y:70%"><span class="spk-out__t">Openness</span></li>
+      </ul>
     </div>
   </section>
 
@@ -541,6 +496,6 @@
   <div class="foot__base"><span>© <span data-year>2026</span> Dr. Stephen de Wit</span><span>Human Connection &amp; Relational Intelligence</span></div>
 </footer>
 
-<script src="../js/main.js?v=20260922f" defer></script>
+<script src="../js/main.js?v=20260924a" defer></script>
 </body>
 </html>

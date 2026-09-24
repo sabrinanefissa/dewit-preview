@@ -1084,7 +1084,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
    Ground sequence, one tone step between neighbours:
    hero plum-2 · proof plum-2 · keynotes plum · turn plum-2 · formats plum
    · bio ink · ribbon plum · footer plum-2.
-   Exactly one position:sticky on the page: .spk-turn__stage.
+   Round 6: no position:sticky on this page until the room chapters land.
    ===================================================================== */
 
 /* Visually-hidden utility for this page's live regions and connectives */
@@ -1093,7 +1093,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 
 /* ---------------------------------------------------------------------
    0. Lights up — ONE shared treatment for every photo on this page:
-   the keynote grounds, the five turn panels and the bio portrait. The
+   the keynote grounds, the walk-out still and the bio portrait. The
    house is dark until the moment the content lands, then the lights come
    up on the image. Written as `.media .spk-lights` because `.media img`
    already sets `filter: var(--img-filter)`, so the class has to carry the
@@ -1484,138 +1484,75 @@ html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
 }
 
 /* ---------------------------------------------------------------------
-   4. The turn — the one pin on this page. Five pairs, ONE on screen at a
-   time: the pairs are stacked in a single grid cell, each over its own
-   centred photo panel, and scroll moves between them instead of sliding a
-   list past a cursor. The strike is an SVG path the script redraws with a
-   travelling ripple, the same line vocabulary as the hero voice line.
+   4. What the room walks out with — no pin. A dark room and five words
+   placed across the frame like seats, not a list: three on a front row,
+   two on a back row. Each arrives once as a light: the word rises out of
+   blur with a soft pool behind it, 380ms after the one before; when the
+   fifth has landed the house lights come up on the still (.spk-lights).
+   Nothing loops and nothing replays on scroll-back.
    --------------------------------------------------------------------- */
-.spk-turn { position:relative; background: var(--plum-2); color: var(--tx-inv); }
-/* One full viewport of scroll per pair, plus 60vh so the last pair holds its
-   beat before the section lets go. --turn-n is written by the script from the
-   actual pair count; the 5 is the fallback for the list as it stands. */
-.spk-turn__track { height: calc(var(--turn-n, 5) * 100vh + 60vh); }
-.spk-turn__stage { position:sticky; top:0; height:100svh; overflow:hidden;
-  display:grid; place-items:center; }
+.spk-out { position:relative; overflow:hidden; background: var(--plum); color: var(--tx-inv);
+  min-height: 100svh; }
+.spk-out__media { position:absolute; inset:0; z-index:0; }
+.spk-out__media .spk-lights { --lights-dur: 1.4s; object-position: 50% 45%; }
+/* the grade the words sit on: the room is lit, the type still has ground */
+.spk-out__media.media--plum::after {
+  background: radial-gradient(120% 100% at 50% 55%,
+    rgba(14,8,22,.42), rgba(14,8,22,.82) 78%); }
 
-.spk-turn__glow { position:absolute; inset:0; z-index:0; pointer-events:none;
-  background: radial-gradient(30rem circle at var(--px, 50%) var(--py, 58%),
-    rgba(169,133,230,.22), rgba(169,133,230,.06) 40%, transparent 68%); }
-
-.spk-turn__h { position:absolute; z-index:3; left:50%; transform: translateX(-50%);
+.spk-out__inner { position:relative; z-index:2; height:100svh; width:100%; }
+.spk-out__h { position:absolute; z-index:3; left:50%; transform: translateX(-50%);
   top: clamp(5rem, 15vh, 9rem); width: var(--wrap); text-align:center;
   font-size: var(--step-2); font-weight:360; letter-spacing:-0.02em;
   color: var(--tx-inv-soft); text-wrap: balance; }
 
-.spk-turn__list { position:relative; z-index:2; display:grid; place-items:center;
-  width:100%; margin: clamp(2rem, 6vh, 4rem) 0 0; padding:0; list-style:none; }
-/* every pair in the same cell, so nothing slides and nothing reflows */
-.spk-turn__pair { grid-area: 1 / 1; display:grid; place-items:center;
-  opacity:0; visibility:hidden; }
-.spk-turn__pair.is-live { visibility:visible;
-  opacity: calc(1 - var(--out, 0));
-  transform: translateY(calc(var(--out, 0) * -24px));
-  filter: blur(calc(var(--out, 0) * 6px)); }
-
-/* The photo panel. Capped at 720 CSS px: the stills exist at 560 w and
-   1120 w only, so a full-bleed use would upscale. Dim until the pair
-   resolves, then the lights come up. */
-.spk-turn__media { grid-area: 1 / 1; z-index:1; position:relative; overflow:hidden;
-  width: min(52vw, 720px); max-width: 1120px; aspect-ratio: 4 / 3; }
-.spk-turn__media .spk-lights { --lights-dur: 1.4s; }
-/* the grade the big type sits on; the panel is lit, not bright */
-.spk-turn__media.media--plum::after {
-  background: radial-gradient(120% 100% at 50% 50%,
-    rgba(14,8,22,.56), rgba(14,8,22,.88) 76%); }
-
-.spk-turn__words { grid-area: 1 / 1; z-index:2; display:flex; flex-direction:column;
-  align-items:center; text-align:center; gap: clamp(1.1rem, 2.2vh, 1.8rem);
-  padding-inline: clamp(1rem, 3vw, 2.5rem); }
-
-.spk-turn__from { position:relative; display:inline-block;
-  font-family: var(--f-display); font-style:italic; font-weight:320;
-  font-size: var(--step-3); line-height:1; letter-spacing:-0.03em;
-  color: var(--tx-inv);
-  /* the reveal is scroll-driven: --in runs 0 -> 1 over the first 12% of the
-     pair's own segment, and is 1 whenever nothing is driving it */
-  opacity: var(--in, 1);
-  transform: translateY(calc((1 - var(--in, 1)) * 14px)); }
-/* The strike is authored straight, so with no script the pair reads as a
-   plain rule through the word. The script arms it (dashoffset 1) and then
-   draws it, rewriting `d` each frame for the travelling ripple. */
-.spk-turn__strike { position:absolute; left:0; top:.5em; width:100%; height:12px;
-  overflow:visible; pointer-events:none; }
-.spk-turn__strike path { fill:none; stroke: var(--violet-300); stroke-width:2;
-  vector-effect: non-scaling-stroke; stroke-linecap:round;
-  stroke-dasharray:1; stroke-dashoffset:0; }
-.spk-turn__to { display:block; font-family: var(--f-display); font-style:normal;
-  font-weight:360; font-size: var(--step-2); line-height:1.02; letter-spacing:-0.025em;
-  color: var(--tx-inv);
+.spk-out__list { position:absolute; inset:0; margin:0; padding:0; list-style:none; }
+/* each word is centred on its seat (--x / --y are set inline per word) */
+.spk-out__word { position:absolute; left: var(--x, 50%); top: var(--y, 50%);
+  transform: translate(-50%, -50%); white-space:nowrap;
+  font-family: var(--f-display); font-weight:340; line-height:1; letter-spacing:-0.025em;
+  color: var(--tx-inv); }
+.spk-out__word--front { font-size: var(--step-3); }
+.spk-out__word--back  { font-size: var(--step-2); }
+/* the pool of light behind the word */
+.spk-out__word::before { content:""; position:absolute; left:50%; top:50%; z-index:0;
+  width:22rem; height:22rem; transform: translate(-50%, -50%); border-radius:50%;
+  pointer-events:none;
+  background: radial-gradient(closest-side, rgba(169,133,230,.22), transparent 60%);
+  opacity:0; transition: opacity .9s var(--ease-out); }
+.spk-out__word.is-on::before { opacity:1; }
+/* the word itself rises out of blur */
+.spk-out__t { position:relative; z-index:1; display:inline-block;
   opacity:0; transform: translateY(14px); filter: blur(8px);
   transition: opacity .6s var(--ease-out), transform .6s var(--ease-out),
               filter .6s var(--ease-out); }
-.spk-turn__pair.is-resolved .spk-turn__to { opacity:1; transform:none; filter: blur(0); }
+.spk-out__word.is-on .spk-out__t { opacity:1; transform:none; filter: blur(0); }
 
 @media (max-width: 1199px) {
-  .spk-turn__strike { height:10px; }
-  .spk-turn__strike path { stroke-width:1.75; }
-  .spk-turn__from { font-size: var(--step-2); }
-  .spk-turn__to { font-size: var(--step-1); }
+  .spk-out__word--front { font-size: var(--step-2); }
+  .spk-out__word--back  { font-size: var(--step-1); }
 }
-/* Phones: no pin. Five blocks, each with its own photo, each resolving once
-   as it arrives. */
+/* Phones: a centred stack, one word per line, same sequence. */
 @media (max-width: 640px) {
-  .spk-turn__track { height:auto; }
-  .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
-    padding: clamp(4rem,10vw,6rem) 0; }
-  .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto;
+  .spk-out { min-height:0; }
+  .spk-out__inner { height:auto; padding: clamp(4rem,10vw,6rem) 0; }
+  .spk-out__h { position:static; transform:none; width: var(--wrap); margin:0 auto;
     text-align:left; }
-  .spk-turn__glow { background: radial-gradient(22rem circle at 30% 45%,
-      rgba(169,133,230,.16), transparent 70%); }
-  .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
+  .spk-out__list { position:relative; inset:auto; width: var(--wrap);
     margin: clamp(2rem,6vw,3rem) auto 0; }
-  /* place-items has to come off with the grid: Chrome applies justify-items
-     in block layout too, which would shrink-wrap and centre these blocks. */
-  .spk-turn__pair { display:block; place-items:normal; opacity:1; visibility:visible;
-    padding-block: clamp(1.6rem,6vw,2.6rem); }
-  .spk-turn__media { width:100%; }
-  .spk-turn__words { display:block; margin-top: clamp(1.2rem,4vw,1.8rem);
-    text-align:left; padding-inline:0; }
-  .spk-turn__to { margin-top:.5rem; }
-  .spk-turn__strike { height:8px; }
+  .spk-out__word, .spk-out__word--front, .spk-out__word--back { position:relative;
+    left:auto; top:auto; transform:none; display:block; white-space:normal;
+    padding-block: .35em; font-size: var(--step-2); text-align:left; }
+  .spk-out__word::before { left:0; width:16rem; height:16rem; }
 }
-/* Reduced motion: no pin at any width, every pair resolved, the strike flat
-   and drawn, the panels lit, nothing transitions. */
+/* Reduced motion: the five stand there, lit; no sequence, no pools. */
 @media (prefers-reduced-motion: reduce) {
-  .spk-turn__track { height:auto; }
-  .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
-    padding-block: clamp(4rem,9vw,8rem); }
-  .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto; }
-  .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
-    margin: clamp(2rem,5vw,3.5rem) auto 0; }
-  .spk-turn__pair { display:block; place-items:normal;
-    opacity:1 !important; visibility:visible !important;
-    transform:none !important; filter:none !important;
-    padding-block: clamp(1.4rem,4vw,2.4rem); }
-  .spk-turn__media { margin-inline:auto; }
-  .spk-turn__words { display:block; margin-top: clamp(1.2rem,3vw,1.8rem); padding-inline:0; }
-  .spk-turn__from { opacity:1 !important; transform:none !important; }
-  .spk-turn__strike path { stroke-dashoffset:0 !important; }
-  .spk-turn__to { margin-top:.5rem; opacity:1 !important; transform:none !important;
-    filter:none !important; transition:none; }
+  .spk-out__t { opacity:1; transform:none; filter:none; transition:none; }
+  .spk-out__word::before { display:none; }
+  .spk-out__media .spk-lights { filter: brightness(1) saturate(.92) contrast(1.06); opacity:1; }
 }
-html.no-js .spk-turn__track { height:auto; }
-html.no-js .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
-  padding-block: clamp(4rem,9vw,8rem); }
-html.no-js .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto; }
-html.no-js .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
-  margin: clamp(2rem,5vw,3.5rem) auto 0; }
-html.no-js .spk-turn__pair { display:block; place-items:normal;
-  opacity:1; visibility:visible; padding-block: clamp(1.4rem,4vw,2.4rem); }
-html.no-js .spk-turn__media { margin-inline:auto; }
-html.no-js .spk-turn__words { display:block; margin-top: clamp(1.2rem,3vw,1.8rem);
-  padding-inline:0; }
-html.no-js .spk-turn__to { margin-top:.5rem; opacity:1; transform:none; filter:none; }
+html.no-js .spk-out__t { opacity:1; transform:none; filter:none; }
+html.no-js .spk-out__word::before { display:none; }
 
 /* ---------------------------------------------------------------------
    5. Formats — one centred sentence, with the room behind it. The dot
@@ -1644,13 +1581,12 @@ html.no-js .spk-room { display:none; }
    Page order: hero · numbers · A · keynotes · B · turn · C · D · E · footer
    Ground, one tone step between neighbours:
    plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2.
-   Still exactly one position:sticky on the page: .spk-turn__stage.
+   Round 6: the turn's pin is gone; see the note at the top of this block.
    ===================================================================== */
 
 /* The two tone swaps the new order needs, and the proof line's own ground.
    Nothing else about those sections changes. */
 .spk-proof   { background: var(--plum); }
-.spk-turn    { background: var(--plum); }
 .spk-formats { background: var(--plum-2); }
 
 /* ---------------------------------------------------------------------
