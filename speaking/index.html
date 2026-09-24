@@ -325,54 +325,67 @@
     </div>
   </section>
 
-  <!-- ==============================================================
-       B. WHAT IT'S LIKE IN THE ROOM - three beats over one stage.
-       Selecting a beat runs that beat's own cue of the reel, MUTED: the
-       hero and the keynotes own the audio on this page, never this
-       section. Cue in and out points live on the buttons as
-       data-cue-start / data-cue-end, so a re-cut is an edit here.
-       Laugh is held back until Stephen supplies footage with laughter,
-       so nothing on the page flags a missing beat.
-       With no script the poster holds and all three lines are listed.
-       ============================================================== -->
-  <section class="spk-beats" id="room" aria-labelledby="spkBeatsH">
-    <div class="spk-beats__media media media--plum" aria-hidden="true">
-      <img class="spk-lights is-on" src="../assets/img/keynote-1280.webp"
-           srcset="../assets/img/keynote-860.webp 860w, ../assets/img/keynote-1280.webp 1280w, ../assets/img/keynote-1920.webp 1920w"
-           sizes="100vw" alt="" loading="lazy" decoding="async">
-      <video class="spk-beats__video spk-lights" id="spkBeatsVideo" playsinline muted preload="none"
-             data-src-1080="../assets/video/reel-1080.mp4"
-             data-src-mobile="../assets/video/reel-mobile.mp4"></video>
-    </div>
-    <div class="spk-beats__grade" aria-hidden="true"></div>
+  <!-- What it's like in the room: the page's one pin. Three chapters, one
+       viewport of scroll each. The reel is the ground, muted, one cue per
+       chapter looping between its in and out points; scroll drives the
+       words and a slow push-in. The rail on the left carries the homepage
+       dot between three stops. Phones and reduced motion: no pin, three
+       stacked blocks. The chapter words are the accessible tablist. -->
+  <section class="spk-chap" id="room" aria-labelledby="spkChapH">
+    <div class="spk-chap__track" id="spkChapTrack">
+      <div class="spk-chap__stage" id="spkChapStage">
+        <div class="spk-chap__media media media--plum" aria-hidden="true">
+          <img class="spk-lights is-on" src="../assets/img/keynote-1280.webp"
+               srcset="../assets/img/keynote-860.webp 860w, ../assets/img/keynote-1280.webp 1280w, ../assets/img/keynote-1920.webp 1920w"
+               sizes="100vw" alt="" loading="lazy" decoding="async">
+          <video class="spk-chap__video spk-lights" id="spkChapVideo" playsinline muted preload="none"
+                 data-src-1080="../assets/video/reel-1080.mp4"
+                 data-src-mobile="../assets/video/reel-mobile.mp4"></video>
+        </div>
+        <div class="spk-chap__grade" aria-hidden="true"></div>
+        <div class="spk-chap__glow" aria-hidden="true"></div>
 
-    <div class="spk-beats__inner">
-      <h2 class="spk-beats__h" id="spkBeatsH">What it&rsquo;s like in the room.</h2>
+        <div class="spk-chap__inner">
+          <h2 class="spk-chap__h" id="spkChapH">What it&rsquo;s like in the room.</h2>
 
-      <div class="spk-beats__row" id="spkBeatsRow" role="tablist" aria-label="Beats">
-        <button type="button" class="spk-keys__tab spk-beats__tab is-on" role="tab" id="spkBeat1"
-                aria-controls="spkBeatLine1" aria-selected="true" tabindex="0"
-                data-cue-start="11.36" data-cue-end="16.36">Think</button>
-        <button type="button" class="spk-keys__tab spk-beats__tab" role="tab" id="spkBeat2"
-                aria-controls="spkBeatLine2" aria-selected="false" tabindex="-1"
-                data-cue-start="108.46" data-cue-end="115.36">Feel</button>
-        <button type="button" class="spk-keys__tab spk-beats__tab" role="tab" id="spkBeat3"
-                aria-controls="spkBeatLine3" aria-selected="false" tabindex="-1"
-                data-cue-start="73.16" data-cue-end="82.96">Tools</button>
+          <div class="spk-chap__rail" id="spkChapRail" role="tablist" aria-label="Chapters">
+            <i class="spk-chap__line" aria-hidden="true"></i>
+            <b class="spk-chap__fill" id="spkChapFill" aria-hidden="true"></b>
+            <span class="spk-chap__dot" id="spkChapDot" aria-hidden="true"></span>
+            <button type="button" class="spk-chap__tab is-on" role="tab" id="spkChap1" style="--i:0"
+                    aria-controls="spkChapPanel1" aria-selected="true" tabindex="0"
+                    data-cue-start="34.0" data-cue-end="39.0"><i class="spk-chap__stop" aria-hidden="true"></i>Think</button>
+            <button type="button" class="spk-chap__tab" role="tab" id="spkChap2" style="--i:1"
+                    aria-controls="spkChapPanel2" aria-selected="false" tabindex="-1"
+                    data-cue-start="108.5" data-cue-end="121.0"><i class="spk-chap__stop" aria-hidden="true"></i>Feel</button>
+            <button type="button" class="spk-chap__tab" role="tab" id="spkChap3" style="--i:2"
+                    aria-controls="spkChapPanel3" aria-selected="false" tabindex="-1"
+                    data-cue-start="122.0" data-cue-end="130.5"><i class="spk-chap__stop" aria-hidden="true"></i>Apply</button>
+          </div>
+
+          <div class="spk-chap__chapters">
+            <div class="spk-chap__chapter is-live" role="tabpanel" id="spkChapPanel1" aria-labelledby="spkChap1" tabindex="0">
+              <div class="spk-chap__frame" aria-hidden="true"></div>
+              <p class="spk-chap__word">Think</p>
+              <p class="spk-chap__text">You start auditing your own conversations while he&rsquo;s still talking.</p>
+            </div>
+            <div class="spk-chap__chapter" role="tabpanel" id="spkChapPanel2" aria-labelledby="spkChap2" tabindex="0">
+              <div class="spk-chap__frame" aria-hidden="true"></div>
+              <p class="spk-chap__word">Feel</p>
+              <p class="spk-chap__text">Something lands that you recognise from home as much as work.</p>
+            </div>
+            <div class="spk-chap__chapter" role="tabpanel" id="spkChapPanel3" aria-labelledby="spkChap3" tabindex="0">
+              <div class="spk-chap__frame" aria-hidden="true"></div>
+              <p class="spk-chap__word">Apply</p>
+              <p class="spk-chap__text">You walk out with a few moves you can try in the morning.</p>
+            </div>
+          </div>
+          <p class="spk-sr" id="spkChapLive" aria-live="polite" aria-atomic="true"></p>
+        </div>
       </div>
-
-      <div class="spk-beats__stage">
-        <p class="spk-beats__line is-on" role="tabpanel" id="spkBeatLine1" aria-labelledby="spkBeat1" tabindex="0"><span class="spk-beats__word">Think</span>You start auditing your own conversations while he&rsquo;s still talking.</p>
-        <p class="spk-beats__line" role="tabpanel" id="spkBeatLine2" aria-labelledby="spkBeat2" tabindex="0"><span class="spk-beats__word">Feel</span>Something lands that you recognise from home as much as work.</p>
-        <p class="spk-beats__line" role="tabpanel" id="spkBeatLine3" aria-labelledby="spkBeat3" tabindex="0"><span class="spk-beats__word">Tools</span>You walk out with a few moves you can try in the morning.</p>
-      </div>
-      <p class="spk-sr" id="spkBeatsLive" aria-live="polite" aria-atomic="true"></p>
     </div>
   </section>
 
-  <!-- ==============================================================
-       4. THE TURN - the one pin on this page
-       ============================================================== -->
   <!-- What the room walks out with: no pin. A dark room and five words that
        arrive as five lights, once, when the section comes into view; the
        fifth brings the house lights up on the photo. With no script, or

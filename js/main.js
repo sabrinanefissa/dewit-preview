@@ -2475,33 +2475,47 @@
   } else { inView = true; sync(); }
 })();
 
-/* ===== 8. B. What it's like in the room: three beats, one stage =====
-   Selecting a beat runs that beat's own cue of the reel and shows its line.
-   The clip here is ALWAYS MUTED: the hero and the keynotes own the audio on
-   this page and this section never claims it, so nothing can end up talking
-   over anything else. The ground is the same lights sequence as the keynotes
-   — down on what is leaving, seek in the dark, up on what arrives — and the
-   cue parks back on its own first frame when it reaches its out point.
-   Reduced motion, Save-Data and no script keep the poster and list the three
-   lines under their own words. */
+/* ===== 8. What it's like in the room: three chapters, one pin =====
+   The page's one pinned section. The track is three viewports plus a tail;
+   p runs 0 → 1 across it, idx is the live chapter and s runs 0 → 1 across
+   that chapter's own viewport of scroll:
+     0   – .15  the word arrives (--w)
+     .15 – .30  its line arrives (--l)
+     .30 – .85  held; the picture keeps pushing in (--dolly 1 → 1.06)
+     .85 – 1    the chapter lifts away (--out), the house goes dark and the
+                dot travels down the rail to the next stop
+   The change of chapter happens in the dark: seek to the new cue, then the
+   lights come up on it. The clip here is ALWAYS MUTED: the hero and the
+   keynotes own the audio on this page and this section never claims it.
+   Each chapter's cue loops between its in and out points while it is lit.
+   Three modes, rebuilt whenever either media query flips: "pin", "phone"
+   (no pin, three stacked blocks, a rail whose fill rises with the scroll
+   and one lazy clip per block, played once) and "static" (reduced motion
+   and Save-Data: the poster holds, every chapter open, no handlers). */
 (function () {
   "use strict";
-  var sec = document.querySelector(".spk-beats");
+  var sec = document.querySelector(".spk-chap");
   if (!sec) return;
-  var row    = document.getElementById("spkBeatsRow");
-  var media  = sec.querySelector(".spk-beats__media");
-  var vid    = sec.querySelector(".spk-beats__video");
-  var poster = sec.querySelector(".spk-beats__media img");
-  var tabs   = [].slice.call(sec.querySelectorAll(".spk-beats__tab"));
-  var lines  = [].slice.call(sec.querySelectorAll(".spk-beats__line"));
-  var live   = document.getElementById("spkBeatsLive");
-  if (!row || !tabs.length || tabs.length !== lines.length) return;
+  var track    = document.getElementById("spkChapTrack");
+  var stage    = document.getElementById("spkChapStage");
+  var media    = sec.querySelector(".spk-chap__media");
+  var vid      = sec.querySelector(".spk-chap__video");
+  var poster   = sec.querySelector(".spk-chap__media img");
+  var rail     = document.getElementById("spkChapRail");
+  var dot      = document.getElementById("spkChapDot");
+  var fill     = document.getElementById("spkChapFill");
+  var tabs     = [].slice.call(sec.querySelectorAll(".spk-chap__tab"));
+  var chapters = [].slice.call(sec.querySelectorAll(".spk-chap__chapter"));
+  var frames   = [].slice.call(sec.querySelectorAll(".spk-chap__frame"));
+  var live     = document.getElementById("spkChapLive");
+  if (!track || !stage || !tabs.length || tabs.length !== chapters.length) return;
 
-  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var N = chapters.length;
+  var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var phone    = window.matchMedia("(max-width: 640px)");
   var small    = window.matchMedia("(max-width: 820px)");
-  var cur = 0;
-  var videoGround = !!vid && !reduce && !saveData;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var hasIO    = "IntersectionObserver" in window;
 
   /* in and out points live on the buttons, so a re-cut is an edit in the
      markup and nowhere else */
@@ -2510,30 +2524,67 @@
              b: parseFloat(t.getAttribute("data-cue-end")) };
   });
 
+  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
+
   function say(msg) {
     if (!live) return;
+    clearTimeout(sayT);
     live.textContent = "";
-    setTimeout(function () { live.textContent = msg; }, 60);
+    sayT = setTimeout(function () { live.textContent = msg; }, 60);
+  }
+  function words(i) {
+    var w = chapters[i].querySelector(".spk-chap__word");
+    var l = chapters[i].querySelector(".spk-chap__text");
+    return (w ? w.textContent.trim() : "") + ". " +
+           (l ? l.textContent.replace(/\s+/g, " ").trim() : "");
   }
 
-  /* Stacked: the poster holds, the row is gone and all three lines are
-     listed, each under its own word. */
-  if (reduce || saveData) {
-    sec.classList.add("is-stacked");
-    row.removeAttribute("role");
-    tabs.forEach(function (t) {
-      t.removeAttribute("role"); t.removeAttribute("aria-selected");
-      t.removeAttribute("aria-controls"); t.removeAttribute("tabindex");
-    });
-    lines.forEach(function (p) {
-      p.removeAttribute("role"); p.removeAttribute("aria-labelledby");
-      p.removeAttribute("tabindex"); p.classList.add("is-on");
-    });
-    if (poster) poster.classList.add("is-lit");
-    return;
+  /* The tablist as authored, kept so a mode that strips it (phone, static)
+     can put it back exactly when the query flips. */
+  var TAB_ATTRS   = ["role", "aria-selected", "aria-controls", "tabindex"];
+  var PANEL_ATTRS = ["role", "aria-labelledby", "tabindex"];
+  function snap(el, names) {
+    var o = {};
+    names.forEach(function (n) { o[n] = el.getAttribute(n); });
+    return o;
+  }
+  var authored = {
+    rail: rail ? snap(rail, TAB_ATTRS) : null,
+    tabs: tabs.map(function (t) { return snap(t, TAB_ATTRS); }),
+    chapters: chapters.map(function (c) { return snap(c, PANEL_ATTRS); })
+  };
+  function stripAria() {
+    if (rail) TAB_ATTRS.forEach(function (n) { rail.removeAttribute(n); });
+    tabs.forEach(function (t) { TAB_ATTRS.forEach(function (n) { t.removeAttribute(n); }); });
+    chapters.forEach(function (c) { PANEL_ATTRS.forEach(function (n) { c.removeAttribute(n); }); });
+  }
+  function put(el, saved) {
+    for (var n in saved) {
+      if (saved[n] === null) el.removeAttribute(n); else el.setAttribute(n, saved[n]);
+    }
+  }
+  function restoreAria() {
+    if (rail) put(rail, authored.rail);
+    tabs.forEach(function (t, i) { put(t, authored.tabs[i]); });
+    chapters.forEach(function (c, i) { put(c, authored.chapters[i]); });
   }
 
-  var srcSet = false, watchRaf = 0, playing = -1, lightT = 0;
+  /* every mode starts from, and leaves, a clean section */
+  function clearState() {
+    tabs.forEach(function (t) { t.classList.remove("is-on", "is-lit"); });
+    chapters.forEach(function (c) {
+      c.classList.remove("is-live", "is-lit");
+      c.style.removeProperty("--w"); c.style.removeProperty("--l"); c.style.removeProperty("--out");
+    });
+    if (rail) rail.style.removeProperty("--dot");
+    if (media) { media.classList.remove("is-dimming"); media.style.removeProperty("--dolly"); }
+    stage.style.removeProperty("--px"); stage.style.removeProperty("--py");
+    sec.style.removeProperty("--rail-top"); sec.style.removeProperty("--rail-h");
+  }
+
+  /* ---- the stage clip: src, cue, park ---- */
+  var srcSet = false, watchRaf = 0, playing = -1;
 
   function ensureSrc() {
     if (!vid || srcSet) return;
@@ -2547,85 +2598,224 @@
   }
 
   /* the out point is watched on a frame callback, not on timeupdate, which
-     fires about four times a second and would overshoot the cue */
+     fires about four times a second and would overshoot the cue; at the
+     out point the cue loops back to its in point and keeps playing */
   function watch() {
     watchRaf = 0;
     if (playing < 0 || !vid) return;
     var c = cues[playing];
-    if (c && vid.currentTime >= c.b) { park(playing); return; }
+    if (c && vid.currentTime >= c.b) { try { vid.currentTime = c.a; } catch (err) {} }
     watchRaf = requestAnimationFrame(watch);
   }
   function park(i) {
+    hold();
+    if (vid && cues[i]) { try { vid.currentTime = cues[i].a; } catch (err) {} }
+  }
+  /* pause where it is: the dark tail resumes the same cue from here */
+  function hold() {
     if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
     playing = -1;
-    if (!vid) return;
-    if (!vid.paused) vid.pause();
-    if (cues[i]) { try { vid.currentTime = cues[i].a; } catch (err) {} }
+    if (vid && !vid.paused) vid.pause();
   }
-  function stop() { if (playing >= 0) park(playing); }
-
   function playCue(i) {
     if (!vid || !cues[i]) return;
-    ensureSrc();
     vid.muted = true;                    /* this section never has audio */
-    try { vid.currentTime = cues[i].a; } catch (err) {}
     playing = i;
     var p = vid.play();
     if (p && p.catch) p.catch(function () { park(i); });
     if (!watchRaf) watchRaf = requestAnimationFrame(watch);
   }
 
+  /* ---- shared frame loop: rAF-throttled scroll, asleep off screen ---- */
+  var mode = null, raf = 0, onScreen = false, secIO = null;
+
+  function frame() {
+    raf = 0;
+    if (mode === "pin") measure();
+    else if (mode === "phone") phoneMeasure();
+  }
+  function onScroll() {
+    if (!raf && onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+  function wake() {
+    if (!onScreen || document.hidden) return;
+    if (!raf) raf = requestAnimationFrame(frame);
+    if (mode === "pin" && lit && !busy && videoGround && playing < 0) playCue(cur);
+  }
+  function sleep() {
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    hold();
+  }
+  function onVis() { if (document.hidden) sleep(); else wake(); }
+
+  /* nothing runs while the section is off screen or the tab is hidden */
+  function watchScreen() {
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVis);
+    if (hasIO) {
+      secIO = new IntersectionObserver(function (e) {
+        onScreen = e[0].isIntersecting;
+        if (onScreen) wake(); else sleep();
+      }, { threshold: 0.05 });
+      secIO.observe(sec);
+    } else { onScreen = true; wake(); }
+  }
+  function unwatchScreen() {
+    sleep();
+    window.removeEventListener("scroll", onScroll);
+    document.removeEventListener("visibilitychange", onVis);
+    if (secIO) { secIO.disconnect(); secIO = null; }
+    onScreen = false;
+  }
+
+  /* ---- static: the poster holds, every chapter open, no handlers ---- */
+  function startStatic() {
+    sec.classList.add("is-static");
+    stripAria();
+    if (poster) poster.classList.add("is-lit");
+    chapters.forEach(function (c) { c.classList.add("is-live", "is-lit"); });
+  }
+  function stopStatic() {
+    sec.classList.remove("is-static");
+    restoreAria();
+    if (poster) poster.classList.remove("is-lit");
+    clearState();
+  }
+
+  /* ---- pinned ---- */
+  var lastIdx = -1, cur = 0, lastS = 0;
+  var lit = false, busy = false, videoGround = false, firstLit = false;
+  var nearIO = null, firstIO = null, lightT = 0, seekT = 0, seekFn = null, sayT = 0;
+
+  function groundDown() {
+    lit = false;
+    if (media) media.classList.add("is-dimming");
+    if (poster) poster.classList.remove("is-lit");
+    if (vid) vid.classList.remove("is-lit");
+    hold();
+  }
+  function groundUp() {
+    lit = true;
+    if (media) media.classList.remove("is-dimming");
+    if (media) media.style.setProperty("--dolly", (1 + 0.06 * lastS).toFixed(4));
+    var el = videoGround ? vid : poster;
+    if (el) el.classList.add("is-lit");
+    if (videoGround && onScreen && !document.hidden) playCue(cur);
+  }
+  /* one wantLit per frame against the state it is in, so the class writes
+     are idempotent: lit once the section has first arrived, dark in each
+     chapter's tail, never touched while a change of chapter is under way */
+  function syncLights() {
+    if (busy || mode !== "pin") return;
+    var want = firstLit && lastS < 0.85;
+    if (want && !lit) groundUp();
+    else if (!want && lit) groundDown();
+  }
+
   /* lights down, seek in the dark, lights up */
   function lights(i) {
     if (!media) return;
-    clearTimeout(lightT);
-    media.classList.add("is-dimming");
-    if (poster) poster.classList.remove("is-lit");
-    if (vid) vid.classList.remove("is-lit");
+    clearTimeout(lightT); clearTimeout(seekT);
+    if (seekFn && vid) { vid.removeEventListener("seeked", seekFn); seekFn = null; }
+    busy = true;
+    groundDown();
     lightT = setTimeout(function () {
-      if (!videoGround) {
-        media.classList.remove("is-dimming");
-        if (poster) poster.classList.add("is-lit");
-        return;
-      }
+      lightT = 0;
+      if (!videoGround) { busy = false; syncLights(); return; }
       var done = false;
       var up = function () {
         if (done) return;
         done = true;
+        clearTimeout(seekT);
         vid.removeEventListener("seeked", up);
+        seekFn = null;
         requestAnimationFrame(function () {
-          media.classList.remove("is-dimming");
-          vid.classList.add("is-lit");
-          playCue(i);
+          if (mode !== "pin") return;
+          busy = false;
+          syncLights();
         });
       };
+      seekFn = up;
       vid.addEventListener("seeked", up);
-      setTimeout(up, 700);               /* never hold the house dark on a slow seek */
-      ensureSrc();
+      seekT = setTimeout(up, 700);       /* never hold the house dark on a slow seek */
       try { vid.currentTime = cues[i].a; } catch (err) { up(); }
     }, 240);
   }
 
-  function select(i, replay) {
-    if (i === cur && !replay) return;
-    stop();
-    tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
-    lines[cur].classList.remove("is-on");
-    tabs[i].setAttribute("aria-selected", "true"); tabs[i].tabIndex = 0; tabs[i].classList.add("is-on");
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { lines[i].classList.add("is-on"); });
-    });
-    cur = i;
-    lights(i);
-    say(tabs[i].textContent.trim() + ". " + lines[i].textContent.replace(/\s+/g, " ").trim());
+  function measure() {
+    var r = track.getBoundingClientRect();
+    var span = track.offsetHeight - window.innerHeight;
+    var p = span > 0 ? clamp(-r.top / span) : 0;
+    var idx = Math.min(N - 1, Math.floor(p * N));
+    var s = clamp(p * N - idx);
+
+    if (idx !== lastIdx) {
+      var first = lastIdx === -1;
+      chapters.forEach(function (c, n) {
+        if (n === idx) { c.classList.add("is-live"); return; }
+        c.classList.remove("is-live");
+        c.style.removeProperty("--w"); c.style.removeProperty("--l"); c.style.removeProperty("--out");
+      });
+      tabs.forEach(function (t, n) {
+        t.setAttribute("aria-selected", n === idx ? "true" : "false");
+        t.tabIndex = n === idx ? 0 : -1;
+        t.classList.toggle("is-on", n === idx);
+      });
+      lastIdx = idx; cur = idx;
+      if (media) media.style.setProperty("--dolly", "1");   /* snaps back in the dark */
+      if (!first) { say(words(idx)); lights(idx); }
+    }
+    lastS = s;
+
+    var ch = chapters[idx];
+    ch.style.setProperty("--w", clamp(s / 0.15).toFixed(3));
+    ch.style.setProperty("--l", clamp((s - 0.15) / 0.15).toFixed(3));
+    ch.style.setProperty("--out", (s < 0.85 ? 0 : (s - 0.85) / 0.15).toFixed(3));
+
+    syncLights();
+    if (lit && !busy && media) media.style.setProperty("--dolly", (1 + 0.06 * s).toFixed(4));
+
+    /* the dot rests on its chapter's stop and travels in the tail */
+    var d = idx < N - 1 ? idx + smooth((s - 0.85) / 0.15) : N - 1;
+    if (rail) rail.style.setProperty("--dot", (N > 1 ? d / (N - 1) : 0).toFixed(4));
+    tabs.forEach(function (t, n) { t.classList.toggle("is-lit", d >= n - 0.001); });
+
+    /* the light belongs to the dot */
+    if (dot) {
+      var dr = dot.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+      stage.style.setProperty("--px", (dr.left + dr.width / 2 - sr.left).toFixed(1) + "px");
+      stage.style.setProperty("--py", (dr.top + dr.height / 2 - sr.top).toFixed(1) + "px");
+    }
   }
 
-  tabs.forEach(function (t, i) {
-    t.addEventListener("click", function () { select(i, i === cur); });
-    t.addEventListener("focus", function () {
-      tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); });
-    });
-    t.addEventListener("keydown", function (e) {
+  /* The reel becomes the ground and parks on the live chapter's in point;
+     until it has metadata the poster is the ground. */
+  function onMeta() {
+    if (mode !== "pin" || !vid) return;
+    videoGround = true;
+    if (poster) poster.classList.remove("is-on", "is-lit");
+    vid.classList.add("is-on");
+    if (busy) return;                    /* the change under way seeks and lights it */
+    try { vid.currentTime = cues[cur].a; } catch (err) {}
+    if (lit) {
+      vid.classList.add("is-lit");
+      if (onScreen && !document.hidden) playCue(cur);
+    }
+  }
+
+  /* chapter words: a press scrolls to that chapter; arrows move focus */
+  var clickFns = tabs.map(function (t, i) {
+    return function () {
+      var span = track.offsetHeight - window.innerHeight;
+      var trackTop = track.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ top: trackTop + ((i + 0.4) / N) * span, behavior: "smooth" });
+    };
+  });
+  var focusFns = tabs.map(function (t) {
+    return function () { tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); }); };
+  });
+  var keyFns = tabs.map(function (t, i) {
+    return function (e) {
       var k = e.key, n = -1, L = tabs.length;
       if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
       else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
@@ -2634,38 +2824,190 @@
       else return;
       e.preventDefault();
       tabs[n].focus();
+    };
+  });
+
+  function startPin() {
+    lastIdx = -1; cur = 0; lastS = 0;
+    lit = false; busy = false; videoGround = false; firstLit = false;
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", clickFns[i]);
+      t.addEventListener("focus", focusFns[i]);
+      t.addEventListener("keydown", keyFns[i]);
     });
-  });
+    if (vid) {
+      vid.addEventListener("loadedmetadata", onMeta);
+      vid.addEventListener("ended", onEnded);
+      if (srcSet) { if (vid.readyState >= 1) onMeta(); }
+      else if (hasIO) {
+        nearIO = new IntersectionObserver(function (e, obs) {
+          if (!e[0].isIntersecting) return;
+          obs.disconnect(); nearIO = null;
+          ensureSrc();
+        }, { rootMargin: "100% 0px" });
+        nearIO.observe(sec);
+      } else { ensureSrc(); }
+    }
+    if (hasIO) {
+      firstIO = new IntersectionObserver(function (e, obs) {
+        if (!e[0].isIntersecting) return;
+        obs.disconnect(); firstIO = null;
+        firstLit = true;
+        syncLights();
+      }, { threshold: 0.15 });
+      firstIO.observe(sec);
+    } else { firstLit = true; }
+    measure();
+    watchScreen();
+  }
+  function onEnded() { if (playing >= 0) park(playing); }
+  function stopPin() {
+    unwatchScreen();
+    tabs.forEach(function (t, i) {
+      t.removeEventListener("click", clickFns[i]);
+      t.removeEventListener("focus", focusFns[i]);
+      t.removeEventListener("keydown", keyFns[i]);
+    });
+    if (nearIO) { nearIO.disconnect(); nearIO = null; }
+    if (firstIO) { firstIO.disconnect(); firstIO = null; }
+    clearTimeout(lightT); clearTimeout(seekT); clearTimeout(sayT);
+    lightT = seekT = sayT = 0;
+    if (vid) {
+      if (seekFn) { vid.removeEventListener("seeked", seekFn); seekFn = null; }
+      vid.removeEventListener("loadedmetadata", onMeta);
+      vid.removeEventListener("ended", onEnded);
+      if (!vid.paused) vid.pause();
+      vid.classList.remove("is-on", "is-lit");
+    }
+    if (poster) { poster.classList.add("is-on"); poster.classList.remove("is-lit"); }
+    lit = false; busy = false; videoGround = false;
+    restoreAria();
+    clearState();
+  }
 
-  /* nothing keeps running off screen or in a hidden tab */
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e) {
-      if (e[0].intersectionRatio < 0.25) stop();
-    }, { threshold: [0, 0.25, 1] }).observe(sec);
-  }
-  document.addEventListener("visibilitychange", function () {
-    if (document.hidden) stop();
-  });
-  if (vid) vid.addEventListener("ended", function () { if (playing >= 0) park(playing); });
+  /* ---- phone: no pin, a rail whose fill rises with the 62% cursor ---- */
+  var railTop = 0, railH = 0, phoneNear = null, phonePlay = null;
+  var phoneVids = [], phoneWatch = [];
+  var CURSOR = 0.62;
 
-  /* The reel becomes the ground and parks on the first beat's in point; the
-     house lights come up on it as the section arrives. */
-  if (videoGround) {
-    ensureSrc();
-    if (poster) poster.classList.remove("is-on", "is-lit");
-    vid.classList.add("is-on");
-    var firstPark = function () { if (playing < 0) { try { vid.currentTime = cues[cur].a; } catch (err) {} } };
-    if (vid.readyState >= 1) firstPark();
-    else vid.addEventListener("loadedmetadata", firstPark, { once: true });
+  function phoneLayout() {
+    railTop = chapters[0].offsetTop + 12;
+    railH = Math.max(1, chapters[N - 1].offsetTop + 12 - railTop);
+    sec.style.setProperty("--rail-top", railTop + "px");
+    sec.style.setProperty("--rail-h", railH + "px");
   }
-  function firstLight() {
-    var el = videoGround ? vid : poster;
-    if (el) el.classList.add("is-lit");
+  function phoneMeasure() {
+    var yT = window.innerHeight * CURSOR - sec.getBoundingClientRect().top;
+    if (rail) rail.style.setProperty("--dot", clamp((yT - railTop) / railH).toFixed(4));
+    chapters.forEach(function (c) { c.classList.toggle("is-lit", yT >= c.offsetTop + 12); });
   }
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e, obs) {
-      if (!e[0].isIntersecting) return;
-      firstLight(); obs.disconnect();
-    }, { threshold: 0.15 }).observe(sec);
-  } else { firstLight(); }
+
+  function frameVideo(i) {
+    if (phoneVids[i] || !frames[i]) return phoneVids[i];
+    var src = vid ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080")) : null;
+    if (!src) return null;
+    var v = document.createElement("video");
+    v.setAttribute("playsinline", "");
+    v.setAttribute("muted", "");
+    v.muted = true;
+    v.setAttribute("preload", "none");
+    v.setAttribute("poster", "../assets/img/keynote-860.webp");
+    v.setAttribute("src", src);
+    frames[i].appendChild(v);
+    phoneVids[i] = v;
+    return v;
+  }
+  /* each block's cue plays once, muted, and parks back on its in point */
+  function playOnce(i) {
+    var v = frameVideo(i), c = cues[i];
+    if (!v || !c) return;
+    function parkIt() {
+      if (phoneWatch[i]) { cancelAnimationFrame(phoneWatch[i]); phoneWatch[i] = 0; }
+      if (!v.paused) v.pause();
+      try { v.currentTime = c.a; } catch (err) {}
+    }
+    function tick() {
+      phoneWatch[i] = 0;
+      if (v.currentTime >= c.b) { parkIt(); return; }
+      phoneWatch[i] = requestAnimationFrame(tick);
+    }
+    v.muted = true;                      /* this section never has audio */
+    try { v.currentTime = c.a; } catch (err) {}
+    var p = v.play();
+    if (p && p.catch) p.catch(parkIt);
+    phoneWatch[i] = requestAnimationFrame(tick);
+  }
+
+  function startPhone() {
+    sec.classList.add("is-phone");
+    stripAria();
+    phoneLayout();
+    if (hasIO) {
+      phoneNear = new IntersectionObserver(function (es, obs) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          obs.unobserve(e.target);
+          frameVideo(chapters.indexOf(e.target));
+        });
+      }, { rootMargin: "100% 0px" });
+      phonePlay = new IntersectionObserver(function (es, obs) {
+        es.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          obs.unobserve(e.target);
+          playOnce(chapters.indexOf(e.target));
+        });
+      }, { threshold: 0.55 });
+      chapters.forEach(function (c) { phoneNear.observe(c); phonePlay.observe(c); });
+    }
+    phoneMeasure();
+    watchScreen();
+  }
+  function stopPhone() {
+    unwatchScreen();
+    if (phoneNear) { phoneNear.disconnect(); phoneNear = null; }
+    if (phonePlay) { phonePlay.disconnect(); phonePlay = null; }
+    phoneWatch.forEach(function (h) { if (h) cancelAnimationFrame(h); });
+    phoneWatch = [];
+    phoneVids.forEach(function (v) {
+      if (!v) return;
+      v.pause();
+      v.removeAttribute("src");
+      v.load();
+      if (v.parentNode) v.parentNode.removeChild(v);
+    });
+    phoneVids = [];
+    sec.classList.remove("is-phone");
+    restoreAria();
+    clearState();
+  }
+
+  /* Either media query can flip mid-visit, so the mode is torn down and
+     rebuilt rather than decided once at load. */
+  function setMode() {
+    var want = (rmq.matches || saveData) ? "static" : (phone.matches ? "phone" : "pin");
+    if (want === mode) return false;
+    if (mode === "static") stopStatic();
+    else if (mode === "phone") stopPhone();
+    else if (mode === "pin") stopPin();
+    mode = want;
+    if (want === "static") startStatic();
+    else if (want === "phone") startPhone();
+    else startPin();
+    return true;
+  }
+
+  setMode();
+  var resizeT = 0;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function () {
+      if (setMode()) return;
+      if (mode === "phone") phoneLayout();
+      onScroll();
+    }, 60);
+  }, { passive: true });
+  if (phone.addEventListener) phone.addEventListener("change", setMode);
+  else if (phone.addListener) phone.addListener(setMode);
+  if (rmq.addEventListener) rmq.addEventListener("change", setMode);
+  else if (rmq.addListener) rmq.addListener(setMode);
 })();
