@@ -65,12 +65,16 @@
     (function step(ts){ if(!s)s=ts; var p=Math.min((ts-s)/dur,1), e=1-Math.pow(1-p,3);
       el.textContent = fmt(Math.round(t*e)) + suf; if(p<1) requestAnimationFrame(step); })(0);
   }
-  if (stats.length && "IntersectionObserver" in window) {
+  /* The markup carries the final figures, so with no script (or before the
+     section arrives) the numbers are true. They drop to 0 only here, the
+     moment the count-up is armed, and only when it will actually run. */
+  if (stats.length && "IntersectionObserver" in window && !reduce) {
+    stats.forEach(function (s) { s.textContent = "0"; });
     var so = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (e) { if (e.isIntersecting) { runCount(e.target); obs.unobserve(e.target); } });
     }, { threshold: 0.6 });
     stats.forEach(function (s) { so.observe(s); });
-  } else { stats.forEach(function (s) { s.textContent = fmt(parseFloat(s.getAttribute("data-count"))) + (s.getAttribute("data-suffix")||""); }); }
+  }   /* otherwise the markup's figures simply stand */
 
   /* ---- Parallax + scale on full-bleed media ---- */
   var px = document.querySelectorAll("[data-parallax]");
@@ -1270,6 +1274,7 @@
      to hear SOME talking": one click unmutes, restarts at 0:00 and plays. It
      then fades out, and comes back only when the reel ends. */
   function hideBig() { if (bBig) bBig.classList.add("is-gone"); }
+  function showPlay(on) { bPlay.hidden = !on; }
   function bigReplay() {
     if (!bBig) return;
     bBig.setAttribute("data-state", "replay");
@@ -1308,6 +1313,7 @@
       tryPlay();
       awayPaused = false;
       hideBig();
+      showPlay(true);
       syncSound(); syncPlay();
       say("Playing with sound from the beginning");
     });
@@ -1321,7 +1327,7 @@
   /* holds the last frame; the live region says so, because the Play control
      has silently become a Replay control */
   video.addEventListener("ended", function () {
-    ended = true; syncPlay(); bigReplay(); say("Replay available");
+    ended = true; syncPlay(); bigReplay(); showPlay(false); say("Replay available");
   });
 
   bPlay.addEventListener("click", function () {
@@ -1341,6 +1347,7 @@
       soundGesture();
       if (video.paused && !ended) { tryPlay(); awayPaused = false; }
       hideBig();
+      showPlay(true);
     }
     syncSound(); syncPlay();
     say(soundOn ? "Sound on" : "Muted");

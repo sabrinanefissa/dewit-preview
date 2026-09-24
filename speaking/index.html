@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="../assets/img/reel-poster-1280.webp" imagesrcset="../assets/img/reel-poster-860.webp 860w, ../assets/img/reel-poster-1280.webp 1280w, ../assets/img/reel-poster-1920.webp 1920w" imagesizes="100vw" fetchpriority="high">
-<link rel="stylesheet" href="../css/main.css?v=20260924a">
+<link rel="stylesheet" href="../css/main.css?v=20260924b">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 </head>
 <body>
@@ -88,7 +88,9 @@
     <!-- The one primary control: it is a speaking page, so the offer is the
          sound. One click unmutes, restarts the reel at 0:00 and plays; the
          button then fades out and comes back only when the reel ends, as
-         "Replay with sound". The three small controls below keep the rest. -->
+         "Replay with sound". The small controls below keep the rest; the
+         play/pause control among them appears only once the reel has been
+         started. -->
     <button type="button" class="spk-hero__cta" id="spkBig" data-state="start">
       <span class="play__ring" aria-hidden="true">
         <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -105,7 +107,7 @@
     <canvas class="spk-voice" id="spkVoice" aria-hidden="true"></canvas>
 
     <div class="hero__actions spk-hero__controls reveal">
-        <button type="button" class="spk-ctrl" id="spkPlay" data-state="play" aria-pressed="false">
+        <button type="button" class="spk-ctrl" id="spkPlay" data-state="play" aria-pressed="false" hidden>
           <span class="play__ring" aria-hidden="true">
             <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
             <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
@@ -139,9 +141,9 @@
        ============================================================== -->
   <section class="stats spk-proof" aria-label="Speaking record">
     <p class="stats__line reveal">
-      <span class="stats__n"><span data-count="170">0</span></span> keynotes.
-      <span class="stats__n"><span data-count="7000" data-suffix="+">0</span></span> leaders in those rooms.
-      <span class="stats__n"><span data-count="20" data-suffix="+">0</span></span> years inside the relationships people care about most.
+      <span class="stats__n"><span data-count="170">170</span></span> keynotes.
+      <span class="stats__n"><span data-count="7000" data-suffix="+">7,000+</span></span> leaders in those rooms.
+      <span class="stats__n"><span data-count="20" data-suffix="+">20+</span></span> years inside the relationships people care about most.
     </p>
   </section>
 
@@ -512,6 +514,6 @@
   <div class="foot__base"><span>© <span data-year>2026</span> Dr. Stephen de Wit</span><span>Human Connection &amp; Relational Intelligence</span></div>
 </footer>
 
-<script src="../js/main.js?v=20260924a" defer></script>
+<script src="../js/main.js?v=20260924b" defer></script>
 </body>
 </html>
