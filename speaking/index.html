@@ -198,7 +198,7 @@
        3. KEYNOTES - a permanent index of three, one shared stage.
        Video-led: the ground for each talk is the reel itself, held on a
        frame from that talk's own segment, and "Hear Stephen on this" plays
-       that segment with sound. The three stills stay in the markup as the
+       that segment with sound, full-bleed, with the type out of the frame. The three stills stay in the markup as the
        ground for reduced motion, Save-Data and no script.
        The segment for each talk lives on its own button as
        data-seg-start / data-seg-end (seconds into the reel), so a re-cut
@@ -225,6 +225,12 @@
     </div>
     <div class="spk-keys__grade" aria-hidden="true"></div>
     <div class="spk-keys__glow" aria-hidden="true"></div>
+    <div class="spk-keys__play" aria-hidden="true">
+      <p class="spk-keys__cap" id="spkKeysCap"></p>
+    </div>
+    <button type="button" class="spk-keys__pause" id="spkKeysPause" aria-label="Pause" hidden>
+      <span class="play__ring" aria-hidden="true"><svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg></span>
+    </button>
 
     <div class="spk-keys__inner">
       <div class="spk-keys__head reveal">
@@ -232,13 +238,13 @@
       </div>
 
       <div class="spk-keys__index" id="spkKeysIndex" role="tablist" aria-label="Keynotes">
-        <button type="button" class="spk-keys__tab is-on" role="tab" id="spkTab1" aria-controls="spkPanel1" aria-selected="true" tabindex="0">
+        <button type="button" class="spk-keys__tab is-on" role="tab" id="spkTab1" data-accent="violet" aria-controls="spkPanel1" aria-selected="true" tabindex="0">
           <span class="spk-keys__no">01</span><span class="spk-keys__name">Lead Human<span class="tm">&trade;</span></span><span class="spk-keys__rule" aria-hidden="true"></span>
         </button>
-        <button type="button" class="spk-keys__tab" role="tab" id="spkTab2" aria-controls="spkPanel2" aria-selected="false" tabindex="-1">
+        <button type="button" class="spk-keys__tab" role="tab" id="spkTab2" data-accent="coral" aria-controls="spkPanel2" aria-selected="false" tabindex="-1">
           <span class="spk-keys__no">02</span><span class="spk-keys__name">Invisible Friction</span><span class="spk-keys__rule" aria-hidden="true"></span>
         </button>
-        <button type="button" class="spk-keys__tab" role="tab" id="spkTab3" aria-controls="spkPanel3" aria-selected="false" tabindex="-1">
+        <button type="button" class="spk-keys__tab" role="tab" id="spkTab3" data-accent="gold" aria-controls="spkPanel3" aria-selected="false" tabindex="-1">
           <span class="spk-keys__no">03</span><span class="spk-keys__name">The Hidden Multiplier</span><span class="spk-keys__rule" aria-hidden="true"></span>
         </button>
       </div>
@@ -252,18 +258,17 @@
            motion) the disclosure button is hidden by CSS and the lists are
            open. -->
       <div class="spk-keys__stage">
-        <div class="spk-keys__panel is-on" role="tabpanel" id="spkPanel1" aria-labelledby="spkTab1" tabindex="0">
+        <div class="spk-keys__panel is-on" role="tabpanel" id="spkPanel1" data-accent="violet" aria-labelledby="spkTab1" tabindex="0">
           <h3 class="spk-keys__ptitle">Lead Human<span class="tm">&trade;</span></h3>
           <p class="spk-keys__sub">Relational Intelligence at Work.</p>
           <button type="button" class="spk-keys__hear" id="spkHear1" data-state="play"
-                  data-seg-start="91.96" data-seg-end="108.96" data-seg-poster="95.96" aria-pressed="false">
+                  data-seg-start="103.66" data-seg-end="115.42" data-seg-poster="110.0" aria-pressed="false">
             <span class="play__ring" aria-hidden="true">
               <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
               <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
             </span>
             <span class="spk-keys__hearlabel">Hear Stephen on this</span>
           </button>
-          <p class="spk-keys__cap" id="spkCap1" aria-hidden="true"></p>
           <button type="button" class="spk-keys__more" id="spkMore1" aria-expanded="false" aria-controls="spkOuts1">
             <span>What they leave with</span>
             <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>
@@ -275,18 +280,17 @@
           </ul>
         </div>
 
-        <div class="spk-keys__panel" role="tabpanel" id="spkPanel2" aria-labelledby="spkTab2" tabindex="0">
+        <div class="spk-keys__panel" role="tabpanel" id="spkPanel2" data-accent="coral" aria-labelledby="spkTab2" tabindex="0">
           <h3 class="spk-keys__ptitle">Invisible Friction</h3>
           <p class="spk-keys__sub">Why teams break down.</p>
           <button type="button" class="spk-keys__hear" id="spkHear2" data-state="play"
-                  data-seg-start="114.96" data-seg-end="130.96" data-seg-poster="116.96" aria-pressed="false">
+                  data-seg-start="115.42" data-seg-end="130.90" data-seg-poster="126.0" aria-pressed="false">
             <span class="play__ring" aria-hidden="true">
               <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
               <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
             </span>
             <span class="spk-keys__hearlabel">Hear Stephen on this</span>
           </button>
-          <p class="spk-keys__cap" id="spkCap2" aria-hidden="true"></p>
           <button type="button" class="spk-keys__more" id="spkMore2" aria-expanded="false" aria-controls="spkOuts2">
             <span>What they leave with</span>
             <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>
@@ -298,18 +302,17 @@
           </ul>
         </div>
 
-        <div class="spk-keys__panel" role="tabpanel" id="spkPanel3" aria-labelledby="spkTab3" tabindex="0">
+        <div class="spk-keys__panel" role="tabpanel" id="spkPanel3" data-accent="gold" aria-labelledby="spkTab3" tabindex="0">
           <h3 class="spk-keys__ptitle">The Hidden Multiplier</h3>
           <p class="spk-keys__sub">What relational intelligence does to retention.</p>
           <button type="button" class="spk-keys__hear" id="spkHear3" data-state="play"
-                  data-seg-start="109.56" data-seg-end="115.36" data-seg-poster="111.96" aria-pressed="false">
+                  data-seg-start="137.34" data-seg-end="145.70" data-seg-poster="144.0" aria-pressed="false">
             <span class="play__ring" aria-hidden="true">
               <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
               <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
             </span>
             <span class="spk-keys__hearlabel">Hear Stephen on this</span>
           </button>
-          <p class="spk-keys__cap" id="spkCap3" aria-hidden="true"></p>
           <button type="button" class="spk-keys__more" id="spkMore3" aria-expanded="false" aria-controls="spkOuts3">
             <span>What they leave with</span>
             <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>

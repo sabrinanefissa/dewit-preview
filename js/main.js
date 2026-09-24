@@ -1253,6 +1253,7 @@
     bCC.setAttribute("data-state", ccOn ? "cc" : "off");
     bCC.setAttribute("aria-pressed", ccOn ? "true" : "false");
     if (lCC) lCC.textContent = ccOn ? "Captions off" : "Captions on";
+    document.documentElement.setAttribute("data-spk-cc", ccOn ? "on" : "off");
   }
   function applyCC() {
     var t = video.textTracks && video.textTracks.length ? video.textTracks[0] : null;
@@ -1415,7 +1416,9 @@
   var mores   = [].slice.call(sec.querySelectorAll(".spk-keys__more"));
   var outs    = [].slice.call(sec.querySelectorAll(".spk-keys__outs"));
   var hears   = [].slice.call(sec.querySelectorAll(".spk-keys__hear"));
-  var caps    = [].slice.call(sec.querySelectorAll(".spk-keys__cap"));
+  var cap      = document.getElementById("spkKeysCap");
+  var playWrap = sec.querySelector(".spk-keys__play");
+  var pauseBtn = document.getElementById("spkKeysPause");
   var live    = document.getElementById("spkKeysLive");
   if (!index || !tabs.length || tabs.length !== panels.length) return;
 
@@ -1447,6 +1450,7 @@
              p: isNaN(p) ? a : p };
   });
   var playing = -1, watchRaf = 0, srcSet = false, track = null;
+  var idleT = 0, pauseHideT = 0;
 
   function clipSrc() {
     if (!vid) return "";
@@ -1468,21 +1472,29 @@
       track.addEventListener("cuechange", onCue);
     }
   }
-  /* One centred line under the button, from the reel's own VTT. */
+  /* One line at the bottom of the frame, from the reel's own VTT, and only
+     when the visitor has captions on in the hero (the CSS hides it too). */
   function onCue() {
-    if (playing < 0 || !track) return;
-    var el = caps[playing];
-    if (!el) return;
+    if (playing < 0 || !track || !cap) return;
+    var ccOn = document.documentElement.getAttribute("data-spk-cc") === "on";
     var c = track.activeCues && track.activeCues.length ? track.activeCues[0] : null;
-    var txt = c ? String(c.text).replace(/\s+/g, " ").trim() : "";
-    el.textContent = txt;
-    el.classList.toggle("is-on", !!txt);
+    var txt = (ccOn && c) ? String(c.text).replace(/\s+/g, " ").trim() : "";
+    cap.textContent = txt;
+    cap.classList.toggle("is-on", !!txt);
   }
-  function clearCap(i) {
-    var el = caps[i];
-    if (!el) return;
-    el.classList.remove("is-on");
-    el.textContent = "";
+  function clearCap() {
+    if (!cap) return;
+    cap.classList.remove("is-on");
+    cap.textContent = "";
+  }
+  /* The pause ring fades to .35 after 2s without the pointer, and comes back
+     on pointer movement or focus. */
+  function wake() {
+    if (!pauseBtn) return;
+    pauseBtn.classList.remove("is-idle");
+    clearTimeout(idleT);
+    if (playing < 0) return;
+    idleT = setTimeout(function () { pauseBtn.classList.add("is-idle"); }, 2000);
   }
   function syncHear(i) {
     var b = hears[i];
@@ -1509,6 +1521,13 @@
     if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
     playing = -1;
     sec.classList.remove("is-playing");
+    clearTimeout(idleT);
+    if (playWrap) playWrap.removeAttribute("data-accent");
+    if (pauseBtn) {
+      clearTimeout(pauseHideT);
+      /* hidden only once the 420ms fade has finished */
+      pauseHideT = setTimeout(function () { if (playing < 0) pauseBtn.hidden = true; }, 420);
+    }
     if (vid) {
       if (!vid.paused) vid.pause();
       vid.muted = true;
@@ -1516,7 +1535,7 @@
       if (!noPark && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} }
       if (!videoGround) vid.classList.remove("is-on", "is-lit");
     }
-    if (i >= 0) { clearCap(i); syncHear(i); if (atEnd) say("Clip finished"); }
+    if (i >= 0) { clearCap(); syncHear(i); if (atEnd) say("Clip finished"); }
   }
   function playClip(i) {
     if (!vid || !segs[i]) return;
@@ -1532,6 +1551,12 @@
     vid.muted = false;
     playing = i;
     sec.classList.add("is-playing");
+    if (playWrap) playWrap.setAttribute("data-accent", panels[i].getAttribute("data-accent") || "");
+    if (pauseBtn) {
+      clearTimeout(pauseHideT);
+      pauseBtn.hidden = false;
+      wake();
+    }
     syncHear(i);
     var p = vid.play();
     if (p && p.catch) p.catch(function () { stopClip(false); });
@@ -1554,6 +1579,25 @@
       if (playing >= 0) stopClip(false);
       playClip(i);
     });
+  });
+
+  /* The pause ring stops the clip and hands focus back to the talk's own
+     button, so a keyboard user is not left on a control that is going away. */
+  if (pauseBtn) {
+    pauseBtn.addEventListener("click", function () {
+      var i = playing;
+      stopClip(false); say("Paused");
+      if (i < 0) i = cur;
+      if (hears[i]) hears[i].focus({ preventScroll: true });
+    });
+    pauseBtn.addEventListener("focus", wake);
+  }
+  sec.addEventListener("pointermove", function (e) {
+    if (playing < 0 || e.pointerType === "touch") return;
+    wake();
+  }, { passive: true });
+  document.addEventListener("keydown", function (e) {
+    if (playing >= 0 && e.key === "Escape") stopClip(false);
   });
 
   /* Nothing keeps talking off screen or in a hidden tab. */
@@ -1598,6 +1642,19 @@
   panels.forEach(function (p, i) { if (i !== 0) p.setAttribute("inert", ""); });
 
   var hideT = 0, lightT = 0;
+  var strip = window.matchMedia("(max-width: 768px)");
+  var autoScroll = false, autoT = 0, swipeT = 0;
+
+  /* On a phone the index is a snap strip: the selected title is kept centred. */
+  function centreTab(i) {
+    if (!strip.matches || !tabs[i]) return;
+    autoScroll = true;
+    clearTimeout(autoT);
+    autoT = setTimeout(function () { autoScroll = false; }, 500);
+    try {
+      tabs[i].scrollIntoView({ inline: "center", block: "nearest", behavior: reduce ? "instant" : "smooth" });
+    } catch (err) {}
+  }
 
   /* The reel becomes the ground: the stills go dark, the video takes the
      frame, and it is parked on the first talk's in point. */
@@ -1701,6 +1758,7 @@
 
     tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
     tabs[i].setAttribute("aria-selected", "true");    tabs[i].tabIndex = 0;    tabs[i].classList.add("is-on");
+    centreTab(i);
     lights(i);
     closeAll();
 
@@ -1738,6 +1796,24 @@
       tabs[n].focus();
     });
   });
+
+  /* A swipe selects: once the strip settles, the title nearest its centre
+     becomes the selected talk. */
+  index.addEventListener("scroll", function () {
+    if (!strip.matches || autoScroll) return;
+    clearTimeout(swipeT);
+    swipeT = setTimeout(function () {
+      if (!strip.matches || autoScroll) return;
+      var r = index.getBoundingClientRect();
+      var mid = r.left + r.width / 2, best = -1, bestD = Infinity;
+      tabs.forEach(function (t, k) {
+        var b = t.getBoundingClientRect();
+        var d = Math.abs(b.left + b.width / 2 - mid);
+        if (d < bestD) { bestD = d; best = k; }
+      });
+      if (best >= 0 && best !== cur) select(best);
+    }, 140);
+  }, { passive: true });
 
   /* the house lights come up on the first ground as the section arrives */
   function firstLight() {

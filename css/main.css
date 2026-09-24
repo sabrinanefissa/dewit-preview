@@ -1257,7 +1257,11 @@ html.no-js .spk-voice { display:none; }
    Only the .is-on image is present at all; the rest are opacity 0. */
 .spk-keys__media img, .spk-keys__video { position:absolute; inset:0; width:100%; height:100%;
   object-fit:cover; object-position: 50% 38%; }
-.spk-keys__media .spk-lights { --lights-dur: 1.15s; }
+.spk-keys__media .spk-lights { --lights-dur: 1.15s;
+  transform: scale(1.04); transform-origin: 50% 40%;
+  transition: filter var(--lights-dur, 1.25s) var(--ease-out),
+              opacity var(--lights-dur, 1.25s) var(--ease-out),
+              transform 1.6s var(--ease-out); }
 .spk-keys__media.is-dimming .spk-lights { --lights-dur: .26s; }
 .spk-keys__media .spk-lights:not(.is-on) { opacity:0;
   transition: opacity .26s var(--ease-out); }
@@ -1273,24 +1277,31 @@ html.no-js .spk-keys__video { display:none; }
    thirds, so the room stays visible on either side of the words. It has no
    edge and no box. A very light full-frame wash underneath keeps the top of
    the frame from competing with the nav. */
-.spk-keys__media .spk-lights.is-lit { filter: brightness(.66) saturate(.86) contrast(1.06); }
+.spk-keys__media .spk-lights.is-lit { filter: brightness(.66) saturate(.86) contrast(1.06);
+  transform:none; }
+@media (prefers-reduced-motion: reduce) {
+  .spk-keys__media .spk-lights { transform:none; transition:none; }
+}
 .spk-keys__grade { position:absolute; inset:0; z-index:0; pointer-events:none;
   background:
     radial-gradient(46% 62% at 50% 50%, rgba(10,5,17,.90), rgba(10,5,17,.78) 46%,
                     rgba(10,5,17,.44) 72%, rgba(10,5,17,.12) 90%, rgba(10,5,17,0) 100%),
     linear-gradient(0deg, rgba(10,5,17,.46) 0%, rgba(10,5,17,.24) 34%, rgba(10,5,17,.44) 100%);
   transition: opacity .7s var(--ease-out); }
-/* While a talk is playing the grade steps back so the room reads — but only
-   as far as the unselected tab colour allows: .88 is the floor that keeps
-   rgba(244,236,222,.62) over the brightest reel frame above 4.5:1. */
-.spk-keys.is-playing .spk-keys__grade { opacity:.88; }
+/* While a talk is playing there is no type on the frame, so the grade and
+   the glow go altogether and the ground comes up to full. */
+.spk-keys.is-playing .spk-keys__grade { opacity:0; }
+.spk-keys.is-playing .spk-keys__glow { opacity:0; }
+.spk-keys.is-playing .spk-keys__media .spk-lights { --lights-dur: .42s; }
+.spk-keys.is-playing .spk-keys__media .spk-lights.is-lit { filter: brightness(1) saturate(.92) contrast(1.04); }
 @media (prefers-reduced-motion: reduce) {
   .spk-keys__grade { transition:none; }
 }
 .spk-keys__glow { position:absolute; left:50%; top:46%; z-index:0; pointer-events:none;
   width:34rem; height:34rem; margin:-17rem 0 0 -17rem; border-radius:50%;
   background: radial-gradient(closest-side, rgba(169,133,230,.18), rgba(169,133,230,.06) 42%, transparent 68%);
-  animation: spkKeysDrift 24s var(--ease-amb) infinite alternate; will-change: transform; }
+  animation: spkKeysDrift 24s var(--ease-amb) infinite alternate; will-change: transform;
+  transition: opacity .42s var(--ease-out); }
 @keyframes spkKeysDrift {
   from { transform: translate3d(-7%, -4%, 0); }
   to   { transform: translate3d(7%, 5%, 0); } }
@@ -1325,16 +1336,23 @@ html.no-js .spk-keys__video { display:none; }
   color: rgba(244,236,222,.62); transition: color var(--dur-fast) var(--ease-out); }
 .spk-keys__name { grid-column:2; }
 .spk-keys__name .tm { font-size:.38em; vertical-align:super; color: var(--tx-inv-faint); }
-.spk-keys__rule { grid-column:1 / 3; justify-self:center; display:block; height:1px; width:0;
-  margin-top:.4rem; background: var(--violet-300);
-  transition: width var(--dur) var(--ease-out); }
+/* Each talk carries its own accent, on the tab and on its panel. */
+.spk-keys [data-accent="violet"] { --acc: var(--violet-300); }
+.spk-keys [data-accent="coral"]  { --acc: var(--coral); }
+.spk-keys [data-accent="gold"]   { --acc: var(--gold); }
+/* At rest the three are three distinct things: every title carries its own
+   rule in its own accent; the selected one runs full width at full strength. */
+.spk-keys__rule { grid-column:1 / 3; display:block; height:2px; width:40%;
+  justify-self:center; margin-top:.45rem; background: var(--acc, var(--violet-300));
+  opacity:.6;
+  transition: width var(--dur) var(--ease-out), opacity var(--dur-fast) var(--ease-out); }
 @media (hover: hover) {
   .spk-keys__tab:hover, .spk-keys__tab:hover .spk-keys__no { color: rgba(244,236,222,.80); }
 }
 .spk-keys__tab:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; }
 .spk-keys__tab[aria-selected="true"] { color: var(--tx-inv); }
-.spk-keys__tab[aria-selected="true"] .spk-keys__no { color: var(--violet-300); }
-.spk-keys__tab[aria-selected="true"] .spk-keys__rule { width: clamp(2.5rem, 5vw, 5rem); }
+.spk-keys__tab[aria-selected="true"] .spk-keys__no { color: var(--acc, var(--violet-300)); }
+.spk-keys__tab[aria-selected="true"] .spk-keys__rule { width:100%; opacity:1; }
 
 /* One shared stage. The panels are stacked in a single grid cell so the
    swap cannot shift the page. */
@@ -1382,28 +1400,71 @@ html.no-js .spk-keys__video { display:none; }
 .spk-keys__hear:hover .play__ring::before { clip-path: inset(0 0 0 0); }
 .spk-keys__hear:active .play__ring { transform: scale(.94); }
 .spk-keys__hear:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
-.spk-keys__hear[aria-pressed="true"] .play__ring { border-color: var(--violet-300); }
+/* the ring's hover sweep takes the talk's accent (the base .play__ring::before
+   names --violet-400, which tokens.css does not define) */
+.spk-keys__hear .play__ring::before { border-color: var(--acc, var(--violet-400)); }
+.spk-keys__hear[aria-pressed="true"] .play__ring { border-color: var(--acc, var(--violet-300)); }
 .spk-keys__hearlabel { font-family: var(--f-text); font-weight:600; font-size: var(--step--1);
   letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
 .spk-keys__hear[data-state="play"]  .spk-ic--play  { display:block; }
 .spk-keys__hear[data-state="pause"] .spk-ic--pause { display:block; }
 
-/* The caption for the segment that is playing: one centred line under the
-   button, from the reel's own VTT. The slot is reserved at rest so nothing
-   below it moves when a line arrives. */
-/* At rest the slot is closed, so the column keeps ONE rhythm the whole way
-   down — h2, tabs, line, hear, disclosure — with no hole under the button.
-   The slot opens only while a clip is running, and because the section is a
-   centred grid the column grows symmetrically around its middle rather than
-   pushing the disclosure down the frame. */
-.spk-keys__cap { min-height: 0; margin-top: 0; margin-inline:auto; max-width: 46ch;
-  font-family: var(--f-text); font-size: var(--step--1); line-height:1.5;
-  letter-spacing:.01em; color: var(--tx-inv); text-wrap: balance;
+/* Play state. Pressing play takes the type out of the frame: the heading,
+   the index and the stage (line, hear button, disclosure, outcomes) fade out
+   over 420ms, with visibility, never display, so nothing reflows and the
+   section is the same height at rest and during play. */
+.spk-keys__head, .spk-keys__index, .spk-keys__stage {
+  transition: opacity .42s var(--ease-out), visibility 0s linear 0s; }
+/* the heading is also a .reveal, so it keeps its rise */
+.spk-keys__head {
+  transition: opacity .42s var(--ease-out), transform .55s var(--ease-out),
+              visibility 0s linear 0s; }
+.spk-keys.is-playing .spk-keys__head,
+.spk-keys.is-playing .spk-keys__index,
+.spk-keys.is-playing .spk-keys__stage { opacity:0; visibility:hidden;
+  transition: opacity .42s var(--ease-out), visibility 0s linear .42s; }
+/* the selected panel sets visibility:visible on itself, which would beat the
+   stage's inherited hidden, so it is hidden with the stage */
+.spk-keys.is-playing .spk-keys__panel { visibility:hidden;
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out),
+              visibility 0s linear .42s; }
+
+/* The only things on the frame while a clip plays: the reel's own caption
+   as one line near the bottom (only when captions are on in the hero), and
+   one small pause ring bottom-centre. */
+.spk-keys__play { position:absolute; left:0; right:0; bottom: clamp(6.5rem, 14vh, 9rem);
+  z-index:3; pointer-events:none; text-align:center; }
+.spk-keys__cap { margin-inline:auto; max-width:46ch; padding-inline: var(--gutter);
+  font-family: var(--f-text); font-size: var(--step-0); line-height:1.5;
+  letter-spacing:.01em; color: var(--tx-inv); text-wrap:balance;
   opacity:0; transition: opacity .3s var(--ease-out); }
-.spk-keys.is-playing .spk-keys__cap { min-height: 3em;
-  margin-top: calc(var(--spk-keys-gap) * .55); }
+/* the leading hairline, in the playing talk's accent (the script sets
+   data-accent on .spk-keys__play) */
+.spk-keys__cap::before { content:""; display:block; width:2.5rem; height:1px;
+  margin: 0 auto .7rem; background: var(--acc, var(--violet-300)); }
 .spk-keys__cap.is-on { opacity:1; }
-@media (prefers-reduced-motion: reduce) { .spk-keys__cap { transition:none; } }
+html[data-spk-cc="off"] .spk-keys__cap { display:none; }
+
+.spk-keys__pause { position:absolute; left:50%; bottom: clamp(2.5rem, 6vh, 4rem);
+  transform: translateX(-50%); z-index:4; padding:0; border:0; background:none;
+  color: var(--tx-inv); opacity:0; transition: opacity .42s var(--ease-out); }
+.spk-keys__pause[hidden] { display:none; }
+.spk-keys.is-playing .spk-keys__pause { opacity:1; }
+.spk-keys.is-playing .spk-keys__pause.is-idle { opacity:.35; }
+.spk-keys__pause .play__ring { width:3rem; height:3rem; border-color: var(--line-inv-strong); }
+.spk-keys__pause .play__ring svg { width:1rem; height:1rem; margin:0; fill:currentColor; display:block; }
+.spk-keys__pause:hover .play__ring,
+.spk-keys__pause:focus-visible .play__ring { transform: scale(1.07); }
+.spk-keys__pause:hover .play__ring::before { clip-path: inset(0 0 0 0);
+  border-color: var(--acc, var(--violet-300)); }
+.spk-keys__pause:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; opacity:1; }
+@media (prefers-reduced-motion: reduce) {
+  .spk-keys__pause, .spk-keys__cap { transition:none; }
+  .spk-keys.is-stacked.is-playing .spk-keys__head,
+  .spk-keys.is-stacked.is-playing .spk-keys__index,
+  .spk-keys.is-stacked.is-playing .spk-keys__stage,
+  .spk-keys.is-stacked.is-playing .spk-keys__panel { opacity:0; visibility:hidden; transition:none; }
+}
 
 /* "What they leave with" — a real disclosure button. At rest each talk is a
    title and one line; the three outcomes are one click away. */
@@ -1459,10 +1520,16 @@ html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
   .spk-keys__stage { max-width:56ch; }
 }
 /* The row cannot hold three display titles side by side on a narrow screen,
-   so it becomes a centred column. Everything else stays as it is. */
+   so it becomes a snap strip. padding-inline:50% lets every title, first and
+   last included, sit centred; the script keeps the selected one centred. */
 @media (max-width: 768px) {
-  .spk-keys__index { flex-direction:column; align-items:center;
-    gap: clamp(.5rem, 1.4vh, .9rem); }
+  .spk-keys__index { flex-wrap:nowrap; justify-content:flex-start;
+    overflow-x:auto; overflow-y:hidden; scroll-snap-type: x mandatory;
+    scrollbar-width:none; -ms-overflow-style:none;
+    gap: 0 clamp(1.6rem, 8vw, 3rem); padding-inline: 50%; padding-block: .25rem;
+    -webkit-overflow-scrolling: touch; }
+  .spk-keys__index::-webkit-scrollbar { display:none; }
+  .spk-keys__tab { flex: 0 0 auto; scroll-snap-align:center; }
 }
 /* A short desktop viewport cannot hold the whole column at full scale; step
    the type down rather than let the section sprawl. */
