@@ -2374,7 +2374,17 @@
    running the stack becomes one cell on an 8 s dwell; from that moment the
    visible stage is decorative (aria-hidden) and .spk-said__srlist is what a
    screen reader reads. Hover and keyboard focus hold the sequence. An arrow
-   PINS it for good — nothing puts it back on a timer (WCAG 2.2.2). */
+   PINS it for good — nothing puts it back on a timer (WCAG 2.2.2).
+
+   The five lines are things people in a room do not say out loud, so the
+   room says them. The seat array from the formats section lies over the
+   still and five of its seats are occupied, one per line. When a line's
+   turn comes its seat lights gold a beat before the line surfaces, and a
+   hairline draws from the seat toward the line and fades as the line lands.
+   On the bridge all five hold gold and every other seat lifts one step
+   toward violet-100: the organization sees it. Gold is a person, violet the
+   organization, and gold never touches the type. No lean and no wave here:
+   the room is still between seat events and the loop sleeps. */
 (function () {
   "use strict";
   var sec = document.querySelector(".spk-said");
@@ -2393,6 +2403,8 @@
   if (!N) return;
 
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
 
   /* the lights come up once as the section arrives, and hold */
   function lightUp() { if (img) img.classList.add("is-lit"); }
@@ -2404,42 +2416,355 @@
     }, { threshold: 0.2 }).observe(sec);
   }
 
+  /* --- the room ---------------------------------------------------------
+     Geometry, palette and hole are the formats room's, duplicated rather
+     than shared so that module stays exactly as it is. */
+  var cv = document.getElementById("spkSaidRoom");
+  var seatsEl = document.getElementById("spkSaidSeats");
+  var ctx = cv && cv.getContext && cv.getContext("2d");
+  var srItems = [].slice.call(sec.querySelectorAll(".spk-said__srlist li"));
+
+  /* One occupied seat per line, as [row, seat fraction] in the widest
+     tier's nine rows. Rows 0–1 are front rows, below the text band; row 8
+     is the back row, above it (row 7 put lines 3 and 4 inside the hole at
+     1024, under the type's own box). */
+  var OCC = [[1, 0.24], [1, 0.76], [8, 0.14], [8, 0.86], [0, 0.50]];
+  var M = OCC.length;
+
+  var W = 1, H = 1, R = 9, S = 26, n = 0, T = null;
+  var bx = null, by = null, br = null, ba = null, occ = null;
+  var sk = new Int32Array(M);          /* seat index per line */
+  var hl = new Float32Array(M * 4);    /* hairline start x,y and end x,y per line */
+  var PAL = new Array(8 * 33);
+  (function () {
+    for (var l = 0; l < 8; l++) {
+      var f = l / 7;
+      var r = Math.round(169 + (231 - 169) * f);
+      var g = Math.round(133 + (220 - 133) * f);
+      var b = Math.round(230 + (246 - 230) * f);
+      for (var a = 0; a <= 32; a++) PAL[l * 33 + a] = "rgba(" + r + "," + g + "," + b + "," + (a / 32).toFixed(3) + ")";
+    }
+  })();
+  /* a seat's own base violet to gold #E8BB68, in 33 steps, by alpha — built
+     once so draw() never makes a string */
+  var GP = new Array(33 * 33);
+  (function () {
+    for (var c = 0; c <= 32; c++) {
+      var f = c / 32;
+      var r = Math.round(169 + (232 - 169) * f);
+      var g = Math.round(133 + (187 - 133) * f);
+      var b = Math.round(230 + (104 - 230) * f);
+      for (var a = 0; a <= 32; a++) GP[c * 33 + a] = "rgba(" + r + "," + g + "," + b + "," + (a / 32).toFixed(3) + ")";
+    }
+  })();
+  var HAIR = "rgba(169,133,230,.5)";
+
+  function tier() {
+    var w = window.innerWidth;
+    if (w >= 1200) return { R: 9, S: 26, r0: 2.6, r1: 1.2, a0: .42, a1: .14, reach: 260, lean: 3.0, sag0: 10, sag1: 5 };
+    if (w >= 768)  return { R: 7, S: 20, r0: 2.2, r1: 1.1, a0: .39, a1: .14, reach: 220, lean: 2.5, sag0: 10, sag1: 5 };
+    return { R: 5, S: 13, r0: 1.9, r1: 1.0, a0: .36, a1: .14, reach: 0, lean: 0, sag0: 7, sag1: 3.5 };
+  }
+
+  var hole = null;
+  function measureHole() {
+    hole = null;
+    var lr = stage.getBoundingClientRect(), sr = sec.getBoundingClientRect();
+    if (!lr.width || !lr.height) return;
+    var halfW = lr.width / 2 + 24, halfH = lr.height / 2 + 24;
+    var rx = halfW + 80, ry = halfH + 80;
+    var inner = Math.min(halfW / rx, halfH / ry);
+    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    g.addColorStop(0, "rgba(0,0,0,1)");
+    g.addColorStop(inner, "rgba(0,0,0,1)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    hole = { x: lr.left - sr.left + lr.width / 2, y: lr.top - sr.top + lr.height / 2,
+             rx: rx, ry: ry, g: g };
+  }
+
+  /* each hairline runs from its seat toward the line box — front rows to
+     the bottom-centre, back rows to the top-centre — and stops 16px short */
+  function aim() {
+    var lr = stage.getBoundingClientRect(), sr = sec.getBoundingClientRect();
+    var cx = lr.left - sr.left + lr.width / 2;
+    var top = lr.top - sr.top, bot = top + lr.height;
+    for (var i = 0; i < M; i++) {
+      var k = sk[i], x0 = bx[k], y0 = by[k];
+      var tx = cx, ty = OCC[i][0] <= 1 ? bot : top;
+      var dx = tx - x0, dy = ty - y0, d = Math.sqrt(dx * dx + dy * dy);
+      var len = Math.max(0, d - 16), m = d > 0.001 ? len / d : 0;
+      hl[i * 4] = x0; hl[i * 4 + 1] = y0;
+      hl[i * 4 + 2] = x0 + dx * m; hl[i * 4 + 3] = y0 + dy * m;
+    }
+  }
+
+  var btns = [];
+  function placeSeats() {
+    var want = mode === "live" && !!seatsEl && window.innerWidth >= 768;
+    if (!want) {
+      btns.forEach(function (b) { if (b.parentNode) b.parentNode.removeChild(b); });
+      btns = [];
+      return;
+    }
+    if (!btns.length) {
+      for (var i = 0; i < M; i++) btns.push(seatButton(i));
+    }
+    for (var j = 0; j < M; j++) {
+      btns[j].style.left = Math.round(bx[sk[j]]) + "px";
+      btns[j].style.top  = Math.round(by[sk[j]]) + "px";
+    }
+  }
+  /* the buttons are the keyboard path to one particular line; the arrows
+     stay the path through the sequence */
+  function seatButton(i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "spk-said__seat";
+    var li = srItems[i];
+    if (li) b.setAttribute("aria-label", li.textContent.replace(/\s+/g, " ").trim());
+    b.addEventListener("pointerenter", function (e) {
+      if (e.pointerType === "touch") return;
+      pin(i);
+    });
+    b.addEventListener("focus", function () { pin(i); });
+    b.addEventListener("click", function () { pin(i); });
+    seatsEl.appendChild(b);
+    return b;
+  }
+
+  function build() {
+    var r = sec.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    T = tier(); R = T.R; S = T.S; n = R * S;
+    bx = new Float32Array(n); by = new Float32Array(n);
+    br = new Float32Array(n); ba = new Float32Array(n);
+    occ = new Int8Array(n);
+    var k = 0;
+    for (var i = 0; i < R; i++) {
+      var f = R > 1 ? i / (R - 1) : 0;
+      var yi = H * (0.92 - 0.72 * Math.pow(f, 0.78));
+      var spread = 0.62 + 0.34 * f;
+      var sag = T.sag0 + (T.sag1 - T.sag0) * f;
+      for (var j = 0; j < S; j++) {
+        var tt = (S > 1 ? j / (S - 1) : 0.5) - 0.5;
+        bx[k] = W * (0.5 + spread * tt);
+        by[k] = yi - sag * (1 - (2 * tt) * (2 * tt));
+        br[k] = T.r0 + (T.r1 - T.r0) * f;
+        ba[k] = T.a0 + (T.a1 - T.a0) * f;
+        occ[k] = -1;
+        k++;
+      }
+    }
+    /* the rows are authored against nine, so each is read as a fraction and
+       mapped onto the rows and seats this tier actually has */
+    for (var q = 0; q < M; q++) {
+      var rr = Math.max(0, Math.min(R - 1, Math.round(OCC[q][0] / 8 * (R - 1))));
+      var jj = Math.max(0, Math.min(S - 1, Math.round(OCC[q][1] * (S - 1))));
+      sk[q] = rr * S + jj;
+      occ[sk[q]] = q;
+    }
+    measureHole();
+    aim();
+    placeSeats();
+  }
+
+  /* seat, lift and hairline state; every easing runs off its own start time,
+     so a change made off screen has simply finished by the time it is seen */
+  var lit = new Float32Array(M), lFrom = new Float32Array(M), lTo = new Float32Array(M);
+  var lT0 = new Float64Array(M);
+  var lift = 0, fFrom = 0, fTo = 0, fT0 = -1e9;
+  var hlI = -1, hlT0 = 0, hlP = 0, hlA = 0;
+  var roomCur = -1;
+
+  function ease(x) { return 1 - (1 - x) * (1 - x) * (1 - x); }
+
+  function step(now) {
+    var busy = false, t;
+    for (var i = 0; i < M; i++) {
+      t = (now - lT0[i]) / 600;
+      if (t >= 1) { lit[i] = lTo[i]; continue; }
+      if (t < 0) t = 0;
+      lit[i] = lFrom[i] + (lTo[i] - lFrom[i]) * ease(t);
+      busy = true;
+    }
+    t = (now - fT0) / 900;
+    if (t >= 1) lift = fTo;
+    else { if (t < 0) t = 0; lift = fFrom + (fTo - fFrom) * ease(t); busy = true; }
+    if (hlI >= 0) {
+      var e = now - hlT0;
+      if (e < 0) e = 0;
+      if (e >= 1450) { hlI = -1; hlA = 0; }
+      else {
+        hlP = e >= 500 ? 1 : e / 500;
+        hlA = e <= 850 ? 1 : 1 - (e - 850) / 600;
+        busy = true;
+      }
+    }
+    return busy;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    var lt = ((lift * 2 + 0.5) | 0) * 33, la = 0.14 * lift;
+    for (var k = 0; k < n; k++) {
+      var o = occ[k], a, rr = br[k];
+      if (o < 0) {
+        a = ba[k] + la;
+        if (a <= 0.005) continue;
+        if (a > 1) a = 1;
+        ctx.fillStyle = PAL[lt + ((a * 32) | 0)];
+      } else {
+        var l = lit[o];
+        a = 0.95 * l + ba[k] * (1 - l);
+        if (a > 1) a = 1;
+        rr += 0.9 * l;
+        ctx.fillStyle = GP[((l * 32 + 0.5) | 0) * 33 + ((a * 32) | 0)];
+      }
+      ctx.beginPath();
+      ctx.arc(bx[k], by[k], rr, 0, 6.28318530718);
+      ctx.fill();
+    }
+    if (hole) {
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.save();
+      ctx.translate(hole.x, hole.y); ctx.scale(hole.rx, hole.ry);
+      ctx.fillStyle = hole.g;
+      ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.28318530718); ctx.fill();
+      ctx.restore();
+      ctx.globalCompositeOperation = "source-over";
+    }
+    /* the hairline goes on after the hole, so it can reach into the air
+       around the line that the dots are kept out of */
+    if (hlI >= 0 && hlA > 0.001) {
+      var q = hlI * 4;
+      ctx.globalAlpha = hlA;
+      ctx.strokeStyle = HAIR;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(hl[q], hl[q + 1]);
+      ctx.lineTo(hl[q] + (hl[q + 2] - hl[q]) * hlP, hl[q + 1] + (hl[q + 3] - hl[q + 1]) * hlP);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  var mode = null, raf = 0, rT = 0, onScreen = false;
+  function frame(now) {
+    raf = 0;
+    if (mode !== "live") return;
+    var busy = step(now);
+    draw();
+    if (busy && onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+  function wake() { if (mode === "live" && onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame); }
+  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  /* A slide change: on 1–5 only that line's seat is lit and its hairline
+     draws; on the bridge all five hold and the room lifts. The first event
+     waits for the room to be seen. */
+  function roomGo(i) {
+    if (mode !== "live" || i === roomCur) return;
+    if (roomCur < 0 && !onScreen) return;
+    roomCur = i;
+    var now = performance.now();
+    step(now);
+    var all = i >= M;
+    for (var s = 0; s < M; s++) {
+      var to = (all || s === i) ? 1 : 0;
+      if (to !== lTo[s]) { lFrom[s] = lit[s]; lTo[s] = to; lT0[s] = now; }
+    }
+    var ft = all ? 1 : 0;
+    if (ft !== fTo) { fFrom = lift; fTo = ft; fT0 = now; }
+    hlI = all ? -1 : i; hlT0 = now; hlP = 0; hlA = 0;
+    wake();
+  }
+  function roomSeen(v) {
+    onScreen = v;
+    if (!v) { sleep(); return; }
+    if (roomCur < 0) roomGo(cur);
+    wake();
+  }
+
+  /* Reduced motion and Save-Data: the room drawn once, all five seats held
+     gold, no hairline, no lift, no buttons and no loop. */
+  function setRoomMode() {
+    var want = (rmq.matches || saveData) ? "static" : "live";
+    if (want === mode) return;
+    sleep();
+    mode = want;
+    var v = want === "static" ? 1 : 0;
+    for (var i = 0; i < M; i++) { lit[i] = v; lFrom[i] = v; lTo[i] = v; lT0[i] = -1e9; }
+    lift = 0; fFrom = 0; fTo = 0; fT0 = -1e9;
+    hlI = -1; hlA = 0; roomCur = -1;
+    build();
+    draw();
+    if (want === "live" && onScreen) roomGo(cur);
+  }
+  function relayout() { build(); draw(); wake(); }
+  function roomInit(watch) {
+    if (!ctx) return;
+    setRoomMode();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+    window.addEventListener("load", relayout);
+    window.addEventListener("resize", function () {
+      clearTimeout(rT);
+      rT = setTimeout(relayout, 200);
+    }, { passive: true });
+    if (!watch) return;
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) sleep(); else wake();
+    });
+    if (rmq.addEventListener) rmq.addEventListener("change", setRoomMode);
+    else if (rmq.addListener) rmq.addListener(setRoomMode);
+  }
+
   /* Reduced motion keeps the stacked state exactly as it ships: five lines
      and the bridge, lit, no cycle and no arrows. */
-  if (reduce) return;
+  if (reduce) { roomInit(false); return; }
 
   sec.classList.add("is-live");
   stage.setAttribute("aria-hidden", "true");
 
   var DWELL = 8000;
   var cur = 0, pinned = false, hover = false, focus = false, inView = false;
-  var auto = 0, outT = 0;
+  var auto = 0, outT = 0, swapT = 0;
 
   function pad(i) { return (i < 10 ? "0" : "") + i; }
   function wrapi(i) { return ((i % N) + N) % N; }
 
-  function render(i, byUser) {
-    cur = wrapi(i);
-    slides.forEach(function (s, k) {
+  function show(k, byUser) {
+    slides.forEach(function (s, j) {
       var was = s.classList.contains("is-on");
-      s.classList.toggle("is-on", k === cur);
-      s.classList.toggle("is-out", was && k !== cur);
+      s.classList.toggle("is-on", j === k);
+      s.classList.toggle("is-out", was && j !== k);
     });
     clearTimeout(outT);
     outT = setTimeout(function () {
       slides.forEach(function (s) { s.classList.remove("is-out"); });
     }, 560);
-    count.textContent = pad(cur + 1) + " / " + pad(N);
     if (live) {
       if (byUser) {
         live.setAttribute("aria-live", "polite");
-        var t = slides[cur].textContent.replace(/\s+/g, " ").trim();
+        var t = slides[k].textContent.replace(/\s+/g, " ").trim();
         setTimeout(function () { live.textContent = t; }, 60);
       } else {
         live.setAttribute("aria-live", "off");
         live.textContent = "";
       }
     }
+  }
+
+  /* the count and the seat move at once; the line follows 350ms later, so
+     the seat lights a beat before its line surfaces */
+  function render(i, byUser) {
+    var k = cur = wrapi(i);
+    count.textContent = pad(cur + 1) + " / " + pad(N);
+    roomGo(cur);
+    clearTimeout(swapT);
+    swapT = setTimeout(function () { show(k, byUser); }, 350);
   }
 
   function sync() {
@@ -2467,12 +2792,18 @@
   });
   document.addEventListener("visibilitychange", sync);
 
-  render(0, false);
+  /* the first line is simply there when the section is; its seat lights
+     when the room is first seen */
+  count.textContent = pad(1) + " / " + pad(N);
+  show(0, false);
+  roomInit(true);
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(function (e) {
-      inView = e[0].intersectionRatio >= 0.25; sync();
-    }, { threshold: [0, 0.25] }).observe(sec);
-  } else { inView = true; sync(); }
+      var r = e[0].intersectionRatio;
+      inView = r >= 0.25; sync();
+      roomSeen(e[0].isIntersecting && r >= 0.05);
+    }, { threshold: [0, 0.05, 0.25] }).observe(sec);
+  } else { inView = true; sync(); roomSeen(true); }
 })();
 
 /* ===== 8. What it's like in the room: three chapters, one pin =====
