@@ -147,9 +147,9 @@ html.no-js .loader, .loader[hidden] { display:none; }
   height:auto; color: var(--tx-inv); background: var(--plum-2); display:flex; }
 .hero .media { position:absolute; inset:0; z-index:0; background: var(--plum-2); }
 .hero .media img, .hero .media video { object-position: 70% 22%; }
-.hero__poster, .hero__video { position:absolute; inset:0; }
-.hero__video { opacity:0; transition: opacity 1s cubic-bezier(.4,0,.2,1); }
-.hero__video.is-playing { opacity:1; }
+.hero__poster, .hero__video, .spk-hero__video { position:absolute; inset:0; }
+.hero__video, .spk-hero__video { opacity:0; transition: opacity 1s cubic-bezier(.4,0,.2,1); }
+.hero__video.is-playing, .spk-hero__video.is-playing { opacity:1; }
 .hero .media::after { content:""; position:absolute; inset:0;
   background:
     linear-gradient(90deg, rgba(14,8,22,0.92) 0%, rgba(14,8,22,0.55) 42%, rgba(14,8,22,0.05) 100%),
@@ -1076,4 +1076,830 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 @media (max-width: 700px) {
   .orgband__cta { flex-direction: column; align-items: stretch; text-align: left; }
   .orgband__cta .btn { width: 100%; justify-content: center; }
+}
+
+/* =====================================================================
+   SPEAKING PAGE (/speaking/) — everything below is scoped to .spk-*
+   Build spec: 05_Website/Design/SPEAKING-PAGE-DESIGN-SPEC.md
+   Ground sequence, one tone step between neighbours:
+   hero plum-2 · proof plum-2 · keynotes plum · turn plum-2 · formats plum
+   · bio ink · ribbon plum · footer plum-2.
+   Exactly one position:sticky on the page: .spk-turn__stage.
+   ===================================================================== */
+
+/* Visually-hidden utility for this page's live regions and connectives */
+.spk-sr { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
+
+/* ---------------------------------------------------------------------
+   0. Lights up — ONE shared treatment for every photo on this page:
+   the keynote grounds, the five turn panels and the bio portrait. The
+   house is dark until the moment the content lands, then the lights come
+   up on the image. Written as `.media .spk-lights` because `.media img`
+   already sets `filter: var(--img-filter)`, so the class has to carry the
+   whole filter chain to win. Duration is per host through --lights-dur.
+   --------------------------------------------------------------------- */
+.media .spk-lights { filter: brightness(.30) saturate(.55) contrast(1.04); opacity:.55;
+  transition: filter var(--lights-dur, 1.25s) var(--ease-out),
+              opacity var(--lights-dur, 1.25s) var(--ease-out); }
+.media .spk-lights.is-lit { filter: brightness(1) saturate(.92) contrast(1.06); opacity:1; }
+/* Nothing brings the lights up without the script, so with no script the
+   house is simply lit: every photo sits at the site's normal grade. */
+html.no-js .media .spk-lights { filter: var(--img-filter); opacity:1; transition:none; }
+@media (prefers-reduced-motion: reduce) {
+  .media .spk-lights { transition:none; }
+}
+
+/* ---------------------------------------------------------------------
+   1. Hero — full-screen reel with sound. No visible hero text: the reel
+   carries its own on-screen titles, so the frame stays clear and the only
+   thing over it is the control row at the bottom. The h1 is in the DOM as
+   .spk-sr for the heading order and for search.
+   Reuses .hero, .media.media--plum, .hero__actions and the
+   .hero__poster / .hero__video positioning rules (selector lists above).
+   --------------------------------------------------------------------- */
+.spk-hero .media img, .spk-hero .media video { object-position: 50% 28%; }
+
+/* No text needs the left-to-right grade, so it goes. What stays is a soft
+   bottom grade under the controls and a light top wash under the nav.
+   With the big control now standing on the floor too, the bottom grade
+   reaches a little further up so the ring and its label keep their contrast
+   without the radial scrim that used to sit behind them. */
+.spk-hero .media::after {
+  background:
+    linear-gradient(0deg, rgba(14,8,22,0.80) 0%, rgba(14,8,22,0.52) 14%, rgba(14,8,22,0.26) 30%, rgba(14,8,22,0) 52%),
+    linear-gradient(180deg, rgba(14,8,22,0.48) 0%, rgba(14,8,22,0) 26%); }
+
+/* The floor of the hero, as one measurement: the control row sits on it and
+   everything above it (the voice line) is anchored off the same number, so
+   the stack stays together at every viewport height. */
+.spk-hero { --spk-floor: clamp(2rem, 6vh, 4rem); --spk-ctrl-h: 3rem; }
+
+/* The primary control: one large ring on the floor of the hero, directly above
+   the three small controls, because the thing being offered on a speaking page
+   is the sound. It fades out on the click and comes back only when the reel
+   ends. It is bottom-anchored off the same --spk-floor as the control row and
+   sits in the slot the voice line uses once sound is on — the two are never
+   on screen together, so they share it. The middle of the frame is left to the
+   reel: its own burned-in title card runs there for the first few seconds. */
+.spk-hero__cta { position:absolute; left:50%; transform: translateX(-50%);
+  bottom: calc(var(--spk-floor) + var(--spk-ctrl-h) + 1.25rem);
+  z-index:3; display:flex; flex-direction:column; align-items:center; gap:1.1rem;
+  padding:0; border:0; background:none; color: var(--tx-inv);
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out); }
+/* the one control that has to be unmissable, so the ring is drawn at full
+   strength rather than the hairline the small controls use */
+.spk-hero__cta .play__ring { width:6rem; height:6rem;
+  border:1.5px solid rgba(244,236,222,.72);
+  background: rgba(14,8,22,.34); backdrop-filter: blur(2px); }
+.spk-hero__cta .play__ring svg { width:1.7rem; height:1.7rem; margin-left:0; }
+.spk-hero__cta .spk-ic--play { margin-left:5px; }
+.spk-hero__cta .play__ring::before { border-color: var(--violet-400, var(--violet-300)); }
+.spk-hero__cta:hover .play__ring { transform: scale(1.06); }
+.spk-hero__cta:hover .play__ring::before { clip-path: inset(0 0 0 0); }
+.spk-hero__cta:active .play__ring { transform: scale(.95); }
+.spk-hero__cta:focus-visible { outline:2px solid var(--gold); outline-offset:8px; }
+.spk-hero__cta-label { font-family: var(--f-display); font-weight:380; font-size: var(--step-1);
+  line-height:1.1; letter-spacing:-0.015em; white-space:nowrap;
+  text-shadow: 0 2px 18px rgba(8,4,14,.55); }
+.spk-hero__cta[data-state="start"]  .spk-ic--play   { display:block; }
+.spk-hero__cta[data-state="replay"] .spk-ic--replay { display:block; }
+/* gone once the reel is running: no transform on the way out, so the ring
+   does not appear to fly off the frame */
+.spk-hero__cta.is-gone { opacity:0; pointer-events:none; visibility:hidden;
+  transition: opacity .42s var(--ease-out), visibility 0s linear .42s; }
+html.no-js .spk-hero__cta { display:none; }
+@media (max-width: 767px) {
+  .spk-hero__cta .play__ring { width:4.75rem; height:4.75rem; }
+  .spk-hero__cta .play__ring svg { width:1.4rem; height:1.4rem; }
+  .spk-hero__cta-label { font-size: var(--step-0); }
+  .spk-hero__cta { bottom: calc(var(--spk-floor) + var(--spk-ctrl-h) + .9rem); gap:.8rem; }
+}
+
+/* Controls: three real buttons, the .play__ring vocabulary at 3rem, as one
+   centred row on the floor of the hero. */
+.spk-hero__controls { position:absolute; left:0; right:0; bottom: var(--spk-floor);
+  z-index:2; width: var(--wrap); margin: 0 auto; max-width:none;
+  justify-content:center; gap: 1rem clamp(1.4rem, 2.6vw, 2.2rem); }
+.spk-ctrl { display:inline-flex; align-items:center; gap:.75rem; color: var(--tx-inv);
+  padding:0; border:0; background:none; }
+.spk-ctrl .play__ring { width:3rem; height:3rem; flex:0 0 auto; }
+.spk-ctrl .play__ring svg { width:1.05rem; height:1.05rem; margin-left:0; }
+.spk-ctrl .spk-ic--play { margin-left:3px; }
+.spk-ctrl:hover .play__ring { transform: scale(1.07); }
+.spk-ctrl:hover .play__ring::before { clip-path: inset(0 0 0 0); }
+.spk-ctrl:active .play__ring { transform: scale(.93); }
+.spk-ctrl__label { font-family: var(--f-text); font-weight:600; font-size: var(--step--1);
+  letter-spacing:.02em; white-space:nowrap; }
+.spk-ctrl:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
+/* the ring answers the pressed state without a fill or a box */
+.spk-ctrl[aria-pressed="true"] .play__ring { border-color: var(--violet-300); }
+
+/* One icon per state; the button's data-state decides which is painted. */
+.spk-ic { display:none; fill: currentColor; }
+.spk-ic--sound, .spk-ic--mute, .spk-ic--cc, .spk-ic--cc-off, .spk-ic--replay { fill:none; }
+.spk-ctrl[data-state="play"]   .spk-ic--play   { display:block; }
+.spk-ctrl[data-state="pause"]  .spk-ic--pause  { display:block; }
+.spk-ctrl[data-state="replay"] .spk-ic--replay { display:block; }
+.spk-ctrl[data-state="on"]     .spk-ic--sound  { display:block; }
+.spk-ctrl[data-state="mute"]   .spk-ic--mute   { display:block; }
+.spk-ctrl[data-state="off"]    .spk-ic--cc-off { display:block; }
+.spk-ctrl[data-state="cc"]     .spk-ic--cc     { display:block; }
+
+/* Native cue layer only — no custom caption box */
+.spk-hero__video::cue { background: rgba(8,4,14,.72); color:#fff; }
+
+html.no-js .spk-hero__controls { display:none; }
+
+/* The voice line: one open line, compact and centred, sitting directly on top
+   of the control row — bottom-anchored off the same --spk-floor, so it can
+   never drift into the middle of the frame at any viewport height.
+   It is INVISIBLE while the reel is muted, paused or finished: there is no
+   idle line. The script adds .is-on only while sound is actually playing.
+   Decorative, never interactive, so the controls keep the pointer.
+   Absent with no script; a single static render under reduced motion. */
+.spk-voice { position:absolute; left:50%; transform: translateX(-50%); z-index:1;
+  pointer-events:none; display:block;
+  width: min(560px, 60vw); height: 64px;
+  bottom: calc(var(--spk-floor) + var(--spk-ctrl-h) + 1.25rem);
+  opacity:0; transition: opacity .45s var(--ease-out); }
+.spk-voice.is-on { opacity:1; }
+@media (max-width: 767px) { .spk-voice { height: 52px; bottom: calc(var(--spk-floor) + var(--spk-ctrl-h) + .9rem); } }
+html.no-js .spk-voice { display:none; }
+@media (prefers-reduced-motion: reduce) { .spk-voice { transition:none; } }
+
+@media (max-width: 767px) {
+  .spk-ctrl__label { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
+  .spk-ctrl { gap:0; }
+  .spk-hero__controls { gap: 1.25rem; }
+}
+@media (max-width: 720px) {
+  .spk-hero .media img, .spk-hero .media video { object-position: 52% 26%; }
+}
+
+/* ---------------------------------------------------------------------
+   2. Proof line — the reused .stats count-up, centred, no eyebrow
+   --------------------------------------------------------------------- */
+.spk-proof .stats__line { padding-top: clamp(3.5rem, 7vw, 6.5rem);
+  margin-inline: auto; text-align: center; max-width: 30ch; }
+
+/* ---------------------------------------------------------------------
+   3. Keynotes — a permanent index of three over a changing ground
+   --------------------------------------------------------------------- */
+.spk-keys { position:relative; background: var(--plum); color: var(--tx-inv);
+  min-height: 100svh; display:grid; place-items:center; overflow:hidden;
+  padding-block: clamp(3rem, 4vw, 4.5rem); }
+.spk-keys__media { position:absolute; inset:0; z-index:0; }
+/* The ground is a lights-up, not a crossfade: the image that is leaving
+   loses its light first (.26s, under --lights-dur while .is-dimming is on),
+   the swap happens in the dark, and the incoming image comes up over 1.15s.
+   Only the .is-on image is present at all; the rest are opacity 0. */
+.spk-keys__media img, .spk-keys__video { position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position: 50% 38%; }
+.spk-keys__media .spk-lights { --lights-dur: 1.15s; }
+.spk-keys__media.is-dimming .spk-lights { --lights-dur: .26s; }
+.spk-keys__media .spk-lights:not(.is-on) { opacity:0;
+  transition: opacity .26s var(--ease-out); }
+/* The reel as the ground. It is held on a frame from the active talk's own
+   segment — muted and paused — until "Hear Stephen on this" is pressed.
+   With no script it never gets a src, so the stills stay the ground. */
+html.no-js .spk-keys__video { display:none; }
+/* The house is lit, not blacked out: the ground now rests at brightness .66
+   so Stephen is a present figure in the frame rather than a silhouette. What
+   holds the type is no longer a full-frame blackout but a soft radial grade
+   sitting behind the text COLUMN only — an ellipse a little wider than the
+   62ch measure, falling away to nothing well before the left and right
+   thirds, so the room stays visible on either side of the words. It has no
+   edge and no box. A very light full-frame wash underneath keeps the top of
+   the frame from competing with the nav. */
+.spk-keys__media .spk-lights.is-lit { filter: brightness(.66) saturate(.86) contrast(1.06); }
+.spk-keys__grade { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(46% 62% at 50% 50%, rgba(10,5,17,.90), rgba(10,5,17,.78) 46%,
+                    rgba(10,5,17,.44) 72%, rgba(10,5,17,.12) 90%, rgba(10,5,17,0) 100%),
+    linear-gradient(0deg, rgba(10,5,17,.46) 0%, rgba(10,5,17,.24) 34%, rgba(10,5,17,.44) 100%);
+  transition: opacity .7s var(--ease-out); }
+/* While a talk is playing the grade steps back so the room reads — but only
+   as far as the unselected tab colour allows: .88 is the floor that keeps
+   rgba(244,236,222,.62) over the brightest reel frame above 4.5:1. */
+.spk-keys.is-playing .spk-keys__grade { opacity:.88; }
+@media (prefers-reduced-motion: reduce) {
+  .spk-keys__grade { transition:none; }
+}
+.spk-keys__glow { position:absolute; left:50%; top:46%; z-index:0; pointer-events:none;
+  width:34rem; height:34rem; margin:-17rem 0 0 -17rem; border-radius:50%;
+  background: radial-gradient(closest-side, rgba(169,133,230,.18), rgba(169,133,230,.06) 42%, transparent 68%);
+  animation: spkKeysDrift 24s var(--ease-amb) infinite alternate; will-change: transform; }
+@keyframes spkKeysDrift {
+  from { transform: translate3d(-7%, -4%, 0); }
+  to   { transform: translate3d(7%, 5%, 0); } }
+
+/* One centred column, top to bottom: the h2, the three talks as a horizontal
+   tab row, the active talk's line, the invitation to hear it, and the
+   disclosure. Nothing is off to one side, and the whole section is built to
+   sit inside one 900 px viewport at 1440 with the disclosure open.
+   --spk-keys-gap is the one rhythm the column is set on: every step down the
+   column uses it, so the section reads as an even stack rather than a
+   top-loaded block over an empty lower half. */
+.spk-keys__inner { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
+  text-align:center; --spk-keys-gap: clamp(1.1rem, 2.6vh, 1.9rem); }
+.spk-keys__head h2 { font-size: var(--step-2); max-width: 30ch; margin-inline:auto;
+  text-wrap: balance; }
+
+/* The index as a row. Set at --step-1, not --step-2: three titles side by
+   side at display scale would run past the measure long before 1440. */
+.spk-keys__index { margin-top: var(--spk-keys-gap);
+  display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center;
+  align-items:flex-start; gap: .6rem clamp(1.6rem, 3.2vw, 3.2rem); }
+.spk-keys__tab { display:grid; grid-template-columns:auto auto; justify-content:center;
+  align-items:baseline; column-gap:.6rem; padding:.15rem .4rem;
+  font-family: var(--f-display); font-size: var(--step-1); font-weight:360;
+  letter-spacing:-0.02em; line-height:1.06;
+  /* .62 is the floor here: the numeral is small text over the graded ground,
+     so the unselected tab has to clear 4.5:1, not 3:1 */
+  color: rgba(244,236,222,.62);
+  transition: color var(--dur-fast) var(--ease-out); }
+.spk-keys__no { grid-column:1; font-family: var(--f-display); font-size: var(--step--1);
+  font-variant-numeric: tabular-nums lining-nums; letter-spacing:.14em;
+  color: rgba(244,236,222,.62); transition: color var(--dur-fast) var(--ease-out); }
+.spk-keys__name { grid-column:2; }
+.spk-keys__name .tm { font-size:.38em; vertical-align:super; color: var(--tx-inv-faint); }
+.spk-keys__rule { grid-column:1 / 3; justify-self:center; display:block; height:1px; width:0;
+  margin-top:.4rem; background: var(--violet-300);
+  transition: width var(--dur) var(--ease-out); }
+@media (hover: hover) {
+  .spk-keys__tab:hover, .spk-keys__tab:hover .spk-keys__no { color: rgba(244,236,222,.80); }
+}
+.spk-keys__tab:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; }
+.spk-keys__tab[aria-selected="true"] { color: var(--tx-inv); }
+.spk-keys__tab[aria-selected="true"] .spk-keys__no { color: var(--violet-300); }
+.spk-keys__tab[aria-selected="true"] .spk-keys__rule { width: clamp(2.5rem, 5vw, 5rem); }
+
+/* One shared stage. The panels are stacked in a single grid cell so the
+   swap cannot shift the page. */
+/* The stage is height-locked by the script to the tallest EXPANDED panel so
+   a disclosure cannot shift the page. align-content centres the panel inside
+   that reserved height, which is what stops the reserved space from all
+   collecting under the column. */
+.spk-keys__stage { display:grid; align-content:center; max-width:62ch;
+  margin: var(--spk-keys-gap) auto 0; text-align:center; }
+/* Every panel occupies the same cell, so the stage is always as tall as the
+   longest talk and a tab swap cannot move anything. The inactive panels are
+   hidden with visibility, never display, and the visibility change waits for
+   the fade to finish. visibility:hidden also takes them out of the
+   accessibility tree and out of the tab order; JS adds inert as well. */
+.spk-keys__panel { grid-area: 1 / 1; opacity:0; visibility:hidden; pointer-events:none;
+  transform: translateY(10px);
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out),
+              visibility 0s linear .42s; }
+.spk-keys__panel:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
+.spk-keys__panel.is-on { opacity:1; visibility:visible; pointer-events:auto; transform:none;
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out),
+              visibility 0s linear 0s; }
+.spk-keys__panel.is-out { opacity:0; transform: translateY(-6px);
+  transition: opacity .26s var(--ease-out), transform .26s var(--ease-out),
+              visibility 0s linear .26s; }
+.spk-keys__ptitle { display:none; font-size: var(--step-2); margin-bottom:.6rem; }
+.spk-keys__ptitle .tm { font-size:.38em; vertical-align:super; color: var(--tx-inv-faint); }
+.spk-keys__sub { font-family: var(--f-display); font-style:italic; font-weight:360;
+  font-size: var(--step-1); line-height:1.2; letter-spacing:-0.015em; color: var(--violet-300); }
+.spk-keys__sig { color: var(--tx-inv); font-style:normal; }
+.spk-keys__lede { margin-top: 1rem; font-size: var(--step-0); line-height:1.55;
+  color: var(--tx-inv-soft); }
+
+/* "Hear Stephen on this" — the reason this page exists. One ring, centred,
+   under the talk's line. Pressing it plays that talk's own segment of the
+   reel, with sound, in the ground behind it. */
+.spk-keys__hear { display:inline-flex; flex-direction:column; align-items:center; gap:.7rem;
+  margin-top: var(--spk-keys-gap); padding:0; border:0; background:none;
+  color: var(--tx-inv); }
+.spk-keys__hear .play__ring { width:4rem; height:4rem; border-color: var(--line-inv-strong);
+  background: rgba(14,8,22,.26); }
+.spk-keys__hear .play__ring svg { width:1.15rem; height:1.15rem; margin-left:0; fill: currentColor; }
+.spk-keys__hear .spk-ic--play { margin-left:3px; }
+.spk-keys__hear:hover .play__ring { transform: scale(1.06); }
+.spk-keys__hear:hover .play__ring::before { clip-path: inset(0 0 0 0); }
+.spk-keys__hear:active .play__ring { transform: scale(.94); }
+.spk-keys__hear:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
+.spk-keys__hear[aria-pressed="true"] .play__ring { border-color: var(--violet-300); }
+.spk-keys__hearlabel { font-family: var(--f-text); font-weight:600; font-size: var(--step--1);
+  letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+.spk-keys__hear[data-state="play"]  .spk-ic--play  { display:block; }
+.spk-keys__hear[data-state="pause"] .spk-ic--pause { display:block; }
+
+/* The caption for the segment that is playing: one centred line under the
+   button, from the reel's own VTT. The slot is reserved at rest so nothing
+   below it moves when a line arrives. */
+/* At rest the slot is closed, so the column keeps ONE rhythm the whole way
+   down — h2, tabs, line, hear, disclosure — with no hole under the button.
+   The slot opens only while a clip is running, and because the section is a
+   centred grid the column grows symmetrically around its middle rather than
+   pushing the disclosure down the frame. */
+.spk-keys__cap { min-height: 0; margin-top: 0; margin-inline:auto; max-width: 46ch;
+  font-family: var(--f-text); font-size: var(--step--1); line-height:1.5;
+  letter-spacing:.01em; color: var(--tx-inv); text-wrap: balance;
+  opacity:0; transition: opacity .3s var(--ease-out); }
+.spk-keys.is-playing .spk-keys__cap { min-height: 3em;
+  margin-top: calc(var(--spk-keys-gap) * .55); }
+.spk-keys__cap.is-on { opacity:1; }
+@media (prefers-reduced-motion: reduce) { .spk-keys__cap { transition:none; } }
+
+/* "What they leave with" — a real disclosure button. At rest each talk is a
+   title and one line; the three outcomes are one click away. */
+.spk-keys__more { display:inline-flex; align-items:center; gap:.55rem;
+  margin-top: var(--spk-keys-gap); padding:.4rem 0; border:0; background:none;
+  font-family: var(--f-text); font-weight:600; font-size: var(--step--1);
+  letter-spacing:.08em; text-transform:uppercase; color: rgba(244,236,222,.82);
+  transition: color var(--dur-fast) var(--ease-out); }
+.spk-keys__more:hover { color: var(--tx-inv); }
+.spk-keys__more:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; }
+.spk-keys__chev { width:1.05rem; height:1.05rem; flex:0 0 auto; color: var(--violet-300);
+  transition: transform var(--dur-fast) var(--ease-out); }
+.spk-keys__more[aria-expanded="true"] .spk-keys__chev { transform: rotate(180deg); }
+
+.spk-keys__outs { list-style:none; margin: var(--spk-keys-gap) auto 0; padding:0;
+  max-width: 54ch; }
+.spk-keys__outs li { border-top:1px solid var(--line-inv); padding-block:.7rem;
+  font-family: var(--f-display); font-weight:360; font-size: var(--step-1);
+  line-height:1.2; letter-spacing:-0.015em; color: var(--tx-inv);
+  opacity:0; transform: translateY(8px);
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out); }
+.spk-keys__outs li:last-child { border-bottom:1px solid var(--line-inv); }
+/* the disclosure, not the tab, is what stages the three lines in */
+.spk-keys__outs.is-open li { opacity:1; transform:none; }
+.spk-keys__outs.is-open li:nth-child(1) { transition-delay:.06s; }
+.spk-keys__outs.is-open li:nth-child(2) { transition-delay:.12s; }
+.spk-keys__outs.is-open li:nth-child(3) { transition-delay:.18s; }
+
+/* No script, or the stacked mode the reduced-motion path switches on:
+   all three talks are simply there, each under its own heading. */
+html.no-js .spk-keys__index { display:none; }
+html.no-js .spk-keys__stage,
+.spk-keys.is-stacked .spk-keys__stage { display:block; max-width:62ch; }
+html.no-js .spk-keys__panel,
+.spk-keys.is-stacked .spk-keys__panel { opacity:1; visibility:visible; pointer-events:auto;
+  transform:none; transition:none; margin-top: clamp(2rem,4vw,3rem); }
+html.no-js .spk-keys__outs li,
+.spk-keys.is-stacked .spk-keys__outs li { opacity:1; transform:none; transition:none; }
+html.no-js .spk-keys__ptitle,
+.spk-keys.is-stacked .spk-keys__ptitle { display:block; }
+.spk-keys.is-stacked .spk-keys__index { display:none; }
+/* Stacked mode has no disclosure to operate: the outcomes are simply open,
+   which is why the author-level display:block has to beat [hidden]. */
+html.no-js .spk-keys__more,
+.spk-keys.is-stacked .spk-keys__more { display:none; }
+html.no-js .spk-keys__outs[hidden],
+.spk-keys.is-stacked .spk-keys__outs[hidden] { display:block; }
+/* No script means no clip and no captions, so neither control is offered. */
+html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
+
+@media (max-width: 1024px) {
+  .spk-keys { min-height:auto; }
+  .spk-keys__stage { max-width:56ch; }
+}
+/* The row cannot hold three display titles side by side on a narrow screen,
+   so it becomes a centred column. Everything else stays as it is. */
+@media (max-width: 768px) {
+  .spk-keys__index { flex-direction:column; align-items:center;
+    gap: clamp(.5rem, 1.4vh, .9rem); }
+}
+/* A short desktop viewport cannot hold the whole column at full scale; step
+   the type down rather than let the section sprawl. */
+@media (min-width: 1025px) and (max-height: 820px) {
+  .spk-keys__head h2 { font-size: var(--step-1); }
+  .spk-keys__outs li { font-size: var(--step-0); }
+}
+@media (max-width: 640px) {
+  .spk-keys__tab { min-height:44px; align-content:center; }
+  .spk-keys__stage { min-height:auto; }
+  .spk-keys__outs li { font-size: var(--step-0); }
+  .spk-keys__media img, .spk-keys__video { object-position: 60% 40%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-keys__glow { animation:none; }
+  .spk-keys__media img, .spk-keys__video { transition:none; }
+  .spk-keys__outs li { transition:none; }
+  .spk-keys__chev { transition:none; }
+}
+
+/* ---------------------------------------------------------------------
+   4. The turn — the one pin on this page. Five pairs, ONE on screen at a
+   time: the pairs are stacked in a single grid cell, each over its own
+   centred photo panel, and scroll moves between them instead of sliding a
+   list past a cursor. The strike is an SVG path the script redraws with a
+   travelling ripple, the same line vocabulary as the hero voice line.
+   --------------------------------------------------------------------- */
+.spk-turn { position:relative; background: var(--plum-2); color: var(--tx-inv); }
+/* One full viewport of scroll per pair, plus 60vh so the last pair holds its
+   beat before the section lets go. --turn-n is written by the script from the
+   actual pair count; the 5 is the fallback for the list as it stands. */
+.spk-turn__track { height: calc(var(--turn-n, 5) * 100vh + 60vh); }
+.spk-turn__stage { position:sticky; top:0; height:100svh; overflow:hidden;
+  display:grid; place-items:center; }
+
+.spk-turn__glow { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(30rem circle at var(--px, 50%) var(--py, 58%),
+    rgba(169,133,230,.22), rgba(169,133,230,.06) 40%, transparent 68%); }
+
+.spk-turn__h { position:absolute; z-index:3; left:50%; transform: translateX(-50%);
+  top: clamp(5rem, 15vh, 9rem); width: var(--wrap); text-align:center;
+  font-size: var(--step-2); font-weight:360; letter-spacing:-0.02em;
+  color: var(--tx-inv-soft); text-wrap: balance; }
+
+.spk-turn__list { position:relative; z-index:2; display:grid; place-items:center;
+  width:100%; margin: clamp(2rem, 6vh, 4rem) 0 0; padding:0; list-style:none; }
+/* every pair in the same cell, so nothing slides and nothing reflows */
+.spk-turn__pair { grid-area: 1 / 1; display:grid; place-items:center;
+  opacity:0; visibility:hidden; }
+.spk-turn__pair.is-live { visibility:visible;
+  opacity: calc(1 - var(--out, 0));
+  transform: translateY(calc(var(--out, 0) * -24px));
+  filter: blur(calc(var(--out, 0) * 6px)); }
+
+/* The photo panel. Capped at 720 CSS px: the stills exist at 560 w and
+   1120 w only, so a full-bleed use would upscale. Dim until the pair
+   resolves, then the lights come up. */
+.spk-turn__media { grid-area: 1 / 1; z-index:1; position:relative; overflow:hidden;
+  width: min(52vw, 720px); max-width: 1120px; aspect-ratio: 4 / 3; }
+.spk-turn__media .spk-lights { --lights-dur: 1.4s; }
+/* the grade the big type sits on; the panel is lit, not bright */
+.spk-turn__media.media--plum::after {
+  background: radial-gradient(120% 100% at 50% 50%,
+    rgba(14,8,22,.56), rgba(14,8,22,.88) 76%); }
+
+.spk-turn__words { grid-area: 1 / 1; z-index:2; display:flex; flex-direction:column;
+  align-items:center; text-align:center; gap: clamp(1.1rem, 2.2vh, 1.8rem);
+  padding-inline: clamp(1rem, 3vw, 2.5rem); }
+
+.spk-turn__from { position:relative; display:inline-block;
+  font-family: var(--f-display); font-style:italic; font-weight:320;
+  font-size: var(--step-3); line-height:1; letter-spacing:-0.03em;
+  color: var(--tx-inv);
+  /* the reveal is scroll-driven: --in runs 0 -> 1 over the first 12% of the
+     pair's own segment, and is 1 whenever nothing is driving it */
+  opacity: var(--in, 1);
+  transform: translateY(calc((1 - var(--in, 1)) * 14px)); }
+/* The strike is authored straight, so with no script the pair reads as a
+   plain rule through the word. The script arms it (dashoffset 1) and then
+   draws it, rewriting `d` each frame for the travelling ripple. */
+.spk-turn__strike { position:absolute; left:0; top:.5em; width:100%; height:12px;
+  overflow:visible; pointer-events:none; }
+.spk-turn__strike path { fill:none; stroke: var(--violet-300); stroke-width:2;
+  vector-effect: non-scaling-stroke; stroke-linecap:round;
+  stroke-dasharray:1; stroke-dashoffset:0; }
+.spk-turn__to { display:block; font-family: var(--f-display); font-style:normal;
+  font-weight:360; font-size: var(--step-2); line-height:1.02; letter-spacing:-0.025em;
+  color: var(--tx-inv);
+  opacity:0; transform: translateY(14px); filter: blur(8px);
+  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out),
+              filter .6s var(--ease-out); }
+.spk-turn__pair.is-resolved .spk-turn__to { opacity:1; transform:none; filter: blur(0); }
+
+@media (max-width: 1199px) {
+  .spk-turn__strike { height:10px; }
+  .spk-turn__strike path { stroke-width:1.75; }
+  .spk-turn__from { font-size: var(--step-2); }
+  .spk-turn__to { font-size: var(--step-1); }
+}
+/* Phones: no pin. Five blocks, each with its own photo, each resolving once
+   as it arrives. */
+@media (max-width: 640px) {
+  .spk-turn__track { height:auto; }
+  .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
+    padding: clamp(4rem,10vw,6rem) 0; }
+  .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto;
+    text-align:left; }
+  .spk-turn__glow { background: radial-gradient(22rem circle at 30% 45%,
+      rgba(169,133,230,.16), transparent 70%); }
+  .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
+    margin: clamp(2rem,6vw,3rem) auto 0; }
+  /* place-items has to come off with the grid: Chrome applies justify-items
+     in block layout too, which would shrink-wrap and centre these blocks. */
+  .spk-turn__pair { display:block; place-items:normal; opacity:1; visibility:visible;
+    padding-block: clamp(1.6rem,6vw,2.6rem); }
+  .spk-turn__media { width:100%; }
+  .spk-turn__words { display:block; margin-top: clamp(1.2rem,4vw,1.8rem);
+    text-align:left; padding-inline:0; }
+  .spk-turn__to { margin-top:.5rem; }
+  .spk-turn__strike { height:8px; }
+}
+/* Reduced motion: no pin at any width, every pair resolved, the strike flat
+   and drawn, the panels lit, nothing transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .spk-turn__track { height:auto; }
+  .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
+    padding-block: clamp(4rem,9vw,8rem); }
+  .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto; }
+  .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
+    margin: clamp(2rem,5vw,3.5rem) auto 0; }
+  .spk-turn__pair { display:block; place-items:normal;
+    opacity:1 !important; visibility:visible !important;
+    transform:none !important; filter:none !important;
+    padding-block: clamp(1.4rem,4vw,2.4rem); }
+  .spk-turn__media { margin-inline:auto; }
+  .spk-turn__words { display:block; margin-top: clamp(1.2rem,3vw,1.8rem); padding-inline:0; }
+  .spk-turn__from { opacity:1 !important; transform:none !important; }
+  .spk-turn__strike path { stroke-dashoffset:0 !important; }
+  .spk-turn__to { margin-top:.5rem; opacity:1 !important; transform:none !important;
+    filter:none !important; transition:none; }
+}
+html.no-js .spk-turn__track { height:auto; }
+html.no-js .spk-turn__stage { position:static; height:auto; overflow:visible; display:block;
+  padding-block: clamp(4rem,9vw,8rem); }
+html.no-js .spk-turn__h { position:static; transform:none; width: var(--wrap); margin:0 auto; }
+html.no-js .spk-turn__list { display:block; place-items:normal; width: var(--wrap);
+  margin: clamp(2rem,5vw,3.5rem) auto 0; }
+html.no-js .spk-turn__pair { display:block; place-items:normal;
+  opacity:1; visibility:visible; padding-block: clamp(1.4rem,4vw,2.4rem); }
+html.no-js .spk-turn__media { margin-inline:auto; }
+html.no-js .spk-turn__words { display:block; margin-top: clamp(1.2rem,3vw,1.8rem);
+  padding-inline:0; }
+html.no-js .spk-turn__to { margin-top:.5rem; opacity:1; transform:none; filter:none; }
+
+/* ---------------------------------------------------------------------
+   5. Formats — one centred sentence, with the room behind it. The dot
+   layer is cleared in a feathered ellipse around the measured sentence, so
+   the type keeps clean ground: no scrim, no text-shadow.
+   --------------------------------------------------------------------- */
+.spk-formats { position:relative; overflow:hidden;
+  background: var(--plum); color: var(--tx-inv);
+  padding-block: clamp(5rem, 9vw, 9rem); }
+.spk-room { position:absolute; inset:0; z-index:0; display:block;
+  width:100%; height:100%; pointer-events:none; }
+html.no-js .spk-room { display:none; }
+.spk-formats__line { position:relative; z-index:1;
+  width: var(--wrap); margin-inline:auto; text-align:center;
+  font-family: var(--f-display); font-weight:340; font-size: var(--step-2);
+  line-height:1.12; letter-spacing:-0.02em; max-width:46ch; text-wrap: balance; }
+.spk-formats__line em { color: var(--violet-300); }
+@media (max-width: 640px) {
+  .spk-formats__line { font-size: var(--step-1); max-width:24ch; }
+}
+
+
+/* =====================================================================
+   SPEAKING PAGE — ROUND 5 SECTIONS
+   Spec: 05_Website/Design/SPEAKING-R5-SECTIONS-SPEC.md
+   Page order: hero · numbers · A · keynotes · B · turn · C · D · E · footer
+   Ground, one tone step between neighbours:
+   plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2.
+   Still exactly one position:sticky on the page: .spk-turn__stage.
+   ===================================================================== */
+
+/* The two tone swaps the new order needs, and the proof line's own ground.
+   Nothing else about those sections changes. */
+.spk-proof   { background: var(--plum); }
+.spk-turn    { background: var(--plum); }
+.spk-formats { background: var(--plum-2); }
+
+/* ---------------------------------------------------------------------
+   A. .spk-said — "What he talks about." One line at a time over a reel
+   still. The five lines and the bridge are all in the markup, stacked, so
+   the section reads with no script at all; the script collapses the stack
+   into a single cell and cycles it on an 8 s dwell.
+   --------------------------------------------------------------------- */
+.spk-said { position:relative; min-height:100svh; display:grid; place-items:center;
+  overflow:hidden; background: var(--plum-2); color: var(--tx-inv);
+  padding-block: clamp(3rem, 5vw, 5rem); }
+.spk-said .media { position:absolute; inset:0; z-index:0; }
+.spk-said .media img { position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position: 50% 34%; }
+/* The still is an already-dark stage, so the lights come nearly all the way
+   up: held any lower and the frame reads as black rather than as a room. */
+.spk-said .media .spk-lights { --lights-dur: 1.5s; }
+.spk-said .media .spk-lights.is-lit { filter: brightness(.94) saturate(.84) contrast(1.06); }
+/* The grade that holds the type: one soft ellipse behind the column, no
+   edge and no box, falling away before the left and right thirds. */
+.spk-said__grade { position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(44% 56% at 50% 50%, rgba(10,5,17,.82), rgba(10,5,17,.66) 48%,
+                    rgba(10,5,17,.34) 74%, rgba(10,5,17,.09) 92%, rgba(10,5,17,0) 100%),
+    linear-gradient(0deg, rgba(10,5,17,.36) 0%, rgba(10,5,17,.18) 36%, rgba(10,5,17,.36) 100%); }
+.spk-said__inner { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
+  text-align:center; }
+.spk-said__h { font-family: var(--f-display); font-style:italic; font-weight:360;
+  font-size: var(--step-0); line-height:1.3; letter-spacing:0;
+  color: var(--tx-inv-soft); }
+
+.spk-said__stage { display:grid; margin: clamp(1.6rem, 4vh, 2.8rem) auto 0; }
+.spk-said__line { max-width:20ch; margin-inline:auto;
+  font-family: var(--f-display); font-weight:340; font-size: var(--step-3);
+  line-height:1.06; letter-spacing:-0.03em; color: var(--tx-inv); text-wrap: balance; }
+/* the quiet close: not the audience's own experience but what it has
+   already cost the organization by the time anyone names it */
+.spk-said__bridge { max-width:46ch; font-family: var(--f-text); font-weight:400;
+  font-size: var(--step-0); line-height:1.55; letter-spacing:0;
+  color: var(--tx-inv-soft); }
+
+/* Stacked (no script, reduced motion): every line is simply there. */
+.spk-said__line + .spk-said__line { margin-top: clamp(1rem, 2.4vh, 1.8rem); }
+.spk-said__ctrl { display:none; }
+.spk-said__srlist { display:none; }
+
+/* Live: one cell, one line at a time. */
+.spk-said.is-live .spk-said__stage { align-content:center; }
+.spk-said.is-live .spk-said__line { grid-area: 1 / 1; margin-top:0;
+  align-self:center; opacity:0; visibility:hidden; transform: translateY(10px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out),
+              visibility 0s linear .5s; }
+.spk-said.is-live .spk-said__line.is-on { opacity:1; visibility:visible; transform:none;
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out),
+              visibility 0s linear 0s; }
+.spk-said.is-live .spk-said__line.is-out { opacity:0; transform: translateY(-10px); }
+.spk-said.is-live .spk-said__ctrl { display:flex; align-items:center; justify-content:center;
+  gap:1rem; margin-top: 64px; }
+.spk-said.is-live .spk-said__srlist { position:absolute !important; width:1px; height:1px;
+  margin:-1px; padding:0; overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space:nowrap; border:0; display:block; }
+
+.spk-said__arrow { flex:0 0 auto; width:44px; height:44px; padding:0; border:0;
+  background:none; color: var(--tx-inv-soft); display:inline-flex;
+  align-items:center; justify-content:center;
+  transition: color var(--dur-fast) var(--ease-out); }
+.spk-said__arrow svg { width:22px; height:22px; overflow:visible; }
+.spk-said__arrow path { stroke-width:1.25px; vector-effect: non-scaling-stroke; }
+.spk-said__arrow--prev svg { transform: scaleX(-1); }
+.spk-said__arrow:hover, .spk-said__arrow:focus-visible { color: var(--gold); }
+.spk-said__arrow:focus-visible { outline:2px solid var(--violet-300); outline-offset:0; }
+.spk-said__count { font-family: var(--f-text); font-size:.875rem; font-weight:500;
+  line-height:1; letter-spacing:.04em; font-variant-numeric: tabular-nums lining-nums;
+  color: rgba(244,236,222,.72); }
+
+@media (max-width: 640px) {
+  .spk-said__line { font-size: var(--step-2); max-width:15ch; }
+  .spk-said__bridge { font-size: var(--step-0); max-width:34ch; }
+  .spk-said.is-live .spk-said__ctrl { margin-top: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-said.is-live .spk-said__line { transition:none; }
+  .spk-said__arrow { transition:none; }
+}
+
+/* ---------------------------------------------------------------------
+   B. .spk-beats — "What it's like in the room." Three beats over one
+   stage. Selecting a beat runs its own cue of the reel, MUTED: the hero
+   and the keynotes own the audio on this page and this section never
+   claims it. Same lights vocabulary as the keynotes ground — down, seek in
+   the dark, up.
+   --------------------------------------------------------------------- */
+.spk-beats { position:relative; min-height:100svh; display:grid; place-items:center;
+  overflow:hidden; background: var(--plum-2); color: var(--tx-inv);
+  padding-block: clamp(3rem, 4vw, 4.5rem); }
+.spk-beats__media { position:absolute; inset:0; z-index:0; }
+.spk-beats__media img, .spk-beats__video { position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; object-position: 50% 36%; }
+.spk-beats__media .spk-lights { --lights-dur: 1.15s; }
+.spk-beats__media.is-dimming .spk-lights { --lights-dur: .26s; }
+.spk-beats__media .spk-lights:not(.is-on) { opacity:0; transition: opacity .26s var(--ease-out); }
+.spk-beats__media .spk-lights.is-lit { filter: brightness(.64) saturate(.86) contrast(1.06); }
+html.no-js .spk-beats__video { display:none; }
+.spk-beats__grade { position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(40% 46% at 50% 50%, rgba(10,5,17,.88), rgba(10,5,17,.74) 48%,
+                    rgba(10,5,17,.38) 74%, rgba(10,5,17,.10) 92%, rgba(10,5,17,0) 100%),
+    linear-gradient(0deg, rgba(10,5,17,.44) 0%, rgba(10,5,17,.22) 36%, rgba(10,5,17,.44) 100%); }
+
+.spk-beats__inner { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
+  text-align:center; }
+.spk-beats__h { font-size: var(--step-2); max-width: 22ch; margin-inline:auto;
+  text-wrap: balance; }
+/* The beats as a row, in the keynote index's typography — but they are
+   words, not an index, so there is no numeral and no rule under them. */
+.spk-beats__row { margin-top: clamp(1.6rem, 4vh, 2.6rem);
+  display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center;
+  align-items:baseline; gap:.6rem clamp(2rem, 4vw, 4rem); }
+.spk-beats__tab { display:block; }
+.spk-beats__stage { display:grid; align-content:center; max-width:44ch;
+  margin: clamp(1.2rem, 3vh, 2rem) auto 0; min-height: 3.2em; }
+.spk-beats__line { grid-area: 1 / 1; align-self:center;
+  font-size: var(--step-0); line-height:1.55; color: var(--tx-inv);
+  text-wrap: balance;
+  opacity:0; visibility:hidden; transform: translateY(8px);
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out),
+              visibility 0s linear .42s; }
+.spk-beats__line.is-on { opacity:1; visibility:visible; transform:none;
+  transition: opacity .42s var(--ease-out), transform .42s var(--ease-out),
+              visibility 0s linear 0s; }
+.spk-beats__line:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
+/* The beat word repeats inside the line only in the stacked state, where
+   the row is gone and the line would otherwise have nothing to name it. */
+.spk-beats__word { display:none; }
+
+/* Stacked: no row to press, so all three lines are listed, each under its
+   own word. */
+html.no-js .spk-beats__row,
+.spk-beats.is-stacked .spk-beats__row { display:none; }
+html.no-js .spk-beats__stage,
+.spk-beats.is-stacked .spk-beats__stage { display:block; max-width:52ch;
+  min-height:0; margin-top: clamp(1.6rem, 4vh, 2.6rem); }
+html.no-js .spk-beats__line,
+.spk-beats.is-stacked .spk-beats__line { opacity:1; visibility:visible; transform:none;
+  transition:none; margin-top: clamp(1.4rem, 3vh, 2.2rem); }
+html.no-js .spk-beats__word,
+.spk-beats.is-stacked .spk-beats__word { display:block; margin-bottom:.35rem;
+  font-family: var(--f-display); font-weight:360; font-size: var(--step-1);
+  letter-spacing:-0.02em; color: var(--violet-300); }
+
+@media (max-width: 640px) {
+  .spk-beats { min-height:auto; padding-block: clamp(3.5rem, 9vw, 5rem); }
+  /* the stage becomes a 4:5 frame rather than a full-height ground */
+  .spk-beats__media { position:relative; inset:auto; grid-area:1/1;
+    width: var(--wrap); margin-inline:auto; aspect-ratio: 4 / 5; }
+  .spk-beats__grade { display:none; }
+  .spk-beats__inner { grid-area:1/1; align-self:center; }
+  .spk-beats__row { gap:.6rem clamp(1.2rem, 6vw, 2rem); }
+  .spk-beats__stage { max-width:26ch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-beats__line { transition:none; }
+}
+
+/* ---------------------------------------------------------------------
+   C. .spk-formats — the room keeps its canvas and its sentence exactly.
+   What is new is the heading above it and the six rooms, each label pinned
+   to one seat in the dot array and lit when the pointer leans that part of
+   the room toward it (on a phone, as the wave passes).
+   --------------------------------------------------------------------- */
+/* The heading, the seats and the sentence all share this frame now, so the
+   room is given more depth to hold them apart. */
+.spk-formats { padding-block: clamp(6rem, 11vw, 11rem); }
+.spk-formats__h { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
+  margin-bottom: clamp(2.5rem, 6vh, 4.5rem); text-align:center;
+  font-size: var(--step-2); text-wrap: balance; }
+.spk-formats__rooms { position:absolute; inset:0; z-index:1; margin:0; padding:0;
+  list-style:none; pointer-events:none; }
+.spk-formats__rooms li { position:absolute; left:0; top:0; white-space:nowrap;
+  font-family: var(--f-text); font-weight:500; font-size: var(--step--1);
+  line-height:1; letter-spacing:.02em;
+  /* "faint" is relative: this is small text on plum-2 and it has to clear
+     4.5:1 at rest as well as lit, so the resting alpha is .62, not a whisper */
+  color: rgba(244,236,222,.62);
+  transition: color var(--dur) var(--ease-out); }
+.spk-formats__rooms li.is-lit { color: var(--tx-inv); }
+.spk-formats__rooms li[data-side="l"] { transform: translate(-100%, -50%); }
+.spk-formats__rooms li[data-side="r"] { transform: translate(0, -50%); }
+
+/* No script, no seats to sit on: one quiet centred list under the sentence.
+   Same state on a narrow screen, where six labels cannot be placed on five
+   rows of dots without colliding — there the wave still lights them in turn. */
+html.no-js .spk-formats__rooms,
+.spk-formats__rooms.is-flow { position:static; display:flex; flex-wrap:wrap;
+  justify-content:center; gap: .8rem clamp(1.4rem, 4vw, 2.6rem);
+  width: var(--wrap); margin: clamp(2.5rem, 6vh, 4rem) auto 0; }
+html.no-js .spk-formats__rooms li,
+.spk-formats__rooms.is-flow li { position:static; transform:none; white-space:normal; }
+html.no-js .spk-formats__rooms li,
+.spk-formats__rooms.is-static li { color: var(--tx-inv-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .spk-formats__rooms li { transition:none; }
+}
+
+/* ---------------------------------------------------------------------
+   D. .spk-plan — "For planners." One centred column. The AV items are a
+   list separated by rules, not cards and not icons.
+   --------------------------------------------------------------------- */
+.spk-plan { background: var(--plum); color: var(--tx-inv);
+  padding-block: clamp(5rem, 9vw, 9rem); }
+.spk-plan__inner { width: var(--wrap); max-width:62ch; margin-inline:auto;
+  text-align:center; }
+.spk-plan__h { font-size: var(--step-2); text-wrap: balance; }
+.spk-plan__block { margin-top: clamp(2.6rem, 5vw, 4rem); }
+.spk-plan__label { font-family: var(--f-display); font-style:italic; font-weight:360;
+  font-size: var(--step-0); line-height:1.3; letter-spacing:-0.01em;
+  color: var(--violet-300); }
+.spk-plan__copy { margin-top: .9rem; font-size: var(--step-0); line-height:1.6;
+  color: var(--tx-inv-soft); }
+.spk-plan__list { list-style:none; margin: 1.1rem 0 0; padding:0; }
+.spk-plan__list li { padding-block: clamp(.85rem, 1.8vh, 1.15rem);
+  font-size: var(--step--1); line-height:1.6; color: var(--tx-inv); text-wrap: pretty; }
+.spk-plan__list li + li { border-top: 1px solid rgba(169,133,230,.30); }
+
+/* ---------------------------------------------------------------------
+   E. .spk-bio — the strip that replaces the full-viewport bio. One
+   portrait, one sentence, one link. The long bio and the rolling
+   credentials belong to the About page.
+   --------------------------------------------------------------------- */
+.spk-bio { background: var(--plum-2); color: var(--tx-inv);
+  min-height: 420px; display:grid; place-items:center;
+  padding-block: clamp(3rem, 6vw, 4.5rem); }
+.spk-bio__row { width: var(--wrap); max-width: 940px; margin-inline:auto;
+  display:flex; align-items:center; justify-content:center;
+  gap: clamp(2rem, 4vw, 3.5rem); }
+/* soft-edged, so the portrait sits in the ground instead of on it */
+.spk-bio__portrait { flex:0 0 auto; width:240px; height:240px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%);
+          mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%); }
+.spk-bio__portrait img { width:100%; height:100%; object-fit:cover; object-position: 50% 18%; }
+.spk-bio .media .spk-lights { --lights-dur: 1.3s;
+  filter: brightness(.26) saturate(.45) contrast(1.04); }
+.spk-bio .media .spk-lights.is-lit { filter: brightness(.74) saturate(.78) contrast(1.06); }
+.spk-bio__body { max-width: 36ch; }
+.spk-bio__line { font-family: var(--f-display); font-weight:360; font-size: var(--step-1);
+  line-height:1.3; letter-spacing:-0.015em; color: var(--tx-inv); text-wrap: balance; }
+.spk-bio__link { margin-top: 1.6rem; color: var(--tx-inv); }
+@media (max-width: 640px) {
+  .spk-bio__row { flex-direction:column; text-align:center; }
+  .spk-bio__portrait { width:200px; height:200px; }
+  .spk-bio__body { max-width: 30ch; }
 }

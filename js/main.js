@@ -1181,3 +1181,1771 @@
     document.addEventListener("visibilitychange", sync);
   });
 })();
+
+/* =====================================================================
+   SPEAKING PAGE (/speaking/)
+   Three independent IIFEs, each guarded on the presence of its own
+   element, so this file stays inert on the homepage.
+   ===================================================================== */
+
+/* ===== 1. Hero: the reel. Sound never starts without a click. =====
+   Spec: 05_Website/Design/SPEAKING-HERO-AUDIO-SPEC.md */
+(function () {
+  "use strict";
+  var hero = document.querySelector(".spk-hero");
+  if (!hero) return;
+
+  var video  = hero.querySelector(".spk-hero__video");
+  var bPlay  = document.getElementById("spkPlay");
+  var bSound = document.getElementById("spkSound");
+  var bCC    = document.getElementById("spkCC");
+  var bBig   = document.getElementById("spkBig");
+  var lPlay  = document.getElementById("spkPlayLabel");
+  var lSound = document.getElementById("spkSoundLabel");
+  var lCC    = document.getElementById("spkCCLabel");
+  var lBig   = document.getElementById("spkBigLabel");
+  var live   = document.getElementById("spkLive");
+  if (!video || !bPlay || !bSound || !bCC) return;
+
+  var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var reduce   = rmq.matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var small    = window.matchMedia("(max-width: 820px)").matches;
+  /* The markup states whether the mobile encode is light enough to autoplay
+     (reel-mobile.mp4 is 9.4 MB, under the 10 MB ceiling). One attribute, so
+     the decision travels with the file. */
+  var mobileAutoplayOK = video.getAttribute("data-mobile-autoplay") === "true";
+
+  /* The clip is swapped by editing the data-src-* attributes in
+     speaking/index.html. No path is named here. */
+  var src = small
+    ? (video.getAttribute("data-src-mobile") || video.getAttribute("data-src-720"))
+    : video.getAttribute("data-src-1080");
+  if (!src) return;
+
+  var autoOK = !reduce && !saveData && (!small || mobileAutoplayOK);
+  video.setAttribute("preload", autoOK ? "metadata" : "none");
+  video.setAttribute("src", src);
+  video.load();
+
+  var ended = false, soundOn = false, ccOn = false, awayPaused = false;
+
+  function say(msg) {
+    if (!live) return;
+    live.textContent = "";
+    setTimeout(function () { live.textContent = msg; }, 60);
+  }
+
+  /* The visible label is the accessible name, so it is the only thing that
+     flips; aria-pressed carries the state. */
+  function syncPlay() {
+    var state = ended ? "replay" : (video.paused ? "play" : "pause");
+    bPlay.setAttribute("data-state", state);
+    bPlay.setAttribute("aria-pressed", state === "pause" ? "true" : "false");
+    if (lPlay) lPlay.textContent = state === "replay" ? "Replay" : (state === "play" ? "Play" : "Pause");
+  }
+  function syncSound() {
+    bSound.setAttribute("data-state", soundOn ? "mute" : "on");
+    bSound.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    if (lSound) lSound.textContent = soundOn ? "Mute" : "Sound on";
+  }
+  function syncCC() {
+    bCC.setAttribute("data-state", ccOn ? "cc" : "off");
+    bCC.setAttribute("aria-pressed", ccOn ? "true" : "false");
+    if (lCC) lCC.textContent = ccOn ? "Captions off" : "Captions on";
+  }
+  function applyCC() {
+    var t = video.textTracks && video.textTracks.length ? video.textTracks[0] : null;
+    if (t) t.mode = ccOn ? "showing" : "disabled";
+  }
+
+  function tryPlay() {
+    var p = video.play();
+    if (p && p.catch) p.catch(function () { syncPlay(); });   /* refused: the poster holds */
+  }
+
+  /* ---- the big primary control ----
+     One ring in the middle of the frame. It is the page's answer to "I expect
+     to hear SOME talking": one click unmutes, restarts at 0:00 and plays. It
+     then fades out, and comes back only when the reel ends. */
+  function hideBig() { if (bBig) bBig.classList.add("is-gone"); }
+  function bigReplay() {
+    if (!bBig) return;
+    bBig.setAttribute("data-state", "replay");
+    if (lBig) lBig.textContent = "Replay with sound";
+    bBig.classList.remove("is-gone");
+  }
+
+  /* One audio source on the page at a time: claiming it stops the keynote
+     clip, and a keynote clip claiming it stops the reel. */
+  function claim() {
+    document.dispatchEvent(new CustomEvent("spk:audio", { detail: { owner: "hero" } }));
+  }
+  document.addEventListener("spk:audio", function (e) {
+    if (!e.detail || e.detail.owner === "hero") return;
+    if (soundOn) { soundOn = false; video.muted = true; syncSound(); }
+    if (!video.paused) video.pause();
+    awayPaused = false;
+    syncPlay();
+  });
+
+  /* The click is the gesture, so it is also the only moment an AudioContext
+     may be opened. The voice line listens for this and opens its analyser
+     synchronously, inside the same task. */
+  function soundGesture() {
+    document.dispatchEvent(new CustomEvent("spk:sound-on"));
+  }
+
+  if (bBig) {
+    bBig.addEventListener("click", function () {
+      claim();
+      ended = false;
+      soundOn = true;
+      video.muted = false;
+      try { video.currentTime = 0; } catch (err) {}
+      soundGesture();
+      tryPlay();
+      awayPaused = false;
+      hideBig();
+      syncSound(); syncPlay();
+      say("Playing with sound from the beginning");
+    });
+  }
+
+  video.addEventListener("playing", function () {
+    video.classList.add("is-playing"); ended = false; syncPlay();
+  });
+  video.addEventListener("play",  function () { ended = false; syncPlay(); });
+  video.addEventListener("pause", syncPlay);
+  /* holds the last frame; the live region says so, because the Play control
+     has silently become a Replay control */
+  video.addEventListener("ended", function () {
+    ended = true; syncPlay(); bigReplay(); say("Replay available");
+  });
+
+  bPlay.addEventListener("click", function () {
+    if (ended) { ended = false; video.currentTime = 0; tryPlay(); say("Playing"); }
+    else if (video.paused) { tryPlay(); say("Playing"); }
+    else { video.pause(); say("Paused"); }
+    awayPaused = false;
+    syncPlay();
+  });
+
+  bSound.addEventListener("click", function () {
+    soundOn = !soundOn;
+    video.muted = !soundOn;
+    /* the click is the gesture, so sound may start here and nowhere else */
+    if (soundOn) {
+      claim();
+      soundGesture();
+      if (video.paused && !ended) { tryPlay(); awayPaused = false; }
+      hideBig();
+    }
+    syncSound(); syncPlay();
+    say(soundOn ? "Sound on" : "Muted");
+  });
+
+  bCC.addEventListener("click", function () {
+    ccOn = !ccOn; applyCC(); syncCC();
+    say(ccOn ? "Captions on" : "Captions off");
+  });
+
+  /* Scrolled away or tab hidden: pause and remember. Coming back resumes
+     muted, with the Sound control showing "Sound on" again. */
+  function away() {
+    if (!video.paused) { video.pause(); awayPaused = true; syncPlay(); }
+  }
+  function back() {
+    if (!awayPaused) return;
+    awayPaused = false;
+    if (reduce) { syncPlay(); return; }   /* reduced motion: nothing restarts itself */
+    if (soundOn) { soundOn = false; syncSound(); }
+    video.muted = true;
+    tryPlay();
+  }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      if (e[0].intersectionRatio < 0.35) away(); else back();
+    }, { threshold: [0, 0.35, 1] }).observe(hero);
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) away(); else back();
+  });
+
+  /* The preference can flip mid-visit. If it turns on, the hero drops back to
+     its static state: the clip stops and the poster holds. */
+  function onMotionChange() {
+    reduce = rmq.matches;
+    if (!reduce) return;
+    awayPaused = false;
+    if (!video.paused) video.pause();
+    syncPlay();
+  }
+  if (rmq.addEventListener) rmq.addEventListener("change", onMotionChange);
+  else if (rmq.addListener) rmq.addListener(onMotionChange);
+
+  syncSound(); syncCC(); applyCC(); syncPlay();
+  if (autoOK) { video.muted = true; tryPlay(); }
+})();
+
+/* ===== 2. Keynotes: three talks, one shared stage, the reel as the ground ===
+   It is a speaking page, so the section is video-led. The ground is the reel
+   itself, held — muted and paused — on a frame from the active talk's own
+   segment, and "Hear Stephen on this" plays that segment WITH SOUND in the
+   ground behind the type. The segment stops at its own end and puts the
+   ground back on its held frame.
+   Only one audio source is ever running: pressing a talk claims the audio
+   through the document-level "spk:audio" event, which stops the hero reel,
+   and the hero's own controls claim it back.
+   The ground is still a lights sequence, not a crossfade: the lights go DOWN
+   on what is leaving, the seek happens in the dark, and the lights come UP on
+   the frame that arrives. Reduced motion and Save-Data keep the three stills
+   as the ground and load the clip only if a button is pressed. */
+(function () {
+  "use strict";
+  var sec = document.querySelector(".spk-keys");
+  if (!sec) return;
+  var index   = sec.querySelector(".spk-keys__index");
+  var stage   = sec.querySelector(".spk-keys__stage");
+  var media   = sec.querySelector(".spk-keys__media");
+  var vid     = sec.querySelector(".spk-keys__video");
+  var tabs    = [].slice.call(sec.querySelectorAll(".spk-keys__tab"));
+  var panels  = [].slice.call(sec.querySelectorAll(".spk-keys__panel"));
+  var grounds = [].slice.call(sec.querySelectorAll(".spk-keys__media img"));
+  var mores   = [].slice.call(sec.querySelectorAll(".spk-keys__more"));
+  var outs    = [].slice.call(sec.querySelectorAll(".spk-keys__outs"));
+  var hears   = [].slice.call(sec.querySelectorAll(".spk-keys__hear"));
+  var caps    = [].slice.call(sec.querySelectorAll(".spk-keys__cap"));
+  var live    = document.getElementById("spkKeysLive");
+  if (!index || !tabs.length || tabs.length !== panels.length) return;
+
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var small    = window.matchMedia("(max-width: 820px)");
+  var cur = 0;
+  var videoGround = !!vid && !reduce && !saveData;
+
+  function say(msg) {
+    if (!live) return;
+    live.textContent = "";
+    setTimeout(function () { live.textContent = msg; }, 60);
+  }
+
+  /* ------------------------------------------------------------------
+     The clip. One shared <video>, three segments, whose in and out points
+     live on the buttons in the markup as data-seg-start / data-seg-end.
+     ------------------------------------------------------------------ */
+  /* a: the in point the clip plays from, b: the out point it stops at, and
+     p: the frame the ground is HELD on at rest. The in point is chosen by the
+     sentence, and the reel's own title card and testimonial supers sit on some
+     of them, so the held frame is named separately — always inside the same
+     segment, always a frame of Stephen actually speaking. */
+  var segs = hears.map(function (b) {
+    var a = parseFloat(b.getAttribute("data-seg-start"));
+    var p = parseFloat(b.getAttribute("data-seg-poster"));
+    return { a: a, b: parseFloat(b.getAttribute("data-seg-end")),
+             p: isNaN(p) ? a : p };
+  });
+  var playing = -1, watchRaf = 0, srcSet = false, track = null;
+
+  function clipSrc() {
+    if (!vid) return "";
+    return small.matches
+      ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080"))
+      : vid.getAttribute("data-src-1080");
+  }
+  function ensureSrc() {
+    if (!vid || srcSet) return;
+    var s = clipSrc();
+    if (!s) return;
+    vid.setAttribute("src", s);
+    vid.load();
+    srcSet = true;
+    var t = vid.textTracks && vid.textTracks.length ? vid.textTracks[0] : null;
+    if (t && !track) {
+      track = t;
+      track.mode = "hidden";          /* the cues, without the native box */
+      track.addEventListener("cuechange", onCue);
+    }
+  }
+  /* One centred line under the button, from the reel's own VTT. */
+  function onCue() {
+    if (playing < 0 || !track) return;
+    var el = caps[playing];
+    if (!el) return;
+    var c = track.activeCues && track.activeCues.length ? track.activeCues[0] : null;
+    var txt = c ? String(c.text).replace(/\s+/g, " ").trim() : "";
+    el.textContent = txt;
+    el.classList.toggle("is-on", !!txt);
+  }
+  function clearCap(i) {
+    var el = caps[i];
+    if (!el) return;
+    el.classList.remove("is-on");
+    el.textContent = "";
+  }
+  function syncHear(i) {
+    var b = hears[i];
+    if (!b) return;
+    var on = (playing === i);
+    b.setAttribute("data-state", on ? "pause" : "play");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+    var l = b.querySelector(".spk-keys__hearlabel");
+    if (l) l.textContent = on ? "Pause" : "Hear Stephen on this";
+  }
+  /* The out point is watched on a frame callback, not on timeupdate, which
+     fires about four times a second and would overshoot the line. */
+  function watch() {
+    watchRaf = 0;
+    if (playing < 0 || !vid) return;
+    var s = segs[playing];
+    if (s && vid.currentTime >= s.b) { stopClip(true); return; }
+    watchRaf = requestAnimationFrame(watch);
+  }
+  /* noPark: the caller is about to seek somewhere else itself (a tab change),
+     so this must not queue a seek back to the current talk first. */
+  function stopClip(atEnd, noPark) {
+    var i = playing;
+    if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
+    playing = -1;
+    sec.classList.remove("is-playing");
+    if (vid) {
+      if (!vid.paused) vid.pause();
+      vid.muted = true;
+      /* back to the held frame for whichever talk is on screen */
+      if (!noPark && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} }
+      if (!videoGround) vid.classList.remove("is-on", "is-lit");
+    }
+    if (i >= 0) { clearCap(i); syncHear(i); if (atEnd) say("Clip finished"); }
+  }
+  function playClip(i) {
+    if (!vid || !segs[i]) return;
+    claim();                        /* stops the hero reel */
+    ensureSrc();
+    var s = segs[i];
+    /* with the stills as the ground, the clip only appears while it plays */
+    if (!videoGround) vid.classList.add("is-on", "is-lit");
+    /* always from the in point. The ground is parked on the held frame, which
+       sits inside the segment, so carrying on from wherever the playhead
+       happens to be would start the sentence halfway through. */
+    try { vid.currentTime = s.a; } catch (err) {}
+    vid.muted = false;
+    playing = i;
+    sec.classList.add("is-playing");
+    syncHear(i);
+    var p = vid.play();
+    if (p && p.catch) p.catch(function () { stopClip(false); });
+    if (!watchRaf) watchRaf = requestAnimationFrame(watch);
+    var name = tabs[i] ? (tabs[i].querySelector(".spk-keys__name") || {}).textContent : "";
+    say("Playing " + (name || "clip") + " with sound");
+  }
+
+  function claim() {
+    document.dispatchEvent(new CustomEvent("spk:audio", { detail: { owner: "keys" } }));
+  }
+  document.addEventListener("spk:audio", function (e) {
+    if (!e.detail || e.detail.owner === "keys") return;
+    if (playing >= 0) stopClip(false);
+  });
+
+  hears.forEach(function (b, i) {
+    b.addEventListener("click", function () {
+      if (playing === i) { stopClip(false); say("Paused"); return; }
+      if (playing >= 0) stopClip(false);
+      playClip(i);
+    });
+  });
+
+  /* Nothing keeps talking off screen or in a hidden tab. */
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      if (e[0].intersectionRatio < 0.25 && playing >= 0) stopClip(false);
+    }, { threshold: [0, 0.25, 1] }).observe(sec);
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && playing >= 0) stopClip(false);
+  });
+  if (vid) {
+    vid.addEventListener("ended", function () { if (playing >= 0) stopClip(true); });
+    vid.addEventListener("pause", function () { if (playing >= 0) syncHear(playing); });
+  }
+
+  /* Reduced motion: no lights sequence and no video ground. All three talks
+     are present under their own headings, every outcome list is open, and the
+     index stops being a tablist. The one thing that still works on a click is
+     "Hear Stephen on this" — it is the point of the page. */
+  if (reduce) {
+    sec.classList.add("is-stacked");
+    index.removeAttribute("role");
+    tabs.forEach(function (t) {
+      t.removeAttribute("role"); t.removeAttribute("aria-selected");
+      t.removeAttribute("aria-controls"); t.removeAttribute("tabindex");
+    });
+    panels.forEach(function (p) {
+      p.removeAttribute("inert"); p.classList.add("is-on");
+      p.removeAttribute("role"); p.removeAttribute("aria-labelledby"); p.removeAttribute("tabindex");
+    });
+    outs.forEach(function (u) { u.hidden = false; u.classList.add("is-open"); });
+    grounds.forEach(function (g) { g.classList.add("is-lit"); });
+    return;
+  }
+
+  /* The panels ship visible so the page works without this script. With the
+     script running, the inactive ones are inert: CSS hides them with
+     visibility (which also takes them out of the accessibility tree) and
+     inert keeps them out of reach of the keyboard. Nothing uses [hidden] on
+     a panel, so the stage never changes height on a swap. */
+  panels.forEach(function (p, i) { if (i !== 0) p.setAttribute("inert", ""); });
+
+  var hideT = 0, lightT = 0;
+
+  /* The reel becomes the ground: the stills go dark, the video takes the
+     frame, and it is parked on the first talk's in point. */
+  if (videoGround) {
+    ensureSrc();
+    grounds.forEach(function (g) { g.classList.remove("is-on", "is-lit"); });
+    vid.classList.add("is-on");
+    var park = function () { if (playing < 0 && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} } };
+    if (vid.readyState >= 1) park();
+    else vid.addEventListener("loadedmetadata", park, { once: true });
+  }
+
+  /* ---- the disclosure ---- */
+  function closeAll() {
+    mores.forEach(function (b, k) {
+      b.setAttribute("aria-expanded", "false");
+      if (outs[k]) { outs[k].classList.remove("is-open"); outs[k].hidden = true; }
+    });
+  }
+  mores.forEach(function (b, k) {
+    var list = outs[k];
+    if (!list) return;
+    b.addEventListener("click", function () {
+      var open = b.getAttribute("aria-expanded") === "true";
+      if (open) {
+        b.setAttribute("aria-expanded", "false");
+        list.classList.remove("is-open"); list.hidden = true;
+      } else {
+        b.setAttribute("aria-expanded", "true");
+        list.hidden = false;
+        /* two frames, so the three lines stagger in from their start state */
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { list.classList.add("is-open"); });
+        });
+      }
+    });
+  });
+
+  /* ---- layout guard: the stage is always as tall as the tallest EXPANDED
+     panel, measured for real, so opening a disclosure cannot shift the page
+     and a tab swap cannot either. ---- */
+  var lockT = 0;
+  function lockHeight() {
+    if (!stage) return;
+    stage.style.minHeight = "";
+    var was = outs.map(function (u) { return u.hidden; });
+    outs.forEach(function (u) { u.hidden = false; });
+    var h = 0;
+    panels.forEach(function (p) { h = Math.max(h, p.offsetHeight); });
+    outs.forEach(function (u, k) { u.hidden = was[k]; });
+    if (h > 0) stage.style.minHeight = Math.ceil(h) + "px";
+  }
+  lockHeight();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockHeight);
+  window.addEventListener("load", lockHeight);
+  window.addEventListener("resize", function () {
+    clearTimeout(lockT); lockT = setTimeout(lockHeight, 200);
+  }, { passive: true });
+
+  /* ---- the ground: lights down, seek or swap in the dark, lights up ---- */
+  function lights(i) {
+    if (!media) return;
+    clearTimeout(lightT);
+    media.classList.add("is-dimming");
+    grounds.forEach(function (g) { g.classList.remove("is-lit"); });
+    if (vid) vid.classList.remove("is-lit");
+    lightT = setTimeout(function () {
+      if (videoGround) {
+        /* one element, a new in point: seek in the dark, and come up on the
+           frame once it has actually arrived */
+        var done = false;
+        var up = function () {
+          if (done) return;
+          done = true;
+          vid.removeEventListener("seeked", up);
+          requestAnimationFrame(function () {
+            media.classList.remove("is-dimming");
+            vid.classList.add("is-lit");
+          });
+        };
+        vid.addEventListener("seeked", up);
+        setTimeout(up, 700);           /* never hold the house dark on a slow seek */
+        if (segs[i]) { try { vid.currentTime = segs[i].p; } catch (err) { up(); } }
+        else up();
+        return;
+      }
+      if (!grounds[i]) { media.classList.remove("is-dimming"); return; }
+      grounds.forEach(function (g, k) { g.classList.toggle("is-on", k === i); });
+      requestAnimationFrame(function () {
+        media.classList.remove("is-dimming");
+        grounds[i].classList.add("is-lit");
+      });
+    }, 240);
+  }
+
+  function select(i) {
+    if (i === cur || !panels[i]) return;
+    var out = panels[cur], inn = panels[i];
+    /* a talk's clip belongs to that talk: changing tabs stops it */
+    if (playing >= 0) stopClip(false, true);
+
+    tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
+    tabs[i].setAttribute("aria-selected", "true");    tabs[i].tabIndex = 0;    tabs[i].classList.add("is-on");
+    lights(i);
+    closeAll();
+
+    out.classList.remove("is-on"); out.classList.add("is-out");
+    inn.removeAttribute("inert"); inn.classList.remove("is-out");
+    /* two frames, so the incoming panel transitions from its start state */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { inn.classList.add("is-on"); });
+    });
+
+    cur = i;
+    clearTimeout(hideT);
+    /* the outgoing panel goes inert once its fade has finished */
+    hideT = setTimeout(function () {
+      panels.forEach(function (p, k) {
+        if (k !== cur) { p.setAttribute("inert", ""); p.classList.remove("is-out", "is-on"); }
+      });
+    }, 260);
+  }
+
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { select(i); });
+    /* Roving tabindex, arrow keys move focus, Enter/Space activate. */
+    t.addEventListener("focus", function () {
+      tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); });
+    });
+    t.addEventListener("keydown", function (e) {
+      var k = e.key, n = -1, L = tabs.length;
+      if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
+      else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
+      else if (k === "Home") n = 0;
+      else if (k === "End") n = L - 1;
+      else return;
+      e.preventDefault();
+      tabs[n].focus();
+    });
+  });
+
+  /* the house lights come up on the first ground as the section arrives */
+  function firstLight() {
+    var el = videoGround ? vid : grounds[cur];
+    if (el) el.classList.add("is-lit");
+  }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e, obs) {
+      if (!e[0].isIntersecting) return;
+      firstLight();
+      obs.disconnect();
+    }, { threshold: 0.15 }).observe(sec);
+  } else {
+    firstLight();
+  }
+})();
+
+/* ===== 3. The turn: the page's one pin =====
+   Five pairs, ONE on screen at a time. Per pair, over its own segment of
+   the scrollable span (s = 0..1):
+     0   – .12  the photo panel's lights come up, the from-phrase rises
+     .12 – .40  the strike draws left to right with a travelling ripple
+     .40 – .62  the to-word resolves out of blur
+     .62 – .86  held beat — nothing changes
+     .86 – 1    the pair lifts away and the next one takes the cell
+   The strike is the same line vocabulary as the hero voice line: one SVG
+   path whose `d` is rewritten per frame while the ripple is alive, then set
+   back to its flat authored `d` and left alone. A struck pair is never
+   replayed while it is on screen; it re-arms only when it comes back.
+   Phones and reduced motion drop the pin entirely. */
+(function () {
+  "use strict";
+  var sec = document.querySelector(".spk-turn");
+  if (!sec) return;
+  var track = document.getElementById("spkTurnTrack");
+  var stage = document.getElementById("spkTurnStage");
+  var list  = document.getElementById("spkTurnList");
+  var pairs = [].slice.call(sec.querySelectorAll(".spk-turn__pair"));
+  if (!track || !stage || !list || !pairs.length) return;
+
+  var rmq   = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var phone = window.matchMedia("(max-width: 640px)");
+  var N = pairs.length;
+  sec.style.setProperty("--turn-n", String(N));
+
+  var PTS = 24, LAM = 22, SIG = 18, DECAY = 220, DRAW = 700;
+  function amp() {
+    var w = window.innerWidth;
+    return w >= 1200 ? 3.5 : (w >= 641 ? 3.0 : 2.5);
+  }
+
+  var recs = pairs.map(function (el) {
+    var path = el.querySelector(".spk-turn__strike path");
+    return {
+      el: el,
+      img: el.querySelector(".spk-lights"),
+      path: path,
+      flat: path ? path.getAttribute("d") : "",
+      state: "next",   /* next | drawing | decay | struck */
+      t0: 0
+    };
+  });
+
+  /* Flat, preallocated geometry: nothing is allocated per frame except the
+     one `d` string the SVG attribute needs. */
+  var XS = new Float64Array(PTS), YS = new Float64Array(PTS);
+  for (var q = 0; q < PTS; q++) XS[q] = (q / (PTS - 1)) * 100;
+
+  function buildD(head, a) {
+    var i;
+    for (i = 0; i < PTS; i++) {
+      var dx = XS[i] - head, e = dx / SIG;
+      YS[i] = 6 + a * Math.sin(2 * Math.PI * dx / LAM) * Math.exp(-e * e);
+    }
+    var d = "M" + XS[0].toFixed(2) + " " + YS[0].toFixed(3);
+    for (i = 0; i < PTS - 1; i++) {
+      var i0 = i > 0 ? i - 1 : 0, i2 = i + 1, i3 = (i + 2 < PTS) ? i + 2 : PTS - 1;
+      d += "C" + (XS[i] + (XS[i2] - XS[i0]) / 6).toFixed(2) + " " +
+                 (YS[i] + (YS[i2] - YS[i0]) / 6).toFixed(3) + " " +
+                 (XS[i2] - (XS[i3] - XS[i]) / 6).toFixed(2) + " " +
+                 (YS[i2] - (YS[i3] - YS[i]) / 6).toFixed(3) + " " +
+                 XS[i2].toFixed(2) + " " + YS[i2].toFixed(3);
+    }
+    return d;
+  }
+
+  function arm(rec) {
+    rec.state = "next"; rec.t0 = 0;
+    if (rec.path) { rec.path.style.strokeDashoffset = "1"; rec.path.setAttribute("d", rec.flat); }
+  }
+  function flatten(rec) {
+    rec.state = "struck";
+    if (rec.path) rec.path.setAttribute("d", rec.flat);
+  }
+  function reset(rec) {
+    rec.el.classList.remove("is-live", "is-resolved");
+    rec.el.style.removeProperty("--in");
+    rec.el.style.removeProperty("--out");
+    if (rec.img) rec.img.classList.remove("is-lit");
+    arm(rec);
+  }
+  function resolveAll() {
+    recs.forEach(function (rec) {
+      rec.el.classList.remove("is-live");
+      rec.el.classList.add("is-resolved");
+      rec.el.style.removeProperty("--in");
+      rec.el.style.removeProperty("--out");
+      if (rec.img) rec.img.classList.add("is-lit");
+      if (rec.path) { rec.path.style.strokeDashoffset = "0"; rec.path.setAttribute("d", rec.flat); }
+      rec.state = "struck";
+    });
+  }
+
+  /* ---- no pin: one observer per pair, one way, time-based strike ---- */
+  var io = null, phoneRafs = [];
+  function stopPhone() {
+    if (io) { io.disconnect(); io = null; }
+    phoneRafs.forEach(function (h) { cancelAnimationFrame(h); });
+    phoneRafs = [];
+  }
+  function phoneStrike(rec) {
+    if (!rec.path) return;
+    var A = amp(), t0 = 0;
+    rec.path.style.strokeDashoffset = "1";
+    function tick(now) {
+      if (!t0) t0 = now;
+      var dt = now - t0;
+      if (dt < DRAW) {
+        var k = 1 - Math.pow(1 - dt / DRAW, 3);
+        rec.path.style.strokeDashoffset = (1 - k).toFixed(4);
+        rec.path.setAttribute("d", buildD(k * 100, A));
+      } else {
+        rec.path.style.strokeDashoffset = "0";
+        var a = A * Math.exp(-(dt - DRAW) / DECAY);
+        if (a < 0.05) { flatten(rec); return; }
+        rec.path.setAttribute("d", buildD(100, a));
+      }
+      phoneRafs.push(requestAnimationFrame(tick));
+    }
+    phoneRafs.push(requestAnimationFrame(tick));
+  }
+  function startPhone() {
+    if (!("IntersectionObserver" in window)) { resolveAll(); return; }
+    recs.forEach(function (rec) {
+      rec.el.classList.remove("is-live", "is-resolved");
+      rec.el.style.removeProperty("--in"); rec.el.style.removeProperty("--out");
+      if (rec.img) rec.img.classList.remove("is-lit");
+      arm(rec);
+    });
+    io = new IntersectionObserver(function (es, obs) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var rec = recs[pairs.indexOf(e.target)];
+        obs.unobserve(e.target);
+        if (!rec) return;
+        rec.el.classList.add("is-resolved");
+        if (rec.img) rec.img.classList.add("is-lit");
+        phoneStrike(rec);
+      });
+    }, { threshold: 0.55 });
+    pairs.forEach(function (p) { io.observe(p); });
+  }
+
+  /* ---- pinned ---- */
+  var raf = 0, onScreen = false, lastIdx = -1;
+  function measure(now) {
+    var r = track.getBoundingClientRect();
+    var span = track.offsetHeight - window.innerHeight;
+    var p = span > 0 ? Math.min(Math.max(-r.top / span, 0), 1) : 0;
+    var idx = Math.min(N - 1, Math.floor(p * N));
+    var s = Math.min(1, Math.max(0, p * N - idx));
+
+    if (idx !== lastIdx) {
+      for (var n = 0; n < N; n++) if (n !== idx) reset(recs[n]);
+      recs[idx].el.classList.add("is-live");
+      if (lastIdx !== -1) arm(recs[idx]);     /* re-arm only on the entry edge */
+      lastIdx = idx;
+    }
+
+    var rec = recs[idx];
+
+    /* 0 – .12: the lights and the from-phrase */
+    rec.el.style.setProperty("--in", Math.min(1, s / 0.12).toFixed(3));
+    if (rec.img) rec.img.classList.toggle("is-lit", s > 0.004);
+
+    /* .12 – .40: the strike, scroll-linked, reversible while it is alive */
+    var dp = Math.min(1, Math.max(0, (s - 0.12) / 0.28));
+    if (rec.path) rec.path.style.strokeDashoffset = (1 - dp).toFixed(4);
+    if (rec.state !== "struck" && rec.path) {
+      if (dp <= 0) {
+        rec.state = "next";
+      } else if (dp < 1) {
+        rec.state = "drawing"; rec.t0 = 0;
+        rec.path.setAttribute("d", buildD(dp * 100, amp()));
+      } else {
+        if (rec.state !== "decay") { rec.state = "decay"; rec.t0 = now; }
+        var a = amp() * Math.exp(-(now - rec.t0) / DECAY);
+        if (a < 0.05) flatten(rec);
+        else rec.path.setAttribute("d", buildD(100, a));
+      }
+    }
+
+    /* .40 – .62: the to-word resolves. .62 – .86: the held beat. */
+    rec.el.classList.toggle("is-resolved", s >= 0.40);
+
+    /* .86 – 1: the pair lifts away */
+    rec.el.style.setProperty("--out", (s <= 0.86 ? 0 : Math.min(1, (s - 0.86) / 0.14)).toFixed(3));
+  }
+  function frame(now) {
+    raf = 0;
+    if (mode !== "pin") return;
+    measure(now);
+    if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+  function wake() {
+    if (mode === "pin" && onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame);
+  }
+  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      onScreen = e[0].isIntersecting;
+      if (onScreen) wake(); else sleep();
+    }, { threshold: 0.05 }).observe(sec);
+  } else { onScreen = true; }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) sleep(); else wake();
+  });
+
+  /* Three modes: "static" (reduced motion — every pair resolved, no
+     handlers), "phone" (no pin, one observer per pair) and "pin". Either
+     media query can flip mid-visit, so the mode is torn down and rebuilt
+     rather than decided once at load. */
+  var mode = null;
+  function setMode() {
+    var want = rmq.matches ? "static" : (phone.matches ? "phone" : "pin");
+    if (want === mode) return;
+    if (mode === "phone") stopPhone();
+    if (mode === "pin") sleep();
+    mode = want;
+    lastIdx = -1;
+    if (want === "static") { resolveAll(); }
+    else if (want === "phone") { startPhone(); }
+    else {
+      recs.forEach(function (rec) { reset(rec); });
+      measure(performance.now());
+      wake();
+    }
+  }
+
+  setMode();
+  window.addEventListener("resize", function () { setMode(); wake(); }, { passive: true });
+  if (phone.addEventListener) phone.addEventListener("change", setMode);
+  if (rmq.addEventListener) rmq.addEventListener("change", setMode);
+  else if (rmq.addListener) rmq.addListener(setMode);
+})();
+
+/* ===== 4. The voice line: the reel's own audio, drawn as one open line =====
+   A compact canvas sitting directly on top of the control row. It is only
+   ever visible while sound is actually playing: muted, paused or finished, it
+   is at opacity 0, so there is no idle line in the middle of the hero. The
+   click that turns sound on is the gesture that opens an AudioContext and an
+   AnalyserNode on the video element, and the line breathes with the real
+   audio. If the browser will not give us an analyser, a synth fallback
+   tracks playback loosely. Reduced motion and Save-Data get one static
+   render and no loop at all — still only while sound is on. */
+(function () {
+  "use strict";
+  var cv = document.getElementById("spkVoice");
+  if (!cv) return;
+  var hero  = document.querySelector(".spk-hero");
+  var video = hero && hero.querySelector(".spk-hero__video");
+  var ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx) return;
+
+  var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+
+  var W = 1, H = 1, N = 20, IDLE = 2.5, MAX = 20;
+  var xs = null, ys = null, vals = null, tgt = null, sm = null, bins = null;
+
+  /* Sound on / off is the only thing that shows or hides the line. */
+  function shown(on) { cv.classList.toggle("is-on", !!on); }
+  function audible() { return !!(video && !video.muted && !video.paused && !video.ended); }
+
+  function build() {
+    var r = cv.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    /* the canvas is 560 CSS px at most now, so fewer, wider-spaced control
+       points read better, and the peak has to live inside a 64 px box */
+    var w = window.innerWidth;
+    if (w >= 1200)     { N = 20; IDLE = 2.5; MAX = 20; }
+    else if (w >= 768) { N = 18; IDLE = 2.0; MAX = 17; }
+    else               { N = 14; IDLE = 1.5; MAX = 13; }
+
+    xs = new Float64Array(N); ys = new Float64Array(N);
+    vals = new Float64Array(N); tgt = new Float64Array(N); sm = new Float64Array(N);
+    for (var i = 0; i < N; i++) xs[i] = (i / (N - 1)) * W;
+    /* bins 2–180 folded onto a log axis, one span per control point */
+    bins = new Int32Array(N + 1);
+    for (var j = 0; j <= N; j++) bins[j] = Math.round(2 * Math.pow(90, j / N));
+  }
+
+  /* one open Catmull-Rom path, never straight segments, never bars */
+  function trace() {
+    var cy = H / 2, i;
+    ctx.beginPath();
+    ctx.moveTo(xs[0], cy + ys[0]);
+    for (i = 0; i < N - 1; i++) {
+      var i0 = i > 0 ? i - 1 : 0, i2 = i + 1, i3 = (i + 2 < N) ? i + 2 : N - 1;
+      ctx.bezierCurveTo(
+        xs[i] + (xs[i2] - xs[i0]) / 6, cy + ys[i] + (ys[i2] - ys[i0]) / 6,
+        xs[i2] - (xs[i3] - xs[i]) / 6, cy + ys[i2] - (ys[i3] - ys[i]) / 6,
+        xs[i2], cy + ys[i2]);
+    }
+  }
+  function paint(alpha) {
+    ctx.clearRect(0, 0, W, H);
+    trace();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.lineWidth = 4;    ctx.strokeStyle = "rgba(169,133,230,.09)"; ctx.stroke();
+    ctx.lineWidth = 1.25; ctx.strokeStyle = "rgba(169,133,230," + alpha.toFixed(3) + ")"; ctx.stroke();
+  }
+
+  /* ---- audio ---- */
+  var actx = null, analyser = null, srcNode = null, freq = null;
+  var synth = false, ready = false, base = 0;
+  function openAudio() {
+    if (actx || synth || !video) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { synth = true; return; }
+    try {
+      actx = new AC();
+      if (actx.resume) actx.resume();
+      analyser = actx.createAnalyser();
+      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.85;
+      if (!srcNode) srcNode = actx.createMediaElementSource(video);
+      srcNode.connect(analyser);
+      /* connecting to the destination is mandatory or the reel goes silent */
+      analyser.connect(actx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      ready = true;
+    } catch (err) {
+      actx = null; analyser = null; srcNode = null; ready = false; synth = true;
+    }
+  }
+  /* The hero fires this synchronously from inside its own click handler — the
+     big "Play with sound" ring and the small Sound control — so the context
+     is opened while the user gesture is still active. */
+  document.addEventListener("spk:sound-on", function () {
+    if (!video) return;
+    openAudio();
+    if (actx && actx.resume) actx.resume();
+    shown(true);
+    if (mode === "live") wake();
+  });
+
+  function knee(v) {
+    var k = 0.85 * MAX, m = Math.abs(v);
+    if (m <= k) return v;
+    var u = (m - k) / (MAX - k);
+    var th = Math.tanh ? Math.tanh(u) : (Math.exp(2 * u) - 1) / (Math.exp(2 * u) + 1);
+    return (v < 0 ? -1 : 1) * (k + (MAX - k) * th);
+  }
+
+  /* ---- the loop ---- */
+  var raf = 0, onScreen = false, last = 0, mix = 0, lowT = 0;
+  function frame(now) {
+    raf = 0;
+    if (mode !== "live") return;
+    var dt = last ? Math.min(64, now - last) : 16; last = now;
+    var t = now / 1000, i;
+    var soundOn = audible();
+    var energy = 0;
+    shown(soundOn);
+
+    if (soundOn && ready) {
+      analyser.getByteFrequencyData(freq);
+      for (i = 0; i < N; i++) {
+        var a = bins[i], b = Math.max(a + 1, bins[i + 1]), sum = 0, c = 0;
+        for (var k = a; k < b && k < freq.length; k++) { sum += freq[k]; c++; }
+        tgt[i] = c ? (sum / c) / 255 : 0;
+      }
+      for (var pass = 0; pass < 2; pass++) {          /* 3-tap, two passes */
+        for (i = 0; i < N; i++) {
+          sm[i] = 0.25 * tgt[i > 0 ? i - 1 : 0] + 0.5 * tgt[i] + 0.25 * tgt[i < N - 1 ? i + 1 : N - 1];
+        }
+        for (i = 0; i < N; i++) tgt[i] = sm[i];
+      }
+      var mean = 0;
+      for (i = 0; i < N; i++) { vals[i] += (tgt[i] - vals[i]) * 0.12; mean += tgt[i]; }
+      energy = mean / N;
+      base += (energy - base) * 0.05;
+    }
+
+    /* energy gate: silence for 400 ms hands back to the idle ripple */
+    var wantAudio = soundOn && ready;
+    if (wantAudio) {
+      lowT = energy < 0.03 ? lowT + dt : 0;
+      if (lowT >= 400) wantAudio = false;
+    } else { lowT = 0; }
+    mix += ((wantAudio ? 1 : 0) - mix) * Math.min(1, dt / 600);
+
+    var A = IDLE, T1 = 11, T2 = 17, bump = 0;
+    if (synth && soundOn) { A = 0.42 * MAX; T1 = 4.5; T2 = 7; bump = 0.25 * Math.sin(video.currentTime * 2.1); }
+    var l1 = 0.9 * W, l2 = 0.55 * W;
+    for (i = 0; i < N; i++) {
+      var x = xs[i];
+      var iy = A * (0.62 * Math.sin(2 * Math.PI * (x / l1 - t / T1)) +
+                    0.38 * Math.sin(2 * Math.PI * (x / l2 - t / T2 + 1.3)) + bump);
+      var ay = ready ? knee((vals[i] - base) * MAX) : 0;
+      ys[i] = iy * (1 - mix) + ay * mix;
+    }
+    paint(0.55 + 0.25 * mix);
+
+    if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+  }
+  function wake() { if (mode === "live" && onScreen && !document.hidden && !raf) { last = 0; raf = requestAnimationFrame(frame); } }
+  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  function paintStatic() {
+    build();
+    for (var i = 0; i < N; i++) {
+      var d = (xs[i] - 0.42 * W) / (0.16 * W);
+      ys[i] = -2 * Math.exp(-d * d);
+    }
+    paint(0.45);
+  }
+
+  /* ---- modes ---- */
+  var mode = null, rT = 0, iobs = null;
+  function setMode() {
+    var want = (rmq.matches || saveData) ? "static" : "live";
+    if (want === mode) return;
+    sleep();
+    if (iobs) { iobs.disconnect(); iobs = null; }
+    mode = want;
+    if (want === "static") { paintStatic(); return; }
+    build(); mix = 0; lowT = 0; base = 0;
+    if ("IntersectionObserver" in window) {
+      iobs = new IntersectionObserver(function (e) {
+        onScreen = e[0].isIntersecting;
+        if (onScreen) wake(); else sleep();
+      }, { threshold: 0.05 });
+      iobs.observe(hero || cv);
+    } else { onScreen = true; }
+    wake();
+  }
+  setMode();
+  /* the line follows the audio, not the loop: these four cover the static
+     mode too, and they catch a mute or a pause that happens while the hero is
+     off screen and the loop is asleep */
+  if (video) {
+    ["play", "playing", "pause", "ended", "volumechange"].forEach(function (ev) {
+      video.addEventListener(ev, function () { shown(audible()); });
+    });
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) sleep(); else wake();
+  });
+  window.addEventListener("resize", function () {
+    clearTimeout(rT);
+    rT = setTimeout(function () {
+      if (mode === "static") { paintStatic(); return; }
+      build(); wake();
+    }, 200);
+  }, { passive: true });
+  if (rmq.addEventListener) rmq.addEventListener("change", setMode);
+  else if (rmq.addListener) rmq.addListener(setMode);
+
+  /* QA hook, off unless the page is opened with ?spkdebug: the analyser's
+     mean energy cannot be read from outside, and the audio checks need it. */
+  if (location.search.indexOf("spkdebug") > -1) {
+    window.__spkVoice = { get ready() { return ready; }, get energy() { return base; },
+      get peak() { var m = 0, i; if (!vals) return 0; for (i = 0; i < N; i++) m = Math.max(m, vals[i]); return m; } };
+  }
+})();
+
+/* ===== 5. The room: rows of seats as dots, behind the formats sentence =====
+   Nine rows seen from the stage, compressing and dimming toward the back,
+   each row bowed away at its centre. A pointer leans the nearest seats
+   toward it; with no pointer a slow wave travels front to back every 7–11 s
+   and the loop sleeps between waves. After the rows are drawn, a feathered
+   destination-out ellipse clears the dot layer around the measured sentence,
+   so the type keeps clean ground with no scrim and no text-shadow. */
+(function () {
+  "use strict";
+  var cv = document.getElementById("spkRoom");
+  if (!cv) return;
+  var sec = cv.parentNode;
+  var line = sec && sec.querySelector(".spk-formats__line");
+  var ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx || !sec) return;
+
+  /* The six rooms. Each label is pinned to ONE seat in the dot array by row
+     and seat fraction, so it can never drift off the array, and it lights
+     when the pointer leans that part of the room toward it — the same lerp
+     the dots themselves use, read at the label's own seat. Where there are
+     not enough rows to place six labels without collisions (under 768) they
+     fall back to a centred list and the wave lights them in turn instead. */
+  var rooms  = document.getElementById("spkRooms");
+  var labels = rooms ? [].slice.call(rooms.children) : [];
+  var anchors = [], flow = false;
+
+  var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+
+  var W = 1, H = 1, R = 9, S = 26, n = 0, T = null;
+  var bx = null, by = null, br = null, ba = null, rf = null;
+  var PAL = new Array(8 * 33);
+  (function () {
+    for (var l = 0; l < 8; l++) {
+      var f = l / 7;
+      var r = Math.round(169 + (231 - 169) * f);
+      var g = Math.round(133 + (220 - 133) * f);
+      var b = Math.round(230 + (246 - 230) * f);
+      for (var a = 0; a <= 32; a++) PAL[l * 33 + a] = "rgba(" + r + "," + g + "," + b + "," + (a / 32).toFixed(3) + ")";
+    }
+  })();
+
+  /* a0 / a1 are the front and back row alphas. Raised about 40% this round —
+     the room was reading as almost nothing — and nothing else moves: the
+     pointer lift (0.42) and the wave lift (0.22) are unchanged, so the seats
+     still only ever step from subtle to slightly present. */
+  function tier() {
+    var w = window.innerWidth;
+    if (w >= 1200) return { R: 9, S: 26, r0: 2.6, r1: 1.2, a0: .42, a1: .14, reach: 260, lean: 3.0, sag0: 10, sag1: 5 };
+    if (w >= 768)  return { R: 7, S: 20, r0: 2.2, r1: 1.1, a0: .39, a1: .14, reach: 220, lean: 2.5, sag0: 10, sag1: 5 };
+    return { R: 5, S: 13, r0: 1.9, r1: 1.0, a0: .36, a1: .14, reach: 0, lean: 0, sag0: 7, sag1: 3.5 };
+  }
+
+  var hole = null;
+  function measureHole() {
+    hole = null;
+    if (!line) return;
+    var lr = line.getBoundingClientRect(), sr = sec.getBoundingClientRect();
+    if (!lr.width || !lr.height) return;
+    var halfW = lr.width / 2 + 24, halfH = lr.height / 2 + 24;
+    var rx = halfW + 80, ry = halfH + 80;
+    var inner = Math.min(halfW / rx, halfH / ry);
+    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+    g.addColorStop(0, "rgba(0,0,0,1)");
+    g.addColorStop(inner, "rgba(0,0,0,1)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    hole = { x: lr.left - sr.left + lr.width / 2, y: lr.top - sr.top + lr.height / 2,
+             rx: rx, ry: ry, g: g };
+  }
+
+  function placeRooms() {
+    if (!labels.length) return;
+    flow = (mode === "static") || window.innerWidth < 768;
+    rooms.classList.toggle("is-flow", flow);
+    rooms.classList.toggle("is-static", mode === "static");
+    /* data-row is an index into the nine-row array the widest tier draws, so
+       it is read as a fraction and mapped onto whatever row count this tier
+       actually has */
+    anchors = labels.map(function (li) {
+      var rf = parseFloat(li.getAttribute("data-row")) / 8;
+      var sf = parseFloat(li.getAttribute("data-seat"));
+      var r = Math.max(0, Math.min(R - 1, Math.round(rf * (R - 1))));
+      var j = Math.max(0, Math.min(S - 1, Math.round(sf * (S - 1))));
+      return r * S + j;
+    });
+    if (flow) {
+      labels.forEach(function (li) { li.style.left = ""; li.style.top = ""; });
+      return;
+    }
+    /* the outermost seats of a deep row sit past the gutter, so a label that
+       would run off the frame is pulled back rather than clipped */
+    var pad = 24;
+    function put(li, k) {
+      var x = bx[k], w = li.offsetWidth;
+      if (li.getAttribute("data-side") === "l") { if (x - w < pad) x = w + pad; }
+      else if (x + w > W - pad) { x = W - pad - w; }
+      li.style.left = Math.round(x) + "px";
+      li.style.top  = Math.round(by[k]) + "px";
+    }
+    labels.forEach(function (li, i) { put(li, anchors[i]); });
+
+    /* The sentence owns the middle of the room and the labels may never sit
+       on it — the measure runs nearly the full width, so the only way out is
+       vertical. Each label starts on the seat it was authored to and, if that
+       seat puts it on the sentence or on a label already placed, it steps one
+       row further AWAY from the sentence until it is clear. */
+    if (!line) return;
+    /* Layout boxes, not client rects: the sentence and the heading carry the
+       page's reveal transform, so a client rect would measure them mid-entrance
+       and pin the labels against a position the sentence is about to leave. */
+    var lx0 = line.offsetLeft, ly0 = line.offsetTop;
+    var lx1 = lx0 + line.offsetWidth, ly1 = ly0 + line.offsetHeight;
+    var midY = (ly0 + ly1) / 2, GAP = 28;   /* the sentence keeps its own air */
+    var boxes = [];
+    function boxOf(li) {
+      var w = li.offsetWidth, h = li.offsetHeight;
+      var x = parseFloat(li.style.left) || 0, y = parseFloat(li.style.top) || 0;
+      if (li.getAttribute("data-side") === "l") x -= w;
+      y -= h / 2;
+      return [x, y, x + w, y + h];
+    }
+    function hits(b, x0, y0, x1, y1, g) {
+      return !(b[2] < x0 - g || b[0] > x1 + g || b[3] < y0 - g || b[1] > y1 + g);
+    }
+    function clear(b) {
+      if (hits(b, lx0, ly0, lx1, ly1, GAP)) return false;
+      for (var q = 0; q < boxes.length; q++) if (hits(b, boxes[q][0], boxes[q][1], boxes[q][2], boxes[q][3], 10)) return false;
+      return true;
+    }
+    labels.forEach(function (li, i) {
+      var home = anchors[i], j = home % S;
+      /* row 0 is the front row, lowest on screen: a label below the sentence
+         walks toward the front, one above it walks toward the back. A short
+         room can run out of rows that way, so the far side of the sentence is
+         tried before the label is left where it is. */
+      var first = by[home] > midY ? -1 : 1;
+      var found = home, ok = false;
+      [first, -first].forEach(function (dir) {
+        if (ok) return;
+        var r0 = Math.floor(home / S), k = home;
+        put(li, k);
+        var b = boxOf(li), guard = 0;
+        while (!clear(b)) {
+          if (guard++ >= R) return;
+          r0 += dir;
+          if (r0 < 0 || r0 > R - 1) return;
+          k = r0 * S + j;
+          put(li, k);
+          b = boxOf(li);
+        }
+        found = k; ok = true;
+      });
+      put(li, found);
+      anchors[i] = found;
+      boxes.push(boxOf(li));
+    });
+  }
+  function lightRooms() {
+    if (!labels.length || flow && mode === "static") return;
+    for (var i = 0; i < labels.length; i++) {
+      var k = anchors[i], on = false;
+      if (T.reach && pOn) {
+        var dx = px - bx[k], dy = py - by[k];
+        var kk = 1 - Math.sqrt(dx * dx + dy * dy) / T.reach;
+        if (kk > 0) on = Math.pow(kk, 1.5) > 0.35;
+      }
+      if (!on && waveOn) {
+        var e = (rf[k] - wp) / 0.16;
+        on = Math.exp(-e * e) > 0.35;
+      }
+      labels[i].classList.toggle("is-lit", on);
+    }
+  }
+
+  function build() {
+    var r = sec.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    T = tier(); R = T.R; S = T.S; n = R * S;
+    bx = new Float32Array(n); by = new Float32Array(n);
+    br = new Float32Array(n); ba = new Float32Array(n); rf = new Float32Array(n);
+    var k = 0;
+    for (var i = 0; i < R; i++) {
+      var f = R > 1 ? i / (R - 1) : 0;
+      var yi = H * (0.92 - 0.72 * Math.pow(f, 0.78));
+      var spread = 0.62 + 0.34 * f;
+      var sag = T.sag0 + (T.sag1 - T.sag0) * f;
+      for (var j = 0; j < S; j++) {
+        var tt = (S > 1 ? j / (S - 1) : 0.5) - 0.5;
+        bx[k] = W * (0.5 + spread * tt);
+        by[k] = yi - sag * (1 - (2 * tt) * (2 * tt));
+        br[k] = T.r0 + (T.r1 - T.r0) * f;
+        ba[k] = T.a0 + (T.a1 - T.a0) * f;
+        rf[k] = f;
+        k++;
+      }
+    }
+    measureHole();
+    placeRooms();
+  }
+
+  var pOn = false, ptx = 0, pty = 0, px = 0, py = 0, pLeft = -1e9;
+  var waveOn = false, wt0 = 0, wp = 0, nextWave = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (var k = 0; k < n; k++) {
+      var x = bx[k], y = by[k], a = ba[k], rr = br[k];
+      if (T.reach && pOn) {
+        var ddx = px - x, ddy = py - y;
+        var d = Math.sqrt(ddx * ddx + ddy * ddy);
+        var kk = 1 - d / T.reach;
+        if (kk > 0) {
+          kk = Math.pow(kk, 1.5);
+          a += 0.42 * kk; rr += 0.9 * kk;
+          if (d > 0.001) { var m = (T.lean * kk) / d; x += ddx * m; y += ddy * m; }
+        }
+      }
+      if (waveOn) {
+        var e = (rf[k] - wp) / 0.16;
+        var g = Math.exp(-e * e);
+        a += 0.22 * g; rr += 0.5 * g;
+      }
+      if (a <= 0.005) continue;
+      if (a > 1) a = 1;
+      var lit = (a - ba[k]) / 0.42;
+      if (lit < 0) lit = 0; else if (lit > 1) lit = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, rr, 0, 6.28318530718);
+      ctx.fillStyle = PAL[((lit * 7) | 0) * 33 + ((a * 32) | 0)];
+      ctx.fill();
+    }
+    if (hole) {
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.save();
+      ctx.translate(hole.x, hole.y); ctx.scale(hole.rx, hole.ry);
+      ctx.fillStyle = hole.g;
+      ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.28318530718); ctx.fill();
+      ctx.restore();
+      ctx.globalCompositeOperation = "source-over";
+    }
+    lightRooms();
+  }
+
+  var raf = 0, sT = 0, onScreen = false;
+  function frame(now) {
+    raf = 0;
+    if (mode !== "live") return;
+    if (pOn) { px += (ptx - px) * 0.12; py += (pty - py) * 0.12; }
+    if (!pOn && now - pLeft > 2000) {
+      if (!waveOn && now >= nextWave) { waveOn = true; wt0 = now; }
+    }
+    if (waveOn) {
+      wp = (now - wt0) / 2600;
+      if (wp > 1.35) { waveOn = false; nextWave = now + 7000 + Math.random() * 4000; }
+    }
+    draw();
+    var settling = Math.abs(ptx - px) > 0.3 || Math.abs(pty - py) > 0.3;
+    if (!onScreen || document.hidden) return;
+    if (pOn || waveOn || settling) { raf = requestAnimationFrame(frame); return; }
+    clearTimeout(sT);
+    sT = setTimeout(wake, Math.max(200, nextWave - performance.now()));
+  }
+  function wake() { if (mode === "live" && onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame); }
+  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } clearTimeout(sT); }
+
+  function onMove(e) {
+    if (e.pointerType === "touch") return;
+    var r = sec.getBoundingClientRect();
+    ptx = e.clientX - r.left; pty = e.clientY - r.top;
+    if (!pOn) { pOn = true; px = ptx; py = pty; }
+    waveOn = false;
+    wake();
+  }
+  function onLeave() { pOn = false; pLeft = performance.now(); nextWave = pLeft + 2000; wake(); }
+
+  var mode = null, rT = 0, iobs = null;
+  function setMode() {
+    var want = (rmq.matches || saveData) ? "static" : "live";
+    if (want === mode) return;
+    sleep();
+    if (mode === "live") {
+      sec.removeEventListener("pointermove", onMove);
+      sec.removeEventListener("pointerleave", onLeave);
+    }
+    if (iobs) { iobs.disconnect(); iobs = null; }
+    mode = want;
+    build();
+    if (want === "static") { pOn = false; waveOn = false; draw(); return; }
+    nextWave = performance.now() + 2000;
+    sec.addEventListener("pointermove", onMove, { passive: true });
+    sec.addEventListener("pointerleave", onLeave);
+    if ("IntersectionObserver" in window) {
+      iobs = new IntersectionObserver(function (e) {
+        onScreen = e[0].isIntersecting;
+        if (onScreen) wake(); else sleep();
+      }, { threshold: 0.05 });
+      iobs.observe(sec);
+    } else { onScreen = true; }
+    draw();
+    wake();
+  }
+  setMode();
+  /* The labels are placed against the measured sentence, so the array has to
+     be rebuilt once the real font metrics are in — otherwise a label can be
+     pinned clear of a fallback-font measure and land on the real one. */
+  function relayout() { build(); draw(); wake(); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
+  window.addEventListener("load", relayout);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) sleep(); else wake();
+  });
+  window.addEventListener("resize", function () {
+    clearTimeout(rT);
+    rT = setTimeout(relayout, 200);
+  }, { passive: true });
+  if (rmq.addEventListener) rmq.addEventListener("change", setMode);
+  else if (rmq.addListener) rmq.addListener(setMode);
+})();
+
+/* ===== 6. Bio: the portrait's lights, and one rolling credential ===== */
+(function () {
+  "use strict";
+  var bio = document.querySelector(".spk-bio");
+  if (!bio) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* --- the portrait: lights up as the section arrives --- */
+  var portrait = bio.querySelector(".media .spk-lights");
+  if (portrait) {
+    if (reduce || !("IntersectionObserver" in window)) portrait.classList.add("is-lit");
+    else {
+      new IntersectionObserver(function (e, obs) {
+        if (!e[0].isIntersecting) return;
+        portrait.classList.add("is-lit");
+        obs.disconnect();
+      }, { threshold: 0.2 }).observe(bio);
+    }
+  }
+
+  /* --- one credential at a time ---
+     4 s each. The six are always in the DOM as the sr-only list, which is
+     what a screen reader reads; the rolling line is aria-hidden. Hover and
+     keyboard focus hold the roll. An arrow PINS the line and nothing ever
+     puts it back on a timer (WCAG 2.2.2), so the live region only speaks on
+     a visitor's change. */
+  var wrap  = document.getElementById("spkCreds");
+  var stage = document.getElementById("spkCredsStage");
+  var prev  = document.getElementById("spkCredsPrev");
+  var nxt   = document.getElementById("spkCredsNext");
+  var count = document.getElementById("spkCredsCount");
+  var live  = document.getElementById("spkCredsLive");
+  if (!wrap || !stage || !prev || !nxt || !count) return;
+
+  var items = [].slice.call(stage.children);
+  var N = items.length;
+  if (!N) return;
+
+  if (reduce) { wrap.classList.add("is-static"); return; }
+
+  var PERIOD = 4000;
+  var cur = 0, pinned = false, hover = false, focus = false;
+  var inView = false, auto = 0, outT = 0;
+
+  function pad(i) { return (i < 10 ? "0" : "") + i; }
+  function wrapi(i) { return ((i % N) + N) % N; }
+
+  function render(i, byUser) {
+    cur = wrapi(i);
+    items.forEach(function (s, k) {
+      var was = s.classList.contains("is-on");
+      s.classList.toggle("is-on", k === cur);
+      s.classList.toggle("is-out", was && k !== cur);
+    });
+    clearTimeout(outT);
+    outT = setTimeout(function () {
+      items.forEach(function (s) { s.classList.remove("is-out"); });
+    }, 620);
+    count.textContent = pad(cur + 1) + " / " + pad(N);
+    if (live) {
+      if (byUser) {
+        live.setAttribute("aria-live", "polite");
+        var text = items[cur].textContent;
+        setTimeout(function () { live.textContent = text; }, 60);
+      } else {
+        live.setAttribute("aria-live", "off");
+        live.textContent = "";
+      }
+    }
+  }
+
+  function sync() {
+    var run = !pinned && inView && !document.hidden && !hover && !focus;
+    if (run) { if (!auto) auto = setInterval(function () { render(cur + 1, false); }, PERIOD); return; }
+    if (auto) { clearInterval(auto); auto = 0; }
+  }
+
+  /* an arrow pins the line for good — nothing releases it on a timer */
+  function pin(i) { pinned = true; render(i, true); sync(); }
+  prev.addEventListener("click", function () { pin(cur - 1); });
+  nxt.addEventListener("click", function () { pin(cur + 1); });
+
+  wrap.addEventListener("pointerenter", function (e) {
+    if (e.pointerType === "touch") return;
+    hover = true; sync();
+  });
+  wrap.addEventListener("pointerleave", function (e) {
+    if (e.pointerType === "touch") return;
+    hover = false; sync();
+  });
+  wrap.addEventListener("focusin", function () { focus = true; sync(); });
+  wrap.addEventListener("focusout", function (e) {
+    if (!wrap.contains(e.relatedTarget)) { focus = false; sync(); }
+  });
+  document.addEventListener("visibilitychange", sync);
+
+  render(0, false);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      inView = e[0].intersectionRatio >= 0.25; sync();
+    }, { threshold: [0, 0.25] }).observe(wrap);
+  } else { inView = true; sync(); }
+})();
+
+/* ===== 7. A. What he talks about: one line at a time =====
+   The five lines and the bridge all ship in the markup, stacked, so the
+   section reads with no script and under reduced motion. With the script
+   running the stack becomes one cell on an 8 s dwell; from that moment the
+   visible stage is decorative (aria-hidden) and .spk-said__srlist is what a
+   screen reader reads. Hover and keyboard focus hold the sequence. An arrow
+   PINS it for good — nothing puts it back on a timer (WCAG 2.2.2). */
+(function () {
+  "use strict";
+  var sec = document.querySelector(".spk-said");
+  if (!sec) return;
+  var stage = document.getElementById("spkSaidStage");
+  var inner = sec.querySelector(".spk-said__inner");
+  var prev  = document.getElementById("spkSaidPrev");
+  var nxt   = document.getElementById("spkSaidNext");
+  var count = document.getElementById("spkSaidCount");
+  var live  = document.getElementById("spkSaidLive");
+  var img   = sec.querySelector(".media .spk-lights");
+  if (!stage || !inner || !prev || !nxt || !count) return;
+
+  var slides = [].slice.call(stage.children);
+  var N = slides.length;
+  if (!N) return;
+
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* the lights come up once as the section arrives, and hold */
+  function lightUp() { if (img) img.classList.add("is-lit"); }
+  if (reduce || !("IntersectionObserver" in window)) lightUp();
+  else {
+    new IntersectionObserver(function (e, obs) {
+      if (!e[0].isIntersecting) return;
+      lightUp(); obs.disconnect();
+    }, { threshold: 0.2 }).observe(sec);
+  }
+
+  /* Reduced motion keeps the stacked state exactly as it ships: five lines
+     and the bridge, lit, no cycle and no arrows. */
+  if (reduce) return;
+
+  sec.classList.add("is-live");
+  stage.setAttribute("aria-hidden", "true");
+
+  var DWELL = 8000;
+  var cur = 0, pinned = false, hover = false, focus = false, inView = false;
+  var auto = 0, outT = 0;
+
+  function pad(i) { return (i < 10 ? "0" : "") + i; }
+  function wrapi(i) { return ((i % N) + N) % N; }
+
+  function render(i, byUser) {
+    cur = wrapi(i);
+    slides.forEach(function (s, k) {
+      var was = s.classList.contains("is-on");
+      s.classList.toggle("is-on", k === cur);
+      s.classList.toggle("is-out", was && k !== cur);
+    });
+    clearTimeout(outT);
+    outT = setTimeout(function () {
+      slides.forEach(function (s) { s.classList.remove("is-out"); });
+    }, 560);
+    count.textContent = pad(cur + 1) + " / " + pad(N);
+    if (live) {
+      if (byUser) {
+        live.setAttribute("aria-live", "polite");
+        var t = slides[cur].textContent.replace(/\s+/g, " ").trim();
+        setTimeout(function () { live.textContent = t; }, 60);
+      } else {
+        live.setAttribute("aria-live", "off");
+        live.textContent = "";
+      }
+    }
+  }
+
+  function sync() {
+    var run = !pinned && inView && !document.hidden && !hover && !focus;
+    if (run) { if (!auto) auto = setInterval(function () { render(cur + 1, false); }, DWELL); return; }
+    if (auto) { clearInterval(auto); auto = 0; }
+  }
+
+  /* an arrow pins the sequence for good — nothing releases it on a timer */
+  function pin(i) { pinned = true; render(i, true); sync(); }
+  prev.addEventListener("click", function () { pin(cur - 1); });
+  nxt.addEventListener("click", function () { pin(cur + 1); });
+
+  inner.addEventListener("pointerenter", function (e) {
+    if (e.pointerType === "touch") return;
+    hover = true; sync();
+  });
+  inner.addEventListener("pointerleave", function (e) {
+    if (e.pointerType === "touch") return;
+    hover = false; sync();
+  });
+  inner.addEventListener("focusin", function () { focus = true; sync(); });
+  inner.addEventListener("focusout", function (e) {
+    if (!inner.contains(e.relatedTarget)) { focus = false; sync(); }
+  });
+  document.addEventListener("visibilitychange", sync);
+
+  render(0, false);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      inView = e[0].intersectionRatio >= 0.25; sync();
+    }, { threshold: [0, 0.25] }).observe(sec);
+  } else { inView = true; sync(); }
+})();
+
+/* ===== 8. B. What it's like in the room: three beats, one stage =====
+   Selecting a beat runs that beat's own cue of the reel and shows its line.
+   The clip here is ALWAYS MUTED: the hero and the keynotes own the audio on
+   this page and this section never claims it, so nothing can end up talking
+   over anything else. The ground is the same lights sequence as the keynotes
+   — down on what is leaving, seek in the dark, up on what arrives — and the
+   cue parks back on its own first frame when it reaches its out point.
+   Reduced motion, Save-Data and no script keep the poster and list the three
+   lines under their own words. */
+(function () {
+  "use strict";
+  var sec = document.querySelector(".spk-beats");
+  if (!sec) return;
+  var row    = document.getElementById("spkBeatsRow");
+  var media  = sec.querySelector(".spk-beats__media");
+  var vid    = sec.querySelector(".spk-beats__video");
+  var poster = sec.querySelector(".spk-beats__media img");
+  var tabs   = [].slice.call(sec.querySelectorAll(".spk-beats__tab"));
+  var lines  = [].slice.call(sec.querySelectorAll(".spk-beats__line"));
+  var live   = document.getElementById("spkBeatsLive");
+  if (!row || !tabs.length || tabs.length !== lines.length) return;
+
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var small    = window.matchMedia("(max-width: 820px)");
+  var cur = 0;
+  var videoGround = !!vid && !reduce && !saveData;
+
+  /* in and out points live on the buttons, so a re-cut is an edit in the
+     markup and nowhere else */
+  var cues = tabs.map(function (t) {
+    return { a: parseFloat(t.getAttribute("data-cue-start")),
+             b: parseFloat(t.getAttribute("data-cue-end")) };
+  });
+
+  function say(msg) {
+    if (!live) return;
+    live.textContent = "";
+    setTimeout(function () { live.textContent = msg; }, 60);
+  }
+
+  /* Stacked: the poster holds, the row is gone and all three lines are
+     listed, each under its own word. */
+  if (reduce || saveData) {
+    sec.classList.add("is-stacked");
+    row.removeAttribute("role");
+    tabs.forEach(function (t) {
+      t.removeAttribute("role"); t.removeAttribute("aria-selected");
+      t.removeAttribute("aria-controls"); t.removeAttribute("tabindex");
+    });
+    lines.forEach(function (p) {
+      p.removeAttribute("role"); p.removeAttribute("aria-labelledby");
+      p.removeAttribute("tabindex"); p.classList.add("is-on");
+    });
+    if (poster) poster.classList.add("is-lit");
+    return;
+  }
+
+  var srcSet = false, watchRaf = 0, playing = -1, lightT = 0;
+
+  function ensureSrc() {
+    if (!vid || srcSet) return;
+    var s = small.matches
+      ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080"))
+      : vid.getAttribute("data-src-1080");
+    if (!s) return;
+    vid.setAttribute("src", s);
+    vid.load();
+    srcSet = true;
+  }
+
+  /* the out point is watched on a frame callback, not on timeupdate, which
+     fires about four times a second and would overshoot the cue */
+  function watch() {
+    watchRaf = 0;
+    if (playing < 0 || !vid) return;
+    var c = cues[playing];
+    if (c && vid.currentTime >= c.b) { park(playing); return; }
+    watchRaf = requestAnimationFrame(watch);
+  }
+  function park(i) {
+    if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
+    playing = -1;
+    if (!vid) return;
+    if (!vid.paused) vid.pause();
+    if (cues[i]) { try { vid.currentTime = cues[i].a; } catch (err) {} }
+  }
+  function stop() { if (playing >= 0) park(playing); }
+
+  function playCue(i) {
+    if (!vid || !cues[i]) return;
+    ensureSrc();
+    vid.muted = true;                    /* this section never has audio */
+    try { vid.currentTime = cues[i].a; } catch (err) {}
+    playing = i;
+    var p = vid.play();
+    if (p && p.catch) p.catch(function () { park(i); });
+    if (!watchRaf) watchRaf = requestAnimationFrame(watch);
+  }
+
+  /* lights down, seek in the dark, lights up */
+  function lights(i) {
+    if (!media) return;
+    clearTimeout(lightT);
+    media.classList.add("is-dimming");
+    if (poster) poster.classList.remove("is-lit");
+    if (vid) vid.classList.remove("is-lit");
+    lightT = setTimeout(function () {
+      if (!videoGround) {
+        media.classList.remove("is-dimming");
+        if (poster) poster.classList.add("is-lit");
+        return;
+      }
+      var done = false;
+      var up = function () {
+        if (done) return;
+        done = true;
+        vid.removeEventListener("seeked", up);
+        requestAnimationFrame(function () {
+          media.classList.remove("is-dimming");
+          vid.classList.add("is-lit");
+          playCue(i);
+        });
+      };
+      vid.addEventListener("seeked", up);
+      setTimeout(up, 700);               /* never hold the house dark on a slow seek */
+      ensureSrc();
+      try { vid.currentTime = cues[i].a; } catch (err) { up(); }
+    }, 240);
+  }
+
+  function select(i, replay) {
+    if (i === cur && !replay) return;
+    stop();
+    tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
+    lines[cur].classList.remove("is-on");
+    tabs[i].setAttribute("aria-selected", "true"); tabs[i].tabIndex = 0; tabs[i].classList.add("is-on");
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { lines[i].classList.add("is-on"); });
+    });
+    cur = i;
+    lights(i);
+    say(tabs[i].textContent.trim() + ". " + lines[i].textContent.replace(/\s+/g, " ").trim());
+  }
+
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { select(i, i === cur); });
+    t.addEventListener("focus", function () {
+      tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); });
+    });
+    t.addEventListener("keydown", function (e) {
+      var k = e.key, n = -1, L = tabs.length;
+      if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
+      else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
+      else if (k === "Home") n = 0;
+      else if (k === "End") n = L - 1;
+      else return;
+      e.preventDefault();
+      tabs[n].focus();
+    });
+  });
+
+  /* nothing keeps running off screen or in a hidden tab */
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e) {
+      if (e[0].intersectionRatio < 0.25) stop();
+    }, { threshold: [0, 0.25, 1] }).observe(sec);
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) stop();
+  });
+  if (vid) vid.addEventListener("ended", function () { if (playing >= 0) park(playing); });
+
+  /* The reel becomes the ground and parks on the first beat's in point; the
+     house lights come up on it as the section arrives. */
+  if (videoGround) {
+    ensureSrc();
+    if (poster) poster.classList.remove("is-on", "is-lit");
+    vid.classList.add("is-on");
+    var firstPark = function () { if (playing < 0) { try { vid.currentTime = cues[cur].a; } catch (err) {} } };
+    if (vid.readyState >= 1) firstPark();
+    else vid.addEventListener("loadedmetadata", firstPark, { once: true });
+  }
+  function firstLight() {
+    var el = videoGround ? vid : poster;
+    if (el) el.classList.add("is-lit");
+  }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (e, obs) {
+      if (!e[0].isIntersecting) return;
+      firstLight(); obs.disconnect();
+    }, { threshold: 0.15 }).observe(sec);
+  } else { firstLight(); }
+})();
