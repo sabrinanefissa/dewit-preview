@@ -1,0 +1,18 @@
+  <!-- Healthcare -->
+  <section class="care"{% if block.id %} id="{{ block.id }}"{% endif %}>
+    <div class="media media--warm">
+      <img data-reveal-clip src="{{ block.image.src | root(r) }}"
+           srcset="{{ block.image.srcset | srcset(r) }}"
+           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | safe }}" decoding="async">
+    </div>
+    <div class="care__inner">
+      <div class="care__body reveal">
+        <h2>{{ block.heading | safe }}</h2>
+        <p class="lead lead--inv"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | safe }}</p>
+        <ul class="care__list">
+          {% for it in block.items %}<li>{{ it | safe }}</li>{% endfor %}
+        </ul>
+        <div class="care__cta"><a class="btn btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }}</a></div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,322 @@
+{
+  "slug": "speaking",
+  "permalink": "/speaking/",
+  "title": "Human Connection &amp; Relational Intelligence Speaker | Dr. Stephen de Wit",
+  "description": "Keynotes on human connection and relational intelligence for teams, conferences, associations and healthcare organizations. 170 keynotes, 7,000+ leaders.",
+  "canonical": "https://drdewit.com/speaking/",
+  "og": {
+    "title": "Human Connection &amp; Relational Intelligence Speaker | Dr. Stephen de Wit",
+    "description": "Keynotes on human connection and relational intelligence for teams, conferences, associations and healthcare organizations. 170 keynotes, 7,000+ leaders.",
+    "url": "https://drdewit.com/speaking/",
+    "image": "https://drdewit.com/assets/img/reel-poster-1280.webp"
+  },
+  "preload": {
+    "href": "assets/img/reel-poster-1280.webp",
+    "srcset": [
+      { "src": "assets/img/reel-poster-860.webp", "w": 860 },
+      { "src": "assets/img/reel-poster-1280.webp", "w": 1280 },
+      { "src": "assets/img/reel-poster-1920.webp", "w": 1920 }
+    ],
+    "sizes": "100vw"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "scripts": ["js/vendor/lenis.min.js"],
+  "mainTabindex": "-1",
+  "ground": {
+    "image": "assets/img/ground-theatre-1664.webp",
+    "srcset": [
+      { "src": "assets/img/ground-theatre-960.webp", "w": 960 },
+      { "src": "assets/img/ground-theatre-1664.webp", "w": 1664 }
+    ],
+    "sizes": "100vw",
+    "veil": true
+  },
+  "footer": { "class": "spk-foot", "id": "spkFoot" },
+  "comments": {
+    "loader": "Loader (reused)",
+    "nav": "Nav (reused chrome; homepage anchors are relative to this folder)",
+    "mainEnd": "The credibility ribbon (\"Trusted by\" / \"As seen on\") belongs to the\n       homepage only. This page ends on the bio and goes straight to the\n       footer; the shared .orgband / .cred__* CSS and the lane script are\n       untouched and simply have nothing to bind to here."
+  },
+  "blocks": [
+    {
+      "type": "reelHero",
+      "id": "reel",
+      "enabled": true,
+      "poster": {
+        "src": "assets/img/reel-poster-1280.webp",
+        "srcset": [
+          { "src": "assets/img/reel-poster-860.webp", "w": 860 },
+          { "src": "assets/img/reel-poster-1280.webp", "w": 1280 },
+          { "src": "assets/img/reel-poster-1920.webp", "w": 1920 }
+        ],
+        "sizes": "100vw",
+        "alt": "Dr. Stephen de Wit speaking to a room"
+      },
+      "video": {
+        "poster": "assets/img/reel-poster-1280.webp",
+        "ariaLabel": "Dr. Stephen de Wit speaking: the reel",
+        "src1080": "assets/video/reel-1080.mp4",
+        "src720": "assets/video/reel-720.mp4",
+        "srcMobile": "assets/video/reel-mobile.mp4",
+        "mobileAutoplay": "true"
+      },
+      "captions": { "src": "assets/video/reel-en.vtt", "srclang": "en", "label": "English" },
+      "heading": "A talk about the part people don&rsquo;t say out loud.",
+      "labels": {
+        "cta": "Play with sound",
+        "play": "Play",
+        "sound": "Sound on",
+        "captions": "Captions on"
+      },
+      "settings": {}
+    },
+    {
+      "type": "stats",
+      "enabled": true,
+      "extraClass": "spk-proof",
+      "ariaLabel": "Speaking record",
+      "note": "==============================================================\n       2. PROOF LINE - reused stats count-up, centred, no eyebrow\n       ==============================================================",
+      "counters": [
+        { "value": 170, "suffix": "", "label": "keynotes." },
+        { "value": 7000, "suffix": "+", "label": "leaders in those rooms." },
+        { "value": 20, "suffix": "+", "label": "years inside the relationships people care about most." }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "said",
+      "id": "said",
+      "enabled": true,
+      "velvet": {
+        "src": "assets/img/velvet-1786.webp",
+        "srcset": [
+          { "src": "assets/img/velvet-960.webp", "w": 960 },
+          { "src": "assets/img/velvet-1786.webp", "w": 1786 }
+        ],
+        "sizes": "100vw"
+      },
+      "macro": "assets/img/wax-macro-1440.webp",
+      "windowA": "Three <em class=\"spk-said__cur\">talks</em>.",
+      "windowB": "for <em class=\"spk-said__cur\">people</em>, teams and organizations.",
+      "heading": "What he talks about.",
+      "lines": [
+        "You can be surrounded by colleagues and still on your own.",
+        "You&rsquo;re doing the job well and struggling quietly underneath it.",
+        "You carry everyone else&rsquo;s feelings and nobody asks about yours.",
+        "There&rsquo;s a conversation you keep moving to next week.",
+        "Small unsaid tensions add up until everyone is tired.",
+        "Left unsaid long enough, this becomes what the organization calls a performance problem."
+      ],
+      "settings": {}
+    },
+    {
+      "type": "keys",
+      "id": "keynotes",
+      "enabled": true,
+      "heading": "Three talks, for people, teams and organizations.",
+      "indexLabel": "Keynotes",
+      "hearLabel": "Hear Stephen on this",
+      "pauseLabel": "Pause",
+      "rest": {
+        "src": "assets/img/keys-stage-1664.webp",
+        "srcset": [
+          { "src": "assets/img/keys-stage-960.webp", "w": 960 },
+          { "src": "assets/img/keys-stage-1664.webp", "w": 1664 }
+        ],
+        "sizes": "100vw"
+      },
+      "video": {
+        "src1080": "assets/video/reel-1080.mp4",
+        "srcMobile": "assets/video/reel-mobile.mp4"
+      },
+      "captions": { "src": "assets/video/reel-en.vtt", "srclang": "en", "label": "English" },
+      "talks": [
+        {
+          "title": "Lead Human<span class=\"tm\">&trade;</span>",
+          "sub": "Relational Intelligence at Work.",
+          "accent": "violet",
+          "image": {
+            "src": "assets/img/keys-stage-1664.webp",
+            "srcset": [
+              { "src": "assets/img/keys-stage-960.webp", "w": 960 },
+              { "src": "assets/img/keys-stage-1664.webp", "w": 1664 }
+            ],
+            "sizes": "100vw"
+          },
+          "segment": { "start": "103.66", "end": "115.42", "poster": "110.0" }
+        },
+        {
+          "title": "Invisible Friction",
+          "sub": "Why teams break down.",
+          "accent": "coral",
+          "image": {
+            "src": "assets/img/out-aisle-1664.webp",
+            "srcset": [
+              { "src": "assets/img/out-aisle-960.webp", "w": 960 },
+              { "src": "assets/img/out-aisle-1664.webp", "w": 1664 }
+            ],
+            "sizes": "100vw"
+          },
+          "segment": { "start": "115.42", "end": "130.90", "poster": "126.0" }
+        },
+        {
+          "title": "The Hidden Multiplier",
+          "sub": "What relational intelligence does to retention.",
+          "accent": "gold",
+          "image": {
+            "src": "assets/img/room-offsite-1200.webp",
+            "srcset": [
+              { "src": "assets/img/room-offsite-720.webp", "w": 720 },
+              { "src": "assets/img/room-offsite-1200.webp", "w": 1200 }
+            ],
+            "sizes": "100vw"
+          },
+          "segment": { "start": "137.34", "end": "145.70", "poster": "144.0" }
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "chap",
+      "id": "room",
+      "enabled": true,
+      "heading": "What it&rsquo;s like in the room.",
+      "railLabel": "Chapters",
+      "chapters": [
+        {
+          "word": "Think",
+          "text": "You find yourself thinking of past conversations, this time from a different <em class=\"spk-chap__key\">perspective</em>",
+          "tone": "violet",
+          "spot": "ul",
+          "still": {
+            "src": "assets/img/chap-think-1664.webp",
+            "srcset": [
+              { "src": "assets/img/chap-think-960.webp", "w": 960 },
+              { "src": "assets/img/chap-think-1664.webp", "w": 1664 }
+            ],
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Feel",
+          "text": "How we feel becomes the <em class=\"spk-chap__key\">patterns</em> we carry, shaping how we show up in every room",
+          "tone": "bone",
+          "spot": "lr",
+          "still": {
+            "src": "assets/img/chap-feel-1664.webp",
+            "srcset": [
+              { "src": "assets/img/chap-feel-960.webp", "w": 960 },
+              { "src": "assets/img/chap-feel-1664.webp", "w": 1664 }
+            ],
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Act",
+          "text": "What moved you starts <em class=\"spk-chap__key\">changing</em> what you do",
+          "tone": "violet",
+          "spot": "ul",
+          "still": {
+            "src": "assets/img/chap-act-1664.webp",
+            "srcset": [
+              { "src": "assets/img/chap-act-960.webp", "w": 960 },
+              { "src": "assets/img/chap-act-1664.webp", "w": 1664 }
+            ],
+            "sizes": "100vw"
+          }
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "out",
+      "id": "walkout",
+      "enabled": true,
+      "image": {
+        "src": "assets/img/step-05-1280.webp",
+        "srcset": [
+          { "src": "assets/img/step-05-860.webp", "w": 860 },
+          { "src": "assets/img/step-05-1280.webp", "w": 1280 },
+          { "src": "assets/img/step-05-1920.webp", "w": 1920 }
+        ],
+        "sizes": "100vw"
+      },
+      "heading": "What the room walks out with.",
+      "words": [
+        { "text": "Trust", "x": "26%", "y": "70%", "layer": "front" },
+        { "text": "Honest conversation", "x": "34%", "y": "44%", "layer": "back" },
+        { "text": "Curiosity", "x": "50%", "y": "70%", "layer": "front" },
+        { "text": "Shared responsibility", "x": "66%", "y": "44%", "layer": "back" },
+        { "text": "Openness", "x": "74%", "y": "70%", "layer": "front" }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "formats",
+      "enabled": true,
+      "ariaLabel": "Formats and rooms",
+      "sentence": "Available as a <em>keynote</em>, a <em>workshop</em> or a <em>half-day session</em>, for teams, conferences, associations and healthcare organizations.",
+      "heading": "Rooms he speaks to.",
+      "sizes": "70vw",
+      "rooms": [
+        { "caption": "Executive and senior teams", "image": { "src": "assets/img/room-association-1200.webp", "srcset": [ { "src": "assets/img/room-association-720.webp", "w": 720 }, { "src": "assets/img/room-association-1200.webp", "w": 1200 } ] } },
+        { "caption": "Managers and emerging leaders", "image": { "src": "assets/img/room-corporate-1200.webp", "srcset": [ { "src": "assets/img/room-corporate-720.webp", "w": 720 }, { "src": "assets/img/room-corporate-1200.webp", "w": 1200 } ] } },
+        { "caption": "Teams under strain", "image": { "src": "assets/img/room-offsite-1200.webp", "srcset": [ { "src": "assets/img/room-offsite-720.webp", "w": 720 }, { "src": "assets/img/room-offsite-1200.webp", "w": 1200 } ] } },
+        { "caption": "Associations and membership bodies", "image": { "src": "assets/img/room-conference-1200.webp", "srcset": [ { "src": "assets/img/room-conference-720.webp", "w": 720 }, { "src": "assets/img/room-conference-1200.webp", "w": 1200 } ] } },
+        { "caption": "People, culture and L&amp;D teams", "image": { "src": "assets/img/room-gala-1200.webp", "srcset": [ { "src": "assets/img/room-gala-720.webp", "w": 720 }, { "src": "assets/img/room-gala-1200.webp", "w": 1200 } ] } },
+        { "caption": "Healthcare and long-term care", "image": { "src": "assets/img/room-healthcare-1200.webp", "srcset": [ { "src": "assets/img/room-healthcare-720.webp", "w": 720 }, { "src": "assets/img/room-healthcare-1200.webp", "w": 1200 } ] } }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "bio",
+      "id": "bio",
+      "enabled": true,
+      "portrait": {
+        "src": "assets/img/headshot-formal-520.webp",
+        "srcset": [
+          { "src": "assets/img/headshot-formal-520.webp", "w": 520 },
+          { "src": "assets/img/headshot-formal-860.webp", "w": 860 }
+        ],
+        "sizes": "(max-width: 900px) 240px, 38vw",
+        "alt": "Portrait of Dr. Stephen de Wit"
+      },
+      "line": "Twenty years as a therapist, sexologist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
+      "link": { "label": "Meet Stephen", "href": "#about" },
+      "plannersHeading": "For planners.",
+      "outcomesLabel": "What each talk leaves behind",
+      "outcomes": [
+        { "title": "Lead Human<span class=\"tm\">&trade;</span>", "text": "Spot the relational patterns behind engagement and retention. Work from a clear framework for building trust. Name tension and misalignment early, before performance dips." },
+        { "title": "Invisible Friction", "text": "Notice the quiet breakdowns wearing on culture and collaboration. Open a difficult conversation without making it worse. Build accountability that doesn&rsquo;t cost trust." },
+        { "title": "The Hidden Multiplier", "text": "Connect everyday relational patterns to the outcomes an organization already measures. Look at turnover as a trust question. Protect culture through growth and change." }
+      ],
+      "tailoringLabel": "Tailoring",
+      "tailoring": "Every planner resource comes in more than one version. Bios run from one sentence to a short paragraph, and Stephen&rsquo;s team will build one to your event theme on request.",
+      "onDayLabel": "On the day",
+      "onDay": [
+        "A wireless headset mic. Stephen moves and works the room. A lavalier can stand in.",
+        "A sound system matched to the room size.",
+        "Fresh batteries, please. We like the energy on stage and no surprises.",
+        "Projection and screens every seat can read, HDMI to Stephen&rsquo;s laptop, and at least one confidence monitor at the foot of the stage.",
+        "A countdown timer he can see, and 30 minutes of soundcheck in the room before doors open."
+      ],
+      "settings": {}
+    },
+    {
+      "type": "close",
+      "enabled": true,
+      "image": {
+        "src": "assets/img/close-stage-1664.webp",
+        "srcset": [
+          { "src": "assets/img/close-stage-960.webp", "w": 960 },
+          { "src": "assets/img/close-stage-1664.webp", "w": 1664 }
+        ],
+        "sizes": "100vw"
+      },
+      "heading": "Bring him into your room.",
+      "cta": { "label": "Book Stephen", "href": "#contact" },
+      "settings": {}
+    }
+  ]
+}

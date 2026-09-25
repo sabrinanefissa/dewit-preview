@@ -1,0 +1,23 @@
+  <!-- Keynotes -->
+  <section class="keynotes-sec"{% if block.id %} id="{{ block.id }}"{% endif %}>
+    <div class="keynotes-head reveal">
+      <h2 class="h-md">{{ block.heading | safe }}</h2>
+    </div>
+    <div class="keynotes">
+    {%- for k in block.cards %}
+      <a class="keynote reveal" href="{{ k.href | root(r) }}" style="--_acc:var(--{{ k.accent }})">
+        <span class="keynote__img" aria-hidden="true"><img src="{{ k.image.src | root(r) }}" srcset="{{ k.image.srcset | srcset(r) }}" sizes="{{ k.image.sizes }}" alt="" loading="lazy"></span>
+        <span class="keynote__no">{{ loop.index | pad2 }}</span>
+        <span class="keynote__main">
+        {%- if k.tag %}
+          <span class="keynote__tag">{{ k.tag | safe }}</span>
+        {%- endif %}
+          <span class="keynote__title">{{ k.title | safe }}</span>
+          <span class="keynote__sub">{{ k.sub | safe }}</span>
+          <span class="keynote__accent"></span>
+        </span>
+        <span class="keynote__cta">{{ block.ctaLabel | safe }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </a>
+    {%- endfor %}
+    </div>
+  </section>

@@ -1,0 +1,13 @@
+{%- if block.note %}
+  <!-- {{ block.note | safe }} -->
+{%- endif %}
+  <section class="stats{% if block.extraClass %} {{ block.extraClass }}{% endif %}"{% if block.id %} id="{{ block.id }}"{% endif %}{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | safe }}"{% endif %}>
+  {%- if block.eyebrow %}
+    <p class="eyebrow eyebrow--inv stats__eyebrow reveal">{{ block.eyebrow | safe }}</p>
+  {%- endif %}
+    <p class="stats__line reveal">
+    {%- for c in block.counters %}
+      <span class="stats__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | safe }}
+    {%- endfor %}
+    </p>
+  </section>

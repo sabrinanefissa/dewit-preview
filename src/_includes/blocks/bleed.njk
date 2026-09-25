@@ -1,0 +1,14 @@
+  <!-- Cinematic bleed: the idea (live constellation) -->
+  <section class="bleed{% if block.constellation %} bleed--net{% endif %}"{% if block.id %} id="{{ block.id }}"{% endif %}>
+    <div class="media media--plum">
+      <img src="{{ block.image.src | root(r) }}"
+           srcset="{{ block.image.srcset | srcset(r) }}"
+           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | safe }}" loading="lazy">
+    </div>
+    {%- if block.constellation %}
+    <canvas class="bleed__canvas" id="net" aria-hidden="true"></canvas>
+    {%- endif %}
+    <div class="bleed__inner reveal">
+      <h2>{{ block.statement | safe }}</h2>
+    </div>
+  </section>

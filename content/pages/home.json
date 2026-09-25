@@ -1,0 +1,435 @@
+{
+  "slug": "home",
+  "permalink": "/",
+  "title": "Dr. Stephen de Wit, Human Connection &amp; Relational Intelligence Speaker",
+  "description": "Dr. Stephen de Wit is a human connection and relational intelligence speaker. He helps people and teams turn tension into trust, and trust into performance, through keynotes, workshops and healthcare programs.",
+  "canonical": "https://drdewit.com/",
+  "og": {
+    "title": "Dr. Stephen de Wit, Human Connection &amp; Relational Intelligence Speaker",
+    "description": "Turn human tension into trust, and trust into performance. Keynotes and workshops for people, teams and organizations.",
+    "url": "https://drdewit.com/",
+    "image": "https://drdewit.com/assets/img/hero-1280.webp"
+  },
+  "preload": { "href": "assets/img/hero-1280.webp" },
+  "jsonld": true,
+  "lightbox": true,
+  "scripts": [],
+  "comments": { "loader": "Loader", "nav": "Nav" },
+  "blocks": [
+    {
+      "type": "hero",
+      "id": "speaking",
+      "enabled": true,
+      "poster": {
+        "src": "assets/img/hero-1280.webp",
+        "srcset": [
+          { "src": "assets/img/hero-520.webp", "w": 520 },
+          { "src": "assets/img/hero-860.webp", "w": 860 },
+          { "src": "assets/img/hero-1280.webp", "w": 1280 },
+          { "src": "assets/img/hero-1365.webp", "w": 1365 }
+        ],
+        "sizes": "100vw",
+        "alt": "Dr. Stephen de Wit speaking on stage"
+      },
+      "video": {
+        "poster": "assets/img/hero-poster.jpg",
+        "webm": "assets/video/hero-loop-1080.webm",
+        "mp4": "assets/video/hero-loop-1080.mp4",
+        "mp4Sm": "assets/video/hero-loop-720.mp4"
+      },
+      "heading": "Connection <em>changes</em> everything.",
+      "play": {
+        "video": "assets/video/reel-720.mp4",
+        "ariaLabel": "Watch Stephen speak",
+        "label": "Watch Stephen speak",
+        "small": "The reel"
+      },
+      "meta": [
+        "Human connection &amp; relational intelligence",
+        "<b>170+</b> keynotes · Toronto to worldwide"
+      ],
+      "settings": {}
+    },
+    {
+      "type": "thread",
+      "id": "thread",
+      "enabled": true,
+      "ariaLabel": "What the work is about",
+      "eyebrow": "The through-line",
+      "bg": [
+        "assets/img/line-greet-860.webp",
+        "assets/img/line-room-860.webp",
+        "assets/img/line-stage-860.webp",
+        "assets/img/line-handshake-860.webp",
+        "assets/img/friction-507.webp"
+      ],
+      "stations": [
+        {
+          "pillar": true,
+          "image": {
+            "src": "assets/img/line-greet-1280.webp",
+            "srcset": [
+              { "src": "assets/img/line-greet-520.webp", "w": 520 },
+              { "src": "assets/img/line-greet-860.webp", "w": 860 },
+              { "src": "assets/img/line-greet-1280.webp", "w": 1280 }
+            ],
+            "sizes": "(max-width: 720px) 100vw, 520px",
+            "alt": "Stephen greeting attendees before a talk"
+          },
+          "label": "Human Connection",
+          "gloss": "What every result in your organization actually runs on."
+        },
+        {
+          "pillar": false,
+          "image": {
+            "src": "assets/img/line-room-1280.webp",
+            "srcset": [
+              { "src": "assets/img/line-room-520.webp", "w": 520 },
+              { "src": "assets/img/line-room-860.webp", "w": 860 },
+              { "src": "assets/img/line-room-1280.webp", "w": 1280 }
+            ],
+            "sizes": "(max-width: 720px) 100vw, 520px",
+            "alt": "Stephen facing the audience from the stage"
+          },
+          "label": "Relational Intelligence",
+          "gloss": "Reading people well and responding well. It can be taught."
+        },
+        {
+          "pillar": true,
+          "image": {
+            "src": "assets/img/line-stage-1280.webp",
+            "srcset": [
+              { "src": "assets/img/line-stage-520.webp", "w": 520 },
+              { "src": "assets/img/line-stage-860.webp", "w": 860 },
+              { "src": "assets/img/line-stage-1280.webp", "w": 1280 }
+            ],
+            "sizes": "(max-width: 720px) 100vw, 520px",
+            "alt": "Stephen alone on a dark stage"
+          },
+          "label": "Lead Human",
+          "gloss": "The signature keynote."
+        },
+        {
+          "pillar": false,
+          "image": {
+            "src": "assets/img/line-handshake-1280.webp",
+            "srcset": [
+              { "src": "assets/img/line-handshake-520.webp", "w": 520 },
+              { "src": "assets/img/line-handshake-860.webp", "w": 860 },
+              { "src": "assets/img/line-handshake-1280.webp", "w": 1280 }
+            ],
+            "sizes": "(max-width: 720px) 100vw, 520px",
+            "alt": "A workshop table mid-conversation"
+          },
+          "label": "Build Trust",
+          "gloss": "The thing that speeds everything else up."
+        },
+        {
+          "pillar": false,
+          "image": {
+            "src": "assets/img/friction-507.webp",
+            "width": 507,
+            "sizes": "(max-width: 720px) 100vw, 520px",
+            "alt": "Stephen listening at the edge of a room"
+          },
+          "label": "Reduce Friction",
+          "gloss": "Clear what quietly slows a team down."
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "patterns",
+      "id": "patterns",
+      "enabled": true,
+      "ariaLabel": "The same patterns at home and at work",
+      "how": "How",
+      "tail": "shows up.",
+      "hint": "Holds this pattern. Select the word again to resume.",
+      "prevLabel": "Previous pattern",
+      "nextLabel": "Next pattern",
+      "homeLabel": "At home",
+      "workLabel": "At work",
+      "words": [
+        { "word": "Trust", "name": "Trust", "home": "Who you call first.", "work": "Who you tell first." },
+        { "word": "Avoidance", "name": "Avoidance", "home": "The conversation you keep putting off.", "work": "The meeting nobody books." },
+        { "word": "Fear", "name": "Fear", "home": "Of being too much.", "work": "Of being found out." },
+        { "word": "Vulnera&shy;bility", "name": "Vulnerability", "home": "Saying the thing out loud.", "work": "Saying &ldquo;I don&rsquo;t know&rdquo; in the room." },
+        { "word": "Resentment", "name": "Resentment", "home": "The score nobody admits keeping.", "work": "The credit that went to someone else." },
+        { "word": "Responsi&shy;bility", "name": "Responsibility", "home": "Owning your part of the mess.", "work": "Owning the miss before the review does." },
+        { "word": "Repair", "name": "Repair", "home": "Coming back after the door slams.", "work": "Coming back after the email." }
+      ],
+      "cta": {
+        "lead": "It can be taught.",
+        "label": "See the keynotes",
+        "href": "#keynotes"
+      },
+      "settings": {}
+    },
+    {
+      "type": "truth",
+      "enabled": true,
+      "image": {
+        "src": "assets/img/permission-1280.webp",
+        "srcset": [
+          { "src": "assets/img/permission-860.webp", "w": 860 },
+          { "src": "assets/img/permission-1280.webp", "w": 1280 },
+          { "src": "assets/img/permission-1920.webp", "w": 1920 }
+        ],
+        "sizes": "100vw",
+        "alt": "Stephen connecting closely with workshop participants"
+      },
+      "heading": "What people say, and what they're carrying.",
+      "rows": [
+        { "surface": "&ldquo;I&rsquo;m fine.&rdquo;", "under": "I&rsquo;m carrying all of it." },
+        { "surface": "&ldquo;We&rsquo;re aligned.&rdquo;", "under": "No one has said the real thing." },
+        { "surface": "&ldquo;It&rsquo;s handled.&rdquo;", "under": "We&rsquo;re running on empty." }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "bleed",
+      "enabled": true,
+      "constellation": true,
+      "image": {
+        "src": "assets/img/keynote-1280.webp",
+        "srcset": [
+          { "src": "assets/img/keynote-860.webp", "w": 860 },
+          { "src": "assets/img/keynote-1280.webp", "w": 1280 },
+          { "src": "assets/img/keynote-1920.webp", "w": 1920 }
+        ],
+        "sizes": "100vw",
+        "alt": "Stephen alone on a large stage under a single light"
+      },
+      "statement": "Relationships are the <em>operating system</em>.",
+      "settings": {}
+    },
+    {
+      "type": "why",
+      "id": "about",
+      "enabled": true,
+      "portrait": {
+        "src": "assets/img/headshot-formal-860.webp",
+        "srcset": [
+          { "src": "assets/img/headshot-formal-520.webp", "w": 520 },
+          { "src": "assets/img/headshot-formal-860.webp", "w": 860 },
+          { "src": "assets/img/headshot-formal-1280.webp", "w": 1280 }
+        ],
+        "sizes": "(max-width:1024px) 100vw, 46vw",
+        "alt": "Portrait of Dr. Stephen de Wit"
+      },
+      "heading": "Depth most stages never get near.",
+      "lead": "Twenty years as a therapist, sexologist and researcher, in the rooms where people finally tell the truth.",
+      "creds": [
+        "<b>Doctorate of Human Sexuality</b>",
+        "<b>Master of Public Health</b>, Human Sexuality",
+        "<b>Board-Certified Sexologist</b>",
+        "<b>20+ years</b> in clinical practice",
+        "<b>Research Associate</b>, Ontario Tech University"
+      ],
+      "link": { "label": "Read Stephen's story", "href": "#about" },
+      "settings": {}
+    },
+    {
+      "type": "stats",
+      "enabled": true,
+      "note": "Proof in numbers, as a sentence",
+      "eyebrow": "The results are human.",
+      "counters": [
+        { "value": 7000, "suffix": "+", "label": "leaders in the room." },
+        { "value": 170, "suffix": "", "label": "keynotes delivered." },
+        { "value": 20, "suffix": "+", "label": "years learning how people actually connect." }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "orgband",
+      "enabled": true,
+      "ariaLabel": "Organizations Stephen has worked with, and media features",
+      "lanes": [
+        {
+          "label": "Trusted by",
+          "speed": "0.35",
+          "small": false,
+          "logos": [
+            { "src": "assets/logos/U-of-T-Logo-Blue-Horiz.png", "alt": "University of Toronto", "knockout": true },
+            { "src": "assets/logos/George_Brown_College_logo.svg", "alt": "George Brown College", "plate": true },
+            { "src": "assets/logos/tmu-logo-full-colour-ko.png", "alt": "Toronto Metropolitan University" },
+            { "src": "assets/logos/laurentian-university-vector-logo-ko.png", "alt": "Laurentian University" },
+            { "src": "assets/logos/Lakeridge-new-logo-617x360-ko.png", "alt": "Lakeridge Health" },
+            { "src": "assets/logos/Reckitt-Logo-ko.png", "alt": "Reckitt" },
+            { "src": "assets/logos/mdrt-logo-ko.png", "alt": "MDRT" },
+            { "src": "assets/logos/toronto-academy-of-dentistry.png", "alt": "Toronto Academy of Dentistry", "knockout": true },
+            { "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png", "alt": "NESO" },
+            { "src": "assets/logos/OSOT.png", "alt": "Ontario Society of Occupational Therapists" }
+          ]
+        },
+        {
+          "label": "As seen on",
+          "speed": "-0.28",
+          "small": true,
+          "logos": [
+            { "src": "assets/logos/GMA_(Good_Morning_America)_logo_2021.png", "alt": "Good Morning America" },
+            { "src": "assets/logos/CBC.png", "alt": "CBC", "knockout": true },
+            { "src": "assets/logos/Showtime.svg.png", "alt": "Showtime" },
+            { "src": "assets/logos/Men_s_Health.svg.png", "alt": "Men's Health" },
+            { "src": "assets/logos/TGAM-Square-RGB-2019-SM-ko.png", "alt": "The Globe and Mail" },
+            { "src": "assets/logos/1200px-Marilyn_Logo.svg.png", "alt": "Marilyn" }
+          ]
+        }
+      ],
+      "cta": {
+        "text": "Your organization could be next on this list.",
+        "label": "Bring Stephen to your event",
+        "href": "#contact"
+      },
+      "settings": {}
+    },
+    {
+      "type": "keynotes",
+      "id": "keynotes",
+      "enabled": true,
+      "heading": "Talks that go where the real work is.",
+      "ctaLabel": "Explore",
+      "cards": [
+        {
+          "tag": "Signature keynote",
+          "title": "Lead Human<span class=\"tm\">™</span>",
+          "sub": "<b>Trust, performance, retention.</b> How relational intelligence fuels all three, especially when pressure is high and connection is strained.",
+          "accent": "violet",
+          "href": "speaking/#keynotes",
+          "image": {
+            "src": "assets/img/keynote-860.webp",
+            "srcset": [
+              { "src": "assets/img/keynote-520.webp", "w": 520 },
+              { "src": "assets/img/keynote-860.webp", "w": 860 },
+              { "src": "assets/img/keynote-1280.webp", "w": 1280 }
+            ],
+            "sizes": "640px"
+          }
+        },
+        {
+          "title": "Invisible Friction",
+          "sub": "<b>Why teams quietly break down.</b> How to clear the hidden barriers before collaboration and performance suffer.",
+          "accent": "coral",
+          "href": "speaking/#keynotes",
+          "image": {
+            "src": "assets/img/room-860.webp",
+            "srcset": [
+              { "src": "assets/img/room-520.webp", "w": 520 },
+              { "src": "assets/img/room-860.webp", "w": 860 },
+              { "src": "assets/img/room-1280.webp", "w": 1280 }
+            ],
+            "sizes": "640px"
+          }
+        },
+        {
+          "title": "The Hidden Multiplier",
+          "sub": "<b>Results you can measure.</b> How relational intelligence drives retention, psychological safety and performance.",
+          "accent": "gold",
+          "href": "speaking/#keynotes",
+          "image": {
+            "src": "assets/img/statement-860.webp",
+            "srcset": [
+              { "src": "assets/img/statement-520.webp", "w": 520 },
+              { "src": "assets/img/statement-860.webp", "w": 860 },
+              { "src": "assets/img/statement-1280.webp", "w": 1280 }
+            ],
+            "sizes": "640px"
+          }
+        },
+        {
+          "title": "Care Without Carrying It All",
+          "sub": "<b>For healthcare and caregiving teams.</b> Compassion, healthier boundaries and staying connected under real pressure.",
+          "accent": "teal",
+          "href": "#healthcare",
+          "image": {
+            "src": "assets/img/permission-860.webp",
+            "srcset": [
+              { "src": "assets/img/permission-520.webp", "w": 520 },
+              { "src": "assets/img/permission-860.webp", "w": 860 },
+              { "src": "assets/img/permission-1280.webp", "w": 1280 }
+            ],
+            "sizes": "640px"
+          }
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "care",
+      "id": "healthcare",
+      "enabled": true,
+      "image": {
+        "src": "assets/img/results-860.webp",
+        "srcset": [
+          { "src": "assets/img/results-520.webp", "w": 520 },
+          { "src": "assets/img/results-860.webp", "w": 860 },
+          { "src": "assets/img/results-920.webp", "w": 920 }
+        ],
+        "sizes": "(max-width:1024px) 100vw, 48vw",
+        "alt": "An engaged audience during Stephen's talk"
+      },
+      "heading": "Care deeply, without <em>carrying it all</em>.",
+      "lead": "For hospitals, long-term care, and the caregivers who hold emotionally demanding work together.",
+      "leadStyle": "margin-top:1.2rem;max-width:42ch",
+      "items": [
+        "Caregiver load",
+        "Difficult conversations",
+        "Compassion &amp; boundaries",
+        "Trust under pressure",
+        "Staying connected"
+      ],
+      "cta": { "label": "See the healthcare work", "href": "#contact" },
+      "settings": {}
+    },
+    {
+      "type": "steps",
+      "id": "how",
+      "enabled": true,
+      "ariaLabel": "What happens when you book",
+      "eyebrow": "How it works",
+      "heading": "From the first email to the last question in the room.",
+      "steps": [
+        {
+          "title": "Reach out.",
+          "text": "Tell us the date, the room and what your people are facing.",
+          "image": { "src": "assets/img/step-01-1280.webp", "srcset": [ { "src": "assets/img/step-01-860.webp", "w": 860 }, { "src": "assets/img/step-01-1280.webp", "w": 1280 }, { "src": "assets/img/step-01-1920.webp", "w": 1920 } ], "sizes": "100vw" }
+        },
+        {
+          "title": "A planning call.",
+          "text": "Stephen learns the culture, the pressure points and what has to be true when he walks off stage.",
+          "image": { "src": "assets/img/step-02-1280.webp", "srcset": [ { "src": "assets/img/step-02-860.webp", "w": 860 }, { "src": "assets/img/step-02-1280.webp", "w": 1280 }, { "src": "assets/img/step-02-1920.webp", "w": 1920 } ], "sizes": "100vw" }
+        },
+        {
+          "title": "The talk is shaped to the room.",
+          "text": "Same core ideas, tuned to your industry and your people.",
+          "image": { "src": "assets/img/step-03-1280.webp", "srcset": [ { "src": "assets/img/step-03-860.webp", "w": 860 }, { "src": "assets/img/step-03-1280.webp", "w": 1280 }, { "src": "assets/img/step-03-1920.webp", "w": 1920 } ], "sizes": "100vw" }
+        },
+        {
+          "title": "The day.",
+          "text": "Stage intro, AV list and timing are handled in advance. He arrives early.",
+          "image": { "src": "assets/img/step-04-1280.webp", "srcset": [ { "src": "assets/img/step-04-860.webp", "w": 860 }, { "src": "assets/img/step-04-1280.webp", "w": 1280 }, { "src": "assets/img/step-04-1920.webp", "w": 1920 } ], "sizes": "100vw" }
+        },
+        {
+          "title": "Afterward.",
+          "text": "The conversation keeps going: resources for your team and a follow-up if you want it.",
+          "image": { "src": "assets/img/step-05-1280.webp", "srcset": [ { "src": "assets/img/step-05-860.webp", "w": 860 }, { "src": "assets/img/step-05-1280.webp", "w": 1280 }, { "src": "assets/img/step-05-1920.webp", "w": 1920 } ], "sizes": "100vw" }
+        }
+      ],
+      "link": { "label": "Start with an email", "href": "#contact" },
+      "final": {
+        "id": "contact",
+        "heading": "Let's put this in front of <em>your people</em>.",
+        "lead": "Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.",
+        "leadStyle": "margin-top:1.4rem;max-width:52ch;margin-inline:auto",
+        "buttons": [
+          { "label": "Bring Stephen to your event", "href": "mailto:info@drdewit.com?subject=Speaking%20inquiry%20for%20Dr.%20Stephen%20de%20Wit" },
+          { "label": "Watch Stephen speak", "video": "assets/video/reel-720.mp4" }
+        ],
+        "contacts": true
+      },
+      "settings": {}
+    }
+  ]
+}

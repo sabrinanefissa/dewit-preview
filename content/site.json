@@ -1,0 +1,79 @@
+{
+  "lang": "en",
+  "brand": "Dr. Stephen de Wit",
+  "tagline": "Human Connection &amp; Relational Intelligence",
+  "year": "2026",
+  "head": {
+    "viewport": "width=device-width, initial-scale=1",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "favicon": { "href": "assets/favicon-32x32.png", "sizes": "32x32" },
+    "appleTouchIcon": "assets/apple-icon-180x180.png",
+    "preconnect": [
+      { "href": "https://fonts.googleapis.com" },
+      { "href": "https://fonts.gstatic.com", "crossorigin": true }
+    ],
+    "fonts": "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap",
+    "stylesheet": "css/main.css",
+    "script": "js/main.js"
+  },
+  "person": {
+    "name": "Dr. Stephen de Wit",
+    "jobTitle": "Human Connection & Relational Intelligence Speaker",
+    "description": "Human connection and relational intelligence speaker; therapist, sexologist and researcher with 20+ years spent in the rooms where trust, conflict and connection get real.",
+    "url": "https://drdewit.com/",
+    "telephone": "+1-647-483-4490",
+    "knowsAbout": ["Human connection", "Relational intelligence", "Trust", "Difficult conversations", "Workplace culture", "Psychological safety", "Healthcare communication", "Caregiver wellbeing", "Leadership"]
+  },
+  "contact": {
+    "phone": "647.483.4490",
+    "tel": "+16474834490",
+    "email": "info@drdewit.com"
+  },
+  "socials": [
+    { "label": "LinkedIn", "href": "https://www.linkedin.com/" },
+    { "label": "Instagram", "href": "https://www.instagram.com/" }
+  ],
+  "ui": {
+    "skip": "Skip to content",
+    "navLabel": "Primary",
+    "drawerLabel": "Mobile",
+    "menu": "Menu",
+    "drawerClose": "Close ✕",
+    "drawerCloseLabel": "Close menu"
+  },
+  "brandLink": { "href": "", "overrides": { "home": "#main" } },
+  "nav": [
+    { "label": "Speaking", "href": "speaking/", "slug": "speaking" },
+    { "label": "Keynotes", "href": "#keynotes" },
+    { "label": "Healthcare", "href": "#healthcare" },
+    { "label": "About", "href": "#about" },
+    { "label": "Consultation", "href": "#consultation" }
+  ],
+  "cta": { "label": "Book Stephen", "href": "#contact" },
+  "footer": {
+    "blurb": "Human connection and relational intelligence for people, teams and organizations.",
+    "blurbStyle": "max-width:34ch",
+    "explore": {
+      "heading": "Explore",
+      "links": [
+        { "label": "Speaking", "href": "speaking/", "slug": "speaking", "overrides": { "home": "#speaking" } },
+        { "label": "Keynotes", "href": "#keynotes" },
+        { "label": "Healthcare", "href": "#healthcare" },
+        { "label": "About", "href": "#about" },
+        { "label": "Consultation", "href": "#consultation" },
+        { "label": "Meeting planners", "href": "#contact" }
+      ]
+    },
+    "connect": { "heading": "Connect" }
+  },
+  "lightbox": {
+    "label": "Speaking reel",
+    "close": "✕",
+    "closeLabel": "Close",
+    "eyebrow": "Speaking reel",
+    "text": "Stephen's reel is being finalized. To see current speaking footage now, request it and we'll send it straight over.",
+    "ctaStyle": "margin-top:1.4rem",
+    "cta": { "label": "Request the reel", "href": "mailto:info@drdewit.com?subject=Speaking%20reel%20request" }
+  }
+}

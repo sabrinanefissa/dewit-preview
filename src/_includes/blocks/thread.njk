@@ -1,0 +1,40 @@
+  <!-- The through-line -->
+  <section class="thread"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
+    <div class="thread__bg" aria-hidden="true">
+    {%- for src in block.bg %}
+      <img src="{{ src | root(r) }}" alt="" loading="lazy" decoding="async">
+    {%- endfor %}
+    </div>
+    <div class="thread__veil" aria-hidden="true"></div>
+    <div class="thread__glow" aria-hidden="true"></div>
+
+    <svg class="thread__svg" id="threadSvg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="guide" id="guidePath" d=""></path>
+      <path class="drawn" id="drawnPath" d=""></path>
+    </svg>
+    <div class="pulse" id="pulse" aria-hidden="true"></div>
+    <div class="rail" id="rail" aria-hidden="true"><i></i><b id="railFill"></b></div>
+
+    <div class="thread__inner">
+      <p class="eyebrow">{{ block.eyebrow | safe }}</p>
+
+      <div class="stations" id="stations">
+{% for s in block.stations %}
+        <article class="station {{ 'is-odd' if loop.index % 2 else 'is-even' }}{% if s.pillar %} is-pillar{% endif %}">
+          <figure class="still">
+            <img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
+            {%- if s.image.srcset %}
+                 srcset="{{ s.image.srcset | srcset(r) }}"{% endif %}
+                 sizes="{{ s.image.sizes }}" alt="{{ s.image.alt | safe }}" loading="eager" decoding="async">
+          </figure>
+          <div class="knot"><span class="dot"></span></div>
+          <div class="body">
+            <p class="idx"><span>{{ loop.index | pad2 }}</span></p>
+            <h2 class="label"><span>{{ s.label | safe }}</span></h2>
+            <p class="gloss">{{ s.gloss | safe }}</p>
+          </div>
+        </article>
+{% endfor %}
+      </div>
+    </div>
+  </section>

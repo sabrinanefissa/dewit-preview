@@ -1,0 +1,8 @@
+  <div class="spk-close" aria-hidden="false">
+    <img class="spk-close__img" src="{{ block.image.src | root(r) }}" srcset="{{ block.image.srcset | srcset(r) }}" sizes="{{ block.image.sizes }}" alt="" loading="lazy" decoding="async">
+    <div class="spk-close__veil" aria-hidden="true"></div>
+    <div class="spk-close__inner">
+      <h2 class="spk-close__h">{{ block.heading | safe }}</h2>
+      <a class="btn spk-close__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }}</a>
+    </div>
+  </div>

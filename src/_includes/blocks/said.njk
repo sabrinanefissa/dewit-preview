@@ -1,0 +1,45 @@
+  <!-- ==============================================================
+       A. WHAT HE TALKS ABOUT - the candle wheel. A pinned stage over
+       velvet: a wheel stands on its edge below the screen, six candles
+       40 degrees apart on its rim, the top one standing on the bottom
+       edge. The top candle is lit and its line stands above its flame;
+       each 80svh of scroll turns the wheel one step, the candle that
+       spoke stays lit as it goes under. On the last beats all six are
+       lit. Then "Three talks." comes up large behind the candle while it
+       is still at rest; as the candle starts to grow it rolls up and out
+       of an invisible window while "for people, teams and
+       organizations." rolls up into the same window, in front of the
+       candle; the candle grows into its wax, the wax close-up settles, and the three talks rise over it (two
+       visual lines, aria-hidden; the real heading is in the talks
+       section). The track is 720svh:
+         0-480    six beats, one line each (the sixth is the bridge)
+         480-560  every candle lit, the bridge holds
+         560-660  the grow: line A, the push into the wax, line B, the macro
+         660-720  hold, while the talks section rises over the stage
+       The six lines are real text in reading order at all times; the
+       wheel is a decorative canvas. Reduced motion, Save-Data and no
+       script: no pin, the six lines stacked (with script, each under a
+       lit candle) on the velvet.
+       ============================================================== -->
+  <section class="spk-said"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="spkSaidH">
+    <div class="spk-said__track" id="spkSaidTrack">
+      <div class="spk-said__stage" id="spkSaidStage">
+        <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" srcset="{{ block.velvet.srcset | srcset(r) }}" sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">
+        <div class="spk-said__veil" aria-hidden="true"></div>
+        <div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | safe }}</p></div>
+        <canvas class="spk-said__wheel" id="spkSaidWheel" aria-hidden="true"></canvas>
+        <img class="spk-said__macro" id="spkSaidMacro" src="{{ block.macro | root(r) }}" alt="" loading="lazy" decoding="async">
+        <div class="spk-said__bloom" id="spkSaidBloom" aria-hidden="true"></div>
+        <div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | safe }}</p></div>
+        <div class="spk-said__inner">
+          <h2 class="spk-said__h" id="spkSaidH">{{ block.heading | safe }}</h2>
+          <div class="spk-said__lines" id="spkSaidLines">
+          {%- for line in block.lines %}
+            <p class="spk-said__line{% if loop.last %} spk-said__bridge{% endif %}" data-beat="{{ loop.index }}"><span class="spk-said__no">{{ loop.index | pad2 }}</span>{{ line | safe }}</p>
+          {%- endfor %}
+          </div>
+          <p class="spk-sr" id="spkSaidLive" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
+    </div>
+  </section>

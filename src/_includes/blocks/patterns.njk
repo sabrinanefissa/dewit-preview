@@ -1,0 +1,52 @@
+  <!-- Same patterns: "How [Word] shows up." on one line, the word rolling, its
+       controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. -->
+  <section class="patterns"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
+    <div class="patterns__spot" aria-hidden="true"></div>
+
+    <div class="patterns__inner reveal">
+
+      <div class="patterns__stage" id="patStage">
+        <h2 class="patterns__title" id="patTitle" aria-label="{{ block.how }} {{ block.words[0].name }} {{ block.tail }}"><span class="patterns__how">{{ block.how | safe }}</span> <span class="ctx"><button type="button" class="patterns__word" id="patWord" aria-pressed="false" aria-describedby="patHint">
+          {%- for w in block.words %}<span class="patterns__glyphs{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if not loop.first %} aria-hidden="true"{% endif %}>{{ w.word | safe }}</span>{% endfor -%}
+        </button><i class="ctx__bar" aria-hidden="true"></i></span> <span class="patterns__tail">{{ block.tail | safe }}</span></h2>
+        <span class="patterns__sr" id="patHint">{{ block.hint | safe }}</span>
+
+        <div class="patterns__ctrl">
+          <button type="button" class="patterns__arrow patterns__arrow--prev" id="patPrev" aria-label="{{ block.prevLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <span class="patterns__count" id="patCount">01 / {{ block.words.length | pad2 }}</span>
+          <button type="button" class="patterns__arrow patterns__arrow--next" id="patNext" aria-label="{{ block.nextLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+
+        <!-- Every word and both rooms, for screen readers, all the time -->
+        <dl class="patterns__sr">
+        {%- for w in block.words %}
+          <dt>{{ w.name | safe }}</dt><dd>{{ block.homeLabel }}: {{ w.home | safe }}</dd><dd>{{ block.workLabel }}: {{ w.work | safe }}</dd>
+        {%- endfor %}
+        </dl>
+        <!-- Two cards, decorative (the sr-only list above carries the words).
+             Each hides a still of Stephen that the pointer lights; the
+             photos are mapped in main.js, PHOTOS ("Replace photos here"). -->
+        <div class="patterns__cards" aria-hidden="true">
+        {%- for room in [["home", block.homeLabel], ["work", block.workLabel]] %}
+          <div class="patterns__card patterns__room--{{ room[0] }}">
+            <div class="patterns__photo"></div>
+            <div class="patterns__photo patterns__photo--lit"></div>
+            <p class="patterns__text">
+              <span class="patterns__label">{{ room[1] }}</span>
+              <span class="patterns__lines">
+              {%- for w in block.words %}
+                <span data-i="{{ loop.index0 }}"{% if loop.first %} class="is-on"{% endif %}>{{ w[room[0]] | safe }}</span>
+              {%- endfor %}
+              </span>
+            </p>
+          </div>
+        {%- endfor %}
+        </div>
+      </div>
+
+      <p class="patterns__cta"><span class="patterns__cta-lead">{{ block.cta.lead | safe }}</span>
+        <a class="patterns__cta-link" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+
+      <p class="patterns__sr" id="patLive" aria-live="off" aria-atomic="true"></p>
+    </div>
+  </section>
