@@ -2567,7 +2567,7 @@
               20%, the wheel turns 40 degrees (eased) over the last 45%
               while the line leaves. Lines 01-05 are beats 0-4; the bridge
               (06) arrives on beat 5 and holds, and the wheel stops.
-     480-560  every candle lit, the bridge holds
+     480-560  the sixth candle lit, the bridge holds
      560-660  the grow (g 0-1): "Three talks." up behind the resting
               candle (0-0.2); the candle scales x8 about the middle of its
               wax, which drifts to the centre (0.2-0.75); as it starts,
@@ -2578,17 +2578,17 @@
      620-720  the stage is held in place (a transform, only while the
               talks section is pinned and rises over it) until the talks
               ground has come up
-   Each candle turns on its own axis as it travels: its facing angle psi
-   is set by the scroll (three times the wheel's angle, plus a resting
-   face of its own), so it turns 120 degrees on every 40-degree step and
-   stands still between; the growing candle turns 240 more, still by
-   g = 0.75. The turn is a 17-frame sequence, crossfaded frame to frame.
+   The rim candles do not turn: each draws one still, candle-turn-03 (the
+   opening facing the camera). Only the growing candle turns: from that
+   frame it turns psi = 240 degrees (eased) by g = 0.75, a 17-frame
+   sequence crossfaded frame to frame.
    update(p) writes the lines' --on, the heading's --on and the macro and
    bloom properties, and stores the wheel's state; the canvas is drawn by
    this module's own rAF loop, which runs only while the stage is on
    screen and the tab is visible (the glow's breathing and the lighting
-   are time-based; the wheel and the turn are not). A candle that has
-   spoken stays lit, and a candle's lit frames fade in over 600ms.
+   are time-based; the wheel and the turn are not). Only the current
+   candle is lit (the sixth through the grow): it lights over 600ms as it
+   arrives and goes dark the same way when the next one takes its place.
    The six lines are real text in reading order at all times; nothing is
    announced while scrolling. Reduced motion, Save-Data, no canvas or no
    spine: no pin, the six lines stacked on the velvet, each under one lit
@@ -2642,7 +2642,8 @@
 
   /* ---- the frames ----
      0-16 the turn (candle-turn-01 ... 17, in rotation order: 01 -> 17 -> 01
-     is one full turn, about 21.2 degrees a frame), 17 unlit. The turn was
+     is one full turn, about 21.2 degrees a frame), 17 unlit. The rim
+     draws frame 2 (03) only; the growing candle turns on from it. The turn was
      shot foot-aligned on one canvas, so its 17 frames share one anchor set
      (the centre and the bottom of the brass foot sit on the rim) and are
      drawn at height hC. The unlit frame keeps its own anchors, measured on
@@ -2718,7 +2719,8 @@
   var u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, first = true;   /* the wheel's centre stays at W/2 */
   var litTo = new Int8Array(N), litFrom = new Float32Array(N), litT0 = new Float64Array(N);
   var L = new Float32Array(N);
-  var psi = new Float32Array(N);                           /* each candle's own facing, degrees */
+  var FACE = 2;                                            /* the rim's one frame: candle-turn-03 */
+  var psi = new Float32Array(N);                           /* each candle's turn from FACE, degrees (only the growing one turns) */
   var faD = new Int8Array(N);                              /* the turn frame last drawn under each */
 
   var last = {};
@@ -2744,10 +2746,10 @@
     g = clamp((u - 560) / 100);
     if (u > 400) loadBig();
 
-    /* the turn: three times the wheel's angle, a resting face each, and
-       the growing candle's 240 degrees, still by g = 0.75 */
-    for (var q = 0; q < N; q++) psi[q] = 3 * (theta + q * STEP) + q * 76;
-    if (g > 0) psi[Math.min(beat, 5)] += 240 * smooth(clamp(g / 0.75));
+    /* the turn: the rim stands still on FACE; the growing candle turns
+       240 degrees from it, still by g = 0.75 */
+    for (var q = 0; q < N; q++) psi[q] = 0;
+    if (g > 0) psi[Math.min(beat, 5)] = 240 * smooth(clamp(g / 0.75));
 
     /* the lines: in over the first 20% of their beat, out over the first
        30% of the turn;
@@ -2766,10 +2768,10 @@
     var bridge = beat >= 5;
     if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
 
-    /* lit: every candle up to the current beat (all six from beat 5) */
+    /* lit: the current candle only (the sixth from beat 5, through the grow) */
     var now = performance.now();
     for (var i = 0; i < N; i++) {
-      var to = (beat >= 5 || i <= beat) ? 1 : 0;
+      var to = (i === Math.min(beat, 5)) ? 1 : 0;
       if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
       else if (to !== litTo[i]) { litFrom[i] = L[i]; litTo[i] = to; litT0[i] = now; }
     }
@@ -2848,7 +2850,7 @@
       ctx.setTransform(dpr * k * c, dpr * k * sn, -dpr * k * sn, dpr * k * c, dpr * ex, dpr * ey);
       var big = hC * dpr * k > 470 ? 1 : 0;
       var Li = L[i];
-      var fP = (((psi[i] % 360) + 360) % 360) / 360 * NT;
+      var fP = FACE + (((psi[i] % 360) + 360) % 360) / 360 * NT;
       var fl = Math.floor(fP), ta = fl % NT, tb = (ta + 1) % NT, tt = fP - fl;
       faD[i] = ta;
       if (Li > 0.001) {
@@ -2872,7 +2874,7 @@
   /* ---- the loop: only while the stage is on screen and the tab shows ----
      window.__spkProfile = true times each draw into window.__spkWheelCost
      (the last 240 frames, in ms) and writes window.__spkWheelState (each
-     candle's psi and the turn frame drawn under the crossfade). */
+     candle's psi, the turn frame drawn under the crossfade, and its lit L). */
   var raf = 0, onScreen = false;
   function tick(now) {
     raf = 0;
@@ -2883,7 +2885,7 @@
       var cost = window.__spkWheelCost || (window.__spkWheelCost = []);
       cost.push(performance.now() - t0);
       if (cost.length > 240) cost.shift();
-      window.__spkWheelState = { psi: [].slice.call(psi), fa: [].slice.call(faD) };
+      window.__spkWheelState = { psi: [].slice.call(psi), fa: [].slice.call(faD), L: [].slice.call(L) };
     }
     raf = requestAnimationFrame(tick);
   }
