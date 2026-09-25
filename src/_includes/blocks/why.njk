@@ -2,19 +2,19 @@
   <section class="why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media media--plum">
       <img data-reveal-clip src="{{ block.portrait.src | root(r) }}"
-           srcset="{{ block.portrait.srcset | srcset(r) }}"
-           sizes="{{ block.portrait.sizes }}" alt="{{ block.portrait.alt | safe }}" decoding="async">
+           {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.portrait.sizes }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
     </div>
     <div class="why__grid">
       <div class="why__body reveal">
-        <h2>{{ block.heading | safe }}</h2>
-        <p class="lead">{{ block.lead | safe }}</p>
+        <h2>{{ block.heading | inline() }}</h2>
+        <p class="lead">{{ block.lead | inline() }}</p>
         <div class="creds">
         {%- for c in block.creds %}
-          <div class="cred"><span>{{ c | safe }}</span></div>
+          <div class="cred"><span>{{ c | inline() }}</span></div>
         {%- endfor %}
         </div>
-        <p class="why__link"><a class="textlink" href="{{ block.link.href | root(r) }}">{{ block.link.label | safe }}
+        <p class="why__link"><a class="textlink" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
       </div>
     </div>

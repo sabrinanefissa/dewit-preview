@@ -25,18 +25,18 @@
   <section class="spk-said"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-grow="{{ grow }}" style="--beats:{{ block.lines.length }};--beat:{{ beat }};--grow:{{ grow }}">
     <div class="spk-said__track">
       <div class="spk-said__stage">
-        <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" srcset="{{ block.velvet.srcset | srcset(r) }}" sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">
+        <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" {%- set ss1 = block.velvet.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">
         <div class="spk-said__veil" aria-hidden="true"></div>
-        <div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | safe }}</p></div>
+        <div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | inline('spk-said__cur') }}</p></div>
         <canvas class="spk-said__wheel" aria-hidden="true"></canvas>
         <img class="spk-said__macro" src="{{ block.macro | root(r) }}" alt="" loading="lazy" decoding="async">
         <div class="spk-said__bloom" aria-hidden="true"></div>
-        <div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | safe }}</p></div>
+        <div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | inline('spk-said__cur') }}</p></div>
         <div class="spk-said__inner">
-          <h2 class="spk-said__h" id="{{ block.id }}-h">{{ block.heading | safe }}</h2>
+          <h2 class="spk-said__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
           <div class="spk-said__lines">
           {%- for line in block.lines %}
-            <p class="spk-said__line{% if loop.last %} spk-said__bridge{% endif %}" data-beat="{{ loop.index }}"><span class="spk-said__no">{{ loop.index | pad2 }}</span>{{ line | safe }}</p>
+            <p class="spk-said__line{% if loop.last %} spk-said__bridge{% endif %}" data-beat="{{ loop.index }}"><span class="spk-said__no">{{ loop.index | pad2 }}</span>{{ line | inline() }}</p>
           {%- endfor %}
           </div>
           <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>

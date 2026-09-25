@@ -2,18 +2,18 @@
   <section class="truth"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media">
       <img data-reveal-focus src="{{ block.image.src | root(r) }}"
-           srcset="{{ block.image.srcset | srcset(r) }}"
-           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | safe }}" loading="lazy">
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" loading="lazy">
     </div>
     <div class="truth__inner">
       <div class="truth__head reveal">
-        <h2>{{ block.heading | safe }}</h2>
+        <h2>{{ block.heading | inline() }}</h2>
       </div>
       <div class="trows">
       {%- for row in block.rows %}
         <button class="trow" type="button" aria-pressed="false">
-          <span class="trow__surface"><span class="trow__strike" aria-hidden="true"></span>{{ row.surface | safe }}</span>
-          <span class="trow__under">{{ row.under | safe }}</span>
+          <span class="trow__surface"><span class="trow__strike" aria-hidden="true"></span>{{ row.surface | inline() }}</span>
+          <span class="trow__under">{{ row.under | inline() }}</span>
         </button>
       {%- endfor %}
       </div>

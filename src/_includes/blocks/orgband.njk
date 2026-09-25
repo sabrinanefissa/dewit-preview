@@ -1,19 +1,19 @@
   <!-- Credibility ribbon: trusted by / as seen on (timed spotlight) -->
-  <section class="orgband"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('plum') }}" data-tick="{{ block | motion('tick', 2600) }}" data-tick-sm="{{ block | motion('tickSmall', 2400) }}" data-spell="{{ block | motion('spell', 4200) }}">
+  <section class="orgband"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-tick="{{ block | motion('tick', 2600) }}" data-tick-sm="{{ block | motion('tickSmall', 2400) }}" data-spell="{{ block | motion('spell', 4200) }}">
   {%- for lane in block.lanes %}
     <div class="cred__lane{% if lane.small %} cred__lane--sm{% endif %}" data-cred-lane data-speed="{{ lane.speed }}">
-      <p class="cred__label">{{ lane.label | safe }}</p>
+      <p class="cred__label">{{ lane.label | inline() }}</p>
       <div class="cred__viewport">
         <div class="cred__track">
         {%- for logo in lane.logos %}
-            <img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | safe }}"{% if logo.knockout %} data-knockout{% endif %}{% if logo.plate %} data-plate{% endif %}>
+            <img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}"{% if logo.knockout %} data-knockout{% endif %}{% if logo.plate %} data-plate{% endif %}>
         {%- endfor %}
         </div>
       </div>
     </div>
   {%- endfor %}
     <div class="orgband__cta reveal">
-      <p>{{ block.cta.text | safe }}</p>
-      <a class="btn" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }}</a>
+      <p>{{ block.cta.text | inline() }}</p>
+      <a class="btn" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
     </div>
   </section>

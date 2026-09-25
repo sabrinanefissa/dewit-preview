@@ -17,14 +17,14 @@
         <div class="spk-chap__media" aria-hidden="true">
         {%- for c in block.chapters %}
           <img class="spk-chap__still{% if loop.first %} is-on{% endif %}" data-chapter="{{ loop.index0 }}" src="{{ c.still.src | root(r) }}"
-               srcset="{{ c.still.srcset | srcset(r) }}"
+               {%- set ss1 = c.still.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
                sizes="{{ c.still.sizes }}" alt="" loading="lazy" decoding="async">
         {%- endfor %}
         </div>
         <div class="spk-chap__glow" aria-hidden="true"></div>
 
         <div class="spk-chap__inner">
-          <h2 class="spk-chap__h" id="{{ block.id }}-h">{{ block.heading | safe }}</h2>
+          <h2 class="spk-chap__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
 
           <div class="spk-chap__rail" role="tablist" aria-label="{{ block.railLabel }}">
             <i class="spk-chap__line" aria-hidden="true"></i>
@@ -33,7 +33,7 @@
           {%- for c in block.chapters %}
             <button type="button" class="spk-chap__tab{% if loop.first %} is-on{% endif %}" role="tab" id="{{ block.id }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}"
                     aria-controls="{{ block.id }}-panel-{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}"
-                    data-tone="{{ c.tone }}"><i class="spk-chap__stop" aria-hidden="true"></i>{{ c.word | safe }}</button>
+                    data-tone="{{ c.tone }}"><i class="spk-chap__stop" aria-hidden="true"></i>{{ c.word | inline() }}</button>
           {%- endfor %}
           </div>
 
@@ -42,8 +42,8 @@
             <div class="spk-chap__chapter{% if loop.first %} is-live{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0"
                  data-tone="{{ c.tone }}" data-spot="{{ c.spot }}">
               <div class="spk-chap__frame" aria-hidden="true"></div>
-              <p class="spk-chap__word">{{ c.word | safe }}</p>
-              <p class="spk-chap__text">{{ c.text | safe }}</p>
+              <p class="spk-chap__word">{{ c.word | inline() }}</p>
+              <p class="spk-chap__text">{{ c.text | inline('spk-chap__key') }}</p>
             </div>
           {%- endfor %}
           </div>

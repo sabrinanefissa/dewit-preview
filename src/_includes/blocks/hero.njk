@@ -4,8 +4,8 @@
     <div class="media media--plum">
       <!-- Instant poster / reduced-motion + fallback layer -->
       <img class="hero__poster" src="{{ block.poster.src | root(r) }}"
-           srcset="{{ block.poster.srcset | srcset(r) }}"
-           sizes="{{ block.poster.sizes }}" alt="{{ block.poster.alt | safe }}" fetchpriority="high">
+           {%- set ss1 = block.poster.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.poster.sizes }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">
       <!-- Ambient muted keynote loop (upgraded in via JS unless prefers-reduced-motion) -->
       <video class="hero__video" muted loop playsinline preload="none"
              poster="{{ block.video.poster | root(r) }}" aria-hidden="true"
@@ -14,13 +14,13 @@
              data-src-mp4-sm="{{ block.video.mp4Sm | root(r) }}"></video>
     </div>
     <div class="hero__inner">
-      <h1 class="reveal">{{ block.heading | safe }}</h1>
+      <h1 class="reveal">{{ block.heading | inline() }}</h1>
       <div class="hero__actions reveal" data-d="2">
-        <button class="play" data-video="{{ block.play.video | root(r) }}" aria-label="{{ block.play.ariaLabel | safe }}">
+        <button class="play" data-video="{{ block.play.video | root(r) }}" aria-label="{{ block.play.ariaLabel | inline() }}">
           <span class="play__ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-          <span class="play__label">{{ block.play.label | safe }}<small>{{ block.play.small | safe }}</small></span>
+          <span class="play__label">{{ block.play.label | inline() }}<small>{{ block.play.small | inline() }}</small></span>
         </button>
       </div>
     </div>
-    <div class="hero__meta">{% for m in block.meta %}<span>{{ m | safe }}</span>{% endfor %}</div>
+    <div class="hero__meta">{% for m in block.meta %}<span>{{ m | inline() }}</span>{% endfor %}</div>
   </section>

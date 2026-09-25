@@ -1,9 +1,15 @@
 /* Eleventy build: content/*.json -> src/_includes templates -> _site/.
    assets/, css/ and js/ are copied through untouched. */
+const fs = require('fs');
+const path = require('path');
+const nunjucks = require('nunjucks');
 const SCHEME = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i; // https:, mailto:, tel:, //host
 
 module.exports = function (eleventyConfig) {
-  eleventyConfig.addPassthroughCopy({ assets: 'assets', css: 'css', js: 'js' });
+  // tokens.css is generated (theme.json -> css/tokens.css.njk); only
+  // main.css is passed through untouched. src/admin (Sveltia CMS) is
+  // static and copied through as-is too.
+  eleventyConfig.addPassthroughCopy({ assets: 'assets', 'css/main.css': 'css/main.css', js: 'js', 'src/admin': 'admin' });
 
   // 1 -> "01"
   eleventyConfig.addFilter('pad2', n => String(n).padStart(2, '0'));
@@ -13,12 +19,53 @@ module.exports = function (eleventyConfig) {
   const root = (p, r) => (p == null ? '' : SCHEME.test(p) ? p : (r || '') + p);
   eleventyConfig.addFilter('root', root);
 
-  // [{src, w}] -> "a.webp 520w, b.webp 860w" (each src root-prefixed)
-  eleventyConfig.addFilter('srcset', (list, r) =>
-    (list || []).map(s => `${root(s.src, r)} ${s.w}w`).join(', '));
+  // One image path -> its srcset candidate string, derived from disk: strip
+  // the trailing "-<digits>" from the file name, glob the same directory for
+  // "<base>-<w>.<ext>" siblings (the file itself included), and return them
+  // sorted by width, root-prefixed: "a-860.webp 860w, a-1280.webp 1280w".
+  // A file whose name has no trailing "-<digits>", or that has no sibling
+  // widths on disk, returns "" (the template then omits the attribute).
+  eleventyConfig.addFilter('srcset', (src, r) => {
+    if (!src) return '';
+    const m = /^(.*)-(\d+)(\.[A-Za-z0-9]+)$/.exec(src);
+    if (!m) return '';
+    const [, stem, , ext] = m;
+    const dir = path.posix.dirname(src);
+    const absDir = path.join(__dirname, dir);
+    let files;
+    try { files = fs.readdirSync(absDir); } catch (e) { return ''; }
+    const base = path.posix.basename(stem);
+    const escBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escExt = ext.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`^${escBase}-(\\d+)${escExt}$`);
+    const cands = [];
+    files.forEach(f => {
+      const mm = re.exec(f);
+      if (mm) cands.push({ w: parseInt(mm[1], 10), file: dir === '.' ? f : `${dir}/${f}` });
+    });
+    if (cands.length <= 1) return '';
+    cands.sort((a, b) => a.w - b.w);
+    return cands.map(c => `${root(c.file, r)} ${c.w}w`).join(', ');
+  });
 
   // 7000 -> "7,000"
   eleventyConfig.addFilter('thousands', n => Number(n).toLocaleString('en-US'));
+
+  // Plain text -> HTML-escaped text with one inline mark: *x* becomes
+  // <em class="emClass">x</em> (or <em> with no emClass), **x** becomes
+  // <strong>x</strong>, and a newline becomes <br>. The source string is
+  // plain (real apostrophes, no markup); this is the only place that marks
+  // it up again.
+  const escapeHtml = s => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  eleventyConfig.addFilter('inline', (str, emClass) => {
+    if (str == null) return new nunjucks.runtime.SafeString('');
+    let s = escapeHtml(str);
+    s = s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    s = s.replace(/\*(.+?)\*/g, emClass ? `<em class="${emClass}">$1</em>` : '<em>$1</em>');
+    s = s.replace(/\n/g, '<br>');
+    return new nunjucks.runtime.SafeString(s);
+  });
 
   // Resolve a chrome link {href, slug?, overrides?} for the current page:
   // an override for this page wins; a link to the page itself becomes "./"

@@ -1,25 +1,25 @@
   <!-- What happens when you book: sticky step list; a sixth stage turns the
        scene into the final call to action -->
-  <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('plum-2') }}">
+  <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum-2') }}">
     <div class="steps__track" data-steps>
       <div class="steps__sticky">
         <div class="steps__media" aria-hidden="true">
         {%- for s in block.steps %}
           <img class="steps__still{% if loop.first %} is-on{% endif %}" src="{{ s.image.src | root(r) }}"
-               srcset="{{ s.image.srcset | srcset(r) }}"
+               {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
                sizes="{{ s.image.sizes }}" alt=""{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
         {%- endfor %}
         </div>
         <div class="steps__grade" aria-hidden="true"></div>
         <div class="steps__copy">
-          <p class="eyebrow eyebrow--inv">{{ block.eyebrow | safe }}</p>
-          <h2>{{ block.heading | safe }}</h2>
+          <p class="eyebrow eyebrow--inv">{{ block.eyebrow | inline() }}</p>
+          <h2>{{ block.heading | inline() }}</h2>
           <ol class="steps__list">
           {%- for s in block.steps %}
-            <li{% if loop.first %} class="is-on"{% endif %}><span class="steps__n">{{ loop.index | pad2 }}</span><span class="steps__t">{{ s.title | safe }}</span><span class="steps__d">{{ s.text | safe }}</span></li>
+            <li{% if loop.first %} class="is-on"{% endif %}><span class="steps__n">{{ loop.index | pad2 }}</span><span class="steps__t">{{ s.title | inline() }}</span><span class="steps__d">{{ s.text | inline() }}</span></li>
           {%- endfor %}
           </ol>
-          <a class="textlink textlink--inv" href="{{ block.link.href | root(r) }}">{{ block.link.label | safe }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="textlink textlink--inv" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>
       {%- set f = block.final %}
@@ -27,14 +27,14 @@
       <!-- Stage 6: the scene becomes the final call to action (was section.final) -->
       <div class="final steps__final"{% if f.id %} id="{{ f.id }}"{% endif %}>
         <div class="final__inner">
-          <h2>{{ f.heading | safe }}</h2>
-          <p class="lead lead--inv"{% if f.leadStyle %} style="{{ f.leadStyle }}"{% endif %}>{{ f.lead | safe }}</p>
+          <h2>{{ f.heading | inline() }}</h2>
+          <p class="lead lead--inv"{% if f.leadStyle %} style="{{ f.leadStyle }}"{% endif %}>{{ f.lead | inline() }}</p>
           <div class="final__actions">
           {%- for btn in f.buttons %}
             {%- if btn.video %}
-            <button class="btn btn--inv btn--lg" data-video="{{ btn.video | root(r) }}">{{ btn.label | safe }}</button>
+            <button class="btn btn--inv btn--lg" data-video="{{ btn.video | root(r) }}">{{ btn.label | inline() }}</button>
             {%- else %}
-            <a class="btn btn--lg" href="{{ btn.href | root(r) }}">{{ btn.label | safe }}</a>
+            <a class="btn btn--lg" href="{{ btn.href | root(r) }}">{{ btn.label | inline() }}</a>
             {%- endif %}
           {%- endfor %}
           </div>

@@ -15,13 +15,35 @@ const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+// The committed index.html / speaking/index.html were removed once the
+// Eleventy build became the spec (step 3). The baseline they document is
+// pinned to the last commit that still had them.
+const BASELINE = 'e4f7978';
 const PAGES = [
   { name: 'home', committed: 'index.html', built: '_site/index.html' },
   { name: 'speaking', committed: 'speaking/index.html', built: '_site/speaking/index.html' },
 ];
 
+// The baseline prints entities (&rsquo; &amp; &trade; ...); the build now
+// prints the plain characters. Both sides are entity-decoded before
+// comparison so the two forms of the same text agree.
+const ENTITIES = {
+  amp: '&', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“',
+  trade: '™', shy: '­', hellip: '…', nbsp: ' ',
+  mdash: '—', ndash: '–',
+};
+function decodeEntities(s) {
+  return s.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (m, e) => {
+    if (e[0] === '#') {
+      const code = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+      return Number.isNaN(code) ? m : String.fromCodePoint(code);
+    }
+    return Object.prototype.hasOwnProperty.call(ENTITIES, e) ? ENTITIES[e] : m;
+  });
+}
+
 function normalise(html) {
-  return html
+  return decodeEntities(html)
     .replace(/\?v=[^"'\s>]*/g, '')
     .replace(/\s+/g, ' ')
     .replace(/\s*>\s*/g, '>')
@@ -40,12 +62,32 @@ function parseTag(line) {
   return { tag: m[1], attrs, rest: m[3] };
 }
 const RENAMEABLE = new Set(['id', 'aria-labelledby', 'aria-controls', 'aria-describedby']);
+// The srcset filter (step 17) may find MORE width candidates on disk than
+// the baseline listed by hand; that alone is allowed. "a.webp 520w, b.webp
+// 860w" -> "a.webp 520w, b.webp 860w, c.webp 1280w" is fine; anything that
+// drops or changes an existing candidate is not.
+function isSrcsetSuperset(oldVal, newVal) {
+  const parse = v => new Map(v.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+    const i = s.lastIndexOf(' ');
+    return [s.slice(0, i), s.slice(i + 1)];
+  }));
+  const a = parse(oldVal), b = parse(newVal);
+  for (const [url, w] of a) { if (b.get(url) !== w) return false; }
+  return true;
+}
 // Pair the -/+ lines of each hunk and describe them attribute by attribute.
 // Returns { changes: [text], bad: [text] }.
 function classify(diff) {
   const changes = [], bad = [];
   let minus = [], plus = [];
   function flush() {
+    // The editor-microcopy JSON script tag (step 17 §2) is a whole new
+    // element with no baseline counterpart; it is the one allowed addition.
+    if (minus.length === 0 && plus.length && plus.every(l => /^<script type="application\/json" id="ui">/.test(l))) {
+      changes.push(`added <script id="ui"> (editor microcopy)`);
+      minus = []; plus = [];
+      return;
+    }
     if (minus.length !== plus.length) bad.push(`unpaired hunk: -${minus.length} +${plus.length} lines\n    ${minus.concat(plus).join('\n    ')}`);
     for (let i = 0; i < Math.min(minus.length, plus.length); i++) {
       const A = parseTag(minus[i]), B = parseTag(plus[i]);
@@ -54,7 +96,11 @@ function classify(diff) {
       for (const k of new Set([...Object.keys(A.attrs), ...Object.keys(B.attrs)])) {
         if (!(k in B.attrs)) { d.push(`removed ${k}="${A.attrs[k]}"`); if (k !== 'id') bad.push(`<${A.tag}> removed ${k}`); }
         else if (!(k in A.attrs)) { d.push(`added ${k}="${B.attrs[k]}"`); if (!/^data-/.test(k) && k !== 'style') bad.push(`<${A.tag}> added ${k}`); }
-        else if (A.attrs[k] !== B.attrs[k]) { d.push(`${k} "${A.attrs[k]}" -> "${B.attrs[k]}"`); if (!RENAMEABLE.has(k)) bad.push(`<${A.tag}> changed ${k}`); }
+        else if (A.attrs[k] !== B.attrs[k]) {
+          d.push(`${k} "${A.attrs[k]}" -> "${B.attrs[k]}"`);
+          if (k === 'srcset') { if (!isSrcsetSuperset(A.attrs[k], B.attrs[k])) bad.push(`<${A.tag}> changed srcset (not just added candidates)`); }
+          else if (!RENAMEABLE.has(k)) bad.push(`<${A.tag}> changed ${k}`);
+        }
       }
       const cls = A.attrs.class ? '.' + A.attrs.class.split(' ').join('.') : '';
       changes.push(`<${A.tag}${cls}> ${d.join('; ')}`);
@@ -74,7 +120,7 @@ function classify(diff) {
 let failed = 0;
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'check-build-'));
 for (const pg of PAGES) {
-  const ref = execFileSync('git', ['show', 'HEAD:' + pg.committed], { cwd: ROOT, encoding: 'utf8' });
+  const ref = execFileSync('git', ['show', BASELINE + ':' + pg.committed], { cwd: ROOT, encoding: 'utf8' });
   const builtPath = path.join(ROOT, pg.built);
   if (!fs.existsSync(builtPath)) { console.log(`${pg.name}: MISSING ${pg.built} (run npm run build)`); failed++; continue; }
   const out = fs.readFileSync(builtPath, 'utf8');
@@ -84,7 +130,7 @@ for (const pg of PAGES) {
   fs.writeFileSync(b, lines(normalise(out)).join('\n') + '\n');
   let diff = '';
   try {
-    execFileSync('diff', ['-u', '--label', 'HEAD:' + pg.committed, '--label', pg.built, a, b], { encoding: 'utf8' });
+    execFileSync('diff', ['-u', '--label', BASELINE + ':' + pg.committed, '--label', pg.built, a, b], { encoding: 'utf8' });
   } catch (e) { diff = e.stdout || String(e); }
   if (diff) {
     const n = diff.split('\n').filter(l => /^[+-][^+-]/.test(l)).length;

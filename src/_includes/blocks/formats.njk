@@ -1,14 +1,14 @@
   <!-- ==============================================================
        5. FORMATS - the sentence, then six rooms in a strip the scroll moves
        ============================================================== -->
-  <section class="spk-formats"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('transparent') }}">
+  <section class="spk-formats"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('transparent') }}">
     <div class="spk-formats__track">
       <div class="spk-formats__stage">
-        <p class="spk-formats__line reveal">{{ block.sentence | safe }}</p>
-        <h2 class="spk-formats__h">{{ block.heading | safe }}</h2>
+        <p class="spk-formats__line reveal">{{ block.sentence | inline() }}</p>
+        <h2 class="spk-formats__h">{{ block.heading | inline() }}</h2>
         <ul class="spk-formats__strip">
         {%- for room in block.rooms %}
-          <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" srcset="{{ room.image.srcset | srcset(r) }}" sizes="{{ block.sizes }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | safe }}</span></li>
+          <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" {%- set ss1 = room.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.sizes }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | inline() }}</span></li>
         {%- endfor %}
         </ul>
       </div>

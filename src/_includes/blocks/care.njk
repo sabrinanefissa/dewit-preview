@@ -2,17 +2,17 @@
   <section class="care"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="media media--warm">
       <img data-reveal-clip src="{{ block.image.src | root(r) }}"
-           srcset="{{ block.image.srcset | srcset(r) }}"
-           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | safe }}" decoding="async">
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" decoding="async">
     </div>
     <div class="care__inner">
       <div class="care__body reveal">
-        <h2>{{ block.heading | safe }}</h2>
-        <p class="lead lead--inv"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | safe }}</p>
+        <h2>{{ block.heading | inline() }}</h2>
+        <p class="lead lead--inv"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | inline() }}</p>
         <ul class="care__list">
-          {% for it in block.items %}<li>{{ it | safe }}</li>{% endfor %}
+          {% for it in block.items %}<li>{{ it | inline() }}</li>{% endfor %}
         </ul>
-        <div class="care__cta"><a class="btn btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }}</a></div>
+        <div class="care__cta"><a class="btn btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a></div>
       </div>
     </div>
   </section>

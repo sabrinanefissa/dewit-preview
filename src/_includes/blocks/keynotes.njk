@@ -1,22 +1,22 @@
   <!-- Keynotes -->
   <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="keynotes-head reveal">
-      <h2 class="h-md">{{ block.heading | safe }}</h2>
+      <h2 class="h-md">{{ block.heading | inline() }}</h2>
     </div>
     <div class="keynotes">
     {%- for k in block.cards %}
       <a class="keynote reveal" href="{{ k.href | root(r) }}" style="--_acc:var(--{{ k.accent }})">
-        <span class="keynote__img" aria-hidden="true"><img src="{{ k.image.src | root(r) }}" srcset="{{ k.image.srcset | srcset(r) }}" sizes="{{ k.image.sizes }}" alt="" loading="lazy"></span>
+        <span class="keynote__img" aria-hidden="true"><img src="{{ k.image.src | root(r) }}" {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ k.image.sizes }}" alt="" loading="lazy"></span>
         <span class="keynote__no">{{ loop.index | pad2 }}</span>
         <span class="keynote__main">
         {%- if k.tag %}
-          <span class="keynote__tag">{{ k.tag | safe }}</span>
+          <span class="keynote__tag">{{ k.tag | inline() }}</span>
         {%- endif %}
-          <span class="keynote__title">{{ k.title | safe }}</span>
-          <span class="keynote__sub">{{ k.sub | safe }}</span>
+          <span class="keynote__title">{% if k.titleHtml %}{{ k.titleHtml | safe }}{% else %}{{ k.title | inline() }}{% endif %}</span>
+          <span class="keynote__sub">{{ k.sub | inline() }}</span>
           <span class="keynote__accent"></span>
         </span>
-        <span class="keynote__cta">{{ block.ctaLabel | safe }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="keynote__cta">{{ block.ctaLabel | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
     {%- endfor %}
     </div>

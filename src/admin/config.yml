@@ -1,0 +1,1040 @@
+backend:
+  name: github
+  repo: sabrinanefissa/dewit-preview
+  branch: main
+
+publish_mode: editorial_workflow
+media_folder: assets/img
+public_folder: assets/img
+site_url: https://drdewit.com
+show_preview_links: true
+
+# Sign-in: token sign-in only (Sveltia's built-in GitHub personal-access-token
+# flow). No OAuth function — see EDITING.md for how an editor signs in.
+
+collections:
+  - name: pages
+    label: Pages
+    folder: content/pages
+    extension: json
+    format: json
+    create: false
+    delete: false
+    identifier_field: title
+    summary: "{{title}}"
+    fields:
+      - { label: Title, name: title, widget: string, hint: "Allows *emphasis* and **bold**." }
+      - { label: Description, name: description, widget: text, hint: "Allows *emphasis* and **bold**." }
+      - { label: Canonical URL, name: canonical, widget: string }
+      - label: Social preview (og)
+        name: og
+        widget: object
+        fields:
+          - { label: Title, name: title, widget: string, hint: "Allows *emphasis* and **bold**." }
+          - { label: Description, name: description, widget: text, hint: "Allows *emphasis* and **bold**." }
+          - { label: URL, name: url, widget: string }
+          - { label: Image, name: image, widget: string, hint: "Full https:// URL (used by link previews, not the img widget)." }
+      - label: Ground (speaking page only)
+        name: ground
+        widget: object
+        required: false
+        fields:
+          - { label: Image, name: image, widget: image }
+          - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+          - { label: Show colour veil, name: veil, widget: boolean, default: true }
+
+      - label: Blocks
+        name: blocks
+        widget: list
+        collapsed: auto
+        allow_add: true
+        add_to_top: false
+        summary: "{{fields.type}} — {{fields.heading}}{{fields.statement}}"
+        types:
+
+          # ---------------------------------------------------------- hero
+          - name: hero
+            label: "Hero with video"
+            summary: "Hero — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Poster image
+                name: poster
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - { label: Alt text, name: alt, widget: string }
+              - label: Ambient video loop
+                name: video
+                widget: object
+                fields:
+                  - { label: Poster (frame), name: poster, widget: image }
+                  - { label: WebM file, name: webm, widget: file, media_folder: "/assets/video" }
+                  - { label: MP4 file, name: mp4, widget: file, media_folder: "/assets/video" }
+                  - { label: MP4 file (small), name: mp4Sm, widget: file, media_folder: "/assets/video" }
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis* and **bold**." }
+              - label: Play button
+                name: play
+                widget: object
+                fields:
+                  - { label: Video file (plays on click), name: video, widget: file, media_folder: "/assets/video" }
+                  - { label: Aria label, name: ariaLabel, widget: string }
+                  - { label: Label, name: label, widget: string }
+                  - { label: Small label, name: small, widget: string }
+              - { label: "Meta line(s)", name: meta, widget: list, field: { label: Line, name: line, widget: string, hint: "Allows **bold**." } }
+              - &settings-none
+                label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+
+          # -------------------------------------------------------- thread
+          - name: thread
+            label: "The through-line"
+            summary: "Thread — {{fields.eyebrow}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Aria label, name: ariaLabel, widget: string }
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: "Background images (drifting layers)", name: bg, widget: list, field: { label: Image, name: image, widget: image } }
+              - label: Stations
+                name: stations
+                widget: list
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Gloss, name: gloss, widget: string, hint: "Allows *emphasis* and **bold**." }
+                  - { label: "Pillar (larger, on the beat)", name: pillar, widget: boolean, default: false }
+                  - label: Image
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: "(max-width: 720px) 100vw, 520px" }
+                      - { label: Alt text, name: alt, widget: string }
+                      - { label: "Width (px, only if the source has no siblings)", name: width, widget: number, required: false }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Cursor drift (0–1)", name: cursor, widget: number, value_type: float, required: false, hint: "How far the pointer nudges the background. Default: 0.62" }
+
+          # ------------------------------------------------------- patterns
+          - name: patterns
+            label: "How it shows up (patterns)"
+            summary: "Patterns — {{fields.words.0.word}}…"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Aria label, name: ariaLabel, widget: string }
+              - { label: "How (leading word)", name: how, widget: string, default: How }
+              - { label: "Tail (trailing words)", name: tail, widget: string }
+              - { label: "Hint (screen-reader, on hold)", name: hint, widget: string }
+              - { label: "Previous-arrow label", name: prevLabel, widget: string }
+              - { label: "Next-arrow label", name: nextLabel, widget: string }
+              - { label: "Home-card label", name: homeLabel, widget: string }
+              - { label: "Work-card label", name: workLabel, widget: string }
+              - label: Words (2–9)
+                name: words
+                widget: list
+                summary: "{{fields.word}}"
+                fields:
+                  - { label: Word (as it cycles), name: word, widget: string, hint: "Allows a soft hyphen; no other marks." }
+                  - { label: Name (screen-reader), name: name, widget: string }
+                  - { label: At home, name: home, widget: string }
+                  - { label: At work, name: work, widget: string }
+                  - { label: "Home photo (base path, no width or extension)", name: homeImg, widget: string, required: false }
+                  - { label: "Work photo (base path, no width or extension)", name: workImg, widget: string, required: false }
+              - label: Call to action
+                name: cta
+                widget: object
+                fields:
+                  - { label: Lead text, name: lead, widget: string }
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Auto-cycle period (ms)", name: period, widget: number, required: false, hint: "Default: 5000" }
+
+          # --------------------------------------------------------- truth
+          - name: truth
+            label: "Recognition (surface → truth)"
+            summary: "Truth — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Rows (surface / truth)
+                name: rows
+                widget: list
+                summary: "{{fields.surface}}"
+                fields:
+                  - { label: Surface line, name: surface, widget: string }
+                  - { label: Truth (revealed) line, name: under, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: ink" }
+
+          # --------------------------------------------------------- bleed
+          - name: bleed
+            label: "Cinematic bleed (the idea)"
+            summary: "Bleed — {{fields.statement}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: "Live constellation canvas", name: constellation, widget: boolean, default: false }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: Statement, name: statement, widget: string, hint: "Allows *emphasis*." }
+              - *settings-none
+
+          # ----------------------------------------------------------- why
+          - name: why
+            label: "Why Stephen"
+            summary: "Why — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Portrait
+                name: portrait
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text }
+              - { label: Credentials, name: creds, widget: list, field: { label: Credential, name: cred, widget: string, hint: "Allows **bold**." } }
+              - label: Link
+                name: link
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: ink" }
+
+          # --------------------------------------------------------- stats
+          - name: stats
+            label: "Stats (count-up)"
+            summary: "Stats — {{fields.counters.0.label}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Extra CSS class, name: extraClass, widget: string, required: false }
+              - { label: Aria label, name: ariaLabel, widget: string, required: false }
+              - { label: "Note (build comment only, not shown to visitors)", name: note, widget: text, required: false }
+              - { label: Eyebrow, name: eyebrow, widget: string, required: false }
+              - label: Counters (any number)
+                name: counters
+                widget: list
+                summary: "{{fields.value}}{{fields.suffix}} {{fields.label}}"
+                fields:
+                  - { label: Value, name: value, widget: number }
+                  - { label: "Suffix (e.g. +)", name: suffix, widget: string, required: false }
+                  - { label: Label, name: label, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Count-up duration (ms)", name: duration, widget: number, required: false, hint: "Default: 1500" }
+
+          # ------------------------------------------------------- orgband
+          - name: orgband
+            label: "Credibility ribbon (trusted by / as seen on)"
+            summary: "Orgband"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Aria label, name: ariaLabel, widget: string }
+              - label: Lanes (each an endless scrolling row)
+                name: lanes
+                widget: list
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Small (secondary row), name: small, widget: boolean, default: false }
+                  - { label: "Scroll speed (px/s; sign sets direction)", name: speed, widget: number, value_type: float }
+                  - label: Logos
+                    name: logos
+                    widget: list
+                    summary: "{{fields.alt}}"
+                    fields:
+                      - { label: Logo file, name: src, widget: image, media_folder: "/assets/logos", public_folder: "/assets/logos" }
+                      - { label: Alt text (organization name), name: alt, widget: string }
+                      - { label: "Knockout (recolour white for dark rows)", name: knockout, widget: boolean, default: false, required: false }
+                      - { label: "Plate (white backing card)", name: plate, widget: boolean, default: false, required: false }
+              - label: Call to action
+                name: cta
+                widget: object
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Spotlight tick (ms)", name: tick, widget: number, required: false, hint: "Default: 2600" }
+                      - { label: "Spotlight tick, small row (ms)", name: tickSmall, widget: number, required: false, hint: "Default: 2400" }
+                      - { label: "Spell duration (ms)", name: spell, widget: number, required: false, hint: "Default: 4200" }
+
+          # ------------------------------------------------------- keynotes
+          - name: keynotes
+            label: "Three talks (keynote cards)"
+            summary: "Keynotes — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Card CTA label, name: ctaLabel, widget: string, default: Explore }
+              - label: Cards
+                name: cards
+                widget: list
+                summary: "{{fields.title}}{{fields.titleHtml}}"
+                fields:
+                  - { label: Tag (e.g. "Signature keynote"), name: tag, widget: string, required: false }
+                  - { label: Title, name: title, widget: string, required: false, hint: "Plain text. Leave blank and use Title (HTML) below if it needs the ™ mark." }
+                  - { label: "Title (HTML — only for a trademark ™ mark)", name: titleHtml, widget: string, required: false, hint: "Raw HTML, e.g. Lead Human<span class=\"tm\">™</span>. Leave blank and use Title above otherwise." }
+                  - { label: Subtitle, name: sub, widget: text, hint: "Allows **bold**." }
+                  - { label: Accent colour, name: accent, widget: select, options: [violet, coral, gold, teal, blue] }
+                  - { label: Link, name: href, widget: string }
+                  - label: Image
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: 640px }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+
+          # ---------------------------------------------------------- care
+          - name: care
+            label: "Healthcare"
+            summary: "Care — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text, hint: "Allows *emphasis*." }
+              - { label: "Lead inline style (advanced)", name: leadStyle, widget: string, required: false }
+              - { label: Items, name: items, widget: list, field: { label: Item, name: item, widget: string } }
+              - label: Call to action
+                name: cta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+
+          # --------------------------------------------------------- steps
+          - name: steps
+            label: "What happens when you book"
+            summary: "Steps — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Aria label, name: ariaLabel, widget: string }
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Heading, name: heading, widget: string }
+              - label: Steps
+                name: steps
+                widget: list
+                summary: "{{fields.title}}"
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Text, name: text, widget: text }
+                  - label: Image
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - label: Link
+                name: link
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: "Final stage (the call to action)"
+                name: final
+                widget: object
+                required: false
+                fields:
+                  - { label: "Id (anchor, e.g. contact)", name: id, widget: string, required: false }
+                  - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
+                  - { label: Lead, name: lead, widget: text }
+                  - { label: "Lead inline style (advanced)", name: leadStyle, widget: string, required: false }
+                  - label: Buttons
+                    name: buttons
+                    widget: list
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: "Link (leave blank if this button plays a video)", name: href, widget: string, required: false }
+                      - { label: "Video file (leave blank if this button links)", name: video, widget: file, media_folder: "/assets/video", required: false }
+                  - { label: "Show phone / email / socials", name: contacts, widget: boolean, default: true }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+
+          # ------------------------------------------------------- reelHero
+          - name: reelHero
+            label: "Hero with video (speaking reel)"
+            summary: "Reel hero"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Poster image
+                name: poster
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - { label: Alt text, name: alt, widget: string }
+              - label: Video
+                name: video
+                widget: object
+                fields:
+                  - { label: Poster (frame), name: poster, widget: image }
+                  - { label: Aria label, name: ariaLabel, widget: string }
+                  - { label: "1080p file", name: src1080, widget: file, media_folder: "/assets/video" }
+                  - { label: "720p file", name: src720, widget: file, media_folder: "/assets/video" }
+                  - { label: "Mobile file", name: srcMobile, widget: file, media_folder: "/assets/video" }
+                  - { label: "Autoplay on mobile (only if the mobile file is under 10 MB)", name: mobileAutoplay, widget: select, options: ["true", "false"], default: "true" }
+              - label: Captions
+                name: captions
+                widget: object
+                fields:
+                  - { label: Captions file (.vtt), name: src, widget: file, media_folder: "/assets/video" }
+                  - { label: Language code, name: srclang, widget: string, default: en }
+                  - { label: Language label, name: label, widget: string, default: English }
+              - { label: Heading (visually hidden), name: heading, widget: string }
+              - label: Labels
+                name: labels
+                widget: object
+                fields:
+                  - { label: Big play button, name: cta, widget: string }
+                  - { label: Play control, name: play, widget: string }
+                  - { label: Sound control, name: sound, widget: string }
+                  - { label: Captions control, name: captions, widget: string }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Poster parallax (0–1)", name: parallax, widget: number, value_type: float, required: false, hint: "Default: 0.5" }
+
+          # ----------------------------------------------------------- said
+          - name: said
+            label: "Candle wheel: what he talks about"
+            summary: "Said — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Velvet background
+                name: velvet
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - { label: "Wax close-up image", name: macro, widget: image }
+              - { label: "Window A (rolls up first, behind the candle)", name: windowA, widget: string, hint: "Allows one *emphasis* word." }
+              - { label: "Window B (rolls up after, in front of the candle)", name: windowB, widget: string, hint: "Allows one *emphasis* word." }
+              - { label: Heading, name: heading, widget: string }
+              - label: "Lines (3–9; the last is the bridge line)"
+                name: lines
+                widget: list
+                field: { label: Line, name: line, widget: text }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Scroll per beat (svh)", name: beat, widget: number, required: false, hint: "How much scroll turns the wheel one candle. Default: 80" }
+                      - { label: "Grow stage length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on the candle growing into the wax close-up. Default: 100" }
+
+          # ----------------------------------------------------------- keys
+          - name: keys
+            label: "Three talks (pinned stage)"
+            summary: "Keys — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string }
+              - { label: "Tab list aria label", name: indexLabel, widget: string, default: Keynotes }
+              - { label: '"Hear this" button label', name: hearLabel, widget: string, default: "Hear Stephen on this" }
+              - { label: Pause button label, name: pauseLabel, widget: string, default: Pause }
+              - label: "Rest image (before any talk plays)"
+                name: rest
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - label: Shared reel video (for the "hear this" clips)
+                name: video
+                widget: object
+                fields:
+                  - { label: "1080p file", name: src1080, widget: file, media_folder: "/assets/video" }
+                  - { label: "Mobile file", name: srcMobile, widget: file, media_folder: "/assets/video" }
+              - label: Captions
+                name: captions
+                widget: object
+                fields:
+                  - { label: Captions file (.vtt), name: src, widget: file, media_folder: "/assets/video" }
+                  - { label: Language code, name: srclang, widget: string, default: en }
+                  - { label: Language label, name: label, widget: string, default: English }
+              - label: "Talks (2–5)"
+                name: talks
+                widget: list
+                summary: "{{fields.title}}{{fields.titleHtml}}"
+                fields:
+                  - { label: Title, name: title, widget: string, required: false, hint: "Plain text. Leave blank and use Title (HTML) below if it needs the ™ mark." }
+                  - { label: "Title (HTML — only for a trademark ™ mark)", name: titleHtml, widget: string, required: false, hint: "Raw HTML, e.g. Lead Human<span class=\"tm\">™</span>. Leave blank and use Title above otherwise." }
+                  - { label: Subtitle, name: sub, widget: string }
+                  - { label: Accent colour, name: accent, widget: select, options: [violet, coral, gold, teal, blue] }
+                  - label: Image
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - label: "Segment (this talk's slice of the reel)"
+                    name: segment
+                    widget: object
+                    fields:
+                      - { label: "Start (seconds into the reel)", name: start, widget: number, value_type: float }
+                      - { label: "End (seconds into the reel)", name: end, widget: number, value_type: float }
+                      - { label: "Poster frame (seconds)", name: poster, widget: number, value_type: float }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Heading-alone stage length (svh)", name: head, widget: number, required: false, hint: "Default: 50" }
+                      - { label: "Scroll per talk panel (svh)", name: panel, widget: number, required: false, hint: "Default: 80" }
+
+          # ----------------------------------------------------------- chap
+          - name: chap
+            label: "In the room: Think / Feel / Act"
+            summary: "Chap — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string }
+              - { label: "Tab rail aria label", name: railLabel, widget: string, default: Chapters }
+              - label: Chapters
+                name: chapters
+                widget: list
+                summary: "{{fields.word}}"
+                fields:
+                  - { label: Word (the tab), name: word, widget: string }
+                  - { label: Text, name: text, widget: text, hint: "Allows one *emphasis* word (styled as the chapter's key word)." }
+                  - { label: Tone, name: tone, widget: select, options: [violet, bone] }
+                  - { label: "Spot (where the type sits)", name: spot, widget: select, options: [ul, lr] }
+                  - label: Still image
+                    name: still
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Scroll per chapter beat (vh)", name: beat, widget: number, required: false, hint: "Default: 70" }
+                      - { label: "Arrive fade (ms)", name: arrive, widget: number, required: false, hint: "Default: 440" }
+                      - { label: "Leave fade (ms)", name: leave, widget: number, required: false, hint: "Default: 320" }
+                      - { label: "Still crossfade (ms)", name: cross, widget: number, required: false, hint: "Default: 900" }
+                      - { label: "Still dolly-in scale", name: dolly, widget: number, value_type: float, required: false, hint: "Default: 1.06" }
+
+          # ------------------------------------------------------------ out
+          - name: out
+            label: "What the room walks out with"
+            summary: "Out — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - { label: Heading, name: heading, widget: string }
+              - label: Words (scattered)
+                name: words
+                widget: list
+                summary: "{{fields.text}}"
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: "X position (% from left)", name: x, widget: string, hint: "e.g. 26%" }
+                  - { label: "Y position (% from top)", name: y, widget: string, hint: "e.g. 70%" }
+                  - { label: Layer, name: layer, widget: select, options: [front, back] }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Word step distance (px)", name: step, widget: number, required: false, hint: "Default: 380" }
+                      - { label: "Rise stage length (px)", name: rise, widget: number, required: false, hint: "Default: 600" }
+
+          # -------------------------------------------------------- formats
+          - name: formats
+            label: "Rooms he speaks to (formats)"
+            summary: "Formats — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Aria label, name: ariaLabel, widget: string }
+              - { label: Sentence, name: sentence, widget: text, hint: "Allows *emphasis*." }
+              - { label: Heading, name: heading, widget: string }
+              - { label: "Room image sizes attribute", name: sizes, widget: string, default: 70vw }
+              - label: Rooms
+                name: rooms
+                widget: list
+                summary: "{{fields.caption}}"
+                fields:
+                  - { label: Caption, name: caption, widget: string }
+                  - label: Image
+                    name: image
+                    widget: object
+                    fields:
+                      - { label: Image, name: src, widget: image }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+
+          # ------------------------------------------------------------ bio
+          - name: bio
+            label: "The diptych: portrait & for planners"
+            summary: "Bio"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Portrait
+                name: portrait
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: Line (one sentence), name: line, widget: string }
+              - label: Link
+                name: link
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - { label: '"For planners" heading', name: plannersHeading, widget: string, default: "For planners." }
+              - { label: Outcomes label, name: outcomesLabel, widget: string, default: "What each talk leaves behind" }
+              - label: Outcomes (one per talk)
+                name: outcomes
+                widget: list
+                summary: "{{fields.title}}{{fields.titleHtml}}"
+                fields:
+                  - { label: Title, name: title, widget: string, required: false, hint: "Plain text. Leave blank and use Title (HTML) below if it needs the ™ mark." }
+                  - { label: "Title (HTML — only for a trademark ™ mark)", name: titleHtml, widget: string, required: false, hint: "Raw HTML, e.g. Lead Human<span class=\"tm\">™</span>. Leave blank and use Title above otherwise." }
+                  - { label: Text, name: text, widget: text }
+              - { label: Tailoring label, name: tailoringLabel, widget: string, default: Tailoring }
+              - { label: Tailoring text, name: tailoring, widget: text }
+              - { label: '"On the day" label', name: onDayLabel, widget: string, default: "On the day" }
+              - { label: "On-the-day requirements", name: onDay, widget: list, field: { label: Item, name: item, widget: string } }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Portrait drift (0–1)", name: drift, widget: number, value_type: float, required: false, hint: "Default: 0.04" }
+
+          # ---------------------------------------------------------- close
+          - name: close
+            label: "Closing call to action (in the footer)"
+            summary: "Close — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - { label: Heading, name: heading, widget: string }
+              - label: Call to action
+                name: cta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - *settings-none
+
+  - name: site
+    label: Site
+    files:
+      - name: site
+        label: "Site (brand, nav, footer, contact)"
+        file: content/site.json
+        fields:
+          - { label: Language code, name: lang, widget: string, default: en }
+          - { label: Brand name, name: brand, widget: string }
+          - { label: Tagline, name: tagline, widget: string, hint: "Allows **bold**." }
+          - { label: "Footer year (updates itself; edit only to override)", name: year, widget: string }
+          - label: Head defaults
+            name: head
+            widget: object
+            fields:
+              - { label: Viewport, name: viewport, widget: string }
+              - { label: "Open Graph type", name: ogType, widget: string, default: website }
+              - { label: Twitter card type, name: twitterCard, widget: string, default: summary_large_image }
+              - label: Favicon
+                name: favicon
+                widget: object
+                fields:
+                  - { label: File, name: href, widget: image }
+                  - { label: Sizes, name: sizes, widget: string, default: 32x32 }
+              - { label: Apple touch icon, name: appleTouchIcon, widget: image }
+              - label: Preconnect hosts
+                name: preconnect
+                widget: list
+                fields:
+                  - { label: Host URL, name: href, widget: string }
+                  - { label: Needs crossorigin, name: crossorigin, widget: boolean, default: false, required: false }
+              - { label: Google Fonts stylesheet URL, name: fonts, widget: string, hint: "The full https://fonts.googleapis.com/css2?family=... URL." }
+              - { label: Stylesheet path (advanced), name: stylesheet, widget: string, default: css/main.css }
+              - { label: Script path (advanced), name: script, widget: string, default: js/main.js }
+          - label: "Person (JSON-LD, homepage only)"
+            name: person
+            widget: object
+            fields:
+              - { label: Name, name: name, widget: string }
+              - { label: Job title, name: jobTitle, widget: string }
+              - { label: Description, name: description, widget: text }
+              - { label: URL, name: url, widget: string }
+              - { label: Telephone, name: telephone, widget: string }
+              - { label: Knows about (topics), name: knowsAbout, widget: list, field: { label: Topic, name: topic, widget: string } }
+          - label: Contact
+            name: contact
+            widget: object
+            fields:
+              - { label: "Phone (displayed)", name: phone, widget: string }
+              - { label: "Phone (tel: link)", name: tel, widget: string }
+              - { label: Email, name: email, widget: string }
+          - label: Social links
+            name: socials
+            widget: list
+            summary: "{{fields.label}}"
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: href, widget: string }
+          - label: "UI microcopy (buttons, live-region announcements)"
+            name: ui
+            widget: object
+            fields:
+              - { label: Skip-to-content link, name: skip, widget: string }
+              - { label: Primary nav aria label, name: navLabel, widget: string }
+              - { label: Mobile nav aria label, name: drawerLabel, widget: string }
+              - { label: Menu button, name: menu, widget: string }
+              - { label: Close (drawer) button, name: drawerClose, widget: string }
+              - { label: Close (drawer) aria label, name: drawerCloseLabel, widget: string }
+              - { label: Play, name: play, widget: string }
+              - { label: Pause, name: pause, widget: string }
+              - { label: "Sound on", name: soundOn, widget: string }
+              - { label: Mute, name: mute, widget: string }
+              - { label: "Captions on", name: captionsOn, widget: string }
+              - { label: "Captions off", name: captionsOff, widget: string }
+              - { label: Playing (announced), name: playing, widget: string }
+              - { label: Paused (announced), name: paused, widget: string }
+              - { label: "Rolling resumed (announced)", name: rollingResumed, widget: string }
+          - label: "Brand link (top-left wordmark)"
+            name: brandLink
+            widget: object
+            fields:
+              - { label: Link, name: href, widget: string }
+              - label: "Per-page overrides"
+                name: overrides
+                widget: object
+                required: false
+                fields:
+                  - { label: On the homepage, name: home, widget: string, required: false }
+          - label: Primary navigation
+            name: nav
+            widget: list
+            summary: "{{fields.label}}"
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: href, widget: string }
+              - { label: "Page slug (marks this link current on that page)", name: slug, widget: string, required: false }
+          - label: "Header call to action"
+            name: cta
+            widget: object
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: href, widget: string }
+          - label: Footer
+            name: footer
+            widget: object
+            fields:
+              - { label: Blurb, name: blurb, widget: text }
+              - { label: "Blurb inline style (advanced)", name: blurbStyle, widget: string, required: false }
+              - label: "Explore column"
+                name: explore
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string }
+                  - label: Links
+                    name: links
+                    widget: list
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string }
+                      - { label: "Page slug (marks this link current on that page)", name: slug, widget: string, required: false }
+                      - label: "Per-page overrides"
+                        name: overrides
+                        widget: object
+                        required: false
+                        fields:
+                          - { label: On the homepage, name: home, widget: string, required: false }
+              - label: "Connect column"
+                name: connect
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string }
+          - label: "Speaking-reel lightbox (shown when the reel isn't linked yet)"
+            name: lightbox
+            widget: object
+            fields:
+              - { label: Aria label, name: label, widget: string }
+              - { label: Close symbol, name: close, widget: string }
+              - { label: Close aria label, name: closeLabel, widget: string }
+              - { label: Eyebrow, name: eyebrow, widget: string }
+              - { label: Text, name: text, widget: text }
+              - { label: "CTA inline style (advanced)", name: ctaStyle, widget: string, required: false }
+              - label: Call to action
+                name: cta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+
+      - name: theme
+        label: "Theme (colours, fonts, motion)"
+        file: content/theme.json
+        fields:
+          - label: Colours
+            name: colors
+            widget: object
+            fields:
+              - { label: Violet (primary brand), name: violet, widget: color }
+              - { label: Violet 600, name: "violet-600", widget: color }
+              - { label: Violet 500 (interactive on dark), name: "violet-500", widget: color }
+              - { label: Violet 300, name: "violet-300", widget: color }
+              - { label: Violet 100, name: "violet-100", widget: color }
+              - { label: Magenta accent, name: magenta, widget: color }
+              - { label: Coral accent, name: coral, widget: color }
+              - { label: Gold accent, name: gold, widget: color }
+              - { label: Teal accent, name: teal, widget: color }
+              - { label: Blue accent, name: blue, widget: color }
+              - { label: Paper (light background), name: paper, widget: color }
+              - { label: Paper 2, name: "paper-2", widget: color }
+              - { label: Paper 3, name: "paper-3", widget: color }
+              - { label: Plum (dark section), name: plum, widget: color }
+              - { label: Plum 2 (deepest), name: "plum-2", widget: color }
+              - { label: Ink (near-black text), name: ink, widget: color }
+              - { label: Text on paper, name: tx, widget: color }
+              - { label: "Text on paper, soft", name: "tx-soft", widget: color, hint: "rgba() value" }
+              - { label: "Text on paper, faint", name: "tx-faint", widget: color, hint: "rgba() value" }
+              - { label: Text on plum, name: "tx-inv", widget: color }
+              - { label: "Text on plum, soft", name: "tx-inv-soft", widget: color, hint: "rgba() value" }
+              - { label: "Text on plum, faint", name: "tx-inv-faint", widget: color, hint: "rgba() value" }
+              - { label: Line, name: line, widget: color, hint: "rgba() value" }
+              - { label: "Line, strong", name: "line-strong", widget: color, hint: "rgba() value" }
+              - { label: Line on plum, name: "line-inv", widget: color, hint: "rgba() value" }
+              - { label: "Line on plum, strong", name: "line-inv-strong", widget: color, hint: "rgba() value" }
+          - label: Fonts
+            name: fonts
+            widget: object
+            fields:
+              - { label: "Display font stack (advanced)", name: display, widget: string }
+              - { label: "Text font stack (advanced)", name: text, widget: string }
+              - { label: Google Fonts stylesheet URL, name: googleFontsHref, widget: string }
+          - label: "Type scale (advanced — CSS clamp() values)"
+            name: scale
+            widget: object
+            fields:
+              - { label: "step -1", name: "step--1", widget: string }
+              - { label: "step 0", name: "step-0", widget: string }
+              - { label: "step 1", name: "step-1", widget: string }
+              - { label: "step 2", name: "step-2", widget: string }
+              - { label: "step 3", name: "step-3", widget: string }
+              - { label: "step 4", name: "step-4", widget: string }
+              - { label: "step 5", name: "step-5", widget: string }
+              - { label: "step 6", name: "step-6", widget: string }
+          - label: Line height
+            name: lineHeight
+            widget: object
+            fields:
+              - { label: Tight, name: tight, widget: number, value_type: float }
+              - { label: Snug, name: snug, widget: number, value_type: float }
+              - { label: Text, name: text, widget: number, value_type: float }
+          - label: "Spacing (advanced)"
+            name: spacing
+            widget: object
+            fields:
+              - { label: sp-1, name: "sp-1", widget: string }
+              - { label: sp-2, name: "sp-2", widget: string }
+              - { label: sp-3, name: "sp-3", widget: string }
+              - { label: sp-4, name: "sp-4", widget: string }
+              - { label: sp-5, name: "sp-5", widget: string }
+              - { label: sp-6, name: "sp-6", widget: string }
+              - { label: sp-7, name: "sp-7", widget: string }
+              - { label: sp-8, name: "sp-8", widget: string }
+              - { label: Section vertical rhythm, name: "section-y", widget: string }
+          - label: "Layout (advanced)"
+            name: layout
+            widget: object
+            fields:
+              - { label: Max wrap width, name: wrap, widget: string }
+              - { label: Max text wrap width, name: "wrap-text", widget: string }
+              - { label: Gutter, name: gutter, widget: string }
+              - { label: Corner radius, name: radius, widget: string }
+          - label: "Filmic image grade (advanced — CSS filter/gradient values)"
+            name: grade
+            widget: object
+            fields:
+              - { label: Photo filter, name: filter, widget: string }
+              - { label: Plum gradient overlay, name: plum, widget: string }
+              - { label: Warm gradient overlay, name: warm, widget: string }
+          - label: Motion
+            name: motion
+            widget: object
+            fields:
+              - { label: "Entrance easing (advanced — CSS cubic-bezier)", name: easeOut, widget: string }
+              - { label: "Ambient easing (advanced — CSS cubic-bezier)", name: easeAmb, widget: string }
+              - { label: Fast duration, name: durFast, widget: string }
+              - { label: Standard duration, name: dur, widget: string }
+              - { label: Slow duration, name: durSlow, widget: string }
+          - label: "Shadow (advanced)"
+            name: shadow
+            widget: object
+            fields:
+              - { label: Soft shadow, name: soft, widget: string }

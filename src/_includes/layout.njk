@@ -6,15 +6,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="{{ site.head.viewport }}">
-<title>{{ page.title | safe }}</title>
-<meta name="description" content="{{ page.description | safe }}">
+<title>{{ page.title | inline() }}</title>
+<meta name="description" content="{{ page.description | inline() }}">
 {%- if page.noindex %}
 <meta name="robots" content="noindex">
 {%- endif %}
 <link rel="canonical" href="{{ page.canonical }}">
 <meta property="og:type" content="{{ site.head.ogType }}">
-<meta property="og:title" content="{{ page.og.title | safe }}">
-<meta property="og:description" content="{{ page.og.description | safe }}">
+<meta property="og:title" content="{{ page.og.title | inline() }}">
+<meta property="og:description" content="{{ page.og.description | inline() }}">
 <meta property="og:url" content="{{ page.og.url }}">
 <meta property="og:image" content="{{ page.og.image }}">
 <meta name="twitter:card" content="{{ site.head.twitterCard }}">
@@ -23,9 +23,10 @@
 {%- for pc in site.head.preconnect %}
 <link rel="preconnect" href="{{ pc.href }}"{% if pc.crossorigin %} crossorigin{% endif %}>
 {%- endfor %}
-<link href="{{ site.head.fonts | safe }}" rel="stylesheet">
+<link href="{{ site.head.fonts | inline() }}" rel="stylesheet">
 {%- if page.preload %}
-<link rel="preload" as="image" href="{{ page.preload.href | root(r) }}"{% if page.preload.srcset %} imagesrcset="{{ page.preload.srcset | srcset(r) }}" imagesizes="{{ page.preload.sizes }}"{% endif %} fetchpriority="high">
+{%- set ss1 = page.preload.sizes and (page.preload.href | srcset(r)) %}
+<link rel="preload" as="image" href="{{ page.preload.href | root(r) }}"{% if ss1 %} imagesrcset="{{ ss1 }}" imagesizes="{{ page.preload.sizes }}"{% endif %} fetchpriority="high">
 {%- endif %}
 <link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ build.v }}">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
@@ -42,6 +43,7 @@
 {%- endif %}
 </head>
 <body>
+<script type="application/json" id="ui">{{ site.ui | dump | safe }}</script>
 <a class="skip" href="#main">{{ site.ui.skip }}</a>
 
 <!-- {{ page.comments.loader | safe }} -->
@@ -58,10 +60,10 @@
   <div class="nav-right">
     <nav class="nav-links" aria-label="{{ site.ui.navLabel }}">
     {%- for l in site.nav %}{% set nl = l | navlink(slug, r) %}
-      <a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | safe }}</a>
+      <a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | inline() }}</a>
     {%- endfor %}
     </nav>
-    <a class="nav-cta" href="{{ site.cta.href | root(r) }}"><span>{{ site.cta.label | safe }}</span></a>
+    <a class="nav-cta" href="{{ site.cta.href | root(r) }}"><span>{{ site.cta.label | inline() }}</span></a>
     <button class="menu-toggle" aria-expanded="false" aria-controls="drawer">{{ site.ui.menu }} <span class="bars"><i></i><i></i></span></button>
   </div>
 </header>
@@ -69,7 +71,7 @@
 <div class="drawer" id="drawer" aria-hidden="true">
   <button class="drawer__close" aria-label="{{ site.ui.drawerCloseLabel }}">{{ site.ui.drawerClose }}</button>
   <nav aria-label="{{ site.ui.drawerLabel }}">
-    {% for l in site.nav %}{% set nl = l | navlink(slug, r) %}<a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | safe }}</a>{% endfor %}<a href="{{ site.cta.href | root(r) }}">{{ site.cta.label | safe }}</a>
+    {% for l in site.nav %}{% set nl = l | navlink(slug, r) %}<a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | inline() }}</a>{% endfor %}<a href="{{ site.cta.href | root(r) }}">{{ site.cta.label | inline() }}</a>
   </nav>
   <div class="drawer__foot"><a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a><a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></div>
 </div>
@@ -83,7 +85,7 @@
        picture (hero, the talks, the room, the walk-out) cover it. -->
   <div class="spk-ground" aria-hidden="true">
     <img class="spk-ground__img" src="{{ page.ground.image | root(r) }}"
-         srcset="{{ page.ground.srcset | srcset(r) }}"
+         {%- set ss2 = page.ground.image | srcset(r) %}{% if ss2 %} srcset="{{ ss2 }}"{% endif %}
          sizes="{{ page.ground.sizes }}" alt="" decoding="async" fetchpriority="low">
     {%- if page.ground.veil %}
     <div class="spk-ground__veil"></div>
@@ -105,11 +107,11 @@
   <div class="foot__grid">
     <div>
       <span class="brand">{{ site.brand }}</span>
-      <p style="{{ site.footer.blurbStyle }}">{{ site.footer.blurb | safe }}</p>
+      <p style="{{ site.footer.blurbStyle }}">{{ site.footer.blurb | inline() }}</p>
     </div>
     <div><h3>{{ site.footer.explore.heading }}</h3><ul>
       {%- for l in site.footer.explore.links %}{% set nl = l | navlink(slug, r) %}
-      <li><a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | safe }}</a></li>
+      <li><a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | inline() }}</a></li>
       {%- endfor %}</ul></div>
     <div><h3>{{ site.footer.connect.heading }}</h3><ul>
       <li><a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li><li><a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
@@ -117,7 +119,7 @@
       <li><a href="{{ s.href }}" target="_blank" rel="noopener">{{ s.label }}</a></li>
       {%- endfor %}</ul></div>
   </div>
-  <div class="foot__base"><span>© <span data-year>{{ site.year }}</span> {{ site.brand }}</span><span>{{ site.tagline | safe }}</span></div>
+  <div class="foot__base"><span>© <span data-year>{{ site.year }}</span> {{ site.brand }}</span><span>{{ site.tagline | inline() }}</span></div>
 </footer>
 
 {% if page.lightbox -%}
@@ -126,8 +128,8 @@
   <div class="lb__frame">
     <div class="lb__placeholder">
       <p class="eyebrow">{{ site.lightbox.eyebrow }}</p>
-      <p>{{ site.lightbox.text | safe }}</p>
-      <p style="{{ site.lightbox.ctaStyle }}"><a class="btn btn--inv" href="{{ site.lightbox.cta.href | root(r) }}">{{ site.lightbox.cta.label | safe }}</a></p>
+      <p>{{ site.lightbox.text | inline() }}</p>
+      <p style="{{ site.lightbox.ctaStyle }}"><a class="btn btn--inv" href="{{ site.lightbox.cta.href | root(r) }}">{{ site.lightbox.cta.label | inline() }}</a></p>
     </div>
   </div>
 </div>

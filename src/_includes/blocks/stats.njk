@@ -1,13 +1,13 @@
 {%- if block.note %}
   <!-- {{ block.note | safe }} -->
 {%- endif %}
-  <section class="stats{% if block.extraClass %} {{ block.extraClass }}{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | safe }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-duration="{{ block | motion('duration', 1500) }}">
+  <section class="stats{% if block.extraClass %} {{ block.extraClass }}{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | inline() }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-duration="{{ block | motion('duration', 1500) }}">
   {%- if block.eyebrow %}
-    <p class="eyebrow eyebrow--inv stats__eyebrow reveal">{{ block.eyebrow | safe }}</p>
+    <p class="eyebrow eyebrow--inv stats__eyebrow reveal">{{ block.eyebrow | inline() }}</p>
   {%- endif %}
     <p class="stats__line reveal">
     {%- for c in block.counters %}
-      <span class="stats__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | safe }}
+      <span class="stats__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | inline() }}
     {%- endfor %}
     </p>
   </section>

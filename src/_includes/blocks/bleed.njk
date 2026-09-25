@@ -2,13 +2,13 @@
   <section class="bleed{% if block.constellation %} bleed--net{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
     <div class="media media--plum">
       <img src="{{ block.image.src | root(r) }}"
-           srcset="{{ block.image.srcset | srcset(r) }}"
-           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | safe }}" loading="lazy">
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" loading="lazy">
     </div>
     {%- if block.constellation %}
     <canvas class="bleed__canvas" aria-hidden="true"></canvas>
     {%- endif %}
     <div class="bleed__inner reveal">
-      <h2>{{ block.statement | safe }}</h2>
+      <h2>{{ block.statement | inline() }}</h2>
     </div>
   </section>

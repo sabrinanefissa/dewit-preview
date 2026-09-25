@@ -1,5 +1,18 @@
 /* Dr. Stephen de Wit - homepage interactions. Progressive enhancement;
    all motion respects prefers-reduced-motion. */
+
+/* Editor microcopy (content/site.json -> site.ui), rendered as a JSON
+   script tag by the layout; each string here is the fallback if the tag
+   is missing or a key was left out. */
+var UI = (function () {
+  var d = {};
+  try {
+    var el = document.getElementById("ui");
+    if (el) d = JSON.parse(el.textContent) || {};
+  } catch (e) { d = {}; }
+  return d;
+})();
+
 (function () {
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -657,7 +670,7 @@
       if (live) {                          /* one polite line on resume */
         /* while pointer or keyboard focus still holds the roll, it has not
            started yet, so the message says so */
-        var msg = (hover || focus) ? "Rolling will resume." : "Rolling resumed.";
+        var msg = (hover || focus) ? "Rolling will resume." : (UI.rollingResumed || "Rolling resumed.");
         live.setAttribute("aria-live", "polite");
         setTimeout(function () { live.textContent = msg; }, 60);
       }
@@ -1389,17 +1402,17 @@
       var state = ended ? "replay" : (video.paused ? "play" : "pause");
       bPlay.setAttribute("data-state", state);
       bPlay.setAttribute("aria-pressed", state === "pause" ? "true" : "false");
-      if (lPlay) lPlay.textContent = state === "replay" ? "Replay" : (state === "play" ? "Play" : "Pause");
+      if (lPlay) lPlay.textContent = state === "replay" ? "Replay" : (state === "play" ? (UI.play || "Play") : (UI.pause || "Pause"));
     }
     function syncSound() {
       bSound.setAttribute("data-state", soundOn ? "mute" : "on");
       bSound.setAttribute("aria-pressed", soundOn ? "true" : "false");
-      if (lSound) lSound.textContent = soundOn ? "Mute" : "Sound on";
+      if (lSound) lSound.textContent = soundOn ? (UI.mute || "Mute") : (UI.soundOn || "Sound on");
     }
     function syncCC() {
       bCC.setAttribute("data-state", ccOn ? "cc" : "off");
       bCC.setAttribute("aria-pressed", ccOn ? "true" : "false");
-      if (lCC) lCC.textContent = ccOn ? "Captions off" : "Captions on";
+      if (lCC) lCC.textContent = ccOn ? (UI.captionsOff || "Captions off") : (UI.captionsOn || "Captions on");
       document.documentElement.setAttribute("data-spk-cc", ccOn ? "on" : "off");
     }
     function applyCC() {
@@ -1475,9 +1488,9 @@
     });
 
     bPlay.addEventListener("click", function () {
-      if (ended) { ended = false; video.currentTime = 0; tryPlay(); say("Playing"); }
-      else if (video.paused) { tryPlay(); say("Playing"); }
-      else { video.pause(); say("Paused"); }
+      if (ended) { ended = false; video.currentTime = 0; tryPlay(); say(UI.playing || "Playing"); }
+      else if (video.paused) { tryPlay(); say(UI.playing || "Playing"); }
+      else { video.pause(); say(UI.paused || "Paused"); }
       awayPaused = false;
       syncPlay();
     });
@@ -1746,7 +1759,7 @@
 
     hears.forEach(function (b, i) {
       b.addEventListener("click", function () {
-        if (playing === i) { stopClip(false); say("Paused"); return; }
+        if (playing === i) { stopClip(false); say(UI.paused || "Paused"); return; }
         if (playing >= 0) stopClip(false);
         playClip(i);
       });
@@ -1757,7 +1770,7 @@
     if (pauseBtn) {
       pauseBtn.addEventListener("click", function () {
         var i = playing;
-        stopClip(false); say("Paused");
+        stopClip(false); say(UI.paused || "Paused");
         if (i < 0) i = cur;
         if (hears[i]) hears[i].focus({ preventScroll: true });
       });

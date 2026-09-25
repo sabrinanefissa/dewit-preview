@@ -1,0 +1,100 @@
+---
+permalink: /css/tokens.css
+eleventyExcludeFromCollections: true
+---
+{%- set c = theme.colors -%}
+{%- set f = theme.fonts -%}
+{%- set s = theme.scale -%}
+{%- set lh = theme.lineHeight -%}
+{%- set sp = theme.spacing -%}
+{%- set l = theme.layout -%}
+{%- set g = theme.grade -%}
+{%- set m = theme.motion -%}
+/* =====================================================================
+   Dr. Stephen de Wit — Design System Tokens
+   Brand anchor: royal violet {{ c.violet }} (sampled from logo wordmark)
+   Canvas: warm paper + deep plum ink (editorial / cinematic)
+   ===================================================================== */
+
+:root {
+  /* --- Brand ------------------------------------------------------- */
+  --violet:        {{ c.violet }};   /* primary brand (logo) */
+  --violet-600:    {{ c["violet-600"] }};
+  --violet-500:    {{ c["violet-500"] }};   /* interactive on dark */
+  --violet-300:    {{ c["violet-300"] }};
+  --violet-100:    {{ c["violet-100"] }};
+
+  /* Expressive secondary palette (from brand palette sheet) — used
+     sparingly, one accent per section/keynote, never all at once. */
+  --magenta:       {{ c.magenta }};
+  --coral:         {{ c.coral }};
+  --gold:          {{ c.gold }};
+  --teal:          {{ c.teal }};
+  --blue:          {{ c.blue }};
+
+  /* --- Canvas ------------------------------------------------------ */
+  --paper:         {{ c.paper }};   /* default light background (warm bone) */
+  --paper-2:       {{ c["paper-2"] }};   /* sectional shift */
+  --paper-3:       {{ c["paper-3"] }};
+
+  --plum:          {{ c.plum }};   /* deep dark section */
+  --plum-2:        {{ c["plum-2"] }};   /* deepest */
+  --ink:           {{ c.ink }};   /* warm near-black text */
+
+  /* --- Text -------------------------------------------------------- */
+  --tx:            {{ c.tx }};              /* text on paper */
+  --tx-soft:       {{ c["tx-soft"] }};  /* muted on paper */
+  --tx-faint:      {{ c["tx-faint"] }};
+  --tx-inv:        {{ c["tx-inv"] }};              /* text on plum */
+  --tx-inv-soft:   {{ c["tx-inv-soft"] }};
+  --tx-inv-faint:  {{ c["tx-inv-faint"] }};
+
+  /* --- Lines / surfaces ------------------------------------------- */
+  --line:          {{ c.line }};
+  --line-strong:   {{ c["line-strong"] }};
+  --line-inv:      {{ c["line-inv"] }};
+  --line-inv-strong: {{ c["line-inv-strong"] }};
+
+  /* --- Type -------------------------------------------------------- */
+  --f-display: {{ f.display | safe }};
+  --f-text:    {{ f.text | safe }};
+
+  /* Fluid scale — pushed to editorial/cinematic scale */
+  --step--1: {{ s["step--1"] }};
+  --step-0:  {{ s["step-0"] }};
+  --step-1:  {{ s["step-1"] }};
+  --step-2:  {{ s["step-2"] }};
+  --step-3:  {{ s["step-3"] }};
+  --step-4:  {{ s["step-4"] }};
+  --step-5:  {{ s["step-5"] }};   /* big statements */
+  --step-6:  {{ s["step-6"] }};     /* name-as-graphic / hero */
+
+  --lh-tight: {{ lh.tight }};
+  --lh-snug:  {{ lh.snug }};
+  --lh-text:  {{ lh.text }};
+
+  /* --- Space (8px base, fluid section rhythm) --------------------- */
+  --sp-1: {{ sp["sp-1"] }};  --sp-2: {{ sp["sp-2"] }};   --sp-3: {{ sp["sp-3"] }};  --sp-4: {{ sp["sp-4"] }};
+  --sp-5: {{ sp["sp-5"] }};    --sp-6: {{ sp["sp-6"] }}; --sp-7: {{ sp["sp-7"] }};  --sp-8: {{ sp["sp-8"] }};
+  --section-y: {{ sp["section-y"] }};
+
+  /* --- Layout ------------------------------------------------------ */
+  --wrap:      {{ l.wrap }};
+  --wrap-text: {{ l["wrap-text"] }};
+  --gutter:    {{ l.gutter }};
+  --radius:    {{ l.radius }};      /* restrained — brand avoids rounded-rect look */
+
+  /* --- Filmic image grade (cohesion across mixed photography) ------ */
+  --img-filter: {{ g.filter }};
+  --grade-plum: {{ g.plum }};
+  --grade-warm: {{ g.warm }};
+
+  /* --- Motion ------------------------------------------------------ */
+  --ease-out:   {{ m.easeOut }};     /* entrances */
+  --ease-amb:   {{ m.easeAmb }};     /* ambient */
+  --dur-fast:   {{ m.durFast }};
+  --dur:        {{ m.dur }};
+  --dur-slow:   {{ m.durSlow }};
+
+  --shadow-soft: {{ theme.shadow.soft }};
+}
