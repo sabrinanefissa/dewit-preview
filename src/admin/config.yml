@@ -3,11 +3,9 @@ backend:
   repo: sabrinanefissa/dewit-preview
   branch: main
 
-publish_mode: editorial_workflow
 media_folder: assets/img
 public_folder: assets/img
 site_url: https://sabrinanefissa.github.io/dewit-preview
-show_preview_links: true
 
 # Sign-in: token sign-in only (Sveltia's built-in GitHub personal-access-token
 # flow). No OAuth function — see EDITING.md for how an editor signs in.

@@ -1,7 +1,7 @@
 # Editing the site
 
 The site is edited through a small form-based editor, not by editing the page
-directly. Changes go through a review step before they go live.
+directly. Saving a change publishes it: the site rebuilds in a minute or two.
 
 ## Open the editor
 
