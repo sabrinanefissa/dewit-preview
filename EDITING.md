@@ -5,7 +5,7 @@ directly. Changes go through a review step before they go live.
 
 ## Open the editor
 
-Go to `https://<your site>/admin/` (for example `https://drdewit.com/admin/`).
+Go to `https://sabrinanefissa.github.io/dewit-preview/admin/`.
 
 ## Sign in
 
