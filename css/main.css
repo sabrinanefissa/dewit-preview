@@ -1750,7 +1750,7 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said__win { display:none; }
 .spk-said.is-wheel .spk-said__win { display:block; position:absolute; left:50%; top:30%;
   transform: translateX(-50%); width: calc(100% - 2 * var(--gutter));
-  font-size: clamp(4.5rem, 9vw, 8rem); height: 2em;
+  font-size: clamp(5.5rem, 12vw, 11rem); height: 2em;
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
 .spk-said.is-wheel .spk-said__win--a { z-index:1; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
