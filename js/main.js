@@ -2520,6 +2520,22 @@
     }
   }
 
+  /* --- the drift: the portrait eases 4% upward as the right column
+     scrolls past it, scrubbed by the spine; sticky positioning does the
+     rest. Desktop only, and never under reduced motion. --- */
+  var driftEl = bio.querySelector(".spk-bio__portrait");
+  if (driftEl && window.spkSpine && !reduce &&
+      window.matchMedia("(min-width: 901px)").matches) {
+    window.spkSpine.add({
+      start: function () { return bio.offsetTop - window.innerHeight; },
+      end: function () { return bio.offsetTop + bio.offsetHeight; },
+      update: function (p) {
+        driftEl.style.setProperty("--spk-bio-drift",
+          (-0.04 * driftEl.offsetHeight * p).toFixed(1) + "px");
+      }
+    });
+  }
+
 })();
 
 /* ===== 7. A. What he talks about: one line at a time =====

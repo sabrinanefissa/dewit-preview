@@ -1973,21 +1973,39 @@ html.no-js .spk-chap__chapters { padding-left:0; }
    --------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------
-   D. .spk-plan — "For planners." One centred column. The AV items are a
-   list separated by rules, not cards and not icons.
+   D. .spk-bio — the diptych. The suit portrait, sticky on the left, and
+   on the right the smallest true bio (one sentence, one link) followed
+   by "For planners." and its blocks, left-aligned. The portrait stays on
+   screen while the right column scrolls past it and drifts slightly
+   upward across the section (module 6 scrubs --spk-bio-drift off the spine).
    --------------------------------------------------------------------- */
-.spk-plan { background: transparent; color: var(--tx-inv);
-  padding-block: clamp(5rem, 9vw, 9rem); }
-.spk-plan__inner { width: var(--wrap); max-width:62ch; margin-inline:auto;
-  text-align:center; }
-.spk-plan__h { font-size: var(--step-2); text-wrap: balance; }
-.spk-plan__block { margin-top: clamp(2.6rem, 5vw, 4rem); }
+.spk-bio { background:transparent; color: var(--tx-inv);
+  padding-block: clamp(5rem, 9vw, 9rem); min-height:auto; display:block; }
+.spk-bio__grid { width: var(--wrap); margin-inline:auto; display:grid;
+  grid-template-columns: 5fr 7fr; column-gap: clamp(2.5rem, 6vw, 6rem);
+  align-items:start; }
+.spk-bio__left { position:sticky; top: 10svh; align-self:start; }
+/* soft-edged, so the portrait sits in the ground instead of on it */
+.spk-bio__portrait { width:100%; max-width: 38vw; aspect-ratio: 4 / 5; height:auto;
+  transform: translateY(var(--spk-bio-drift, 0px)); will-change: transform;
+  -webkit-mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%);
+          mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%); }
+.spk-bio__portrait img { width:100%; height:100%; object-fit:cover; object-position: 50% 18%; }
+.spk-bio .media .spk-lights { --lights-dur: 1.3s;
+  filter: brightness(.26) saturate(.45) contrast(1.04); }
+.spk-bio .media .spk-lights.is-lit { filter: brightness(.74) saturate(.78) contrast(1.06); }
+.spk-bio__right { max-width: 62ch; }
+.spk-bio__line { font-family: var(--f-display); font-weight:360; font-size: var(--step-1);
+  line-height:1.3; letter-spacing:-0.015em; color: var(--tx-inv); text-wrap: balance; }
+.spk-bio__link { margin-top: 1.4rem; color: var(--tx-inv); }
+.spk-plan__h { margin-top: clamp(3.5rem, 8vh, 6rem); font-size: var(--step-2); text-wrap: balance; }
+.spk-plan__block { margin-top: clamp(2.6rem, 5vw, 4rem); text-align:left; }
 .spk-plan__label { font-family: var(--f-display); font-style:italic; font-weight:360;
   font-size: var(--step-0); line-height:1.3; letter-spacing:-0.01em;
-  color: var(--violet-300); }
+  color: var(--violet-300); text-align:left; }
 .spk-plan__copy { margin-top: .9rem; font-size: var(--step-0); line-height:1.6;
-  color: var(--tx-inv-soft); }
-.spk-plan__list { list-style:none; margin: 1.1rem 0 0; padding:0; }
+  color: var(--tx-inv-soft); text-align:left; }
+.spk-plan__list { list-style:none; margin: 1.1rem 0 0; padding:0; text-align:left; }
 .spk-plan__list li { padding-block: clamp(.85rem, 1.8vh, 1.15rem);
   font-size: var(--step--1); line-height:1.6; color: var(--tx-inv); text-wrap: pretty; }
 .spk-plan__list li + li { border-top: 1px solid rgba(169,133,230,.30); }
@@ -2000,34 +2018,12 @@ html.no-js .spk-chap__chapters { padding-left:0; }
 .spk-plan__outs dd { margin: .35rem 0 0; padding-bottom: clamp(.85rem, 1.8vh, 1.15rem);
   font-size: var(--step--1); line-height:1.6; color: var(--tx-inv-soft); }
 .spk-plan__outs dd + dt { border-top: 1px solid rgba(169,133,230,.30); }
-
-/* ---------------------------------------------------------------------
-   E. .spk-bio — the strip that replaces the full-viewport bio. One
-   portrait, one sentence, one link. The long bio and the rolling
-   credentials belong to the About page.
-   --------------------------------------------------------------------- */
-.spk-bio { background: transparent; color: var(--tx-inv);
-  min-height: 420px; display:grid; place-items:center;
-  padding-block: clamp(3rem, 6vw, 4.5rem); }
-.spk-bio__row { width: var(--wrap); max-width: 940px; margin-inline:auto;
-  display:flex; align-items:center; justify-content:center;
-  gap: clamp(2rem, 4vw, 3.5rem); }
-/* soft-edged, so the portrait sits in the ground instead of on it */
-.spk-bio__portrait { flex:0 0 auto; width:240px; height:240px;
-  -webkit-mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%);
-          mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%); }
-.spk-bio__portrait img { width:100%; height:100%; object-fit:cover; object-position: 50% 18%; }
-.spk-bio .media .spk-lights { --lights-dur: 1.3s;
-  filter: brightness(.26) saturate(.45) contrast(1.04); }
-.spk-bio .media .spk-lights.is-lit { filter: brightness(.74) saturate(.78) contrast(1.06); }
-.spk-bio__body { max-width: 36ch; }
-.spk-bio__line { font-family: var(--f-display); font-weight:360; font-size: var(--step-1);
-  line-height:1.3; letter-spacing:-0.015em; color: var(--tx-inv); text-wrap: balance; }
-.spk-bio__link { margin-top: 1.6rem; color: var(--tx-inv); }
-@media (max-width: 640px) {
-  .spk-bio__row { flex-direction:column; text-align:center; }
-  .spk-bio__portrait { width:200px; height:200px; }
-  .spk-bio__body { max-width: 30ch; }
+@media (max-width: 900px) {
+  .spk-bio__grid { grid-template-columns: 1fr; }
+  .spk-bio__left { position:static; display:flex; justify-content:center;
+    margin-bottom: clamp(2rem, 6vw, 3rem); }
+  .spk-bio__portrait { width:240px; max-width:none; aspect-ratio:1; }
+  .spk-bio__right { max-width:none; }
 }
 
 /* ---------------------------------------------------------------------
