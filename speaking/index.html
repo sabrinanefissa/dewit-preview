@@ -160,16 +160,19 @@
 
   <!-- ==============================================================
        A. WHAT HE TALKS ABOUT - the candle wheel. A pinned stage over
-       velvet: a giant wheel stands on its edge, its centre far below the
-       screen, six candles on its rim. The one at the top is lit and its
-       line stands beside it; each 80svh of scroll turns the wheel one
-       sixth, the candle that spoke stays lit as it goes under. On the
-       last beat all six are lit, then the top flame grows toward the
-       viewer, dissolves into the flame close-up and a gold haze, and the
-       three talks rise over it. The track is 720svh:
+       velvet: a wheel stands on its edge below the screen, six candles
+       40 degrees apart on its rim, the top one standing on the bottom
+       edge. The top candle is lit and its line stands above its flame;
+       each 80svh of scroll turns the wheel one step, the candle that
+       spoke stays lit as it goes under. On the last beats all six are
+       lit, then the camera pushes into the top candle's wax, the talks
+       heading passes from behind the candle to in front of it (a layer
+       swap; .spk-said__next is a visual copy of the real heading), the
+       wax close-up settles, and the three talks rise over it. The track
+       is 720svh:
          0-480    six beats, one line each (the sixth is the bridge)
          480-560  every candle lit, the bridge holds
-         560-660  the grow: candle, macro flame, bloom
+         560-660  the grow: into the wax, the heading passes, the macro
          660-720  hold, while the talks section rises over the stage
        The six lines are real text in reading order at all times; the
        wheel is a decorative canvas. Reduced motion, Save-Data and no
@@ -181,8 +184,9 @@
       <div class="spk-said__stage" id="spkSaidStage">
         <img class="spk-said__velvet" src="../assets/img/velvet-1786.webp" srcset="../assets/img/velvet-960.webp 960w, ../assets/img/velvet-1786.webp 1786w" sizes="100vw" alt="" loading="lazy" decoding="async">
         <div class="spk-said__veil" aria-hidden="true"></div>
+        <p class="spk-said__next" aria-hidden="true">Three talks, for people, teams and organizations.</p>
         <canvas class="spk-said__wheel" id="spkSaidWheel" aria-hidden="true"></canvas>
-        <img class="spk-said__flame" id="spkSaidFlame" src="../assets/img/flame-macro-1536.webp" alt="" loading="lazy" decoding="async">
+        <img class="spk-said__macro" id="spkSaidMacro" src="../assets/img/wax-macro-1440.webp" alt="" loading="lazy" decoding="async">
         <div class="spk-said__bloom" id="spkSaidBloom" aria-hidden="true"></div>
         <div class="spk-said__inner">
           <h2 class="spk-said__h" id="spkSaidH">What he talks about.</h2>
@@ -205,8 +209,9 @@
        inside it is sticky for 340svh of scroll. The section rises over
        the last 60svh of the candle wheel's stage, and its full-bleed
        ground fades in over the first 60svh of its own scroll, out of
-       the wheel's gold haze. Phases:
-         0-50     the heading alone over the full-bleed ground
+       the wheel's wax close-up. Phases:
+         0-50     the heading alone over the full-bleed ground (it takes
+                  over, in place, from the candle wheel's copy)
          50-130   talk 01
          130-210  talk 02 wipes in from the right
          210-290  talk 03 wipes in from the right

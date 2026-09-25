@@ -1275,9 +1275,11 @@ html.no-js .spk-voice { display:none; }
      --rise, --g  on the ground: both held at 1 (written once), so the
                   ground is exactly the viewport; the card rules stay
      --reveal     on the ground: fades in over the first 60svh, out of
-                  the candle wheel's gold haze
-     --head       on the heading: in over the first 20svh, out over the
-                  first 40svh of talk 01
+                  the candle wheel's wax close-up
+     --head       on the heading: 1 from the start, out over the first
+                  40svh of talk 01
+     --head-in    on the heading: follows --reveal, as the candle
+                  wheel's copy of it (same place) fades out
      --wi         on panels 2 and 3: the wipe in from the right
      --cap        on each panel: its caption, the ring inside it
    The section rises over the last 60svh of the candle wheel's stage
@@ -1335,7 +1337,8 @@ html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { m
 /* The heading, alone over the full-bleed ground. */
 .spk-keys__head { position:absolute; inset:0; z-index:4; display:grid; place-items:center;
   text-align:center; pointer-events:none; padding-inline: var(--gutter);
-  opacity: var(--head, 0);
+  /* --head-in: the hand-off from the candle wheel's copy (module 2) */
+  opacity: calc(var(--head, 0) * var(--head-in, 1));
   transform: translateY(calc((1 - var(--head, 0)) * 12px));
   filter: blur(calc((1 - var(--head, 0)) * 6px)); }
 .spk-keys__head h2 { font-size: var(--step-2); font-weight:360; color: var(--tx-inv);
@@ -1683,7 +1686,7 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
    becomes a pinned stage (.is-wheel): a 720svh track, the velvet under a
    plum veil, the wheel on a canvas above them, and the six lines in one
    grid cell, each carrying --on (0..1) from the scroll. The scroll is the
-   clock: nothing here has a transition. The grow writes --fx/--fy/--fs/--fo
+   clock: nothing here has a transition. The grow writes --ms/--mo
    on the macro flame and --bo on the bloom.
    --------------------------------------------------------------------- */
 .spk-said { position:relative; background: var(--plum-2); color: var(--tx-inv); }
@@ -1693,7 +1696,7 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
   width:100%; height:100%; object-fit:cover; object-position: 50% 50%; }
 .spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(26,16,38,.42); }
-.spk-said__wheel, .spk-said__flame, .spk-said__bloom { display:none; }
+.spk-said__wheel, .spk-said__macro, .spk-said__bloom, .spk-said__next { display:none; }
 .spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
 .spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
@@ -1725,17 +1728,28 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
 .spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
-/* the macro: the stage's size, cover, centred on the flame point */
-.spk-said.is-wheel .spk-said__flame { display:block; position:absolute; left:0; top:0; z-index:3;
-  width:100%; height:100%; object-fit:cover; pointer-events:none; opacity: var(--fo, 0);
-  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(var(--fs, .6));
-  /* no hard box edge while it is still smaller than the frame */
-  -webkit-mask-image: radial-gradient(farthest-side at 50% 50%, #000 72%, transparent 100%);
-          mask-image: radial-gradient(farthest-side at 50% 50%, #000 72%, transparent 100%); }
-.spk-said.is-wheel .spk-said__bloom { display:block; position:absolute; inset:0; z-index:4;
+/* the macro: the wax close-up, the stage's size, cover, edge to edge,
+   settling (--ms 1.08 -> 1) as it comes over the canvas */
+.spk-said.is-wheel .spk-said__macro { display:block; position:absolute; inset:0; z-index:3;
+  width:100%; height:100%; object-fit:cover; pointer-events:none; opacity: var(--mo, 0);
+  transform: scale(var(--ms, 1.08)); }
+/* a faint warm veil over the wax, gone with the hand-off */
+.spk-said.is-wheel .spk-said__bloom { display:block; position:absolute; inset:0; z-index:3;
   pointer-events:none; opacity: calc(var(--bo, 0) * (1 - var(--spk-keys-reveal, 0)));
-  background: radial-gradient(circle farthest-corner at 50% 50%,
-    rgba(232,187,104,.55), rgba(232,187,104,0) 70%); }
+  background: radial-gradient(60% 60% at 50% 50%, rgba(232,187,104,.18), transparent 70%); }
+/* The talks heading, a visual copy set exactly where .spk-keys__head sets
+   the real one (the stage's centre, --step-2, 360, 30ch, balanced). It
+   comes up behind the candle (z 1, under the canvas) and passes in front
+   of it (.is-front, z 4: over the canvas, the macro and the veil) once the
+   wax fills the frame; it leaves as the real one arrives in its place. */
+.spk-said.is-wheel .spk-said__next { display:block; position:absolute; left:50%; top:50%; z-index:1;
+  transform: translate(-50%, -50%); width:max-content;
+  max-width: min(30ch, calc(100% - 2 * var(--gutter)));
+  font-family: var(--f-display); font-size: var(--step-2); font-weight:360;
+  line-height: var(--lh-snug); letter-spacing: -0.02em; font-optical-sizing: auto;
+  color: var(--tx-inv); text-align:center; text-wrap: balance; pointer-events:none;
+  opacity: calc(var(--no, 0) * (1 - var(--spk-keys-reveal, 0))); }
+.spk-said.is-wheel .spk-said__next.is-front { z-index:4; }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }

@@ -1526,14 +1526,15 @@
    inside it for 340svh of scroll). It rises over the last 60svh of the
    candle wheel's held stage, so there is no grow any more: the ground is
    full-bleed from the start (--rise and --g are written once, at 1) and
-   fades in over the wheel's gold haze. This module registers ONE entry
+   fades in over the wheel's wax close-up. This module registers ONE entry
    with the spine and has no scroll listener of its own; update(p) turns p
    into svh of scroll (u = p * 340) and writes the phases as custom
    properties:
      0-60     the ground fades in (--reveal; 1 whenever the wheel is not
               pinned above, so there is nothing to come out of)
-     0-50     the heading alone (--head: in over the first 20svh, out
-              over the first 40svh of talk 01)
+     0-50     the heading alone (--head: already 1, handed over from the
+              candle wheel's copy as --head-in follows --reveal; out over
+              the first 40svh of talk 01)
      50-130   talk 01
      130-210  talk 02 wipes in from the right (--wi over the first 40%)
      210-290  talk 03 wipes in from the right
@@ -1816,13 +1817,16 @@
   function update(p) {
     if (entry.disabled) return;
     var u = p * U;
-    var hd = u < 50 ? smooth(clamp(u / 20)) : 1 - smooth(clamp((u - 50) / 40));
+    /* the heading is already there (the candle wheel's copy handed it
+       over), and leaves over the first 40svh of talk 01 */
+    var hd = u < 50 ? 1 : 1 - smooth(clamp((u - 50) / 40));
     var on = u >= 50;
     var wi2 = clamp(clamp((u - 130) / 80) / 0.4);
     var wi3 = clamp(clamp((u - 210) / 80) / 0.4);
     var wheel = !!said && said.classList.contains("is-wheel");
     var rv = wheel ? clamp(u / 60) : 1;
     put(ground, "reveal", "--reveal", rv);
+    put(head, "headIn", "--head-in", rv);
     /* the wheel's bloom leaves with the hand-off (module 7's CSS reads it) */
     if (wheel) put(document.documentElement, "rootReveal", "--spk-keys-reveal", rv);
     else if (last.rootReveal) { document.documentElement.style.removeProperty("--spk-keys-reveal"); last.rootReveal = ""; }
@@ -1905,6 +1909,7 @@
     entry.disabled = (m !== "pin");
     if (m !== "pin") {
       ground.style.removeProperty("--reveal");
+      head.style.removeProperty("--head-in");
       document.documentElement.style.removeProperty("--spk-keys-reveal");
     }
     if (m === "pin") {
@@ -2565,8 +2570,10 @@
               while the line leaves. Lines 01-05 are beats 0-4; the bridge
               (06) arrives on beat 5 and holds, and the wheel stops.
      480-560  every candle lit, the bridge holds
-     560-660  the grow: the top flame scales x6 about itself and drifts to
-              the centre, the macro flame comes over it, then the bloom
+     560-660  the grow: the top candle scales x8 about the middle of its
+              wax, which drifts to the centre; the talks heading comes up
+              behind it and passes in front (a z-index swap at g 0.55);
+              the wax close-up settles over the canvas, then a warm veil
      620-720  the stage is held in place (a transform, only while the
               talks section is pinned and rises over it) until the talks
               ground has come up
@@ -2588,7 +2595,8 @@
   var track   = document.getElementById("spkSaidTrack");
   var stage   = document.getElementById("spkSaidStage");
   var cv      = document.getElementById("spkSaidWheel");
-  var flameEl = document.getElementById("spkSaidFlame");
+  var macroEl = document.getElementById("spkSaidMacro");
+  var nextEl  = sec.querySelector(".spk-said__next");
   var bloomEl = document.getElementById("spkSaidBloom");
   var linesEl = document.getElementById("spkSaidLines");
   var head    = sec.querySelector(".spk-said__h");
@@ -2598,7 +2606,7 @@
   if (!track || !stage || !linesEl || !head || lines.length !== N) return;
   if (live) live.textContent = "";
 
-  var base = ((flameEl && flameEl.getAttribute("src")) || "../assets/img/x").replace(/[^\/]*$/, "");
+  var base = ((macroEl && macroEl.getAttribute("src")) || "../assets/img/x").replace(/[^\/]*$/, "");
   var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
               !!(navigator.connection && navigator.connection.saveData);
   var ctx = cv && cv.getContext && cv.getContext("2d");
@@ -2607,7 +2615,7 @@
   function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
   /* ---- the stacked path: one lit candle over each line ---- */
-  if (still || !ctx || !window.spkSpine || !flameEl || !bloomEl) {
+  if (still || !ctx || !window.spkSpine || !macroEl || !bloomEl || !nextEl) {
     sec.classList.add("is-stacked");
     lines.forEach(function (l) {
       var im = document.createElement("img");
@@ -2705,13 +2713,7 @@
     last[key] = s;
     el.style.setProperty(name, s);
   }
-  function putPx(el, key, name, v) {
-    var s = v.toFixed(1) + "px";
-    if (last[key] === s) return;
-    last[key] = s;
-    el.style.setProperty(name, s);
-  }
-  var lastBridge = null, lastHold = "";
+  var lastBridge = null, lastFront = null, lastHold = "";
 
   function update(p) {
     if (entry.disabled) return;
@@ -2752,15 +2754,13 @@
     }
     first = false;
 
-    /* the grow's DOM half: the macro, centred on the drifting flame
-       point, and the bloom */
-    var dg = smooth(g);
-    var Fx = W * cxF, Fy = cyW - Rw - 0.94 * hC;
-    var Dx = Fx + (W / 2 - Fx) * dg, Dy = Fy + (H / 2 - Fy) * dg;
-    putPx(flameEl, "fx", "--fx", Dx - W / 2);
-    putPx(flameEl, "fy", "--fy", Dy - H / 2);
-    put(flameEl, "fs", "--fs", 0.6 + 0.6 * g);
-    put(flameEl, "fo", "--fo", clamp((g - 0.45) / 0.3));
+    /* the grow's DOM half: the wax macro settling over the canvas, and
+       the talks heading passing from behind the candle to in front of it */
+    put(macroEl, "ms", "--ms", 1.08 - 0.08 * g);
+    put(macroEl, "mo", "--mo", clamp((g - 0.5) / 0.3));
+    put(nextEl, "no", "--no", clamp((g - 0.15) / 0.25));
+    var front = g >= 0.55;
+    if (front !== lastFront) { nextEl.classList.toggle("is-front", front); lastFront = front; }
     /* the bloom leaves with the hand-off: the CSS multiplies --bo by
        (1 - --spk-keys-reveal), which module 2 writes on the root */
     put(bloomEl, "bo", "--bo", clamp((g - 0.7) / 0.3));
@@ -2802,7 +2802,7 @@
     ctx.clearRect(0, 0, W, H);
     var cxW = W * cxF;
     var others = 1 - clamp(g / 0.3);
-    var dg = smooth(g), S = 1 + 5 * dg;
+    var S = 1 + 7 * smooth(g), dg = smooth(clamp(g / 0.5));
     var top = Math.min(beat, 5);
     var gr = 0.55 * hC, fyL = -0.94 * hC;
     for (var i = 0; i < N; i++) {
@@ -2819,8 +2819,10 @@
       var rot = rad + Math.PI / 2, c = Math.cos(rot), sn = Math.sin(rot);
       var k = 1, ex = x, ey = y;
       if (grow) {
-        /* scale about the flame point, which drifts to the centre */
-        var Fx = x + 0.94 * hC * sn, Fy = y - 0.94 * hC * c;
+        /* scale about the middle of the wax (0.62 hC up the axis), which
+           drifts to the centre over the first half: the flame leaves
+           through the top and the marbled wax fills the frame */
+        var Fx = x + 0.62 * hC * sn, Fy = y - 0.62 * hC * c;
         var Dx = Fx + (W / 2 - Fx) * dg, Dy = Fy + (H / 2 - Fy) * dg;
         k = S; ex = Dx + S * (x - Fx); ey = Dy + S * (y - Fy);
       }
@@ -2886,7 +2888,7 @@
   } else { loadAll(); onScreen = true; wake(); }
 
   var rT = 0;
-  function relayout() { build(); last = {}; lastBridge = null; window.spkSpine.measure(); wake(); }
+  function relayout() { build(); last = {}; lastBridge = lastFront = null; window.spkSpine.measure(); wake(); }
   window.addEventListener("resize", function () {
     clearTimeout(rT);
     rT = setTimeout(relayout, 200);
