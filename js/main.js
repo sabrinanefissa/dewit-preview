@@ -2578,16 +2578,21 @@
      620-720  the stage is held in place (a transform, only while the
               talks section is pinned and rises over it) until the talks
               ground has come up
+   Each candle turns on its own axis as it travels: its facing angle psi
+   is set by the scroll (three times the wheel's angle, plus a resting
+   face of its own), so it turns 120 degrees on every 40-degree step and
+   stands still between; the growing candle turns 240 more, still by
+   g = 0.75. The turn is a 17-frame sequence, crossfaded frame to frame.
    update(p) writes the lines' --on, the heading's --on and the macro and
    bloom properties, and stores the wheel's state; the canvas is drawn by
    this module's own rAF loop, which runs only while the stage is on
-   screen and the tab is visible (the flicker and the lighting are
-   time-based, the wheel is not). A candle that has spoken stays lit, and
-   a candle's lit frames fade in over 600ms.
+   screen and the tab is visible (the glow's breathing and the lighting
+   are time-based; the wheel and the turn are not). A candle that has
+   spoken stays lit, and a candle's lit frames fade in over 600ms.
    The six lines are real text in reading order at all times; nothing is
    announced while scrolling. Reduced motion, Save-Data, no canvas or no
    spine: no pin, the six lines stacked on the velvet, each under one lit
-   candle (<img>). Phones run the same wheel with the line under the top
+   candle (<img>, the turn's first frame). Phones run the same wheel with the line under the top
    candle. */
 (function () {
   "use strict";
@@ -2622,9 +2627,9 @@
     lines.forEach(function (l) {
       var im = document.createElement("img");
       im.className = "spk-said__candle";
-      im.src = base + "candle-lit-450.webp";
+      im.src = base + "candle-turn-01-450.webp";
       im.alt = "";
-      im.width = 107; im.height = 140;
+      im.width = 52; im.height = 140;
       im.loading = "lazy"; im.decoding = "async";
       l.insertBefore(im, l.firstChild);
     });
@@ -2636,29 +2641,41 @@
   var keysSec = document.querySelector(".spk-keys");
 
   /* ---- the frames ----
-     0 lit, 1 lit-b, 2 lit-lean, 3 unlit. The four were shot separately, so
-     each is placed by its own foot (measured on the 900 files): the centre
-     and the bottom of the brass foot sit on the rim, and each is scaled so
-     its foot is the lit frame's width. hC is the lit frame's full height. */
-  var NAMES = ["candle-lit", "candle-lit-b", "candle-lit-lean", "candle-unlit"];
-  var ASP  = [689 / 900, 657 / 900, 743 / 900, 711 / 900];     /* width / height */
-  var AX   = [348 / 689, 335 / 657, 362 / 743, 370 / 711];     /* foot centre, of width */
-  var AY   = [890 / 900, 874 / 900, 881 / 900, 897 / 900];     /* foot bottom, of height */
-  var FOOT = [328, 320, 334, 338];                             /* foot width at 900 */
-  var imgs = [[], []];                                         /* [450 set, 900 set] */
-  var loaded = false;
-  function loadAll() {
-    if (loaded) return;
-    loaded = true;
-    for (var s = 0; s < 2; s++) {
-      for (var f = 0; f < 4; f++) {
-        var im = new Image();
-        im.decoding = "async";
-        im.src = base + NAMES[f] + (s ? "-900" : "-450") + ".webp";
-        if (im.decode) im.decode().then(null, function () {});
-        imgs[s][f] = im;
-      }
+     0-16 the turn (candle-turn-01 ... 17, in rotation order: 01 -> 17 -> 01
+     is one full turn, about 21.2 degrees a frame), 17 unlit. The turn was
+     shot foot-aligned on one canvas, so its 17 frames share one anchor set
+     (the centre and the bottom of the brass foot sit on the rim) and are
+     drawn at height hC. The unlit frame keeps its own anchors, measured on
+     the 900 file, scaled so its foot is the turn's width. The 450 set loads
+     as the section nears; the 900 set when beat 5 nears (u > 400), or at
+     once on a screen that draws it on the rim. */
+  var NT = 17, UNLIT = 17, NF = 18;
+  var NAMES = [];
+  for (var nI = 1; nI <= NT; nI++) NAMES.push("candle-turn-" + (nI < 10 ? "0" : "") + nI);
+  NAMES.push("candle-unlit");
+  var T_ASP = 336 / 900, T_AX = 0.502, T_AY = 0.997;          /* the turn: width / height, foot centre, foot bottom */
+  var U_ASP = 711 / 900, U_AX = 370 / 711, U_AY = 897 / 900;  /* unlit */
+  var U_H = 328 / 338;                                        /* unlit height, of hC */
+  var imgs = [[], []];                                        /* [450 set, 900 set] */
+  var loaded450 = false, loaded900 = false;
+  function loadSet(s) {
+    for (var f = 0; f < NF; f++) {
+      var im = new Image();
+      im.decoding = "async";
+      im.src = base + NAMES[f] + (s ? "-900" : "-450") + ".webp";
+      if (im.decode) im.decode().then(null, function () {});
+      imgs[s][f] = im;
     }
+  }
+  function loadAll() {
+    if (loaded450) return;
+    loaded450 = true;
+    loadSet(0);
+  }
+  function loadBig() {
+    if (loaded900) return;
+    loaded900 = true;
+    loadSet(1);
   }
   function ready(im) { return !!im && im.complete && im.naturalWidth > 0; }
 
@@ -2676,7 +2693,7 @@
 
   /* ---- geometry (CSS px), rebuilt on resize ---- */
   var W = 1, H = 1, dpr = 1, hC = 300, Rw = 1, cyW = 1, svh = 1, phone = false;
-  var fw = new Float32Array(4), fh = new Float32Array(4), fx = new Float32Array(4), fy = new Float32Array(4);
+  var fw = new Float32Array(NF), fh = new Float32Array(NF), fx = new Float32Array(NF), fy = new Float32Array(NF);
   function build() {
     W = Math.max(1, stage.clientWidth); H = Math.max(1, stage.clientHeight);
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2686,12 +2703,14 @@
     Rw = W * 0.40;
     cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
     svh = track.offsetHeight / 720;
-    for (var f = 0; f < 4; f++) {
-      fh[f] = hC * FOOT[0] / FOOT[f];
-      fw[f] = fh[f] * ASP[f];
-      fx[f] = -AX[f] * fw[f];
-      fy[f] = -AY[f] * fh[f];
+    for (var f = 0; f < NF; f++) {
+      var un = f === UNLIT;
+      fh[f] = un ? hC * U_H : hC;
+      fw[f] = fh[f] * (un ? U_ASP : T_ASP);
+      fx[f] = -(un ? U_AX : T_AX) * fw[f];
+      fy[f] = -(un ? U_AY : T_AY) * fh[f];
     }
+    if (hC * dpr > 470) loadBig();             /* a big screen draws the 900 set on the rim */
   }
 
   /* ---- the state the scroll sets ---- */
@@ -2699,14 +2718,8 @@
   var u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, first = true;   /* the wheel's centre stays at W/2 */
   var litTo = new Int8Array(N), litFrom = new Float32Array(N), litT0 = new Float64Array(N);
   var L = new Float32Array(N);
-  var fa = new Int8Array(N), fb = new Int8Array(N), fT = new Float64Array(N);
-  (function () {
-    var now = performance.now();
-    for (var i = 0; i < N; i++) {
-      fa[i] = (i * 2) % 3; fb[i] = (fa[i] + 1) % 3;
-      fT[i] = now + 420 + Math.random() * 480;
-    }
-  })();
+  var psi = new Float32Array(N);                           /* each candle's own facing, degrees */
+  var faD = new Int8Array(N);                              /* the turn frame last drawn under each */
 
   var last = {};
   function put(el, key, name, v) {
@@ -2729,6 +2742,12 @@
     turn = smooth(tTurn);
     theta = -(Math.min(beat, 5) * STEP + turn * STEP);
     g = clamp((u - 560) / 100);
+    if (u > 400) loadBig();
+
+    /* the turn: three times the wheel's angle, a resting face each, and
+       the growing candle's 240 degrees, still by g = 0.75 */
+    for (var q = 0; q < N; q++) psi[q] = 3 * (theta + q * STEP) + q * 76;
+    if (g > 0) psi[Math.min(beat, 5)] += 240 * smooth(clamp(g / 0.75));
 
     /* the lines: in over the first 20% of their beat, out over the first
        30% of the turn;
@@ -2788,17 +2807,11 @@
     ctx.globalAlpha = alpha > 1 ? 1 : alpha;
     ctx.drawImage(im, fx[f], fy[f], fw[f], fh[f]);
   }
-  /* the lighting (600ms) and the flicker: each lit frame held 420-900ms,
-     then a 260ms crossfade to one of the other two */
+  /* the lighting (600ms); the flame's own variation is in the turn */
   function step(now) {
     for (var i = 0; i < N; i++) {
       var t = (now - litT0[i]) / 600;
       L[i] = t >= 1 ? litTo[i] : litFrom[i] + (litTo[i] - litFrom[i]) * smooth(t);
-      if (now >= fT[i] + 260) {
-        fa[i] = fb[i];
-        fb[i] = (fa[i] + 1 + Math.floor(Math.random() * 2)) % 3;
-        fT[i] = now + 420 + Math.random() * 480;
-      }
     }
   }
   function draw(now) {
@@ -2835,20 +2848,22 @@
       ctx.setTransform(dpr * k * c, dpr * k * sn, -dpr * k * sn, dpr * k * c, dpr * ex, dpr * ey);
       var big = hC * dpr * k > 470 ? 1 : 0;
       var Li = L[i];
+      var fP = (((psi[i] % 360) + 360) % 360) / 360 * NT;
+      var fl = Math.floor(fP), ta = fl % NT, tb = (ta + 1) % NT, tt = fP - fl;
+      faD[i] = ta;
       if (Li > 0.001) {
         ctx.globalCompositeOperation = "lighter";
-        ctx.globalAlpha = (0.26 + 0.04 * Math.sin(now / 900 + i)) * Li * a;
+        ctx.globalAlpha = (0.24 + 0.05 * Math.sin(now / 900 + i) + 0.03 * Math.sin(now / 310 + 2 * i)) * Li * a;
         ctx.drawImage(glow, -gr, fyL - gr, 2 * gr, 2 * gr);
         ctx.globalCompositeOperation = "source-over";
       }
-      if (Li < 0.999) frame(3, big, a * (1 - Li));
+      if (Li < 0.999) frame(UNLIT, big, a * (1 - Li));
       if (Li > 0.001) {
-        var t = (now - fT[i]) / 260;
-        if (t <= 0) frame(fa[i], big, a * Li);
-        /* the growing candle keeps the outgoing frame at full alpha under
-           the incoming one, so its wax stays opaque over line A */
-        else if (t < 1) { frame(fa[i], big, a * Li * (grow ? 1 : 1 - t)); frame(fb[i], big, a * Li * t); }
-        else frame(fb[i], big, a * Li);
+        /* the turn dissolves frame to frame; the growing candle keeps the
+           outgoing frame at full alpha under the incoming one, so its wax
+           stays opaque over line A */
+        frame(ta, big, a * Li * (grow ? 1 : 1 - tt));
+        frame(tb, big, a * Li * tt);
       }
     }
     ctx.globalAlpha = 1;
@@ -2856,7 +2871,8 @@
 
   /* ---- the loop: only while the stage is on screen and the tab shows ----
      window.__spkProfile = true times each draw into window.__spkWheelCost
-     (the last 240 frames, in ms). */
+     (the last 240 frames, in ms) and writes window.__spkWheelState (each
+     candle's psi and the turn frame drawn under the crossfade). */
   var raf = 0, onScreen = false;
   function tick(now) {
     raf = 0;
@@ -2867,6 +2883,7 @@
       var cost = window.__spkWheelCost || (window.__spkWheelCost = []);
       cost.push(performance.now() - t0);
       if (cost.length > 240) cost.shift();
+      window.__spkWheelState = { psi: [].slice.call(psi), fa: [].slice.call(faD) };
     }
     raf = requestAnimationFrame(tick);
   }
