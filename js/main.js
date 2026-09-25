@@ -3012,58 +3012,69 @@
   } else { inView = true; sync(); roomSeen(true); }
 })();
 
-/* ===== 8. What it's like in the room: three chapters, one pin =====
-   The page's one pinned section. The track is three viewports plus a tail;
-   p runs 0 → 1 across it, idx is the live chapter and s runs 0 → 1 across
-   that chapter's own viewport of scroll:
-     0   – .15  the word arrives (--w)
-     .15 – .30  its line arrives (--l)
-     .30 – .85  held; the picture keeps pushing in (--dolly 1 → 1.06)
-     .85 – 1    the chapter lifts away (--out), the house goes dark and the
-                dot travels down the rail to the next stop
-   The change of chapter happens in the dark: seek to the new cue, then the
-   lights come up on it. The clip here is ALWAYS MUTED: the hero and the
-   keynotes own the audio on this page and this section never claims it.
-   Each chapter's cue loops between its in and out points while it is lit.
+/* ===== 8. What it's like in the room: seven beats, three stills, one pin =====
+   The page's one pinned section. The track is seven beats plus a tail;
+   p runs 0 → 1 across it, beat = floor(p * 7) and s runs 0 → 1 inside the
+   beat:
+     beat 0        the heading alone
+     beat 1 + 2i   chapter i's word
+     beat 2 + 2i   chapter i's line
+   One thing is on screen at a time. Beat changes are TIME-based: when the
+   scroll crosses into a new beat, the element on screen leaves (320ms)
+   and, 120ms after it has gone, the new one arrives (the CSS transitions
+   are the clock). A second change mid-fade retargets: what is leaving
+   finishes on its own, the new target arrives 440ms from then. Each
+   chapter has its own still at full brightness; a change of chapter
+   crossfades them (the incoming still on top, the outgoing one kept lit
+   under it for the 900ms of the fade), and the current still pushes in
+   (--dolly 1 → 1.06) across its chapter's two beats. The rail's dot
+   rests on the chapter's stop and travels in the last 15% of each line
+   beat. This module keeps its own scroll handling (one rAF per scroll
+   event, asleep off screen) and does not register with the spine.
    Three modes, rebuilt whenever either media query flips: "pin", "phone"
-   (no pin, three stacked blocks, a rail whose fill rises with the scroll
-   and one lazy clip per block, played once) and "static" (reduced motion
-   and Save-Data: the poster holds, every chapter open, no handlers). */
+   (no pin, three stacked blocks, a rail whose fill rises with the scroll,
+   each block's frame showing its still) and "static" (reduced motion and
+   Save-Data: the Think still holds, every chapter open, no handlers). */
 (function () {
   "use strict";
   var sec = document.querySelector(".spk-chap");
   if (!sec) return;
   var track    = document.getElementById("spkChapTrack");
   var stage    = document.getElementById("spkChapStage");
-  var media    = sec.querySelector(".spk-chap__media");
-  var vid      = sec.querySelector(".spk-chap__video");
-  var poster   = sec.querySelector(".spk-chap__media img");
+  var heading  = document.getElementById("spkChapH");
   var rail     = document.getElementById("spkChapRail");
   var dot      = document.getElementById("spkChapDot");
-  var fill     = document.getElementById("spkChapFill");
   var tabs     = [].slice.call(sec.querySelectorAll(".spk-chap__tab"));
   var chapters = [].slice.call(sec.querySelectorAll(".spk-chap__chapter"));
-  var frames   = [].slice.call(sec.querySelectorAll(".spk-chap__frame"));
+  var stills   = [].slice.call(sec.querySelectorAll(".spk-chap__still"));
   var live     = document.getElementById("spkChapLive");
-  if (!track || !stage || !tabs.length || tabs.length !== chapters.length) return;
+  if (!track || !stage || !heading || !tabs.length || tabs.length !== chapters.length) return;
 
   var N = chapters.length;
+  var BEATS = 1 + 2 * N;
   var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
   var phone    = window.matchMedia("(max-width: 640px)");
-  var small    = window.matchMedia("(max-width: 820px)");
   var saveData = !!(navigator.connection && navigator.connection.saveData);
   var hasIO    = "IntersectionObserver" in window;
 
-  /* in and out points live on the buttons, so a re-cut is an edit in the
-     markup and nowhere else */
-  var cues = tabs.map(function (t) {
-    return { a: parseFloat(t.getAttribute("data-cue-start")),
-             b: parseFloat(t.getAttribute("data-cue-end")) };
-  });
+  var wordsEl = chapters.map(function (c) { return c.querySelector(".spk-chap__word"); });
+  var linesEl = chapters.map(function (c) { return c.querySelector(".spk-chap__text"); });
+  var frames  = chapters.map(function (c) { return c.querySelector(".spk-chap__frame"); });
+  /* the six beat elements, in beat order after the heading */
+  var beatEls = [];
+  chapters.forEach(function (c, i) { beatEls.push(wordsEl[i], linesEl[i]); });
+  function elOf(b) { return b === 0 ? heading : beatEls[b - 1]; }
+  function stillOf(i) {
+    for (var k = 0; k < stills.length; k++) {
+      if (+stills[k].getAttribute("data-chapter") === i) return stills[k];
+    }
+    return null;
+  }
 
   function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
   function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
+  var sayT = 0;
   function say(msg) {
     if (!live) return;
     clearTimeout(sayT);
@@ -3071,8 +3082,7 @@
     sayT = setTimeout(function () { live.textContent = msg; }, 60);
   }
   function words(i) {
-    var w = chapters[i].querySelector(".spk-chap__word");
-    var l = chapters[i].querySelector(".spk-chap__text");
+    var w = wordsEl[i], l = linesEl[i];
     return (w ? w.textContent.trim() : "") + ". " +
            (l ? l.textContent.replace(/\s+/g, " ").trim() : "");
   }
@@ -3107,60 +3117,21 @@
     chapters.forEach(function (c, i) { put(c, authored.chapters[i]); });
   }
 
-  /* every mode starts from, and leaves, a clean section */
+  /* every mode starts from, and leaves, a clean section: the first still
+     on, the heading shown, every beat element at rest */
   function clearState() {
     tabs.forEach(function (t) { t.classList.remove("is-on", "is-lit"); });
-    chapters.forEach(function (c) {
-      c.classList.remove("is-live", "is-lit");
-      c.style.removeProperty("--w"); c.style.removeProperty("--l"); c.style.removeProperty("--out");
+    chapters.forEach(function (c) { c.classList.remove("is-live", "is-lit"); });
+    beatEls.forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving"); });
+    heading.classList.remove("is-gone");
+    stills.forEach(function (st, k) {
+      st.classList.toggle("is-on", k === 0);
+      st.style.removeProperty("--dolly");
+      st.style.zIndex = "";
     });
     if (rail) rail.style.removeProperty("--dot");
-    if (media) { media.classList.remove("is-dimming"); media.style.removeProperty("--dolly"); }
     stage.style.removeProperty("--px"); stage.style.removeProperty("--py");
     sec.style.removeProperty("--rail-top"); sec.style.removeProperty("--rail-h");
-  }
-
-  /* ---- the stage clip: src, cue, park ---- */
-  var srcSet = false, watchRaf = 0, playing = -1;
-
-  function ensureSrc() {
-    if (!vid || srcSet) return;
-    var s = small.matches
-      ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080"))
-      : vid.getAttribute("data-src-1080");
-    if (!s) return;
-    vid.setAttribute("src", s);
-    vid.load();
-    srcSet = true;
-  }
-
-  /* the out point is watched on a frame callback, not on timeupdate, which
-     fires about four times a second and would overshoot the cue; at the
-     out point the cue loops back to its in point and keeps playing */
-  function watch() {
-    watchRaf = 0;
-    if (playing < 0 || !vid) return;
-    var c = cues[playing];
-    if (c && vid.currentTime >= c.b) { try { vid.currentTime = c.a; } catch (err) {} }
-    watchRaf = requestAnimationFrame(watch);
-  }
-  function park(i) {
-    hold();
-    if (vid && cues[i]) { try { vid.currentTime = cues[i].a; } catch (err) {} }
-  }
-  /* pause where it is: the dark tail resumes the same cue from here */
-  function hold() {
-    if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
-    playing = -1;
-    if (vid && !vid.paused) vid.pause();
-  }
-  function playCue(i) {
-    if (!vid || !cues[i]) return;
-    vid.muted = true;                    /* this section never has audio */
-    playing = i;
-    var p = vid.play();
-    if (p && p.catch) p.catch(function () { park(i); });
-    if (!watchRaf) watchRaf = requestAnimationFrame(watch);
   }
 
   /* ---- shared frame loop: rAF-throttled scroll, asleep off screen ---- */
@@ -3177,11 +3148,9 @@
   function wake() {
     if (!onScreen || document.hidden) return;
     if (!raf) raf = requestAnimationFrame(frame);
-    if (mode === "pin" && lit && !busy && videoGround && playing < 0) playCue(cur);
   }
   function sleep() {
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    hold();
   }
   function onVis() { if (document.hidden) sleep(); else wake(); }
 
@@ -3205,115 +3174,105 @@
     onScreen = false;
   }
 
-  /* ---- static: the poster holds, every chapter open, no handlers ---- */
+  /* ---- static: the Think still holds, every chapter open, no handlers ---- */
   function startStatic() {
     sec.classList.add("is-static");
     stripAria();
-    if (poster) poster.classList.add("is-lit");
+    clearState();
     chapters.forEach(function (c) { c.classList.add("is-live", "is-lit"); });
   }
   function stopStatic() {
     sec.classList.remove("is-static");
     restoreAria();
-    if (poster) poster.classList.remove("is-lit");
     clearState();
   }
 
   /* ---- pinned ---- */
-  var lastIdx = -1, cur = 0, lastS = 0;
-  var lit = false, busy = false, videoGround = false, firstLit = false;
-  var nearIO = null, firstIO = null, lightT = 0, seekT = 0, seekFn = null, sayT = 0;
+  var curBeat = -1, curIdx = -1, shown = null;
+  var arriveT = 0, leaveTs = [], offTs = [];
 
-  function groundDown() {
-    lit = false;
-    if (media) media.classList.add("is-dimming");
-    if (poster) poster.classList.remove("is-lit");
-    if (vid) vid.classList.remove("is-lit");
-    hold();
-  }
-  function groundUp() {
-    lit = true;
-    if (media) media.classList.remove("is-dimming");
-    if (media) media.style.setProperty("--dolly", (1 + 0.06 * lastS).toFixed(4));
-    var el = videoGround ? vid : poster;
-    if (el) el.classList.add("is-lit");
-    if (videoGround && onScreen && !document.hidden) playCue(cur);
-  }
-  /* one wantLit per frame against the state it is in, so the class writes
-     are idempotent: lit once the section has first arrived, dark in each
-     chapter's tail, never touched while a change of chapter is under way */
-  function syncLights() {
-    if (busy || mode !== "pin") return;
-    var want = firstLit && lastS < 0.85;
-    if (want && !lit) groundUp();
-    else if (!want && lit) groundDown();
+  /* the beat on screen leaves, then the target arrives; a call mid-fade
+     retargets without cutting short what is already leaving */
+  function goTo(b) {
+    clearTimeout(arriveT); arriveT = 0;
+    if (shown) {
+      var el = shown;
+      shown = null;
+      if (el === heading) {
+        heading.classList.add("is-gone");
+      } else {
+        el.classList.remove("is-in");
+        el.classList.add("is-leaving");
+        var t = setTimeout(function () {
+          el.classList.remove("is-leaving");
+          var k = leaveTs.indexOf(t);
+          if (k > -1) leaveTs.splice(k, 1);
+        }, 320);
+        leaveTs.push(t);
+      }
+    }
+    curBeat = b;
+    arriveT = setTimeout(function () {
+      arriveT = 0;
+      var target = elOf(b);
+      beatEls.forEach(function (e) { if (e) e.classList.remove("is-in"); });
+      if (target === heading) {
+        heading.classList.remove("is-gone");
+      } else if (target) {
+        heading.classList.add("is-gone");
+        target.classList.remove("is-leaving");
+        target.classList.add("is-in");
+      }
+      shown = target;
+    }, 440);
   }
 
-  /* lights down, seek in the dark, lights up */
-  function lights(i) {
-    if (!media) return;
-    clearTimeout(lightT); clearTimeout(seekT);
-    if (seekFn && vid) { vid.removeEventListener("seeked", seekFn); seekFn = null; }
-    busy = true;
-    groundDown();
-    lightT = setTimeout(function () {
-      lightT = 0;
-      if (!videoGround) { busy = false; syncLights(); return; }
-      var done = false;
-      var up = function () {
-        if (done) return;
-        done = true;
-        clearTimeout(seekT);
-        vid.removeEventListener("seeked", up);
-        seekFn = null;
-        requestAnimationFrame(function () {
-          if (mode !== "pin") return;
-          busy = false;
-          syncLights();
-        });
-      };
-      seekFn = up;
-      vid.addEventListener("seeked", up);
-      seekT = setTimeout(up, 700);       /* never hold the house dark on a slow seek */
-      try { vid.currentTime = cues[i].a; } catch (err) { up(); }
-    }, 240);
+  /* the incoming still goes on top and fades in over the outgoing one,
+     which keeps its light for the length of the crossfade */
+  function setChapter(idx, first) {
+    var inc = stillOf(idx);
+    stills.forEach(function (st, k) {
+      if (st === inc) {
+        clearTimeout(offTs[k]); offTs[k] = 0;
+        st.style.zIndex = "2";
+        st.style.setProperty("--dolly", "1");
+        st.classList.add("is-on");
+        return;
+      }
+      st.style.zIndex = "1";
+      if (first) { st.classList.remove("is-on"); return; }
+      if (!st.classList.contains("is-on") || offTs[k]) return;
+      offTs[k] = setTimeout(function () { offTs[k] = 0; st.classList.remove("is-on"); }, 900);
+    });
+    chapters.forEach(function (c, n) { c.classList.toggle("is-live", n === idx); });
+    tabs.forEach(function (t, n) {
+      t.setAttribute("aria-selected", n === idx ? "true" : "false");
+      t.tabIndex = n === idx ? 0 : -1;
+      t.classList.toggle("is-on", n === idx);
+    });
+    curIdx = idx;
+    if (!first) say(words(idx));
   }
 
   function measure() {
     var r = track.getBoundingClientRect();
     var span = track.offsetHeight - window.innerHeight;
     var p = span > 0 ? clamp(-r.top / span) : 0;
-    var idx = Math.min(N - 1, Math.floor(p * N));
-    var s = clamp(p * N - idx);
+    var beat = Math.min(BEATS - 1, Math.floor(p * BEATS));
+    var s = clamp(p * BEATS - beat);
+    var idx = beat === 0 ? 0 : Math.floor((beat - 1) / 2);
+    var isLine = beat > 0 && (beat - 1) % 2 === 1;
 
-    if (idx !== lastIdx) {
-      var first = lastIdx === -1;
-      chapters.forEach(function (c, n) {
-        if (n === idx) { c.classList.add("is-live"); return; }
-        c.classList.remove("is-live");
-        c.style.removeProperty("--w"); c.style.removeProperty("--l"); c.style.removeProperty("--out");
-      });
-      tabs.forEach(function (t, n) {
-        t.setAttribute("aria-selected", n === idx ? "true" : "false");
-        t.tabIndex = n === idx ? 0 : -1;
-        t.classList.toggle("is-on", n === idx);
-      });
-      lastIdx = idx; cur = idx;
-      if (media) media.style.setProperty("--dolly", "1");   /* snaps back in the dark */
-      if (!first) { say(words(idx)); lights(idx); }
-    }
-    lastS = s;
+    if (idx !== curIdx) setChapter(idx, curIdx === -1);
+    if (beat !== curBeat) goTo(beat);
 
-    var ch = chapters[idx];
-    ch.style.setProperty("--w", clamp(s / 0.15).toFixed(3));
-    ch.style.setProperty("--l", clamp((s - 0.15) / 0.15).toFixed(3));
-    ch.style.setProperty("--out", (s < 0.85 ? 0 : (s - 0.85) / 0.15).toFixed(3));
+    /* the push-in runs across the chapter's two beats */
+    var c = beat === 0 ? 0 : ((beat - 1) % 2 + s) / 2;
+    var st = stillOf(idx);
+    if (st) st.style.setProperty("--dolly", (1 + 0.06 * c).toFixed(4));
 
-    syncLights();
-    if (lit && !busy && media) media.style.setProperty("--dolly", (1 + 0.06 * s).toFixed(4));
-
-    /* the dot rests on its chapter's stop and travels in the tail */
-    var d = idx < N - 1 ? idx + smooth((s - 0.85) / 0.15) : N - 1;
+    /* the dot rests on its chapter's stop and travels at the end of a line */
+    var d = Math.min(N - 1, idx + (isLine ? smooth((s - 0.85) / 0.15) : 0));
     if (rail) rail.style.setProperty("--dot", (N > 1 ? d / (N - 1) : 0).toFixed(4));
     tabs.forEach(function (t, n) { t.classList.toggle("is-lit", d >= n - 0.001); });
 
@@ -3325,27 +3284,13 @@
     }
   }
 
-  /* The reel becomes the ground and parks on the live chapter's in point;
-     until it has metadata the poster is the ground. */
-  function onMeta() {
-    if (mode !== "pin" || !vid) return;
-    videoGround = true;
-    if (poster) poster.classList.remove("is-on", "is-lit");
-    vid.classList.add("is-on");
-    if (busy) return;                    /* the change under way seeks and lights it */
-    try { vid.currentTime = cues[cur].a; } catch (err) {}
-    if (lit) {
-      vid.classList.add("is-lit");
-      if (onScreen && !document.hidden) playCue(cur);
-    }
-  }
-
-  /* chapter words: a press scrolls to that chapter; arrows move focus */
+  /* chapter words: a press scrolls to that chapter's word beat; arrows
+     move focus */
   var clickFns = tabs.map(function (t, i) {
     return function () {
       var span = track.offsetHeight - window.innerHeight;
       var trackTop = track.getBoundingClientRect().top + window.pageYOffset;
-      window.scrollTo({ top: trackTop + ((i + 0.4) / N) * span, behavior: "smooth" });
+      window.scrollTo({ top: trackTop + ((1 + 2 * i + 0.4) / BEATS) * span, behavior: "smooth" });
     };
   });
   var focusFns = tabs.map(function (t) {
@@ -3365,39 +3310,18 @@
   });
 
   function startPin() {
-    lastIdx = -1; cur = 0; lastS = 0;
-    lit = false; busy = false; videoGround = false; firstLit = false;
+    clearState();
+    curIdx = -1;
+    /* beat 0: the heading visible and nothing else */
+    curBeat = 0; shown = heading;
     tabs.forEach(function (t, i) {
       t.addEventListener("click", clickFns[i]);
       t.addEventListener("focus", focusFns[i]);
       t.addEventListener("keydown", keyFns[i]);
     });
-    if (vid) {
-      vid.addEventListener("loadedmetadata", onMeta);
-      vid.addEventListener("ended", onEnded);
-      if (srcSet) { if (vid.readyState >= 1) onMeta(); }
-      else if (hasIO) {
-        nearIO = new IntersectionObserver(function (e, obs) {
-          if (!e[0].isIntersecting) return;
-          obs.disconnect(); nearIO = null;
-          ensureSrc();
-        }, { rootMargin: "100% 0px" });
-        nearIO.observe(sec);
-      } else { ensureSrc(); }
-    }
-    if (hasIO) {
-      firstIO = new IntersectionObserver(function (e, obs) {
-        if (!e[0].isIntersecting) return;
-        obs.disconnect(); firstIO = null;
-        firstLit = true;
-        syncLights();
-      }, { threshold: 0.15 });
-      firstIO.observe(sec);
-    } else { firstLit = true; }
     measure();
     watchScreen();
   }
-  function onEnded() { if (playing >= 0) park(playing); }
   function stopPin() {
     unwatchScreen();
     tabs.forEach(function (t, i) {
@@ -3405,26 +3329,18 @@
       t.removeEventListener("focus", focusFns[i]);
       t.removeEventListener("keydown", keyFns[i]);
     });
-    if (nearIO) { nearIO.disconnect(); nearIO = null; }
-    if (firstIO) { firstIO.disconnect(); firstIO = null; }
-    clearTimeout(lightT); clearTimeout(seekT); clearTimeout(sayT);
-    lightT = seekT = sayT = 0;
-    if (vid) {
-      if (seekFn) { vid.removeEventListener("seeked", seekFn); seekFn = null; }
-      vid.removeEventListener("loadedmetadata", onMeta);
-      vid.removeEventListener("ended", onEnded);
-      if (!vid.paused) vid.pause();
-      vid.classList.remove("is-on", "is-lit");
-    }
-    if (poster) { poster.classList.add("is-on"); poster.classList.remove("is-lit"); }
-    lit = false; busy = false; videoGround = false;
+    clearTimeout(arriveT); clearTimeout(sayT);
+    arriveT = sayT = 0;
+    leaveTs.forEach(function (t) { clearTimeout(t); });
+    offTs.forEach(function (t) { clearTimeout(t); });
+    leaveTs = []; offTs = [];
+    curBeat = -1; curIdx = -1; shown = null;
     restoreAria();
     clearState();
   }
 
   /* ---- phone: no pin, a rail whose fill rises with the 62% cursor ---- */
-  var railTop = 0, railH = 0, phoneNear = null, phonePlay = null;
-  var phoneVids = [], phoneWatch = [];
+  var railTop = 0, railH = 0, phoneNear = null;
   var CURSOR = 0.62;
 
   function phoneLayout() {
@@ -3438,41 +3354,11 @@
     if (rail) rail.style.setProperty("--dot", clamp((yT - railTop) / railH).toFixed(4));
     chapters.forEach(function (c) { c.classList.toggle("is-lit", yT >= c.offsetTop + 12); });
   }
-
-  function frameVideo(i) {
-    if (phoneVids[i] || !frames[i]) return phoneVids[i];
-    var src = vid ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080")) : null;
-    if (!src) return null;
-    var v = document.createElement("video");
-    v.setAttribute("playsinline", "");
-    v.setAttribute("muted", "");
-    v.muted = true;
-    v.setAttribute("preload", "none");
-    v.setAttribute("poster", "../assets/img/keynote-860.webp");
-    v.setAttribute("src", src);
-    frames[i].appendChild(v);
-    phoneVids[i] = v;
-    return v;
-  }
-  /* each block's cue plays once, muted, and parks back on its in point */
-  function playOnce(i) {
-    var v = frameVideo(i), c = cues[i];
-    if (!v || !c) return;
-    function parkIt() {
-      if (phoneWatch[i]) { cancelAnimationFrame(phoneWatch[i]); phoneWatch[i] = 0; }
-      if (!v.paused) v.pause();
-      try { v.currentTime = c.a; } catch (err) {}
-    }
-    function tick() {
-      phoneWatch[i] = 0;
-      if (v.currentTime >= c.b) { parkIt(); return; }
-      phoneWatch[i] = requestAnimationFrame(tick);
-    }
-    v.muted = true;                      /* this section never has audio */
-    try { v.currentTime = c.a; } catch (err) {}
-    var p = v.play();
-    if (p && p.catch) p.catch(parkIt);
-    phoneWatch[i] = requestAnimationFrame(tick);
+  /* each frame shows its chapter's still, set once when the block is near */
+  function frameStill(i) {
+    var f = frames[i], st = stillOf(i);
+    if (!f || !st || f.style.backgroundImage) return;
+    f.style.backgroundImage = "url(\"" + st.src + "\")";
   }
 
   function startPhone() {
@@ -3484,17 +3370,12 @@
         es.forEach(function (e) {
           if (!e.isIntersecting) return;
           obs.unobserve(e.target);
-          frameVideo(chapters.indexOf(e.target));
+          frameStill(chapters.indexOf(e.target));
         });
       }, { rootMargin: "100% 0px" });
-      phonePlay = new IntersectionObserver(function (es, obs) {
-        es.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          obs.unobserve(e.target);
-          playOnce(chapters.indexOf(e.target));
-        });
-      }, { threshold: 0.55 });
-      chapters.forEach(function (c) { phoneNear.observe(c); phonePlay.observe(c); });
+      chapters.forEach(function (c) { phoneNear.observe(c); });
+    } else {
+      chapters.forEach(function (c, i) { frameStill(i); });
     }
     phoneMeasure();
     watchScreen();
@@ -3502,17 +3383,6 @@
   function stopPhone() {
     unwatchScreen();
     if (phoneNear) { phoneNear.disconnect(); phoneNear = null; }
-    if (phonePlay) { phonePlay.disconnect(); phonePlay = null; }
-    phoneWatch.forEach(function (h) { if (h) cancelAnimationFrame(h); });
-    phoneWatch = [];
-    phoneVids.forEach(function (v) {
-      if (!v) return;
-      v.pause();
-      v.removeAttribute("src");
-      v.load();
-      if (v.parentNode) v.parentNode.removeChild(v);
-    });
-    phoneVids = [];
     sec.classList.remove("is-phone");
     restoreAria();
     clearState();
