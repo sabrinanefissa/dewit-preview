@@ -165,14 +165,15 @@
        edge. The top candle is lit and its line stands above its flame;
        each 80svh of scroll turns the wheel one step, the candle that
        spoke stays lit as it goes under. On the last beats all six are
-       lit, then the camera pushes into the top candle's wax, the talks
-       heading passes from behind the candle to in front of it (a layer
-       swap; .spk-said__next is a visual copy of the real heading), the
-       wax close-up settles, and the three talks rise over it. The track
-       is 720svh:
+       lit. Then "Three talks." comes up large behind the candle while it
+       is still at rest, the candle grows and rises over it into its wax,
+       "for people, teams and organizations." rolls in above it in front,
+       the wax close-up settles, and the three talks rise over it (two
+       visual lines, aria-hidden; the real heading is in the talks
+       section). The track is 720svh:
          0-480    six beats, one line each (the sixth is the bridge)
          480-560  every candle lit, the bridge holds
-         560-660  the grow: into the wax, the heading passes, the macro
+         560-660  the grow: line A, the push into the wax, line B, the macro
          660-720  hold, while the talks section rises over the stage
        The six lines are real text in reading order at all times; the
        wheel is a decorative canvas. Reduced motion, Save-Data and no
@@ -184,10 +185,11 @@
       <div class="spk-said__stage" id="spkSaidStage">
         <img class="spk-said__velvet" src="../assets/img/velvet-1786.webp" srcset="../assets/img/velvet-960.webp 960w, ../assets/img/velvet-1786.webp 1786w" sizes="100vw" alt="" loading="lazy" decoding="async">
         <div class="spk-said__veil" aria-hidden="true"></div>
-        <p class="spk-said__next" aria-hidden="true">Three talks, for people, teams and organizations.</p>
+        <p class="spk-said__nextA" aria-hidden="true">Three talks.</p>
         <canvas class="spk-said__wheel" id="spkSaidWheel" aria-hidden="true"></canvas>
         <img class="spk-said__macro" id="spkSaidMacro" src="../assets/img/wax-macro-1440.webp" alt="" loading="lazy" decoding="async">
         <div class="spk-said__bloom" id="spkSaidBloom" aria-hidden="true"></div>
+        <p class="spk-said__nextB" aria-hidden="true">for people, teams and organizations.</p>
         <div class="spk-said__inner">
           <h2 class="spk-said__h" id="spkSaidH">What he talks about.</h2>
           <div class="spk-said__lines" id="spkSaidLines">

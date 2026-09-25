@@ -1276,10 +1276,9 @@ html.no-js .spk-voice { display:none; }
                   ground is exactly the viewport; the card rules stay
      --reveal     on the ground: fades in over the first 60svh, out of
                   the candle wheel's wax close-up
-     --head       on the heading: 1 from the start, out over the first
+     --head       on the heading: in over the first 15svh (as the candle
+                  wheel's own two lines fade out), out over the first
                   40svh of talk 01
-     --head-in    on the heading: follows --reveal, as the candle
-                  wheel's copy of it (same place) fades out
      --wi         on panels 2 and 3: the wipe in from the right
      --cap        on each panel: its caption, the ring inside it
    The section rises over the last 60svh of the candle wheel's stage
@@ -1337,8 +1336,7 @@ html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { m
 /* The heading, alone over the full-bleed ground. */
 .spk-keys__head { position:absolute; inset:0; z-index:4; display:grid; place-items:center;
   text-align:center; pointer-events:none; padding-inline: var(--gutter);
-  /* --head-in: the hand-off from the candle wheel's copy (module 2) */
-  opacity: calc(var(--head, 0) * var(--head-in, 1));
+  opacity: var(--head, 0);
   transform: translateY(calc((1 - var(--head, 0)) * 12px));
   filter: blur(calc((1 - var(--head, 0)) * 6px)); }
 .spk-keys__head h2 { font-size: var(--step-2); font-weight:360; color: var(--tx-inv);
@@ -1696,7 +1694,8 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
   width:100%; height:100%; object-fit:cover; object-position: 50% 50%; }
 .spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(26,16,38,.42); }
-.spk-said__wheel, .spk-said__macro, .spk-said__bloom, .spk-said__next { display:none; }
+.spk-said__wheel, .spk-said__macro, .spk-said__bloom,
+.spk-said__nextA, .spk-said__nextB { display:none; }
 .spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
 .spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
@@ -1737,19 +1736,29 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__bloom { display:block; position:absolute; inset:0; z-index:3;
   pointer-events:none; opacity: calc(var(--bo, 0) * (1 - var(--spk-keys-reveal, 0)));
   background: radial-gradient(60% 60% at 50% 50%, rgba(232,187,104,.18), transparent 70%); }
-/* The talks heading, a visual copy set exactly where .spk-keys__head sets
-   the real one (the stage's centre, --step-2, 360, 30ch, balanced). It
-   comes up behind the candle (z 1, under the canvas) and passes in front
-   of it (.is-front, z 4: over the canvas, the macro and the veil) once the
-   wax fills the frame; it leaves as the real one arrives in its place. */
-.spk-said.is-wheel .spk-said__next { display:block; position:absolute; left:50%; top:50%; z-index:1;
-  transform: translate(-50%, -50%); width:max-content;
-  max-width: min(30ch, calc(100% - 2 * var(--gutter)));
-  font-family: var(--f-display); font-size: var(--step-2); font-weight:360;
-  line-height: var(--lh-snug); letter-spacing: -0.02em; font-optical-sizing: auto;
-  color: var(--tx-inv); text-align:center; text-wrap: balance; pointer-events:none;
-  opacity: calc(var(--no, 0) * (1 - var(--spk-keys-reveal, 0))); }
-.spk-said.is-wheel .spk-said__next.is-front { z-index:4; }
+/* The grow's two lines (visual only; the real heading is in the talks
+   section). A: "Three talks.", big, behind the candle (z 1, under the
+   canvas), up over g 0-0.2 while the candle is at rest; the wax covers it
+   as the candle grows. B: the rest of the line, in front (z 4: over the
+   canvas, the macro and the veil), rolled in from under its own top edge
+   over g 0.5-0.75. Both leave with the talks section's reveal. */
+.spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
+  display:block; position:absolute; left:50%; margin:0; pointer-events:none;
+  font-family: var(--f-display); font-optical-sizing: auto; color: var(--tx-inv);
+  text-align:center; text-wrap: balance; }
+.spk-said.is-wheel .spk-said__nextA { top:30%; z-index:1; width:max-content;
+  /* --step-5 (163px at 1440) pushes the box below the resting flame's
+     glow line (y 430 at 1440x900); the brief's fallback size keeps it clear */
+  font-size: clamp(4.5rem, 9vw, 8rem); font-weight:340;
+  line-height: 1.02; letter-spacing: -0.035em;
+  transform: translate(-50%, calc((1 - var(--na, 0)) * 16px));
+  opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
+.spk-said.is-wheel .spk-said__nextB { top:12%; z-index:4;
+  width:max-content; max-width: min(30ch, calc(100% - 2 * var(--gutter)));
+  font-size: var(--step-2); font-weight:360; line-height: var(--lh-snug); letter-spacing: -0.02em;
+  clip-path: inset(calc((1 - var(--nb, 0)) * 100%) 0 0 0);
+  transform: translate(-50%, calc((1 - var(--nb, 0)) * 24px));
+  opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
