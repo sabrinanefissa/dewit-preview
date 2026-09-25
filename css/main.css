@@ -1737,26 +1737,20 @@ html.no-js .spk-said__candle { display:none; }
   background: radial-gradient(circle farthest-corner at 50% 50%,
     rgba(232,187,104,.55), rgba(232,187,104,0) 70%); }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
-.spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top: clamp(1.6rem, 6vh, 3.4rem);
+.spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
-.spk-said.is-wheel .spk-said__lines { position:absolute; left:58%; top:42%; margin:0;
-  transform: translateY(-50%); justify-items:start; text-align:left; row-gap:0; }
-.spk-said.is-wheel .spk-said__lines.is-left { left:8%; }
-/* the bridge: centred, under the top candle's foot rather than over it */
-.spk-said.is-wheel .spk-said__lines.is-bridge { left:50%; top:74%; transform: translate(-50%, 0);
-  justify-items:center; text-align:center; }
+/* The lines: centred above the top candle's flame on every beat, the
+   bridge included (it keeps its own typography). */
+.spk-said.is-wheel .spk-said__lines { position:absolute; left:50%; top:22%; margin:0;
+  width: calc(100% - 32px); transform: translate(-50%, 0);
+  justify-items:center; text-align:center; row-gap:0; }
 .spk-said.is-wheel .spk-said__line { grid-area: 1 / 1; opacity: var(--on, 0);
   transform: translateY(calc((1 - var(--on, 0)) * 12px));
   filter: blur(calc((1 - var(--on, 0)) * 6px)); }
-.spk-said.is-wheel .spk-said__lines.is-left .spk-said__line,
-.spk-said.is-wheel .spk-said__lines:not(.is-bridge) .spk-said__line { max-width:22ch; }
-/* Phones: the same wheel, the line under the top candle on every beat. */
+.spk-said.is-wheel .spk-said__line:not(.spk-said__bridge) { max-width:30ch; }
+/* Phones: the same wheel and the same rule; the flame sits higher. */
 @media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__lines,
-  .spk-said.is-wheel .spk-said__lines.is-left,
-  .spk-said.is-wheel .spk-said__lines.is-bridge { left:50%; top:66%; width: calc(100% - 32px);
-    transform: translate(-50%, 0); justify-items:center; text-align:center; }
-  .spk-said.is-wheel .spk-said__lines .spk-said__line { max-width:26ch; }
+  .spk-said.is-wheel .spk-said__lines { top:16%; }
   .spk-said.is-wheel .spk-said__h { white-space:normal; width: calc(100% - 32px); text-align:center; }
 }
 

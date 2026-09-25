@@ -2554,10 +2554,10 @@
 /* ===== 7. A. What he talks about: the candle wheel =====
    A pinned stage (the track is 720svh, the stage sticky inside it) over
    the velvet. A giant wheel stands on its edge facing the viewer, its
-   centre below the screen (radius 0.40 W, its top point at 64% of the
-   height). Six candles stand 40 degrees apart on the rim; the one at the
+   centre below the screen (radius 0.40 W, centred on W/2, its top point
+   at 96% of the height: the top candle stands on the bottom edge). Six candles stand 40 degrees apart on the rim; the one at the
    top is upright and lit and its
-   line stands beside it. This module registers ONE entry with the spine
+   line stands above its flame. This module registers ONE entry with the spine
    (start: the section's top, end: the bottom of its track, so u = p * 720
    in svh of scroll) and has no scroll listener of its own:
      0-480    six beats of 80svh. Beat k: the line arrives over the first
@@ -2674,7 +2674,7 @@
     phone = phoneMq.matches;
     hC = phone ? Math.max(220, Math.min(520, H * 0.34)) : Math.max(300, Math.min(520, H * 0.44));
     Rw = W * 0.40;
-    cyW = H * 0.64 + Rw;                       /* the rim's top point at 64% of H */
+    cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
     svh = track.offsetHeight / 720;
     for (var f = 0; f < 4; f++) {
       fh[f] = hC * FOOT[0] / FOOT[f];
@@ -2685,9 +2685,8 @@
   }
 
   /* ---- the state the scroll sets ---- */
-  var SIDE = [0.40, 0.62, 0.40, 0.62, 0.40, 0.5, 0.5];    /* the top candle's x, of W, per beat */
   var STEP = 40;                                           /* degrees between candles, and per beat */
-  var u = 0, beat = 0, theta = 0, cxF = 0.4, g = 0, first = true;
+  var u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, first = true;   /* the wheel's centre stays at W/2 */
   var litTo = new Int8Array(N), litFrom = new Float32Array(N), litT0 = new Float64Array(N);
   var L = new Float32Array(N);
   var fa = new Int8Array(N), fb = new Int8Array(N), fT = new Float64Array(N);
@@ -2712,7 +2711,7 @@
     last[key] = s;
     el.style.setProperty(name, s);
   }
-  var lastLeft = null, lastBridge = null, lastHold = "";
+  var lastBridge = null, lastHold = "";
 
   function update(p) {
     if (entry.disabled) return;
@@ -2725,7 +2724,6 @@
     var tTurn = beat < 5 ? clamp((s - 0.65) / 0.35) : 0;    /* the turn's own progress */
     turn = smooth(tTurn);
     theta = -(Math.min(beat, 5) * STEP + turn * STEP);
-    cxF = phone ? 0.5 : SIDE[beat] + (SIDE[Math.min(6, beat + 1)] - SIDE[beat]) * turn;
     g = clamp((u - 560) / 100);
 
     /* the lines: in over the first 20% of their beat, out over the first
@@ -2742,8 +2740,7 @@
       put(lines[j], "l" + j, "--on", on);
     }
     put(head, "h", "--on", beat === 0 ? 1 - smooth(clamp(s / 0.2)) : 0);
-    var left = beat === 1 || beat === 3, bridge = beat >= 5;
-    if (left !== lastLeft) { linesEl.classList.toggle("is-left", left); lastLeft = left; }
+    var bridge = beat >= 5;
     if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
 
     /* lit: every candle up to the current beat (all six from beat 5) */
@@ -2889,7 +2886,7 @@
   } else { loadAll(); onScreen = true; wake(); }
 
   var rT = 0;
-  function relayout() { build(); last = {}; lastLeft = lastBridge = null; window.spkSpine.measure(); wake(); }
+  function relayout() { build(); last = {}; lastBridge = null; window.spkSpine.measure(); wake(); }
   window.addEventListener("resize", function () {
     clearTimeout(rT);
     rT = setTimeout(relayout, 200);
