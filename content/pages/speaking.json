@@ -182,7 +182,7 @@
           "tone": "violet",
           "spot": "ul",
           "still": {
-            "src": "assets/img/chap-think-1664.webp",
+            "src": "/assets/img/feeling lonely at work.png",
             "sizes": "100vw"
           }
         },
@@ -200,9 +200,9 @@
           "word": "Act",
           "text": "What moved you starts *changing* what you do",
           "tone": "violet",
-          "spot": "ul",
+          "spot": "lr",
           "still": {
-            "src": "assets/img/chap-act-1664.webp",
+            "src": "/assets/img/ACT.png",
             "sizes": "100vw"
           }
         }
@@ -306,7 +306,7 @@
       "enabled": true,
       "settings": null,
       "portrait": {
-        "src": "assets/img/headshot-formal-520.webp",
+        "src": "/assets/img/card-fear-home-1120.webp",
         "sizes": "(max-width: 900px) 240px, 38vw",
         "alt": "Portrait of Dr. Stephen de Wit"
       },
@@ -357,7 +357,7 @@
       },
       "anchor": false,
       "image": {
-        "src": "assets/img/close-stage-1664.webp",
+        "src": "/assets/img/on stage.png",
         "sizes": "100vw"
       }
     }
