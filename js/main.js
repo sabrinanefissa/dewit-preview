@@ -1278,13 +1278,15 @@
     end: function () {
       /* the section tops are taken here, with the rest of the measuring */
       var keys = top(".spk-keys"), chap = top(".spk-chap"),
-          form = top(".spk-formats"), foot = top(".foot");
+          form = top(".spk-formats"), mainEl = document.querySelector("main");
       var max = root.scrollHeight - window.innerHeight;
       var s = [0,
                keys ? keys.y : max * 0.25,
                chap ? chap.y + chap.el.offsetHeight / 2 : max * 0.5,
                form ? form.y : max * 0.75,
-               foot ? Math.min(foot.y, max) : max];   /* the footer can sit below the last scroll position */
+               /* the last stop is the end of main: the footer is fixed under
+                  the page on this page, so its own offsetTop says nothing */
+               mainEl ? Math.min(mainEl.offsetTop + mainEl.offsetHeight - window.innerHeight, max) : max];
       for (var i = 1; i < s.length; i++) if (s[i] < s[i - 1]) s[i] = s[i - 1];
       ground.stops = s;
       return max;
@@ -3363,4 +3365,104 @@
   else if (phone.addListener) phone.addListener(setMode);
   if (rmq.addEventListener) rmq.addEventListener("change", setMode);
   else if (rmq.addListener) rmq.addListener(setMode);
+})();
+
+/* ===== 9. Hand-offs: the hero leaves at half speed, the rooms strip, the close =====
+   Three spine entries' worth of work and no scroll listener of its own.
+   A. The hero's picture moves down at half the scroll speed while the
+      section leaves (--spk-hero-par on .spk-hero .media).
+   B. Desktop: the rooms strip. The section's track is one screen plus the
+      strip's travel (--spk-strip); while the stage is pinned the strip
+      slides by --spk-x. Phones: a native snap strip, --spk-strip 0px.
+   C. The close: main carries a bottom margin the height of the fixed
+      footer (--spk-foot-h), so the page lifts off it.
+   Reduced motion: no parallax, no scrub, a normal footer. */
+(function () {
+  "use strict";
+  var hero = document.querySelector(".spk-hero");
+  if (!hero || !window.spkSpine) return;
+  var spine = window.spkSpine;
+  var root = document.documentElement;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var desk = window.matchMedia("(min-width: 769px)");
+
+  function pageY(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
+
+  /* ---- A. hero parallax ---- */
+  var media = hero.querySelector(".media");
+  if (media && !reduce) {
+    var heroH = 0;
+    spine.add({
+      start: function () { return 0; },
+      end: function () { heroH = hero.offsetHeight; return heroH; },
+      update: function (p) {
+        media.style.setProperty("--spk-hero-par", (p * heroH * 0.5).toFixed(1) + "px");
+      }
+    });
+  }
+
+  /* ---- B. the rooms strip ---- */
+  var sec = document.querySelector(".spk-formats");
+  var strip = document.getElementById("spkRooms");
+  var stripScroll = -1, stripEntry = null;
+  function stripMeasure() {
+    if (!sec || !strip) return false;
+    var want = (!reduce && desk.matches) ? Math.max(0, strip.scrollWidth - window.innerWidth) : 0;
+    if (want === stripScroll) return false;
+    stripScroll = want;
+    sec.style.setProperty("--spk-strip", want + "px");
+    if (want > 0 && !stripEntry) {
+      stripEntry = spine.add({
+        start: function () { return pageY(sec); },
+        end: function () { return pageY(sec) + stripScroll; },
+        update: function (p) {
+          sec.style.setProperty("--spk-x", (p * stripScroll).toFixed(1) + "px");
+        }
+      });
+    }
+    if (want === 0) sec.style.setProperty("--spk-x", "0px");
+    return true;
+  }
+
+  /* ---- C. the close ---- */
+  var hasHas = !!(window.CSS && CSS.supports && CSS.supports("selector(:has(a))"));
+  var lastFoot = "";
+  function footH() {
+    if (reduce || !hasHas) return false;
+    var f = document.getElementById("spkFoot");
+    var close = f && f.querySelector(".spk-close");
+    if (!f || !close) return false;
+    /* The whole footer has to fit the screen for the lift to show the close
+       and the footer grid together: the panel takes min(70svh, what the
+       grid leaves). Where that is under 40% of the screen (phones, short
+       windows) there is no lift: .is-flow, a normal footer. */
+    var vh = window.innerHeight;
+    var rest = f.offsetHeight - close.offsetHeight;
+    var avail = vh - rest;
+    var flow = avail < 0.4 * vh;
+    if (flow) f.style.removeProperty("--spk-close-h");
+    else f.style.setProperty("--spk-close-h", Math.floor(Math.min(0.7 * vh, avail)) + "px");
+    var val = flow ? "0px" : f.offsetHeight + "px";
+    f.classList.toggle("is-flow", flow);
+    if (val === lastFoot) return false;
+    lastFoot = val;
+    root.style.setProperty("--spk-foot-h", val);
+    return true;
+  }
+
+  /* ---- when the page changes shape: re-measure, and tell the spine only
+     when a value that moves the page height actually changed ---- */
+  function refresh() {
+    var a = stripMeasure();
+    var b = footH();
+    if (a || b) spine.measure();
+  }
+  refresh();
+  window.addEventListener("load", refresh);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+  var rsT = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(rsT);
+    rsT = setTimeout(refresh, 200);
+  }, { passive: true });
 })();

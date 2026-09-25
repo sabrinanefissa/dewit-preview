@@ -416,29 +416,24 @@
   </section>
 
   <!-- ==============================================================
-       5. FORMATS - one centred sentence
+       5. FORMATS - the sentence, then six rooms in a strip the scroll moves
        ============================================================== -->
   <section class="spk-formats" aria-label="Formats and rooms">
-    <!-- The room: rows of seats as dots, drawn behind the sentence. A
-         feathered hole in the dot layer keeps the type on clean ground, so
-         there is no scrim and no text-shadow. -->
-    <canvas class="spk-room" id="spkRoom" aria-hidden="true"></canvas>
-    <h2 class="spk-formats__h reveal">Rooms he speaks to.</h2>
-    <!-- The six rooms sit ON the seats: each label is pinned to one dot in
-         the array by row and seat, and lights as the pointer leans that part
-         of the room toward it (on a phone, as the wave passes). They are
-         positioned by the same script that draws the dots, so they can never
-         drift off the array. With no script they are a plain centred list. -->
-    <ul class="spk-formats__rooms" id="spkRooms">
-      <li data-row="1" data-seat="0.06" data-side="l">Executive and senior teams</li>
-      <li data-row="2" data-seat="0.94" data-side="r">Managers and emerging leaders</li>
-      <li data-row="4" data-seat="0.18" data-side="l">Teams under strain</li>
-      <li data-row="5" data-seat="0.84" data-side="r">Associations and membership bodies</li>
-      <li data-row="6" data-seat="0.20" data-side="l">People, culture and L&amp;D teams</li>
-      <li data-row="7" data-seat="0.80" data-side="r">Healthcare and long-term care</li>
-    </ul>
-    <p class="spk-formats__line reveal">Available as a <em>keynote</em>, a <em>workshop</em> or a
-      <em>half-day session</em>, for teams, conferences, associations and healthcare organizations.</p>
+    <div class="spk-formats__track" id="spkFormatsTrack">
+      <div class="spk-formats__stage" id="spkFormatsStage">
+        <p class="spk-formats__line reveal">Available as a <em>keynote</em>, a <em>workshop</em> or a
+          <em>half-day session</em>, for teams, conferences, associations and healthcare organizations.</p>
+        <h2 class="spk-formats__h">Rooms he speaks to.</h2>
+        <ul class="spk-formats__strip" id="spkRooms">
+          <li class="spk-formats__room"><img src="../assets/img/room-association-1200.webp" srcset="../assets/img/room-association-720.webp 720w, ../assets/img/room-association-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>Executive and senior teams</span></li>
+          <li class="spk-formats__room"><img src="../assets/img/room-corporate-1200.webp" srcset="../assets/img/room-corporate-720.webp 720w, ../assets/img/room-corporate-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>Managers and emerging leaders</span></li>
+          <li class="spk-formats__room"><img src="../assets/img/room-offsite-1200.webp" srcset="../assets/img/room-offsite-720.webp 720w, ../assets/img/room-offsite-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>Teams under strain</span></li>
+          <li class="spk-formats__room"><img src="../assets/img/room-conference-1200.webp" srcset="../assets/img/room-conference-720.webp 720w, ../assets/img/room-conference-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>Associations and membership bodies</span></li>
+          <li class="spk-formats__room"><img src="../assets/img/room-gala-1200.webp" srcset="../assets/img/room-gala-720.webp 720w, ../assets/img/room-gala-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>People, culture and L&amp;D teams</span></li>
+          <li class="spk-formats__room"><img src="../assets/img/room-healthcare-1200.webp" srcset="../assets/img/room-healthcare-720.webp 720w, ../assets/img/room-healthcare-1200.webp 1200w" sizes="70vw" alt="" loading="lazy" decoding="async"><span>Healthcare and long-term care</span></li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <!-- ==============================================================
@@ -510,7 +505,15 @@
        untouched and simply have nothing to bind to here. -->
 </main>
 
-<footer class="foot">
+<footer class="foot spk-foot" id="spkFoot">
+  <div class="spk-close" aria-hidden="false">
+    <img class="spk-close__img" src="../assets/img/close-stage-1664.webp" srcset="../assets/img/close-stage-960.webp 960w, ../assets/img/close-stage-1664.webp 1664w" sizes="100vw" alt="" loading="lazy" decoding="async">
+    <div class="spk-close__veil" aria-hidden="true"></div>
+    <div class="spk-close__inner">
+      <h2 class="spk-close__h">Bring him into your room.</h2>
+      <a class="btn spk-close__cta" href="../#contact">Book Stephen</a>
+    </div>
+  </div>
   <div class="foot__grid">
     <div>
       <span class="brand">Dr. Stephen de Wit</span>

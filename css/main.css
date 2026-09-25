@@ -1132,6 +1132,11 @@ html.no-js .media .spk-lights { filter: var(--img-filter); opacity:1; transition
    .hero__poster / .hero__video positioning rules (selector lists above).
    --------------------------------------------------------------------- */
 .spk-hero .media img, .spk-hero .media video { object-position: 50% 28%; }
+/* Parallax: the picture leaves at half the scroll speed (module 9 writes
+   --spk-hero-par). The hero clips what slides below its floor. */
+.spk-hero { overflow:hidden; }
+.spk-hero .media { transform: translateY(var(--spk-hero-par, 0px)); will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .spk-hero .media { transform:none; will-change:auto; } }
 
 /* No text needs the left-to-right grade, so it goes. What stays is a soft
    bottom grade under the controls and a light top wash under the nav.
@@ -1563,26 +1568,86 @@ html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
 }
 html.no-js .spk-out__t { opacity:1; transform:none; filter:none; }
 html.no-js .spk-out__word::before { display:none; }
+/* The hand-off: the section rises 40svh early, over the room's stage while
+   Act is still leaving. Its top 40svh is transparent (the heading sits
+   there, over the leaving picture); the still and the five words start
+   40svh down, so the words' --y percentages keep meaning inside the
+   picture. z-index 3 beats the room's 2. */
+.spk-out { margin-top: -40svh; background: transparent; z-index:3; pointer-events:none; }  /* nothing here is interactive; the transparent band must not catch clicks meant for the room's tabs beneath it */
+.spk-out__media { top: 40svh; }
+.spk-out__inner { height: calc(100svh + 40svh); }
+.spk-out__list { top: 40svh; height: 100svh; inset: auto 0 0 0; }
+/* only over a pinned room: phones, reduced motion and no script stack */
+@media (max-width: 640px) {
+  .spk-out { margin-top:0; }
+  .spk-out__media { top:0; }
+  .spk-out__inner { height:auto; }
+  .spk-out__list { top:auto; height:auto; inset:auto; }
+}
+html.no-js .spk-out, .spk-chap.is-static ~ .spk-out { margin-top:0; }
+html.no-js .spk-out__media, .spk-chap.is-static ~ .spk-out .spk-out__media { top:0; }
+html.no-js .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:100svh; }
+html.no-js .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:0; height:auto; }
+@media (max-width: 640px) {
+  html.no-js .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:auto; }
+  html.no-js .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:auto; }
+}
 
 /* ---------------------------------------------------------------------
-   5. Formats — one centred sentence, with the room behind it. The dot
-   layer is cleared in a feathered ellipse around the measured sentence, so
-   the type keeps clean ground: no scrim, no text-shadow.
+   5. Formats — the sentence, the heading, then six real rooms in a strip
+   the scroll moves sideways. The track is one screen plus the strip's own
+   travel (--spk-strip, set by module 9); the stage is sticky inside it and
+   the strip slides by --spk-x. Phones, reduced motion and no script: no
+   pin, the strip scrolls natively with snap.
    --------------------------------------------------------------------- */
-.spk-formats { position:relative; overflow:hidden;
-  background: transparent; color: var(--tx-inv);
-  padding-block: clamp(5rem, 9vw, 9rem); }
-.spk-room { position:absolute; inset:0; z-index:0; display:block;
-  width:100%; height:100%; pointer-events:none; }
-html.no-js .spk-room { display:none; }
-.spk-formats__line { position:relative; z-index:1;
-  width: var(--wrap); margin-inline:auto; text-align:center;
+.spk-formats { position:relative; background:transparent; color: var(--tx-inv);
+  padding:0; overflow:visible; }
+.spk-formats__track { height: calc(100svh + var(--spk-strip, 0px)); }
+.spk-formats__stage { position:sticky; top:0; height:100svh; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center; }
+.spk-formats__line { width: var(--wrap); margin: 0 auto; text-align:center;
   font-family: var(--f-display); font-weight:340; font-size: var(--step-2);
   line-height:1.12; letter-spacing:-0.02em; max-width:46ch; text-wrap: balance; }
 .spk-formats__line em { color: var(--violet-300); }
+.spk-formats__h { width: var(--wrap);
+  margin: clamp(1rem,2vh,1.6rem) auto clamp(1.6rem, 4vh, 2.6rem);
+  text-align:center; font-size: var(--step-2); text-wrap: balance; }
+.spk-formats__strip { display:flex; gap: 2vw; padding-inline: 15vw; margin:0;
+  list-style:none; width:max-content;
+  transform: translateX(calc(-1 * var(--spk-x, 0px))); will-change: transform; }
+.spk-formats__room { position:relative; flex: 0 0 70vw; aspect-ratio: 16 / 9;
+  max-height: 56svh; overflow:hidden; border-radius: 2px; }
+.spk-formats__room img { width:100%; height:100%; object-fit:cover; display:block; }
+.spk-formats__room span { position:absolute; left: clamp(1rem, 2.5vw, 2rem);
+  bottom: clamp(1rem, 2.5vw, 2rem); font-family: var(--f-display); font-weight:360;
+  font-size: var(--step-1); letter-spacing:-0.02em; color: var(--tx-inv); }
 @media (max-width: 640px) {
   .spk-formats__line { font-size: var(--step-1); max-width:24ch; }
 }
+@media (max-width: 768px) {
+  .spk-formats__track { height:auto; }
+  .spk-formats__stage { position:static; height:auto; overflow:visible;
+    padding-block: clamp(4rem,10vw,6rem); }
+  .spk-formats__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory;
+    width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
+  .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-formats__track { height:auto; }
+  .spk-formats__stage { position:static; height:auto; overflow:visible;
+    padding-block: clamp(4rem,10vw,6rem); }
+  .spk-formats__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory;
+    width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
+  .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
+}
+/* no script, no scrub: the same native strip */
+html.no-js .spk-formats__track { height:auto; }
+html.no-js .spk-formats__stage { position:static; height:auto; overflow:visible;
+  padding-block: clamp(4rem,10vw,6rem); }
+html.no-js .spk-formats__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory;
+  width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
+html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
+.spk-formats__strip::-webkit-scrollbar { display:none; }
 
 
 /* =====================================================================
@@ -1904,45 +1969,8 @@ html.no-js .spk-chap .spk-chap__still.is-on { opacity:1; }
 html.no-js .spk-chap__chapters { padding-left:0; }
 
 /* ---------------------------------------------------------------------
-   C. .spk-formats — the room keeps its canvas and its sentence exactly.
-   What is new is the heading above it and the six rooms, each label pinned
-   to one seat in the dot array and lit when the pointer leans that part of
-   the room toward it (on a phone, as the wave passes).
+   C. .spk-formats — now the rooms strip; its rules live in block 5.
    --------------------------------------------------------------------- */
-/* The heading, the seats and the sentence all share this frame now, so the
-   room is given more depth to hold them apart. */
-.spk-formats { padding-block: clamp(6rem, 11vw, 11rem); }
-.spk-formats__h { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
-  margin-bottom: clamp(2.5rem, 6vh, 4.5rem); text-align:center;
-  font-size: var(--step-2); text-wrap: balance; }
-.spk-formats__rooms { position:absolute; inset:0; z-index:1; margin:0; padding:0;
-  list-style:none; pointer-events:none; }
-.spk-formats__rooms li { position:absolute; left:0; top:0; white-space:nowrap;
-  font-family: var(--f-text); font-weight:500; font-size: var(--step--1);
-  line-height:1; letter-spacing:.02em;
-  /* "faint" is relative: this is small text on plum-2 and it has to clear
-     4.5:1 at rest as well as lit, so the resting alpha is .62, not a whisper */
-  color: rgba(244,236,222,.62);
-  transition: color var(--dur) var(--ease-out); }
-.spk-formats__rooms li.is-lit { color: var(--tx-inv); }
-.spk-formats__rooms li[data-side="l"] { transform: translate(-100%, -50%); }
-.spk-formats__rooms li[data-side="r"] { transform: translate(0, -50%); }
-
-/* No script, no seats to sit on: one quiet centred list under the sentence.
-   Same state on a narrow screen, where six labels cannot be placed on five
-   rows of dots without colliding — there the wave still lights them in turn. */
-html.no-js .spk-formats__rooms,
-.spk-formats__rooms.is-flow { position:static; display:flex; flex-wrap:wrap;
-  justify-content:center; gap: .8rem clamp(1.4rem, 4vw, 2.6rem);
-  width: var(--wrap); margin: clamp(2.5rem, 6vh, 4rem) auto 0;
-  margin-bottom: clamp(1.8rem, 6vh, 3rem); line-height:1.3; }
-html.no-js .spk-formats__rooms li,
-.spk-formats__rooms.is-flow li { position:static; transform:none; white-space:normal; }
-html.no-js .spk-formats__rooms li,
-.spk-formats__rooms.is-static li { color: var(--tx-inv-soft); }
-@media (prefers-reduced-motion: reduce) {
-  .spk-formats__rooms li { transition:none; }
-}
 
 /* ---------------------------------------------------------------------
    D. .spk-plan — "For planners." One centred column. The AV items are a
@@ -2001,3 +2029,47 @@ html.no-js .spk-formats__rooms li,
   .spk-bio__portrait { width:200px; height:200px; }
   .spk-bio__body { max-width: 30ch; }
 }
+
+/* ---------------------------------------------------------------------
+   F. The close — the page lifts off a fixed final panel. main carries a
+   bottom margin the height of the footer and sits above it, so the last
+   scroll uncovers the footer standing still beneath. Module 9 writes
+   --spk-foot-h. Without :has, or under reduced motion, a normal footer.
+   --------------------------------------------------------------------- */
+@supports selector(:has(a)) {
+  main:has(.spk-hero) { margin-bottom: var(--spk-foot-h, 0px); position:relative; z-index:1; }
+  /* the ground is position:fixed inside main, so it would cover the footer
+     standing beneath; clip-path holds it (and everything in main) to
+     main's own box */
+  main:has(.spk-hero) { clip-path: inset(0); }
+  .spk-foot { position:fixed; left:0; right:0; bottom:0; z-index:0; }
+  /* where the footer grid leaves the panel under 40% of the screen,
+     module 9 sets .is-flow: a normal footer */
+  .spk-foot.is-flow { position:relative; z-index:1; }
+  /* no script, nothing measures the footer: a normal footer */
+  html.no-js .spk-foot { position:relative; z-index:1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spk-foot { position:static; }
+  main:has(.spk-hero) { margin-bottom:0; }
+}
+/* the panel is the top of the footer: the footer's own top padding moves
+   below it, above the grid */
+.spk-foot { padding-top:0; }
+/* --spk-close-h: module 9 shortens the panel so the whole lifted footer
+   fits the screen; 70svh wherever it is not set */
+.spk-close { position:relative; min-height: var(--spk-close-h, 70svh); display:grid; place-items:center start;
+  text-align:left; overflow:hidden; margin-bottom: 3.5rem; }
+.spk-close__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  object-position: 72% 0%; }
+.spk-close__veil { position:absolute; inset:0;
+  background:
+    radial-gradient(60% 50% at 50% 60%, rgba(169,133,230,.22), rgba(169,133,230,0) 70%),
+    linear-gradient(180deg, rgba(18,10,28,.55), rgba(18,10,28,.25) 40%, rgba(18,10,28,.7) 100%); }
+/* 30ch is measured in the heading's own size (on the wrapper it resolved
+   to the body size and broke the line in three) */
+.spk-close__inner { position:relative; z-index:1; width: var(--wrap); margin-inline:auto; }
+.spk-close__h { max-width: 16ch; margin-inline:0;
+  font-size: var(--step-3); font-weight:340; letter-spacing:-0.025em;
+  color: var(--tx-inv); text-wrap:balance; }
+.spk-close__cta { margin-top: clamp(1.4rem, 3vh, 2.2rem); display:inline-block; }
