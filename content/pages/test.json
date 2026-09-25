@@ -1,7 +1,4 @@
 {
-  "slug": "test",
-  "permalink": "/test/",
-  "noindex": true,
   "title": "Instance test | Dr. Stephen de Wit",
   "description": "Test page: duplicated and reordered blocks (not linked, not indexed).",
   "canonical": "https://drdewit.com/test/",
@@ -11,29 +8,10 @@
     "url": "https://drdewit.com/test/",
     "image": "https://drdewit.com/assets/img/reel-poster-1280.webp"
   },
-  "preload": {
-    "href": "assets/img/reel-poster-1280.webp",
-    "sizes": "100vw"
-  },
-  "jsonld": false,
-  "lightbox": false,
-  "scripts": [
-    "js/vendor/lenis.min.js"
-  ],
-  "mainTabindex": "-1",
   "ground": {
     "image": "assets/img/ground-theatre-1664.webp",
     "sizes": "100vw",
     "veil": true
-  },
-  "footer": {
-    "class": "spk-foot",
-    "id": "spkFoot"
-  },
-  "comments": {
-    "loader": "Loader (reused)",
-    "nav": "Nav (reused chrome; homepage anchors are relative to this folder)",
-    "mainEnd": "The credibility ribbon (\"Trusted by\" / \"As seen on\") belongs to the\n       homepage only. This page ends on the bio and goes straight to the\n       footer; the shared .orgband / .cred__* CSS and the lane script are\n       untouched and simply have nothing to bind to here."
   },
   "blocks": [
     {
@@ -53,24 +31,32 @@
         "srcMobile": "assets/video/reel-mobile.mp4",
         "mobileAutoplay": "true"
       },
+      "heading": "A talk about the part people don’t say out loud.",
+      "settings": null,
       "captions": {
         "src": "assets/video/reel-en.vtt",
         "srclang": "en",
         "label": "English"
       },
-      "heading": "A talk about the part people don\u2019t say out loud.",
       "labels": {
         "cta": "Play with sound",
         "play": "Play",
         "sound": "Sound on",
         "captions": "Captions on"
-      },
-      "settings": {}
+      }
     },
     {
       "type": "said",
       "id": "said2",
       "enabled": true,
+      "heading": "What he talks about.",
+      "settings": {
+        "background": "",
+        "motion": {
+          "beat": 60,
+          "grow": null
+        }
+      },
       "velvet": {
         "src": "assets/img/velvet-1786.webp",
         "sizes": "100vw"
@@ -78,31 +64,19 @@
       "macro": "assets/img/wax-macro-1440.webp",
       "windowA": "Three *talks*.",
       "windowB": "for *people*, teams and organizations.",
-      "heading": "What he talks about.",
       "lines": [
         "You can be surrounded by colleagues and still on your own.",
-        "You carry everyone else\u2019s feelings and nobody asks about yours.",
+        "You carry everyone else’s feelings and nobody asks about yours.",
         "Small unsaid tensions add up until everyone is tired.",
         "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ],
-      "settings": {
-        "motion": {
-          "beat": 60
-        }
-      }
+      ]
     },
     {
       "type": "keys",
       "id": "keynotes",
       "enabled": true,
       "heading": "Three talks, for people, teams and organizations.",
-      "indexLabel": "Keynotes",
-      "hearLabel": "Hear Stephen on this",
-      "pauseLabel": "Pause",
-      "rest": {
-        "src": "assets/img/keys-stage-1664.webp",
-        "sizes": "100vw"
-      },
+      "settings": null,
       "video": {
         "src1080": "assets/video/reel-1080.mp4",
         "srcMobile": "assets/video/reel-mobile.mp4"
@@ -112,8 +86,17 @@
         "srclang": "en",
         "label": "English"
       },
+      "indexLabel": "Keynotes",
+      "hearLabel": "Hear Stephen on this",
+      "pauseLabel": "Pause",
+      "rest": {
+        "src": "assets/img/keys-stage-1664.webp",
+        "sizes": "100vw"
+      },
       "talks": [
         {
+          "title": "",
+          "titleHtml": "Lead Human<span class=\"tm\">™</span>",
           "sub": "Relational Intelligence at Work.",
           "accent": "violet",
           "image": {
@@ -121,14 +104,14 @@
             "sizes": "100vw"
           },
           "segment": {
-            "start": "103.66",
-            "end": "115.42",
-            "poster": "110.0"
-          },
-          "titleHtml": "Lead Human<span class=\"tm\">\u2122</span>"
+            "start": 103.66,
+            "end": 115.42,
+            "poster": 110
+          }
         },
         {
           "title": "Invisible Friction",
+          "titleHtml": "",
           "sub": "Why teams break down.",
           "accent": "coral",
           "image": {
@@ -136,13 +119,14 @@
             "sizes": "100vw"
           },
           "segment": {
-            "start": "115.42",
-            "end": "130.90",
-            "poster": "126.0"
+            "start": 115.42,
+            "end": 130.9,
+            "poster": 126
           }
         },
         {
           "title": "The Hidden Multiplier",
+          "titleHtml": "",
           "sub": "What relational intelligence does to retention.",
           "accent": "gold",
           "image": {
@@ -150,12 +134,14 @@
             "sizes": "100vw"
           },
           "segment": {
-            "start": "137.34",
-            "end": "145.70",
-            "poster": "144.0"
+            "start": 137.34,
+            "end": 145.7,
+            "poster": 144
           }
         },
         {
+          "title": "",
+          "titleHtml": "Lead Human<span class=\"tm\">™</span>",
           "sub": "Relational Intelligence at Work.",
           "accent": "violet",
           "image": {
@@ -163,20 +149,23 @@
             "sizes": "100vw"
           },
           "segment": {
-            "start": "103.66",
-            "end": "115.42",
-            "poster": "110.0"
-          },
-          "titleHtml": "Lead Human<span class=\"tm\">\u2122</span>"
+            "start": 103.66,
+            "end": 115.42,
+            "poster": 110
+          }
         }
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "stats",
       "id": "numbers",
-      "anchor": false,
       "enabled": true,
+      "settings": null,
+      "ariaLabel": "",
+      "eyebrow": "",
+      "anchor": false,
+      "extraClass": "",
+      "note": "",
       "counters": [
         {
           "value": 170,
@@ -204,6 +193,7 @@
       "type": "thread",
       "id": "thread",
       "enabled": true,
+      "settings": null,
       "ariaLabel": "What the work is about",
       "eyebrow": "The through-line",
       "bg": [
@@ -215,86 +205,90 @@
       ],
       "stations": [
         {
+          "label": "Human Connection",
+          "gloss": "What every result in your organization actually runs on.",
           "pillar": true,
           "image": {
             "src": "assets/img/line-greet-1280.webp",
             "sizes": "(max-width: 720px) 100vw, 520px",
-            "alt": "Stephen greeting attendees before a talk"
-          },
-          "label": "Human Connection",
-          "gloss": "What every result in your organization actually runs on."
+            "alt": "Stephen greeting attendees before a talk",
+            "width": null
+          }
         },
         {
+          "label": "Relational Intelligence",
+          "gloss": "Reading people well and responding well. It can be taught.",
           "pillar": false,
           "image": {
             "src": "assets/img/line-room-1280.webp",
             "sizes": "(max-width: 720px) 100vw, 520px",
-            "alt": "Stephen facing the audience from the stage"
-          },
-          "label": "Relational Intelligence",
-          "gloss": "Reading people well and responding well. It can be taught."
+            "alt": "Stephen facing the audience from the stage",
+            "width": null
+          }
         },
         {
+          "label": "Lead Human",
+          "gloss": "The signature keynote.",
           "pillar": true,
           "image": {
             "src": "assets/img/line-stage-1280.webp",
             "sizes": "(max-width: 720px) 100vw, 520px",
-            "alt": "Stephen alone on a dark stage"
-          },
-          "label": "Lead Human",
-          "gloss": "The signature keynote."
+            "alt": "Stephen alone on a dark stage",
+            "width": null
+          }
         },
         {
+          "label": "Build Trust",
+          "gloss": "The thing that speeds everything else up.",
           "pillar": false,
           "image": {
             "src": "assets/img/line-handshake-1280.webp",
             "sizes": "(max-width: 720px) 100vw, 520px",
-            "alt": "A workshop table mid-conversation"
-          },
-          "label": "Build Trust",
-          "gloss": "The thing that speeds everything else up."
+            "alt": "A workshop table mid-conversation",
+            "width": null
+          }
         },
         {
+          "label": "Reduce Friction",
+          "gloss": "Clear what quietly slows a team down.",
           "pillar": false,
           "image": {
             "src": "assets/img/friction-507.webp",
-            "width": 507,
             "sizes": "(max-width: 720px) 100vw, 520px",
-            "alt": "Stephen listening at the edge of a room"
-          },
-          "label": "Reduce Friction",
-          "gloss": "Clear what quietly slows a team down."
+            "alt": "Stephen listening at the edge of a room",
+            "width": 507
+          }
         }
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "said",
       "id": "said",
       "enabled": true,
+      "heading": "What he talks about.",
+      "settings": null,
       "velvet": {
-        "src": "assets/img/velvet-1786.webp",
+        "src": "/assets/img/Plum Velvet Background.png",
         "sizes": "100vw"
       },
       "macro": "assets/img/wax-macro-1440.webp",
       "windowA": "Three *talks*.",
       "windowB": "for *people*, teams and organizations.",
-      "heading": "What he talks about.",
       "lines": [
         "You can be surrounded by colleagues and still on your own.",
-        "You\u2019re doing the job well and struggling quietly underneath it.",
-        "You carry everyone else\u2019s feelings and nobody asks about yours.",
-        "There\u2019s a conversation you keep moving to next week.",
+        "You’re doing the job well and struggling quietly underneath it.",
+        "You carry everyone else’s feelings and nobody asks about yours.",
+        "There’s a conversation you keep moving to next week.",
         "Small unsaid tensions add up until everyone is tired.",
         "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "chap",
       "id": "room",
       "enabled": true,
-      "heading": "What it\u2019s like in the room.",
+      "heading": "What it’s like in the room.",
+      "settings": null,
       "railLabel": "Chapters",
       "chapters": [
         {
@@ -317,18 +311,18 @@
             "sizes": "100vw"
           }
         }
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "out",
       "id": "walkout",
       "enabled": true,
+      "heading": "What the room walks out with.",
+      "settings": null,
       "image": {
         "src": "assets/img/step-05-1280.webp",
         "sizes": "100vw"
       },
-      "heading": "What the room walks out with.",
       "words": [
         {
           "text": "Trust",
@@ -360,17 +354,17 @@
           "y": "70%",
           "layer": "front"
         }
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "formats",
       "id": "formats",
-      "anchor": false,
       "enabled": true,
-      "ariaLabel": "Formats and rooms",
-      "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*, for teams, conferences, associations and healthcare organizations.",
       "heading": "Rooms he speaks to.",
+      "settings": null,
+      "ariaLabel": "Formats and rooms",
+      "anchor": false,
+      "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*, for teams, conferences, associations and healthcare organizations.",
       "sizes": "70vw",
       "rooms": [
         {
@@ -409,66 +403,90 @@
             "src": "assets/img/room-healthcare-1200.webp"
           }
         }
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "bio",
       "id": "bio",
       "enabled": true,
+      "settings": null,
       "portrait": {
         "src": "assets/img/headshot-formal-520.webp",
         "sizes": "(max-width: 900px) 240px, 38vw",
         "alt": "Portrait of Dr. Stephen de Wit"
       },
-      "line": "Twenty years as a therapist, sexologist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
       "link": {
         "label": "Meet Stephen",
         "href": "#about"
       },
+      "line": "Twenty years as a therapist, sexologist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
       "plannersHeading": "For planners.",
       "outcomesLabel": "What each talk leaves behind",
       "outcomes": [
         {
-          "text": "Spot the relational patterns behind engagement and retention. Work from a clear framework for building trust. Name tension and misalignment early, before performance dips.",
-          "titleHtml": "Lead Human<span class=\"tm\">\u2122</span>"
+          "title": "",
+          "titleHtml": "Lead Human<span class=\"tm\">™</span>",
+          "text": "Spot the relational patterns behind engagement and retention. Work from a clear framework for building trust. Name tension and misalignment early, before performance dips."
         },
         {
           "title": "Invisible Friction",
-          "text": "Notice the quiet breakdowns wearing on culture and collaboration. Open a difficult conversation without making it worse. Build accountability that doesn\u2019t cost trust."
+          "titleHtml": "",
+          "text": "Notice the quiet breakdowns wearing on culture and collaboration. Open a difficult conversation without making it worse. Build accountability that doesn’t cost trust."
         },
         {
           "title": "The Hidden Multiplier",
+          "titleHtml": "",
           "text": "Connect everyday relational patterns to the outcomes an organization already measures. Look at turnover as a trust question. Protect culture through growth and change."
         }
       ],
       "tailoringLabel": "Tailoring",
-      "tailoring": "Every planner resource comes in more than one version. Bios run from one sentence to a short paragraph, and Stephen\u2019s team will build one to your event theme on request.",
+      "tailoring": "Every planner resource comes in more than one version. Bios run from one sentence to a short paragraph, and Stephen’s team will build one to your event theme on request.",
       "onDayLabel": "On the day",
       "onDay": [
         "A wireless headset mic. Stephen moves and works the room. A lavalier can stand in.",
         "A sound system matched to the room size.",
         "Fresh batteries, please. We like the energy on stage and no surprises.",
-        "Projection and screens every seat can read, HDMI to Stephen\u2019s laptop, and at least one confidence monitor at the foot of the stage.",
+        "Projection and screens every seat can read, HDMI to Stephen’s laptop, and at least one confidence monitor at the foot of the stage.",
         "A countdown timer he can see, and 30 minutes of soundcheck in the room before doors open."
-      ],
-      "settings": {}
+      ]
     },
     {
       "type": "close",
       "id": "close",
-      "anchor": false,
       "enabled": true,
-      "image": {
-        "src": "assets/img/close-stage-1664.webp",
-        "sizes": "100vw"
-      },
       "heading": "Bring him into your room.",
+      "settings": null,
       "cta": {
         "label": "Book Stephen",
         "href": "#contact"
       },
-      "settings": {}
+      "anchor": false,
+      "image": {
+        "src": "assets/img/close-stage-1664.webp",
+        "sizes": "100vw"
+      }
     }
-  ]
+  ],
+  "comments": {
+    "loader": "Loader (reused)",
+    "mainEnd": "The credibility ribbon (\"Trusted by\" / \"As seen on\") belongs to the\n       homepage only. This page ends on the bio and goes straight to the\n       footer; the shared .orgband / .cred__* CSS and the lane script are\n       untouched and simply have nothing to bind to here.",
+    "nav": "Nav (reused chrome; homepage anchors are relative to this folder)"
+  },
+  "footer": {
+    "class": "spk-foot",
+    "id": "spkFoot"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "mainTabindex": "-1",
+  "noindex": true,
+  "permalink": "/test/",
+  "preload": {
+    "href": "assets/img/reel-poster-1280.webp",
+    "sizes": "100vw"
+  },
+  "scripts": [
+    "js/vendor/lenis.min.js"
+  ],
+  "slug": "test"
 }
