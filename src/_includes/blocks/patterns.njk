@@ -1,20 +1,20 @@
   <!-- Same patterns: "How [Word] shows up." on one line, the word rolling, its
        controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. -->
-  <section class="patterns"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
+  <section class="patterns"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('plum') }}" data-period="{{ block | motion('period', 5000) }}">
     <div class="patterns__spot" aria-hidden="true"></div>
 
     <div class="patterns__inner reveal">
 
-      <div class="patterns__stage" id="patStage">
-        <h2 class="patterns__title" id="patTitle" aria-label="{{ block.how }} {{ block.words[0].name }} {{ block.tail }}"><span class="patterns__how">{{ block.how | safe }}</span> <span class="ctx"><button type="button" class="patterns__word" id="patWord" aria-pressed="false" aria-describedby="patHint">
-          {%- for w in block.words %}<span class="patterns__glyphs{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if not loop.first %} aria-hidden="true"{% endif %}>{{ w.word | safe }}</span>{% endfor -%}
+      <div class="patterns__stage">
+        <h2 class="patterns__title" aria-label="{{ block.how }} {{ block.words[0].name }} {{ block.tail }}"><span class="patterns__how">{{ block.how | safe }}</span> <span class="ctx"><button type="button" class="patterns__word" aria-pressed="false" aria-describedby="{{ block.id }}-hint">
+          {%- for w in block.words %}<span class="patterns__glyphs{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if w.homeImg %} data-home-img="{{ w.homeImg | root(r) }}"{% endif %}{% if w.workImg %} data-work-img="{{ w.workImg | root(r) }}"{% endif %}{% if not loop.first %} aria-hidden="true"{% endif %}>{{ w.word | safe }}</span>{% endfor -%}
         </button><i class="ctx__bar" aria-hidden="true"></i></span> <span class="patterns__tail">{{ block.tail | safe }}</span></h2>
-        <span class="patterns__sr" id="patHint">{{ block.hint | safe }}</span>
+        <span class="patterns__sr" id="{{ block.id }}-hint">{{ block.hint | safe }}</span>
 
         <div class="patterns__ctrl">
-          <button type="button" class="patterns__arrow patterns__arrow--prev" id="patPrev" aria-label="{{ block.prevLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-          <span class="patterns__count" id="patCount">01 / {{ block.words.length | pad2 }}</span>
-          <button type="button" class="patterns__arrow patterns__arrow--next" id="patNext" aria-label="{{ block.nextLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <button type="button" class="patterns__arrow patterns__arrow--prev" aria-label="{{ block.prevLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <span class="patterns__count">01 / {{ block.words.length | pad2 }}</span>
+          <button type="button" class="patterns__arrow patterns__arrow--next" aria-label="{{ block.nextLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         </div>
 
         <!-- Every word and both rooms, for screen readers, all the time -->
@@ -47,6 +47,6 @@
       <p class="patterns__cta"><span class="patterns__cta-lead">{{ block.cta.lead | safe }}</span>
         <a class="patterns__cta-link" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | safe }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
 
-      <p class="patterns__sr" id="patLive" aria-live="off" aria-atomic="true"></p>
+      <p class="patterns__sr" id="{{ block.id }}-live" aria-live="off" aria-atomic="true"></p>
     </div>
   </section>

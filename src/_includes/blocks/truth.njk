@@ -1,5 +1,5 @@
   <!-- Recognition: surface -> truth (interactive) -->
-  <section class="truth"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="truth"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media">
       <img data-reveal-focus src="{{ block.image.src | root(r) }}"
            srcset="{{ block.image.srcset | srcset(r) }}"

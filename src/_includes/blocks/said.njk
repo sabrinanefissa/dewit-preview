@@ -21,24 +21,25 @@
        script: no pin, the six lines stacked (with script, each under a
        lit candle) on the velvet.
        ============================================================== -->
-  <section class="spk-said"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="spkSaidH">
-    <div class="spk-said__track" id="spkSaidTrack">
-      <div class="spk-said__stage" id="spkSaidStage">
+  {%- set beat = block | motion('beat', 80) %}{% set grow = block | motion('grow', 100) %}
+  <section class="spk-said"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-grow="{{ grow }}" style="--beats:{{ block.lines.length }};--beat:{{ beat }};--grow:{{ grow }}">
+    <div class="spk-said__track">
+      <div class="spk-said__stage">
         <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" srcset="{{ block.velvet.srcset | srcset(r) }}" sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">
         <div class="spk-said__veil" aria-hidden="true"></div>
         <div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | safe }}</p></div>
-        <canvas class="spk-said__wheel" id="spkSaidWheel" aria-hidden="true"></canvas>
-        <img class="spk-said__macro" id="spkSaidMacro" src="{{ block.macro | root(r) }}" alt="" loading="lazy" decoding="async">
-        <div class="spk-said__bloom" id="spkSaidBloom" aria-hidden="true"></div>
+        <canvas class="spk-said__wheel" aria-hidden="true"></canvas>
+        <img class="spk-said__macro" src="{{ block.macro | root(r) }}" alt="" loading="lazy" decoding="async">
+        <div class="spk-said__bloom" aria-hidden="true"></div>
         <div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | safe }}</p></div>
         <div class="spk-said__inner">
-          <h2 class="spk-said__h" id="spkSaidH">{{ block.heading | safe }}</h2>
-          <div class="spk-said__lines" id="spkSaidLines">
+          <h2 class="spk-said__h" id="{{ block.id }}-h">{{ block.heading | safe }}</h2>
+          <div class="spk-said__lines">
           {%- for line in block.lines %}
             <p class="spk-said__line{% if loop.last %} spk-said__bridge{% endif %}" data-beat="{{ loop.index }}"><span class="spk-said__no">{{ loop.index | pad2 }}</span>{{ line | safe }}</p>
           {%- endfor %}
           </div>
-          <p class="spk-sr" id="spkSaidLive" aria-live="polite" aria-atomic="true"></p>
+          <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
         </div>
       </div>
     </div>

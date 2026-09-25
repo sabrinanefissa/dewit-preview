@@ -23,23 +23,24 @@
        Phones: no pin, a horizontal snap strip of the three talks.
        Reduced motion and no script: the three talks stacked.
        ============================================================== -->
-  <section class="spk-keys"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="spkKeysH">
-    <div class="spk-keys__track" id="spkKeysTrack">
-      <div class="spk-keys__stage" id="spkKeysStage">
-        <div class="spk-keys__ground" id="spkKeysGround">
+  {%- set head = block | motion('head', 50) %}{% set panel = block | motion('panel', 80) %}
+  <section class="spk-keys"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-head="{{ head }}" data-panel="{{ panel }}" style="--panels:{{ block.talks.length }};--head-svh:{{ head }};--panel-svh:{{ panel }}">
+    <div class="spk-keys__track">
+      <div class="spk-keys__stage">
+        <div class="spk-keys__ground">
           <img class="spk-keys__rest" src="{{ block.rest.src | root(r) }}"
                srcset="{{ block.rest.srcset | srcset(r) }}"
                sizes="{{ block.rest.sizes }}" alt="" loading="lazy" decoding="async">
-          <div class="spk-keys__panels" id="spkKeysPanels">
+          <div class="spk-keys__panels">
           {%- for t in block.talks %}
-            <div class="spk-keys__panel{% if loop.first %} is-on{% endif %}" role="tabpanel" id="spkPanel{{ loop.index }}" data-accent="{{ t.accent }}" aria-labelledby="spkTab{{ loop.index }}" tabindex="0">
+            <div class="spk-keys__panel{% if loop.first %} is-on{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" data-accent="{{ t.accent }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0">
               <img class="spk-keys__still" src="{{ t.image.src | root(r) }}"
                    srcset="{{ t.image.srcset | srcset(r) }}"
                    sizes="{{ t.image.sizes }}" alt="" loading="lazy" decoding="async">
               <div class="spk-keys__caption">
                 <h3 class="spk-keys__ptitle">{{ t.title | safe }}</h3>
                 <p class="spk-keys__sub">{{ t.sub | safe }}</p>
-                <button type="button" class="spk-keys__hear" id="spkHear{{ loop.index }}" data-state="play"
+                <button type="button" class="spk-keys__hear" data-state="play"
                         data-seg-start="{{ t.segment.start }}" data-seg-end="{{ t.segment.end }}" data-seg-poster="{{ t.segment.poster }}" aria-pressed="false">
                   <span class="play__ring" aria-hidden="true">
                     <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -55,28 +56,28 @@
         <!-- One shared element for all three talks, separate from the hero's.
              Same reel, same encodes; the script assigns the src. It is
              only seen while a talk plays. -->
-        <video class="spk-keys__video" id="spkKeysVideo" playsinline muted preload="metadata"
+        <video class="spk-keys__video" playsinline muted preload="metadata"
                data-src-1080="{{ block.video.src1080 | root(r) }}"
                data-src-mobile="{{ block.video.srcMobile | root(r) }}">
           <track kind="captions" srclang="{{ block.captions.srclang }}" label="{{ block.captions.label }}" src="{{ block.captions.src | root(r) }}">
         </video>
         <div class="spk-keys__head">
-          <h2 id="spkKeysH">{{ block.heading | safe }}</h2>
+          <h2 id="{{ block.id }}-h">{{ block.heading | safe }}</h2>
         </div>
-        <div class="spk-keys__index" id="spkKeysIndex" role="tablist" aria-label="{{ block.indexLabel }}">
+        <div class="spk-keys__index" role="tablist" aria-label="{{ block.indexLabel }}">
         {%- for t in block.talks %}
-          <button type="button" class="spk-keys__tab{% if loop.first %} is-on{% endif %}" role="tab" id="spkTab{{ loop.index }}" data-accent="{{ t.accent }}" aria-controls="spkPanel{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}">
+          <button type="button" class="spk-keys__tab{% if loop.first %} is-on{% endif %}" role="tab" id="{{ block.id }}-tab-{{ loop.index }}" data-accent="{{ t.accent }}" aria-controls="{{ block.id }}-panel-{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}">
             <span class="spk-keys__no">{{ loop.index | pad2 }}</span><span class="spk-keys__name">{{ t.title | safe }}</span>
           </button>
         {%- endfor %}
         </div>
         <div class="spk-keys__play" aria-hidden="true">
-          <p class="spk-keys__cap" id="spkKeysCap"></p>
+          <p class="spk-keys__cap"></p>
         </div>
-        <button type="button" class="spk-keys__pause" id="spkKeysPause" aria-label="{{ block.pauseLabel }}" hidden>
+        <button type="button" class="spk-keys__pause" aria-label="{{ block.pauseLabel }}" hidden>
           <span class="play__ring" aria-hidden="true"><svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg></span>
         </button>
-        <p class="spk-sr" id="spkKeysLive" aria-live="polite" aria-atomic="true"></p>
+        <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
       </div>
     </div>
   </section>

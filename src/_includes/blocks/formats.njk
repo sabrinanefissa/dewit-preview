@@ -1,12 +1,12 @@
   <!-- ==============================================================
        5. FORMATS - the sentence, then six rooms in a strip the scroll moves
        ============================================================== -->
-  <section class="spk-formats"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
-    <div class="spk-formats__track" id="spkFormatsTrack">
-      <div class="spk-formats__stage" id="spkFormatsStage">
+  <section class="spk-formats"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('transparent') }}">
+    <div class="spk-formats__track">
+      <div class="spk-formats__stage">
         <p class="spk-formats__line reveal">{{ block.sentence | safe }}</p>
         <h2 class="spk-formats__h">{{ block.heading | safe }}</h2>
-        <ul class="spk-formats__strip" id="spkRooms">
+        <ul class="spk-formats__strip">
         {%- for room in block.rooms %}
           <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" srcset="{{ room.image.srcset | srcset(r) }}" sizes="{{ block.sizes }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | safe }}</span></li>
         {%- endfor %}

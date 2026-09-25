@@ -1,5 +1,6 @@
 {%- set r = page.root -%}
 {%- set slug = page.slug -%}
+{{- page | assertUniqueIds -}}
 <!doctype html>
 <html lang="{{ site.lang }}" class="no-js">
 <head>
@@ -7,6 +8,9 @@
 <meta name="viewport" content="{{ site.head.viewport }}">
 <title>{{ page.title | safe }}</title>
 <meta name="description" content="{{ page.description | safe }}">
+{%- if page.noindex %}
+<meta name="robots" content="noindex">
+{%- endif %}
 <link rel="canonical" href="{{ page.canonical }}">
 <meta property="og:type" content="{{ site.head.ogType }}">
 <meta property="og:title" content="{{ page.og.title | safe }}">

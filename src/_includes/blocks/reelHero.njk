@@ -7,7 +7,7 @@
        9.4 MB (<= 10 MB), so muted autoplay is allowed under 820px:
        that is what data-mobile-autoplay="true" states.
        ============================================================== -->
-  <section class="hero spk-hero"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="hero spk-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-parallax="{{ block | motion('parallax', 0.5) }}">
     <div class="media media--plum">
       <img class="hero__poster" src="{{ block.poster.src | root(r) }}"
            srcset="{{ block.poster.srcset | srcset(r) }}"
@@ -31,12 +31,12 @@
          "Replay with sound". The small controls below keep the rest; the
          play/pause control among them appears only once the reel has been
          started. -->
-    <button type="button" class="spk-hero__cta" id="spkBig" data-state="start">
+    <button type="button" class="spk-hero__cta" data-state="start">
       <span class="play__ring" aria-hidden="true">
         <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
         <svg class="spk-ic spk-ic--replay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4v4h4"/></svg>
       </span>
-      <span class="spk-hero__cta-label" id="spkBigLabel">{{ block.labels.cta | safe }}</span>
+      <span class="spk-hero__cta-label">{{ block.labels.cta | safe }}</span>
     </button>
 
     <!-- The voice line. Decorative: it is the reel's own audio drawn as one
@@ -44,34 +44,34 @@
          or paused — there is no idle line — and fades in only while sound is
          actually playing, directly above the control row. One static render
          under reduced motion or Save-Data; absent with no script. -->
-    <canvas class="spk-voice" id="spkVoice" aria-hidden="true"></canvas>
+    <canvas class="spk-voice" aria-hidden="true"></canvas>
 
     <div class="hero__actions spk-hero__controls reveal">
-        <button type="button" class="spk-ctrl" id="spkPlay" data-state="play" aria-pressed="false" hidden>
+        <button type="button" class="spk-ctrl" data-ctrl="play" data-state="play" aria-pressed="false" hidden>
           <span class="play__ring" aria-hidden="true">
             <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
             <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
             <svg class="spk-ic spk-ic--replay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4v4h4"/></svg>
           </span>
-          <span class="spk-ctrl__label" id="spkPlayLabel">{{ block.labels.play | safe }}</span>
+          <span class="spk-ctrl__label">{{ block.labels.play | safe }}</span>
         </button>
 
-        <button type="button" class="spk-ctrl" id="spkSound" data-state="on" aria-pressed="false">
+        <button type="button" class="spk-ctrl" data-ctrl="sound" data-state="on" aria-pressed="false">
           <span class="play__ring" aria-hidden="true">
             <svg class="spk-ic spk-ic--sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 9.5h3.2L12 5.4v13.2L7.2 14.5H4z" fill="currentColor" stroke="none"/><path d="M15.6 9a4.2 4.2 0 0 1 0 6"/><path d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8"/></svg>
             <svg class="spk-ic spk-ic--mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 9.5h3.2L12 5.4v13.2L7.2 14.5H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l4.5 5M20.5 9.5l-4.5 5"/></svg>
           </span>
-          <span class="spk-ctrl__label" id="spkSoundLabel">{{ block.labels.sound | safe }}</span>
+          <span class="spk-ctrl__label">{{ block.labels.sound | safe }}</span>
         </button>
 
-        <button type="button" class="spk-ctrl" id="spkCC" data-state="off" aria-pressed="false">
+        <button type="button" class="spk-ctrl" data-ctrl="cc" data-state="off" aria-pressed="false">
           <span class="play__ring" aria-hidden="true">
             <svg class="spk-ic spk-ic--cc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M10 10.4a2.6 2.6 0 1 0 0 3.2"/><path d="M16.6 10.4a2.6 2.6 0 1 0 0 3.2"/></svg>
             <svg class="spk-ic spk-ic--cc-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M10 10.4a2.6 2.6 0 1 0 0 3.2"/><path d="M16.6 10.4a2.6 2.6 0 1 0 0 3.2"/><path d="M4.4 19.6L19.6 4.4"/></svg>
           </span>
-          <span class="spk-ctrl__label" id="spkCCLabel">{{ block.labels.captions | safe }}</span>
+          <span class="spk-ctrl__label">{{ block.labels.captions | safe }}</span>
         </button>
     </div>
 
-    <p class="spk-sr" id="spkLive" aria-live="polite" aria-atomic="true"></p>
+    <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
   </section>

@@ -10,9 +10,10 @@
        reduced motion: no pin, three stacked blocks. The chapter words are
        the accessible tablist. -->
   <!-- rises over the pinned talks stage: see .spk-chap margin-top -->
-  <section class="spk-chap"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="spkChapH">
-    <div class="spk-chap__track" id="spkChapTrack">
-      <div class="spk-chap__stage" id="spkChapStage">
+  {%- set beat = block | motion('beat', 70) %}
+  <section class="spk-chap"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-arrive="{{ block | motion('arrive', 440) }}" data-leave="{{ block | motion('leave', 320) }}" data-cross="{{ block | motion('cross', 900) }}" data-dolly="{{ block | motion('dolly', 1.06) }}" style="--chapters:{{ block.chapters.length }};--beat:{{ beat }}">
+    <div class="spk-chap__track">
+      <div class="spk-chap__stage">
         <div class="spk-chap__media" aria-hidden="true">
         {%- for c in block.chapters %}
           <img class="spk-chap__still{% if loop.first %} is-on{% endif %}" data-chapter="{{ loop.index0 }}" src="{{ c.still.src | root(r) }}"
@@ -23,22 +24,22 @@
         <div class="spk-chap__glow" aria-hidden="true"></div>
 
         <div class="spk-chap__inner">
-          <h2 class="spk-chap__h" id="spkChapH">{{ block.heading | safe }}</h2>
+          <h2 class="spk-chap__h" id="{{ block.id }}-h">{{ block.heading | safe }}</h2>
 
-          <div class="spk-chap__rail" id="spkChapRail" role="tablist" aria-label="{{ block.railLabel }}">
+          <div class="spk-chap__rail" role="tablist" aria-label="{{ block.railLabel }}">
             <i class="spk-chap__line" aria-hidden="true"></i>
-            <b class="spk-chap__fill" id="spkChapFill" aria-hidden="true"></b>
-            <span class="spk-chap__dot" id="spkChapDot" aria-hidden="true"></span>
+            <b class="spk-chap__fill" aria-hidden="true"></b>
+            <span class="spk-chap__dot" aria-hidden="true"></span>
           {%- for c in block.chapters %}
-            <button type="button" class="spk-chap__tab{% if loop.first %} is-on{% endif %}" role="tab" id="spkChap{{ loop.index }}" style="--i:{{ loop.index0 }}"
-                    aria-controls="spkChapPanel{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}"
+            <button type="button" class="spk-chap__tab{% if loop.first %} is-on{% endif %}" role="tab" id="{{ block.id }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}"
+                    aria-controls="{{ block.id }}-panel-{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}"
                     data-tone="{{ c.tone }}"><i class="spk-chap__stop" aria-hidden="true"></i>{{ c.word | safe }}</button>
           {%- endfor %}
           </div>
 
           <div class="spk-chap__chapters">
           {%- for c in block.chapters %}
-            <div class="spk-chap__chapter{% if loop.first %} is-live{% endif %}" role="tabpanel" id="spkChapPanel{{ loop.index }}" aria-labelledby="spkChap{{ loop.index }}" tabindex="0"
+            <div class="spk-chap__chapter{% if loop.first %} is-live{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0"
                  data-tone="{{ c.tone }}" data-spot="{{ c.spot }}">
               <div class="spk-chap__frame" aria-hidden="true"></div>
               <p class="spk-chap__word">{{ c.word | safe }}</p>
@@ -46,7 +47,7 @@
             </div>
           {%- endfor %}
           </div>
-          <p class="spk-sr" id="spkChapLive" aria-live="polite" aria-atomic="true"></p>
+          <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
   <!-- HERO - static full-bleed scene (the framed-card handoff was lifted
        out on 2026-09-20 and saved to js|css/effects/frame-card.*) -->
-  <section class="hero"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
     <div class="media media--plum">
       <!-- Instant poster / reduced-motion + fallback layer -->
       <img class="hero__poster" src="{{ block.poster.src | root(r) }}"

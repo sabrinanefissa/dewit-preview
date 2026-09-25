@@ -1,5 +1,5 @@
   <!-- Healthcare -->
-  <section class="care"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="care"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="media media--warm">
       <img data-reveal-clip src="{{ block.image.src | root(r) }}"
            srcset="{{ block.image.srcset | srcset(r) }}"

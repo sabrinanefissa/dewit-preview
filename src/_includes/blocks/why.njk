@@ -1,5 +1,5 @@
   <!-- Why Stephen -->
-  <section class="why"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media media--plum">
       <img data-reveal-clip src="{{ block.portrait.src | root(r) }}"
            srcset="{{ block.portrait.srcset | srcset(r) }}"

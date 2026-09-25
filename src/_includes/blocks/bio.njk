@@ -8,7 +8,7 @@
        three times and sits outside the approved category, so no control
        for it ships until he approves a revised text.
        ============================================================== -->
-  <section class="spk-bio"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="spkPlanH">
+  <section class="spk-bio"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-drift="{{ block | motion('drift', 0.04) }}">
     <div class="spk-bio__grid">
       <div class="spk-bio__left">
         <div class="media media--plum spk-bio__portrait">
@@ -22,7 +22,7 @@
         <a class="textlink spk-bio__link reveal" href="{{ block.link.href | root(r) }}">{{ block.link.label | safe }}
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 
-        <h2 class="spk-plan__h reveal" id="spkPlanH">{{ block.plannersHeading | safe }}</h2>
+        <h2 class="spk-plan__h reveal" id="{{ block.id }}-h">{{ block.plannersHeading | safe }}</h2>
 
         <div class="spk-plan__block reveal">
           <h3 class="spk-plan__label">{{ block.outcomesLabel | safe }}</h3>

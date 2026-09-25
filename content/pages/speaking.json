@@ -73,6 +73,8 @@
     },
     {
       "type": "stats",
+      "id": "proof",
+      "anchor": false,
       "enabled": true,
       "extraClass": "spk-proof",
       "ariaLabel": "Speaking record",
@@ -82,7 +84,7 @@
         { "value": 7000, "suffix": "+", "label": "leaders in those rooms." },
         { "value": 20, "suffix": "+", "label": "years inside the relationships people care about most." }
       ],
-      "settings": {}
+      "settings": { "background": "transparent" }
     },
     {
       "type": "said",
@@ -254,6 +256,8 @@
     },
     {
       "type": "formats",
+      "id": "formats",
+      "anchor": false,
       "enabled": true,
       "ariaLabel": "Formats and rooms",
       "sentence": "Available as a <em>keynote</em>, a <em>workshop</em> or a <em>half-day session</em>, for teams, conferences, associations and healthcare organizations.",
@@ -305,6 +309,8 @@
     },
     {
       "type": "close",
+      "id": "close",
+      "anchor": false,
       "enabled": true,
       "image": {
         "src": "assets/img/close-stage-1664.webp",

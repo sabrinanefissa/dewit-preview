@@ -1,6 +1,6 @@
   <!-- What happens when you book: sticky step list; a sixth stage turns the
        scene into the final call to action -->
-  <section class="steps"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
+  <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('plum-2') }}">
     <div class="steps__track" data-steps>
       <div class="steps__sticky">
         <div class="steps__media" aria-hidden="true">

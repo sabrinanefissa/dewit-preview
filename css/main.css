@@ -1294,7 +1294,10 @@ html.no-js .spk-voice { display:none; }
    phones (where this section is not pinned) have none */
 html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { margin-top:0; }
 @media (max-width: 768px) { .spk-keys { margin-top:0; } }
-.spk-keys__track { height: calc(440svh); }
+/* head + N talks + a 50svh hold, plus the stage's own screen: 440svh for
+   three talks (--panels, --head-svh, --panel-svh: the section's inline
+   style, from the block's settings) */
+.spk-keys__track { height: calc((var(--head-svh, 50) + var(--panel-svh, 80) * var(--panels, 3) + 50) * 1svh + 100svh); }
 .spk-keys__stage { position:sticky; top:0; height:100svh; overflow:hidden; }
 
 /* The ground: a centred card that grows to full-bleed. At --g 1 it is
@@ -1721,9 +1724,10 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 .spk-said__candle { display:block; width:auto; height:140px; margin: 0 auto 1rem; }
 html.no-js .spk-said__candle { display:none; }
 
-/* The wheel: a pinned stage, 7 beats of 80svh, a 100svh grow and 60svh
-   under the talks section as it rises. */
-.spk-said.is-wheel .spk-said__track { height: calc(7 * 80svh + 160svh); }
+/* The wheel: a pinned stage, N + 1 beats of 80svh (N lines: --beats), a
+   100svh grow and 60svh under the talks section as it rises: 720svh for
+   six lines (--beats, --beat, --grow: the section's inline style). */
+.spk-said.is-wheel .spk-said__track { height: calc(((var(--beats, 6) + 1) * var(--beat, 80) + var(--grow, 100) + 60) * 1svh); }
 .spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
 .spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
@@ -1807,9 +1811,9 @@ html.no-js .spk-said__candle { display:none; }
 /* only over a pinned stage: phones, reduced motion and no script have none */
 html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
 @media (max-width: 768px) { .spk-chap { margin-top:0; } }
-/* the turn's geometry: seven beats plus a tail; the script writes
-   nothing to it */
-.spk-chap__track { height: calc(7 * 70vh + 60vh); }
+/* the turn's geometry: 1 + 2N beats (N chapters: --chapters) of 70vh
+   (--beat) plus a tail; the script writes nothing to it */
+.spk-chap__track { height: calc((1 + 2 * var(--chapters, 3)) * var(--beat, 70) * 1vh + 60vh); }
 .spk-chap__stage { position:sticky; top:0; height:100svh; overflow:hidden; }
 
 .spk-chap__media { position:absolute; inset:0; z-index:0; background: var(--plum-2); }
@@ -2093,3 +2097,15 @@ html.no-js .spk-chap__chapters { padding-left:0; }
   font-size: var(--step-3); font-weight:340; letter-spacing:-0.025em;
   color: var(--tx-inv); text-wrap:balance; }
 .spk-close__cta { margin-top: clamp(1.4rem, 3vh, 2.2rem); display:inline-block; }
+
+/* =====================================================================
+   Section tones: a block's background setting, written as data-tone on
+   its section. Each maps onto an existing colour token; the defaults the
+   templates write are each section's own ground above, so nothing
+   changes until an editor picks another tone. Colour only (no image).
+   ===================================================================== */
+section[data-tone="plum"]        { background-color: var(--plum); }
+section[data-tone="plum-2"]      { background-color: var(--plum-2); }
+section[data-tone="ink"]         { background-color: var(--ink); }
+section[data-tone="paper"]       { background-color: var(--paper); color: var(--tx); }
+section[data-tone="transparent"] { background-color: transparent; }

@@ -151,13 +151,13 @@
       "homeLabel": "At home",
       "workLabel": "At work",
       "words": [
-        { "word": "Trust", "name": "Trust", "home": "Who you call first.", "work": "Who you tell first." },
-        { "word": "Avoidance", "name": "Avoidance", "home": "The conversation you keep putting off.", "work": "The meeting nobody books." },
-        { "word": "Fear", "name": "Fear", "home": "Of being too much.", "work": "Of being found out." },
-        { "word": "Vulnera&shy;bility", "name": "Vulnerability", "home": "Saying the thing out loud.", "work": "Saying &ldquo;I don&rsquo;t know&rdquo; in the room." },
-        { "word": "Resentment", "name": "Resentment", "home": "The score nobody admits keeping.", "work": "The credit that went to someone else." },
-        { "word": "Responsi&shy;bility", "name": "Responsibility", "home": "Owning your part of the mess.", "work": "Owning the miss before the review does." },
-        { "word": "Repair", "name": "Repair", "home": "Coming back after the door slams.", "work": "Coming back after the email." }
+        { "word": "Trust", "name": "Trust", "home": "Who you call first.", "work": "Who you tell first.", "homeImg": "assets/img/card-trust-home", "workImg": "assets/img/card-trust-work" },
+        { "word": "Avoidance", "name": "Avoidance", "home": "The conversation you keep putting off.", "work": "The meeting nobody books.", "homeImg": "assets/img/card-avoidance-home", "workImg": "assets/img/card-avoidance-work" },
+        { "word": "Fear", "name": "Fear", "home": "Of being too much.", "work": "Of being found out.", "homeImg": "assets/img/card-fear-home", "workImg": "assets/img/card-fear-work" },
+        { "word": "Vulnera&shy;bility", "name": "Vulnerability", "home": "Saying the thing out loud.", "work": "Saying &ldquo;I don&rsquo;t know&rdquo; in the room.", "homeImg": "assets/img/card-vulnerability-home", "workImg": "assets/img/card-vulnerability-work" },
+        { "word": "Resentment", "name": "Resentment", "home": "The score nobody admits keeping.", "work": "The credit that went to someone else.", "homeImg": "assets/img/card-resentment-home", "workImg": "assets/img/card-resentment-work" },
+        { "word": "Responsi&shy;bility", "name": "Responsibility", "home": "Owning your part of the mess.", "work": "Owning the miss before the review does.", "homeImg": "assets/img/card-responsibility-home", "workImg": "assets/img/card-responsibility-work" },
+        { "word": "Repair", "name": "Repair", "home": "Coming back after the door slams.", "work": "Coming back after the email.", "homeImg": "assets/img/card-repair-home", "workImg": "assets/img/card-repair-work" }
       ],
       "cta": {
         "lead": "It can be taught.",
@@ -168,6 +168,8 @@
     },
     {
       "type": "truth",
+      "id": "truth",
+      "anchor": false,
       "enabled": true,
       "image": {
         "src": "assets/img/permission-1280.webp",
@@ -189,6 +191,8 @@
     },
     {
       "type": "bleed",
+      "id": "idea",
+      "anchor": false,
       "enabled": true,
       "constellation": true,
       "image": {
@@ -232,6 +236,8 @@
     },
     {
       "type": "stats",
+      "id": "numbers",
+      "anchor": false,
       "enabled": true,
       "note": "Proof in numbers, as a sentence",
       "eyebrow": "The results are human.",
@@ -244,6 +250,8 @@
     },
     {
       "type": "orgband",
+      "id": "trusted",
+      "anchor": false,
       "enabled": true,
       "ariaLabel": "Organizations Stephen has worked with, and media features",
       "lanes": [

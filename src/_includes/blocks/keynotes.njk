@@ -1,5 +1,5 @@
   <!-- Keynotes -->
-  <section class="keynotes-sec"{% if block.id %} id="{{ block.id }}"{% endif %}>
+  <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="keynotes-head reveal">
       <h2 class="h-md">{{ block.heading | safe }}</h2>
     </div>

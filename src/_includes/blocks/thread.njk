@@ -1,5 +1,5 @@
   <!-- The through-line -->
-  <section class="thread"{% if block.id %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}">
+  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | safe }}" data-tone="{{ block | tone('plum') }}" data-cursor="{{ block | motion('cursor', 0.62) }}">
     <div class="thread__bg" aria-hidden="true">
     {%- for src in block.bg %}
       <img src="{{ src | root(r) }}" alt="" loading="lazy" decoding="async">
@@ -8,17 +8,17 @@
     <div class="thread__veil" aria-hidden="true"></div>
     <div class="thread__glow" aria-hidden="true"></div>
 
-    <svg class="thread__svg" id="threadSvg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <path class="guide" id="guidePath" d=""></path>
-      <path class="drawn" id="drawnPath" d=""></path>
+    <svg class="thread__svg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="guide" d=""></path>
+      <path class="drawn" d=""></path>
     </svg>
-    <div class="pulse" id="pulse" aria-hidden="true"></div>
-    <div class="rail" id="rail" aria-hidden="true"><i></i><b id="railFill"></b></div>
+    <div class="pulse" aria-hidden="true"></div>
+    <div class="rail" aria-hidden="true"><i></i><b></b></div>
 
     <div class="thread__inner">
       <p class="eyebrow">{{ block.eyebrow | safe }}</p>
 
-      <div class="stations" id="stations">
+      <div class="stations">
 {% for s in block.stations %}
         <article class="station {{ 'is-odd' if loop.index % 2 else 'is-even' }}{% if s.pillar %} is-pillar{% endif %}">
           <figure class="still">
