@@ -1,5 +1,8 @@
 ---
 pageSlug: test
 ---
+{#- the test page's data is loaded only with TEST_PAGE=1; otherwise render nothing -#}
+{%- if pages[pageSlug] -%}
 {%- set page = pages[pageSlug] -%}
 {%- extends "layout.njk" -%}
+{%- endif -%}
