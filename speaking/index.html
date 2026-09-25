@@ -208,136 +208,120 @@
   </section>
 
   <!-- ==============================================================
-       3. KEYNOTES - a permanent index of three, one shared stage.
-       Video-led: the ground for each talk is the reel itself, held on a
-       frame from that talk's own segment, and "Hear Stephen on this" plays
-       that segment with sound, full-bleed, with the type out of the frame. The three stills stay in the markup as the
-       ground for reduced motion, Save-Data and no script.
+       3. KEYNOTES - a pinned stage. The track is 540svh; the stage
+       inside it is sticky for 440svh of scroll, in phases:
+         0-100    the ground picture grows from a card to full-bleed
+         100-150  the heading alone over the full-bleed ground
+         150-230  talk 01
+         230-310  talk 02 wipes in from the right
+         310-390  talk 03 wipes in from the right
+         390-440  hold, while the room section rises over the stage
+       Each talk is one full-screen picture carrying only its title and
+       its one line, with one play ring under them (bottom-left). "Hear
+       Stephen on this" plays that talk's segment of the reel with sound,
+       full-bleed, on the one shared <video> above the pictures. The
+       three panel pictures are placeholders: the reel stills at 1:50 /
+       2:06 / 2:24 replace them once exported.
        The segment for each talk lives on its own button as
        data-seg-start / data-seg-end (seconds into the reel), so a re-cut
-       is an edit here and nowhere else.
+       is an edit here and nowhere else. The outcomes of each talk are
+       listed under "For planners".
+       Phones: no pin, a horizontal snap strip of the three talks.
+       Reduced motion and no script: the three talks stacked.
        ============================================================== -->
   <section class="spk-keys" id="keynotes" aria-labelledby="spkKeysH">
-    <div class="spk-keys__media media media--plum" aria-hidden="true">
-      <img class="spk-lights is-on" src="../assets/img/energy-1280.webp"
-           srcset="../assets/img/energy-860.webp 860w, ../assets/img/energy-1280.webp 1280w, ../assets/img/energy-1365.webp 1365w"
-           sizes="100vw" alt="" decoding="async">
-      <img class="spk-lights" src="../assets/img/meet-1280.webp"
-           srcset="../assets/img/meet-860.webp 860w, ../assets/img/meet-1280.webp 1280w, ../assets/img/meet-1920.webp 1920w"
-           sizes="100vw" alt="" loading="lazy" decoding="async">
-      <img class="spk-lights" src="../assets/img/keynote-1280.webp"
-           srcset="../assets/img/keynote-860.webp 860w, ../assets/img/keynote-1280.webp 1280w, ../assets/img/keynote-1920.webp 1920w"
-           sizes="100vw" alt="" loading="lazy" decoding="async">
-      <!-- One shared element for all three talks, separate from the hero's.
-           Same reel, same encodes; the script assigns the src. -->
-      <video class="spk-keys__video spk-lights" id="spkKeysVideo" playsinline muted preload="metadata"
-             data-src-1080="../assets/video/reel-1080.mp4"
-             data-src-mobile="../assets/video/reel-mobile.mp4">
-        <track kind="captions" srclang="en" label="English" src="../assets/video/reel-en.vtt">
-      </video>
-    </div>
-    <div class="spk-keys__grade" aria-hidden="true"></div>
-    <div class="spk-keys__glow" aria-hidden="true"></div>
-    <div class="spk-keys__play" aria-hidden="true">
-      <p class="spk-keys__cap" id="spkKeysCap"></p>
-    </div>
-    <button type="button" class="spk-keys__pause" id="spkKeysPause" aria-label="Pause" hidden>
-      <span class="play__ring" aria-hidden="true"><svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg></span>
-    </button>
+    <div class="spk-keys__track" id="spkKeysTrack">
+      <div class="spk-keys__stage" id="spkKeysStage">
+        <div class="spk-keys__ground" id="spkKeysGround">
+          <img class="spk-keys__rest" src="../assets/img/keys-stage-1664.webp"
+               srcset="../assets/img/keys-stage-960.webp 960w, ../assets/img/keys-stage-1664.webp 1664w"
+               sizes="100vw" alt="" loading="lazy" decoding="async">
+          <div class="spk-keys__panels" id="spkKeysPanels">
+            <div class="spk-keys__panel is-on" role="tabpanel" id="spkPanel1" data-accent="violet" aria-labelledby="spkTab1" tabindex="0">
+              <img class="spk-keys__still" src="../assets/img/keys-stage-1664.webp"
+                   srcset="../assets/img/keys-stage-960.webp 960w, ../assets/img/keys-stage-1664.webp 1664w"
+                   sizes="100vw" alt="" loading="lazy" decoding="async">
+              <div class="spk-keys__caption">
+                <h3 class="spk-keys__ptitle">Lead Human<span class="tm">&trade;</span></h3>
+                <p class="spk-keys__sub">Relational Intelligence at Work.</p>
+                <button type="button" class="spk-keys__hear" id="spkHear1" data-state="play"
+                        data-seg-start="103.66" data-seg-end="115.42" data-seg-poster="110.0" aria-pressed="false">
+                  <span class="play__ring" aria-hidden="true">
+                    <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
+                  </span>
+                  <span class="spk-keys__hearlabel">Hear Stephen on this</span>
+                </button>
+              </div>
+            </div>
 
-    <div class="spk-keys__inner">
-      <div class="spk-keys__head reveal">
-        <h2 id="spkKeysH">Three talks, for people, teams and organizations.</h2>
-      </div>
+            <div class="spk-keys__panel" role="tabpanel" id="spkPanel2" data-accent="coral" aria-labelledby="spkTab2" tabindex="0">
+              <img class="spk-keys__still" src="../assets/img/out-aisle-1664.webp"
+                   srcset="../assets/img/out-aisle-960.webp 960w, ../assets/img/out-aisle-1664.webp 1664w"
+                   sizes="100vw" alt="" loading="lazy" decoding="async">
+              <div class="spk-keys__caption">
+                <h3 class="spk-keys__ptitle">Invisible Friction</h3>
+                <p class="spk-keys__sub">Why teams break down.</p>
+                <button type="button" class="spk-keys__hear" id="spkHear2" data-state="play"
+                        data-seg-start="115.42" data-seg-end="130.90" data-seg-poster="126.0" aria-pressed="false">
+                  <span class="play__ring" aria-hidden="true">
+                    <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
+                  </span>
+                  <span class="spk-keys__hearlabel">Hear Stephen on this</span>
+                </button>
+              </div>
+            </div>
 
-      <div class="spk-keys__index" id="spkKeysIndex" role="tablist" aria-label="Keynotes">
-        <button type="button" class="spk-keys__tab is-on" role="tab" id="spkTab1" data-accent="violet" aria-controls="spkPanel1" aria-selected="true" tabindex="0">
-          <span class="spk-keys__no">01</span><span class="spk-keys__name">Lead Human<span class="tm">&trade;</span></span><span class="spk-keys__rule" aria-hidden="true"></span>
-        </button>
-        <button type="button" class="spk-keys__tab" role="tab" id="spkTab2" data-accent="coral" aria-controls="spkPanel2" aria-selected="false" tabindex="-1">
-          <span class="spk-keys__no">02</span><span class="spk-keys__name">Invisible Friction</span><span class="spk-keys__rule" aria-hidden="true"></span>
-        </button>
-        <button type="button" class="spk-keys__tab" role="tab" id="spkTab3" data-accent="gold" aria-controls="spkPanel3" aria-selected="false" tabindex="-1">
-          <span class="spk-keys__no">03</span><span class="spk-keys__name">The Hidden Multiplier</span><span class="spk-keys__rule" aria-hidden="true"></span>
-        </button>
-      </div>
-
-      <!-- All three panels are in flow and visible by default so the page
-           works with no JS. With JS, CSS hides the inactive ones (visibility,
-           not display, so the swap cannot shift the layout) and the script
-           marks them inert.
-           At rest each talk is one line, then the invitation to hear it, then
-           the three outcomes behind a disclosure. With no script (or reduced
-           motion) the disclosure button is hidden by CSS and the lists are
-           open. -->
-      <div class="spk-keys__stage">
-        <div class="spk-keys__panel is-on" role="tabpanel" id="spkPanel1" data-accent="violet" aria-labelledby="spkTab1" tabindex="0">
-          <h3 class="spk-keys__ptitle">Lead Human<span class="tm">&trade;</span></h3>
-          <p class="spk-keys__sub">Relational Intelligence at Work.</p>
-          <button type="button" class="spk-keys__hear" id="spkHear1" data-state="play"
-                  data-seg-start="103.66" data-seg-end="115.42" data-seg-poster="110.0" aria-pressed="false">
-            <span class="play__ring" aria-hidden="true">
-              <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-              <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
-            </span>
-            <span class="spk-keys__hearlabel">Hear Stephen on this</span>
-          </button>
-          <button type="button" class="spk-keys__more" id="spkMore1" aria-expanded="false" aria-controls="spkOuts1">
-            <span>What they leave with</span>
-            <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>
-          </button>
-          <ul class="spk-keys__outs" id="spkOuts1" hidden>
-            <li>Spot the relational patterns behind engagement and retention.</li>
-            <li>Work from a clear framework for building trust.</li>
-            <li>Name tension and misalignment early, before performance dips.</li>
-          </ul>
+            <div class="spk-keys__panel" role="tabpanel" id="spkPanel3" data-accent="gold" aria-labelledby="spkTab3" tabindex="0">
+              <img class="spk-keys__still" src="../assets/img/room-offsite-1200.webp"
+                   srcset="../assets/img/room-offsite-720.webp 720w, ../assets/img/room-offsite-1200.webp 1200w"
+                   sizes="100vw" alt="" loading="lazy" decoding="async">
+              <div class="spk-keys__caption">
+                <h3 class="spk-keys__ptitle">The Hidden Multiplier</h3>
+                <p class="spk-keys__sub">What relational intelligence does to retention.</p>
+                <button type="button" class="spk-keys__hear" id="spkHear3" data-state="play"
+                        data-seg-start="137.34" data-seg-end="145.70" data-seg-poster="144.0" aria-pressed="false">
+                  <span class="play__ring" aria-hidden="true">
+                    <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
+                  </span>
+                  <span class="spk-keys__hearlabel">Hear Stephen on this</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="spk-keys__panel" role="tabpanel" id="spkPanel2" data-accent="coral" aria-labelledby="spkTab2" tabindex="0">
-          <h3 class="spk-keys__ptitle">Invisible Friction</h3>
-          <p class="spk-keys__sub">Why teams break down.</p>
-          <button type="button" class="spk-keys__hear" id="spkHear2" data-state="play"
-                  data-seg-start="115.42" data-seg-end="130.90" data-seg-poster="126.0" aria-pressed="false">
-            <span class="play__ring" aria-hidden="true">
-              <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-              <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
-            </span>
-            <span class="spk-keys__hearlabel">Hear Stephen on this</span>
-          </button>
-          <button type="button" class="spk-keys__more" id="spkMore2" aria-expanded="false" aria-controls="spkOuts2">
-            <span>What they leave with</span>
-            <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>
-          </button>
-          <ul class="spk-keys__outs" id="spkOuts2" hidden>
-            <li>Notice the quiet breakdowns wearing on culture and collaboration.</li>
-            <li>Open a difficult conversation without making it worse.</li>
-            <li>Build accountability that doesn&rsquo;t cost trust.</li>
-          </ul>
+        <!-- One shared element for all three talks, separate from the hero's.
+             Same reel, same encodes; the script assigns the src. It is
+             only seen while a talk plays. -->
+        <video class="spk-keys__video" id="spkKeysVideo" playsinline muted preload="metadata"
+               data-src-1080="../assets/video/reel-1080.mp4"
+               data-src-mobile="../assets/video/reel-mobile.mp4">
+          <track kind="captions" srclang="en" label="English" src="../assets/video/reel-en.vtt">
+        </video>
+        <div class="spk-keys__head">
+          <h2 id="spkKeysH">Three talks, for people, teams and organizations.</h2>
         </div>
-
-        <div class="spk-keys__panel" role="tabpanel" id="spkPanel3" data-accent="gold" aria-labelledby="spkTab3" tabindex="0">
-          <h3 class="spk-keys__ptitle">The Hidden Multiplier</h3>
-          <p class="spk-keys__sub">What relational intelligence does to retention.</p>
-          <button type="button" class="spk-keys__hear" id="spkHear3" data-state="play"
-                  data-seg-start="137.34" data-seg-end="145.70" data-seg-poster="144.0" aria-pressed="false">
-            <span class="play__ring" aria-hidden="true">
-              <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-              <svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg>
-            </span>
-            <span class="spk-keys__hearlabel">Hear Stephen on this</span>
+        <div class="spk-keys__index" id="spkKeysIndex" role="tablist" aria-label="Keynotes">
+          <button type="button" class="spk-keys__tab is-on" role="tab" id="spkTab1" data-accent="violet" aria-controls="spkPanel1" aria-selected="true" tabindex="0">
+            <span class="spk-keys__no">01</span><span class="spk-keys__name">Lead Human<span class="tm">&trade;</span></span>
           </button>
-          <button type="button" class="spk-keys__more" id="spkMore3" aria-expanded="false" aria-controls="spkOuts3">
-            <span>What they leave with</span>
-            <svg class="spk-keys__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>
+          <button type="button" class="spk-keys__tab" role="tab" id="spkTab2" data-accent="coral" aria-controls="spkPanel2" aria-selected="false" tabindex="-1">
+            <span class="spk-keys__no">02</span><span class="spk-keys__name">Invisible Friction</span>
           </button>
-          <ul class="spk-keys__outs" id="spkOuts3" hidden>
-            <li>Connect everyday relational patterns to the outcomes an organization already measures.</li>
-            <li>Look at turnover as a trust question.</li>
-            <li>Protect culture through growth and change.</li>
-          </ul>
+          <button type="button" class="spk-keys__tab" role="tab" id="spkTab3" data-accent="gold" aria-controls="spkPanel3" aria-selected="false" tabindex="-1">
+            <span class="spk-keys__no">03</span><span class="spk-keys__name">The Hidden Multiplier</span>
+          </button>
         </div>
+        <div class="spk-keys__play" aria-hidden="true">
+          <p class="spk-keys__cap" id="spkKeysCap"></p>
+        </div>
+        <button type="button" class="spk-keys__pause" id="spkKeysPause" aria-label="Pause" hidden>
+          <span class="play__ring" aria-hidden="true"><svg class="spk-ic spk-ic--pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z"/></svg></span>
+        </button>
+        <p class="spk-sr" id="spkKeysLive" aria-live="polite" aria-atomic="true"></p>
       </div>
-      <p class="spk-sr" id="spkKeysLive" aria-live="polite" aria-atomic="true"></p>
     </div>
   </section>
 
@@ -352,6 +336,7 @@
        on the left carries the homepage dot between three stops. Phones and
        reduced motion: no pin, three stacked blocks. The chapter words are
        the accessible tablist. -->
+  <!-- rises over the pinned talks stage: see .spk-chap margin-top -->
   <section class="spk-chap" id="room" aria-labelledby="spkChapH">
     <div class="spk-chap__track" id="spkChapTrack">
       <div class="spk-chap__stage" id="spkChapStage">
@@ -465,6 +450,18 @@
   <section class="spk-plan" aria-labelledby="spkPlanH">
     <div class="spk-plan__inner">
       <h2 class="spk-plan__h reveal" id="spkPlanH">For planners.</h2>
+
+      <div class="spk-plan__block reveal">
+        <h3 class="spk-plan__label">What each talk leaves behind</h3>
+        <dl class="spk-plan__outs">
+          <dt>Lead Human<span class="tm">&trade;</span></dt>
+          <dd>Spot the relational patterns behind engagement and retention. Work from a clear framework for building trust. Name tension and misalignment early, before performance dips.</dd>
+          <dt>Invisible Friction</dt>
+          <dd>Notice the quiet breakdowns wearing on culture and collaboration. Open a difficult conversation without making it worse. Build accountability that doesn&rsquo;t cost trust.</dd>
+          <dt>The Hidden Multiplier</dt>
+          <dd>Connect everyday relational patterns to the outcomes an organization already measures. Look at turnover as a trust question. Protect culture through growth and change.</dd>
+        </dl>
+      </div>
 
       <div class="spk-plan__block reveal">
         <h3 class="spk-plan__label">Tailoring</h3>

@@ -1519,44 +1519,57 @@
   if (autoOK) { video.muted = true; tryPlay(); }
 })();
 
-/* ===== 2. Keynotes: three talks, one shared stage, the reel as the ground ===
-   It is a speaking page, so the section is video-led. The ground is the reel
-   itself, held — muted and paused — on a frame from the active talk's own
-   segment, and "Hear Stephen on this" plays that segment WITH SOUND in the
-   ground behind the type. The segment stops at its own end and puts the
-   ground back on its held frame.
+/* ===== 2. Keynotes: three talks on a pinned stage, the scroll wipes between them ===
+   The section is a pinned stage (the track is 540svh, the stage sticky
+   inside it for 440svh of scroll). This module registers ONE entry with
+   the spine and has no scroll listener of its own; update(p) turns p into
+   svh of scroll (u = p * 440) and writes the phases as custom properties:
+     0-100    the ground picture grows from a card to full-bleed
+              (--rise over the first 25%, then --g)
+     100-150  the heading alone (--head: in over the last 20% of the
+              grow, out over the first 40svh of talk 01)
+     150-230  talk 01
+     230-310  talk 02 wipes in from the right (--wi over the first 40%)
+     310-390  talk 03 wipes in from the right
+     390-440  hold, while the room section rises over the stage
+   A talk becomes the live one when its wipe is half done; only the live
+   panel's ring is interactive. "Hear Stephen on this" plays that talk's
+   segment of the reel WITH SOUND on the one shared <video>, full-bleed
+   above the pictures; the video is seen only while a clip plays.
    Only one audio source is ever running: pressing a talk claims the audio
    through the document-level "spk:audio" event, which stops the hero reel,
    and the hero's own controls claim it back.
-   The ground is still a lights sequence, not a crossfade: the lights go DOWN
-   on what is leaving, the seek happens in the dark, and the lights come UP on
-   the frame that arrives. Reduced motion and Save-Data keep the three stills
-   as the ground and load the clip only if a button is pressed. */
+   Three modes, written to data-spk-keys-mode: "pin"; "strip" (phones: no
+   pin, the talks as a horizontal snap strip, the spine entry disabled);
+   "stacked" (reduced motion: the three talks one under another). */
 (function () {
   "use strict";
   var sec = document.querySelector(".spk-keys");
   if (!sec) return;
-  var index   = sec.querySelector(".spk-keys__index");
-  var stage   = sec.querySelector(".spk-keys__stage");
-  var media   = sec.querySelector(".spk-keys__media");
-  var vid     = sec.querySelector(".spk-keys__video");
-  var tabs    = [].slice.call(sec.querySelectorAll(".spk-keys__tab"));
-  var panels  = [].slice.call(sec.querySelectorAll(".spk-keys__panel"));
-  var grounds = [].slice.call(sec.querySelectorAll(".spk-keys__media img"));
-  var mores   = [].slice.call(sec.querySelectorAll(".spk-keys__more"));
-  var outs    = [].slice.call(sec.querySelectorAll(".spk-keys__outs"));
-  var hears   = [].slice.call(sec.querySelectorAll(".spk-keys__hear"));
+  var track    = document.getElementById("spkKeysTrack");
+  var stage    = document.getElementById("spkKeysStage");
+  var ground   = document.getElementById("spkKeysGround");
+  var box      = document.getElementById("spkKeysPanels");
+  var head     = sec.querySelector(".spk-keys__head");
+  var index    = sec.querySelector(".spk-keys__index");
+  var vid      = sec.querySelector(".spk-keys__video");
+  var tabs     = [].slice.call(sec.querySelectorAll(".spk-keys__tab"));
+  var panels   = [].slice.call(sec.querySelectorAll(".spk-keys__panel"));
+  var hears    = [].slice.call(sec.querySelectorAll(".spk-keys__hear"));
   var cap      = document.getElementById("spkKeysCap");
   var playWrap = sec.querySelector(".spk-keys__play");
   var pauseBtn = document.getElementById("spkKeysPause");
-  var live    = document.getElementById("spkKeysLive");
-  if (!index || !tabs.length || tabs.length !== panels.length) return;
+  var live     = document.getElementById("spkKeysLive");
+  if (!track || !stage || !ground || !box || !head || !index ||
+      !tabs.length || tabs.length !== panels.length) return;
 
-  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var saveData = !!(navigator.connection && navigator.connection.saveData);
-  var small    = window.matchMedia("(max-width: 820px)");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var small  = window.matchMedia("(max-width: 820px)");
+  var strip  = window.matchMedia("(max-width: 768px)");
   var cur = 0;
-  var videoGround = !!vid && !reduce && !saveData;
+
+  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
   function say(msg) {
     if (!live) return;
@@ -1569,17 +1582,14 @@
      live on the buttons in the markup as data-seg-start / data-seg-end.
      ------------------------------------------------------------------ */
   /* a: the in point the clip plays from, b: the out point it stops at, and
-     p: the frame the ground is HELD on at rest. The in point is chosen by the
-     sentence, and the reel's own title card and testimonial supers sit on some
-     of them, so the held frame is named separately — always inside the same
-     segment, always a frame of Stephen actually speaking. */
+     p: a frame inside the segment the element is parked on when it stops. */
   var segs = hears.map(function (b) {
     var a = parseFloat(b.getAttribute("data-seg-start"));
     var p = parseFloat(b.getAttribute("data-seg-poster"));
     return { a: a, b: parseFloat(b.getAttribute("data-seg-end")),
              p: isNaN(p) ? a : p };
   });
-  var playing = -1, watchRaf = 0, srcSet = false, track = null;
+  var playing = -1, watchRaf = 0, srcSet = false, ccTrack = null;
   var idleT = 0, pauseHideT = 0;
 
   function clipSrc() {
@@ -1596,18 +1606,18 @@
     vid.load();
     srcSet = true;
     var t = vid.textTracks && vid.textTracks.length ? vid.textTracks[0] : null;
-    if (t && !track) {
-      track = t;
-      track.mode = "hidden";          /* the cues, without the native box */
-      track.addEventListener("cuechange", onCue);
+    if (t && !ccTrack) {
+      ccTrack = t;
+      ccTrack.mode = "hidden";          /* the cues, without the native box */
+      ccTrack.addEventListener("cuechange", onCue);
     }
   }
   /* One line at the bottom of the frame, from the reel's own VTT, and only
      when the visitor has captions on in the hero (the CSS hides it too). */
   function onCue() {
-    if (playing < 0 || !track || !cap) return;
+    if (playing < 0 || !ccTrack || !cap) return;
     var ccOn = document.documentElement.getAttribute("data-spk-cc") === "on";
-    var c = track.activeCues && track.activeCues.length ? track.activeCues[0] : null;
+    var c = ccTrack.activeCues && ccTrack.activeCues.length ? ccTrack.activeCues[0] : null;
     var txt = (ccOn && c) ? String(c.text).replace(/\s+/g, " ").trim() : "";
     cap.textContent = txt;
     cap.classList.toggle("is-on", !!txt);
@@ -1644,8 +1654,8 @@
     if (s && vid.currentTime >= s.b) { stopClip(true); return; }
     watchRaf = requestAnimationFrame(watch);
   }
-  /* noPark: the caller is about to seek somewhere else itself (a tab change),
-     so this must not queue a seek back to the current talk first. */
+  /* noPark: the caller is changing the live talk itself, so this must not
+     queue a seek back to the current one first. */
   function stopClip(atEnd, noPark) {
     var i = playing;
     if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
@@ -1661,9 +1671,9 @@
     if (vid) {
       if (!vid.paused) vid.pause();
       vid.muted = true;
-      /* back to the held frame for whichever talk is on screen */
       if (!noPark && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} }
-      if (!videoGround) vid.classList.remove("is-on", "is-lit");
+      /* the stills are the ground: the clip is only seen while it plays */
+      vid.classList.remove("is-on");
     }
     if (i >= 0) { clearCap(); syncHear(i); if (atEnd) say("Clip finished"); }
   }
@@ -1672,11 +1682,8 @@
     claim();                        /* stops the hero reel */
     ensureSrc();
     var s = segs[i];
-    /* with the stills as the ground, the clip only appears while it plays */
-    if (!videoGround) vid.classList.add("is-on", "is-lit");
-    /* always from the in point. The ground is parked on the held frame, which
-       sits inside the segment, so carrying on from wherever the playhead
-       happens to be would start the sentence halfway through. */
+    vid.classList.add("is-on");
+    /* always from the in point */
     try { vid.currentTime = s.a; } catch (err) {}
     vid.muted = false;
     playing = i;
@@ -1730,11 +1737,13 @@
     if (playing >= 0 && e.key === "Escape") stopClip(false);
   });
 
-  /* Nothing keeps talking off screen or in a hidden tab. */
+  /* Nothing keeps talking off screen or in a hidden tab. The stage is
+     observed, not the section: the section is 540svh tall, so its own
+     ratio never reaches .25. */
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(function (e) {
       if (e[0].intersectionRatio < 0.25 && playing >= 0) stopClip(false);
-    }, { threshold: [0, 0.25, 1] }).observe(sec);
+    }, { threshold: [0, 0.25, 1] }).observe(stage);
   }
   document.addEventListener("visibilitychange", function () {
     if (document.hidden && playing >= 0) stopClip(false);
@@ -1744,173 +1753,122 @@
     vid.addEventListener("pause", function () { if (playing >= 0) syncHear(playing); });
   }
 
-  /* Reduced motion: no lights sequence and no video ground. All three talks
-     are present under their own headings, every outcome list is open, and the
-     index stops being a tablist. The one thing that still works on a click is
-     "Hear Stephen on this" — it is the point of the page. */
-  if (reduce) {
+  /* Reduced motion: no pin, no grow, no wipe. All three talks are present
+     one under another, and the index stops being a tablist. The one thing
+     that still works on a click is "Hear Stephen on this". Without the
+     spine there is nothing to drive the stage, so it stacks too. */
+  if (reduce || !window.spkSpine) {
     sec.classList.add("is-stacked");
+    sec.setAttribute("data-spk-keys-mode", "stacked");
     index.removeAttribute("role");
     tabs.forEach(function (t) {
       t.removeAttribute("role"); t.removeAttribute("aria-selected");
       t.removeAttribute("aria-controls"); t.removeAttribute("tabindex");
     });
     panels.forEach(function (p) {
-      p.removeAttribute("inert"); p.classList.add("is-on");
+      p.removeAttribute("inert"); p.classList.add("is-on"); p.classList.remove("is-off");
       p.removeAttribute("role"); p.removeAttribute("aria-labelledby"); p.removeAttribute("tabindex");
     });
-    outs.forEach(function (u) { u.hidden = false; u.classList.add("is-open"); });
-    grounds.forEach(function (g) { g.classList.add("is-lit"); });
     return;
   }
 
-  /* The panels ship visible so the page works without this script. With the
-     script running, the inactive ones are inert: CSS hides them with
-     visibility (which also takes them out of the accessibility tree) and
-     inert keeps them out of reach of the keyboard. Nothing uses [hidden] on
-     a panel, so the stage never changes height on a swap. */
-  panels.forEach(function (p, i) { if (i !== 0) p.setAttribute("inert", ""); });
+  var mode = "";
 
-  var hideT = 0, lightT = 0;
-  var strip = window.matchMedia("(max-width: 768px)");
-  var autoScroll = false, autoT = 0, swipeT = 0;
-
-  /* On a phone the index is a snap strip: the selected title is kept centred. */
-  function centreTab(i) {
-    if (!strip.matches || !tabs[i]) return;
-    autoScroll = true;
-    clearTimeout(autoT);
-    autoT = setTimeout(function () { autoScroll = false; }, 500);
-    try {
-      tabs[i].scrollIntoView({ inline: "center", block: "nearest", behavior: reduce ? "instant" : "smooth" });
-    } catch (err) {}
-  }
-
-  /* The reel becomes the ground: the stills go dark, the video takes the
-     frame, and it is parked on the first talk's in point. */
-  if (videoGround) {
-    ensureSrc();
-    grounds.forEach(function (g) { g.classList.remove("is-on", "is-lit"); });
-    vid.classList.add("is-on");
-    var park = function () { if (playing < 0 && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} } };
-    if (vid.readyState >= 1) park();
-    else vid.addEventListener("loadedmetadata", park, { once: true });
-  }
-
-  /* ---- the disclosure ---- */
-  function closeAll() {
-    mores.forEach(function (b, k) {
-      b.setAttribute("aria-expanded", "false");
-      if (outs[k]) { outs[k].classList.remove("is-open"); outs[k].hidden = true; }
+  /* ---- the live talk ---- */
+  /* In the pin only the live panel is reachable: the others take no
+     pointer and are inert. In the strip every picture is on screen in
+     turn, so every ring works. */
+  function syncPanels() {
+    panels.forEach(function (p, k) {
+      var off = mode === "pin" && k !== cur;
+      p.classList.toggle("is-on", k === cur);
+      p.classList.toggle("is-off", off);
+      if (off) p.setAttribute("inert", ""); else p.removeAttribute("inert");
     });
   }
-  mores.forEach(function (b, k) {
-    var list = outs[k];
-    if (!list) return;
-    b.addEventListener("click", function () {
-      var open = b.getAttribute("aria-expanded") === "true";
-      if (open) {
-        b.setAttribute("aria-expanded", "false");
-        list.classList.remove("is-open"); list.hidden = true;
-      } else {
-        b.setAttribute("aria-expanded", "true");
-        list.hidden = false;
-        /* two frames, so the three lines stagger in from their start state */
-        requestAnimationFrame(function () {
-          requestAnimationFrame(function () { list.classList.add("is-open"); });
-        });
-      }
-    });
-  });
-
-  /* ---- layout guard: the stage is always as tall as the tallest EXPANDED
-     panel, measured for real, so opening a disclosure cannot shift the page
-     and a tab swap cannot either. ---- */
-  var lockT = 0;
-  function lockHeight() {
-    if (!stage) return;
-    stage.style.minHeight = "";
-    var was = outs.map(function (u) { return u.hidden; });
-    outs.forEach(function (u) { u.hidden = false; });
-    var h = 0;
-    panels.forEach(function (p) { h = Math.max(h, p.offsetHeight); });
-    outs.forEach(function (u, k) { u.hidden = was[k]; });
-    if (h > 0) stage.style.minHeight = Math.ceil(h) + "px";
-  }
-  lockHeight();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockHeight);
-  window.addEventListener("load", lockHeight);
-  window.addEventListener("resize", function () {
-    clearTimeout(lockT); lockT = setTimeout(lockHeight, 200);
-  }, { passive: true });
-
-  /* ---- the ground: lights down, seek or swap in the dark, lights up ---- */
-  function lights(i) {
-    if (!media) return;
-    clearTimeout(lightT);
-    media.classList.add("is-dimming");
-    grounds.forEach(function (g) { g.classList.remove("is-lit"); });
-    if (vid) vid.classList.remove("is-lit");
-    lightT = setTimeout(function () {
-      if (videoGround) {
-        /* one element, a new in point: seek in the dark, and come up on the
-           frame once it has actually arrived */
-        var done = false;
-        var up = function () {
-          if (done) return;
-          done = true;
-          vid.removeEventListener("seeked", up);
-          requestAnimationFrame(function () {
-            media.classList.remove("is-dimming");
-            vid.classList.add("is-lit");
-          });
-        };
-        vid.addEventListener("seeked", up);
-        setTimeout(up, 700);           /* never hold the house dark on a slow seek */
-        if (segs[i]) { try { vid.currentTime = segs[i].p; } catch (err) { up(); } }
-        else up();
-        return;
-      }
-      if (!grounds[i]) { media.classList.remove("is-dimming"); return; }
-      grounds.forEach(function (g, k) { g.classList.toggle("is-on", k === i); });
-      requestAnimationFrame(function () {
-        media.classList.remove("is-dimming");
-        grounds[i].classList.add("is-lit");
-      });
-    }, 240);
-  }
-
-  function select(i) {
+  function setCur(i) {
     if (i === cur || !panels[i]) return;
-    var out = panels[cur], inn = panels[i];
-    /* a talk's clip belongs to that talk: changing tabs stops it */
+    /* a talk's clip belongs to that talk: changing talks stops it */
     if (playing >= 0) stopClip(false, true);
-
     tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
     tabs[i].setAttribute("aria-selected", "true");    tabs[i].tabIndex = 0;    tabs[i].classList.add("is-on");
-    centreTab(i);
-    lights(i);
-    closeAll();
-
-    out.classList.remove("is-on"); out.classList.add("is-out");
-    inn.removeAttribute("inert"); inn.classList.remove("is-out");
-    /* two frames, so the incoming panel transitions from its start state */
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { inn.classList.add("is-on"); });
-    });
-
     cur = i;
-    clearTimeout(hideT);
-    /* the outgoing panel goes inert once its fade has finished */
-    hideT = setTimeout(function () {
-      panels.forEach(function (p, k) {
-        if (k !== cur) { p.setAttribute("inert", ""); p.classList.remove("is-out", "is-on"); }
-      });
-    }, 260);
+    syncPanels();
   }
 
+  /* ---- the stage: one spine entry ---- */
+  var U = 440;                                  /* svh of scroll across the pin */
+  function span() { return Math.max(0, track.offsetHeight - window.innerHeight); }
+  var last = {};
+  function put(el, key, name, v) {
+    var s = v.toFixed(4);
+    if (last[key] === s) return;
+    last[key] = s;
+    el.style.setProperty(name, s);
+  }
+  function update(p) {
+    if (entry.disabled) return;
+    var u = p * U;
+    var grow = clamp(u / 100);
+    var rise = clamp(grow / 0.25), g = clamp((grow - 0.25) / 0.75);
+    var hd = grow < 0.8 ? 0
+           : (u < 150 ? smooth((grow - 0.8) / 0.2) : 1 - smooth(clamp((u - 150) / 40)));
+    var on = u >= 150;
+    var wi2 = clamp(clamp((u - 230) / 80) / 0.4);
+    var wi3 = clamp(clamp((u - 310) / 80) / 0.4);
+    put(ground, "rise", "--rise", rise);
+    put(ground, "g", "--g", g);
+    put(head, "head", "--head", hd);
+    box.classList.toggle("is-on", on);
+    index.classList.toggle("is-on", on);
+    /* the previous talk's caption fades as the next one wipes in */
+    put(panels[0], "c0", "--cap", Math.min(on ? 1 - hd : 0, 1 - clamp(wi2 / 0.3)));
+    if (panels[1]) { put(panels[1], "w1", "--wi", wi2);
+      put(panels[1], "c1", "--cap", Math.min(clamp((wi2 - 0.7) / 0.3), 1 - clamp(wi3 / 0.3))); }
+    if (panels[2]) { put(panels[2], "w2", "--wi", wi3); put(panels[2], "c2", "--cap", clamp((wi3 - 0.7) / 0.3)); }
+    setCur(u < 230 + 80 * 0.2 ? 0 : (u < 310 + 80 * 0.2 ? 1 : 2));
+  }
+  var entry = { disabled: true,
+    start: function () { return sec.offsetTop; },
+    end: function () { return sec.offsetTop + span(); },
+    update: update };
+
+  /* ---- the strip (phones): a swipe selects ---- */
+  var autoScroll = false, autoT = 0, swipeT = 0;
+  box.addEventListener("scroll", function () {
+    if (mode !== "strip" || autoScroll) return;
+    clearTimeout(swipeT);
+    swipeT = setTimeout(function () {
+      if (mode !== "strip" || autoScroll) return;
+      var r = box.getBoundingClientRect();
+      var mid = r.left + r.width / 2, best = -1, bestD = Infinity;
+      panels.forEach(function (p, k) {
+        var b = p.getBoundingClientRect();
+        var d = Math.abs(b.left + b.width / 2 - mid);
+        if (d < bestD) { bestD = d; best = k; }
+      });
+      if (best >= 0) setCur(best);
+    }, 140);
+  }, { passive: true });
+
+  /* ---- the index ---- */
+  function go(i) {
+    if (mode === "strip") {
+      setCur(i);
+      autoScroll = true;
+      clearTimeout(autoT);
+      autoT = setTimeout(function () { autoScroll = false; }, 700);
+      try { panels[i].scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); }
+      catch (err) { panels[i].scrollIntoView(); }
+      return;
+    }
+    /* the middle of that talk's hold */
+    var y = sec.offsetTop + ((150 + 80 * i + 40) / U) * span();
+    if (window.spkLenis) window.spkLenis.scrollTo(y);
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  }
   tabs.forEach(function (t, i) {
-    t.addEventListener("click", function () { select(i); });
+    t.addEventListener("click", function () { go(i); });
     /* Roving tabindex, arrow keys move focus, Enter/Space activate. */
     t.addEventListener("focus", function () {
       tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); });
@@ -1927,38 +1885,26 @@
     });
   });
 
-  /* A swipe selects: once the strip settles, the title nearest its centre
-     becomes the selected talk. */
-  index.addEventListener("scroll", function () {
-    if (!strip.matches || autoScroll) return;
-    clearTimeout(swipeT);
-    swipeT = setTimeout(function () {
-      if (!strip.matches || autoScroll) return;
-      var r = index.getBoundingClientRect();
-      var mid = r.left + r.width / 2, best = -1, bestD = Infinity;
-      tabs.forEach(function (t, k) {
-        var b = t.getBoundingClientRect();
-        var d = Math.abs(b.left + b.width / 2 - mid);
-        if (d < bestD) { bestD = d; best = k; }
-      });
-      if (best >= 0 && best !== cur) select(best);
-    }, 140);
-  }, { passive: true });
-
-  /* the house lights come up on the first ground as the section arrives */
-  function firstLight() {
-    var el = videoGround ? vid : grounds[cur];
-    if (el) el.classList.add("is-lit");
+  /* ---- modes: the spine has no remove, so leaving the pin disables
+     the entry through its flag ---- */
+  var added = false;
+  function setMode() {
+    var m = strip.matches ? "strip" : "pin";
+    if (m === mode) return;
+    mode = m;
+    sec.setAttribute("data-spk-keys-mode", m);
+    if (playing >= 0) stopClip(false);
+    entry.disabled = (m !== "pin");
+    if (m === "pin") {
+      last = {};
+      if (!added) { window.spkSpine.add(entry); added = true; }
+      else window.spkSpine.measure();          /* re-reads start/end and repaints */
+    }
+    syncPanels();
   }
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(function (e, obs) {
-      if (!e[0].isIntersecting) return;
-      firstLight();
-      obs.disconnect();
-    }, { threshold: 0.15 }).observe(sec);
-  } else {
-    firstLight();
-  }
+  setMode();
+  if (strip.addEventListener) strip.addEventListener("change", setMode);
+  else if (strip.addListener) strip.addListener(setMode);
 })();
 
 /* ===== 3. What the room walks out with: five words, five lights, once =====
