@@ -1268,22 +1268,32 @@ html.no-js .spk-voice { display:none; }
   margin-inline: auto; text-align: center; max-width: 30ch; }
 
 /* ---------------------------------------------------------------------
-   3. Keynotes — a pinned stage. The track is 540svh; the stage is sticky
-   inside it for 440svh of scroll. Module 2 registers one spine entry and
+   3. Keynotes — a pinned stage. The track is 440svh; the stage is sticky
+   inside it for 340svh of scroll. Module 2 registers one spine entry and
    writes the phases as custom properties (the scroll is the clock, so
    none of them has a transition):
-     --rise, --g  on the ground: the card rises (first 25% of the grow),
-                  then grows to exactly the viewport
-     --head       on the heading: in over the last 20% of the grow, out
-                  over the first 40svh of talk 01
+     --rise, --g  on the ground: both held at 1 (written once), so the
+                  ground is exactly the viewport; the card rules stay
+     --reveal     on the ground: fades in over the first 60svh, out of
+                  the candle wheel's gold haze
+     --head       on the heading: in over the first 20svh, out over the
+                  first 40svh of talk 01
      --wi         on panels 2 and 3: the wipe in from the right
      --cap        on each panel: its caption, the ring inside it
-   Before the grow completes the page ground shows around the card, so
-   the section itself is transparent. The room section (.spk-chap) rises
-   over the stage in the last 50svh (see its margin-top).
+   The section rises over the last 60svh of the candle wheel's stage
+   (its margin-top, over the wheel only) and is transparent, so the held
+   bloom shows until the ground has come up. The room section
+   (.spk-chap) rises over this stage in the last 50svh (see its
+   margin-top).
    --------------------------------------------------------------------- */
 .spk-keys { position:relative; background: transparent; color: var(--tx-inv); }
-.spk-keys__track { height: calc(540svh); }
+/* over the candle wheel's held stage (the said section keeps z-index 1) */
+.spk-keys { margin-top: -60svh; z-index: 2; }
+/* only over a pinned wheel: no script, reduced motion, Save-Data and
+   phones (where this section is not pinned) have none */
+html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { margin-top:0; }
+@media (max-width: 768px) { .spk-keys { margin-top:0; } }
+.spk-keys__track { height: calc(440svh); }
 .spk-keys__stage { position:sticky; top:0; height:100svh; overflow:hidden; }
 
 /* The ground: a centred card that grows to full-bleed. At --g 1 it is
@@ -1294,6 +1304,7 @@ html.no-js .spk-voice { display:none; }
   transform: translate(-50%, calc(-50% + (1 - var(--rise, 0)) * 30svh));
   border-radius: calc(4px * (1 - var(--g, 0)));
   background: var(--plum-2); }
+.spk-keys__ground { opacity: var(--reveal, 1); }
 .spk-keys__rest, .spk-keys__still { position:absolute; inset:0; display:block;
   width:100%; height:100%; object-fit:cover; object-position: 50% 40%; }
 
@@ -1665,103 +1676,89 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 .spk-formats { background: transparent; }
 
 /* ---------------------------------------------------------------------
-   A. .spk-said — "What he talks about." One line at a time over a reel
-   still. The five lines and the bridge are all in the markup, stacked, so
-   the section reads with no script at all; the script collapses the stack
-   into a single cell and cycles it on an 8 s dwell.
+   A. .spk-said — "What he talks about." The candle wheel. The six lines
+   ship in the markup, stacked on the velvet, so the section reads with no
+   script, under reduced motion and on Save-Data (the script then puts one
+   lit candle over each line). With the script and motion the section
+   becomes a pinned stage (.is-wheel): a 720svh track, the velvet under a
+   plum veil, the wheel on a canvas above them, and the six lines in one
+   grid cell, each carrying --on (0..1) from the scroll. The scroll is the
+   clock: nothing here has a transition. The grow writes --fx/--fy/--fs/--fo
+   on the macro flame and --bo on the bloom.
    --------------------------------------------------------------------- */
-.spk-said { position:relative; min-height:100svh; display:grid; place-items:center;
-  overflow:hidden; background: var(--plum-2); color: var(--tx-inv);
-  padding-block: clamp(3rem, 5vw, 5rem); }
-.spk-said .media { position:absolute; inset:0; z-index:0; }
-.spk-said .media img { position:absolute; inset:0; width:100%; height:100%;
-  object-fit:cover; object-position: 50% 34%; }
-/* The still is an already-dark stage, so the lights come nearly all the way
-   up: held any lower and the frame reads as black rather than as a room. */
-.spk-said .media .spk-lights { --lights-dur: 1.5s; }
-.spk-said .media .spk-lights.is-lit { filter: brightness(.94) saturate(.84) contrast(1.06); }
-/* The grade that holds the type: one soft ellipse behind the column, no
-   edge and no box, falling away before the left and right thirds. */
-.spk-said__grade { position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:
-    radial-gradient(44% 56% at 50% 50%, rgba(10,5,17,.82), rgba(10,5,17,.66) 48%,
-                    rgba(10,5,17,.34) 74%, rgba(10,5,17,.09) 92%, rgba(10,5,17,0) 100%),
-    linear-gradient(0deg, rgba(10,5,17,.36) 0%, rgba(10,5,17,.18) 36%, rgba(10,5,17,.36) 100%); }
-.spk-said__inner { position:relative; z-index:2; width: var(--wrap); margin-inline:auto;
+.spk-said { position:relative; background: var(--plum-2); color: var(--tx-inv); }
+.spk-said__stage { position:relative; overflow:hidden;
+  padding-block: clamp(4rem, 9vw, 7rem); }
+.spk-said__velvet { position:absolute; inset:0; z-index:0; display:block;
+  width:100%; height:100%; object-fit:cover; object-position: 50% 50%; }
+.spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
+  background: rgba(26,16,38,.42); }
+.spk-said__wheel, .spk-said__flame, .spk-said__bloom { display:none; }
+.spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
-.spk-said__h { font-family: var(--f-display); font-style:italic; font-weight:360;
+.spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
   font-size: var(--step-0); line-height:1.3; letter-spacing:0;
   color: var(--tx-inv-soft); }
 
-.spk-said__stage { display:grid; margin: clamp(1.6rem, 4vh, 2.8rem) auto 0; }
-.spk-said__line { max-width:20ch; margin-inline:auto;
-  font-family: var(--f-display); font-weight:340; font-size: var(--step-3);
-  line-height:1.06; letter-spacing:-0.03em; color: var(--tx-inv); text-wrap: balance; }
+/* Stacked (no script, reduced motion, Save-Data): every line is there. */
+.spk-said__lines { display:grid; justify-items:center; row-gap: clamp(2.2rem, 6vh, 3.6rem);
+  margin: clamp(1.8rem, 5vh, 3rem) auto 0; }
+.spk-said__line { max-width:22ch; margin:0;
+  font-family: var(--f-display); font-weight:340; font-size: var(--step-2);
+  line-height:1.12; letter-spacing:-0.02em; color: var(--tx-inv); text-wrap: balance; }
+.spk-said__no { display:block; margin-bottom:.75rem;
+  font-family: var(--f-text); font-size: var(--step--1); font-weight:500; font-style:normal;
+  line-height:1; letter-spacing:.12em; font-variant-numeric: tabular-nums lining-nums;
+  color: rgba(244,236,222,.62); }
 /* the quiet close: not the audience's own experience but what it has
    already cost the organization by the time anyone names it */
-.spk-said__bridge { max-width:46ch; font-family: var(--f-text); font-weight:400;
+.spk-said__bridge { max-width:34ch; font-family: var(--f-text); font-weight:400;
   font-size: var(--step-0); line-height:1.55; letter-spacing:0;
   color: var(--tx-inv-soft); }
+/* one lit candle over each line, inserted by the script (never with no-js) */
+.spk-said__candle { display:block; width:auto; height:140px; margin: 0 auto 1rem; }
+html.no-js .spk-said__candle { display:none; }
 
-/* Stacked (no script, reduced motion): every line is simply there. */
-.spk-said__line + .spk-said__line { margin-top: clamp(1rem, 2.4vh, 1.8rem); }
-.spk-said__ctrl { display:none; }
-.spk-said__srlist { display:none; }
-
-/* Live: one cell, one line at a time. */
-.spk-said.is-live .spk-said__stage { align-content:center; }
-.spk-said.is-live .spk-said__line { grid-area: 1 / 1; margin-top:0;
-  align-self:center; opacity:0; visibility:hidden; transform: translateY(10px);
-  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out),
-              visibility 0s linear .5s; }
-.spk-said.is-live .spk-said__line.is-on { opacity:1; visibility:visible; transform:none;
-  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out),
-              visibility 0s linear 0s; }
-.spk-said.is-live .spk-said__line.is-out { opacity:0; transform: translateY(-10px); }
-.spk-said.is-live .spk-said__ctrl { display:flex; align-items:center; justify-content:center;
-  gap:1rem; margin-top: 64px; }
-.spk-said.is-live .spk-said__srlist { position:absolute !important; width:1px; height:1px;
-  margin:-1px; padding:0; overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
-  white-space:nowrap; border:0; display:block; }
-
-.spk-said__arrow { flex:0 0 auto; width:44px; height:44px; padding:0; border:0;
-  background:none; color: var(--tx-inv-soft); display:inline-flex;
-  align-items:center; justify-content:center;
-  transition: color var(--dur-fast) var(--ease-out); }
-.spk-said__arrow svg { width:22px; height:22px; overflow:visible; }
-.spk-said__arrow path { stroke-width:1.25px; vector-effect: non-scaling-stroke; }
-.spk-said__arrow--prev svg { transform: scaleX(-1); }
-@media (hover: hover) and (pointer: fine) {
-  .spk-said__arrow:hover { color: var(--gold); }
-}
-.spk-said__arrow:focus-visible { color: var(--gold); }
-.spk-said__arrow:focus-visible { outline:2px solid var(--violet-300); outline-offset:0; }
-.spk-said__count { font-family: var(--f-text); font-size:.875rem; font-weight:500;
-  line-height:1; letter-spacing:.04em; font-variant-numeric: tabular-nums lining-nums;
-  color: rgba(244,236,222,.72); }
-
-@media (max-width: 640px) {
-  .spk-said__line { font-size: var(--step-2); max-width:15ch; }
-  .spk-said__bridge { font-size: var(--step-0); max-width:34ch; }
-  .spk-said.is-live .spk-said__ctrl { margin-top: 40px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .spk-said.is-live .spk-said__line { transition:none; }
-  .spk-said__arrow { transition:none; }
-}
-
-/* The room: the seat array from the formats section, laid over the still.
-   Above the grade, below the type. Five seats are occupied, one per line;
-   the buttons are invisible hit targets over them and the canvas draws the
-   seat itself. */
-.spk-said__room { position:absolute; inset:0; z-index:1; display:block;
+/* The wheel: a pinned stage, 7 beats of 80svh, a 100svh grow and 60svh
+   under the talks section as it rises. */
+.spk-said.is-wheel .spk-said__track { height: calc(7 * 80svh + 160svh); }
+.spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
+.spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
-html.no-js .spk-said__room { display:none; }
-.spk-said__seats { position:absolute; inset:0; z-index:2; pointer-events:none; }
-.spk-said__seat { position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px;
-  padding:0; border:0; border-radius:50%; background:transparent;
-  pointer-events:auto; cursor:pointer; }
-.spk-said__seat:focus-visible { outline:2px solid var(--violet-300); outline-offset:2px; }
+/* the macro: the stage's size, cover, centred on the flame point */
+.spk-said.is-wheel .spk-said__flame { display:block; position:absolute; left:0; top:0; z-index:3;
+  width:100%; height:100%; object-fit:cover; pointer-events:none; opacity: var(--fo, 0);
+  transform: translate(var(--fx, 0px), var(--fy, 0px)) scale(var(--fs, .6));
+  /* no hard box edge while it is still smaller than the frame */
+  -webkit-mask-image: radial-gradient(farthest-side at 50% 50%, #000 72%, transparent 100%);
+          mask-image: radial-gradient(farthest-side at 50% 50%, #000 72%, transparent 100%); }
+.spk-said.is-wheel .spk-said__bloom { display:block; position:absolute; inset:0; z-index:4;
+  pointer-events:none; opacity: calc(var(--bo, 0) * (1 - var(--spk-keys-reveal, 0)));
+  background: radial-gradient(circle farthest-corner at 50% 50%,
+    rgba(232,187,104,.55), rgba(232,187,104,0) 70%); }
+.spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
+.spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top: clamp(1.6rem, 6vh, 3.4rem);
+  transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
+.spk-said.is-wheel .spk-said__lines { position:absolute; left:58%; top:42%; margin:0;
+  transform: translateY(-50%); justify-items:start; text-align:left; row-gap:0; }
+.spk-said.is-wheel .spk-said__lines.is-left { left:8%; }
+/* the bridge: centred, under the top candle's foot rather than over it */
+.spk-said.is-wheel .spk-said__lines.is-bridge { left:50%; top:74%; transform: translate(-50%, 0);
+  justify-items:center; text-align:center; }
+.spk-said.is-wheel .spk-said__line { grid-area: 1 / 1; opacity: var(--on, 0);
+  transform: translateY(calc((1 - var(--on, 0)) * 12px));
+  filter: blur(calc((1 - var(--on, 0)) * 6px)); }
+.spk-said.is-wheel .spk-said__lines.is-left .spk-said__line,
+.spk-said.is-wheel .spk-said__lines:not(.is-bridge) .spk-said__line { max-width:22ch; }
+/* Phones: the same wheel, the line under the top candle on every beat. */
+@media (max-width: 768px) {
+  .spk-said.is-wheel .spk-said__lines,
+  .spk-said.is-wheel .spk-said__lines.is-left,
+  .spk-said.is-wheel .spk-said__lines.is-bridge { left:50%; top:66%; width: calc(100% - 32px);
+    transform: translate(-50%, 0); justify-items:center; text-align:center; }
+  .spk-said.is-wheel .spk-said__lines .spk-said__line { max-width:26ch; }
+  .spk-said.is-wheel .spk-said__h { white-space:normal; width: calc(100% - 32px); text-align:center; }
+}
 
 /* ---------------------------------------------------------------------
    B. .spk-chap — "What it's like in the room." The page's one pin, seven

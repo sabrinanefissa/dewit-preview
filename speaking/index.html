@@ -159,63 +159,58 @@
   </section>
 
   <!-- ==============================================================
-       A. WHAT HE TALKS ABOUT - one line at a time over a reel still.
-       The five lines and the bridge are all in the markup, stacked and
-       readable with no script. The script turns the stack into a single
-       stage that cycles on an 8 s dwell; from then on the visible stage
-       is decorative and .spk-said__srlist is what a screen reader reads.
-       An arrow PINS the sequence for good (WCAG 2.2.2) - nothing puts it
-       back on a timer.
+       A. WHAT HE TALKS ABOUT - the candle wheel. A pinned stage over
+       velvet: a giant wheel stands on its edge, its centre far below the
+       screen, six candles on its rim. The one at the top is lit and its
+       line stands beside it; each 80svh of scroll turns the wheel one
+       sixth, the candle that spoke stays lit as it goes under. On the
+       last beat all six are lit, then the top flame grows toward the
+       viewer, dissolves into the flame close-up and a gold haze, and the
+       three talks rise over it. The track is 720svh:
+         0-480    six beats, one line each (the sixth is the bridge)
+         480-560  every candle lit, the bridge holds
+         560-660  the grow: candle, macro flame, bloom
+         660-720  hold, while the talks section rises over the stage
+       The six lines are real text in reading order at all times; the
+       wheel is a decorative canvas. Reduced motion, Save-Data and no
+       script: no pin, the six lines stacked (with script, each under a
+       lit candle) on the velvet.
        ============================================================== -->
   <section class="spk-said" id="said" aria-labelledby="spkSaidH">
-    <div class="media media--plum" aria-hidden="true">
-      <img class="spk-lights" src="../assets/img/spk-said-1280.webp"
-           srcset="../assets/img/spk-said-860.webp 860w, ../assets/img/spk-said-1280.webp 1280w, ../assets/img/spk-said-1920.webp 1920w"
-           sizes="100vw" alt="" loading="lazy" decoding="async">
-    </div>
-    <div class="spk-said__grade" aria-hidden="true"></div>
-    <canvas class="spk-said__room" id="spkSaidRoom" aria-hidden="true"></canvas>
-    <div class="spk-said__seats" id="spkSaidSeats"></div>
-
-    <div class="spk-said__inner">
-      <h2 class="spk-said__h" id="spkSaidH">What he talks about.</h2>
-
+    <div class="spk-said__track" id="spkSaidTrack">
       <div class="spk-said__stage" id="spkSaidStage">
-        <p class="spk-said__line">You can be surrounded by colleagues and still on your own.</p>
-        <p class="spk-said__line">You&rsquo;re doing the job well and struggling quietly underneath it.</p>
-        <p class="spk-said__line">You carry everyone else&rsquo;s feelings and nobody asks about yours.</p>
-        <p class="spk-said__line">There&rsquo;s a conversation you keep moving to next week.</p>
-        <p class="spk-said__line">Small unsaid tensions add up until everyone is tired.</p>
-        <p class="spk-said__line spk-said__bridge">Left unsaid long enough, this becomes what the organization calls a performance problem.</p>
+        <img class="spk-said__velvet" src="../assets/img/velvet-1786.webp" srcset="../assets/img/velvet-960.webp 960w, ../assets/img/velvet-1786.webp 1786w" sizes="100vw" alt="" loading="lazy" decoding="async">
+        <div class="spk-said__veil" aria-hidden="true"></div>
+        <canvas class="spk-said__wheel" id="spkSaidWheel" aria-hidden="true"></canvas>
+        <img class="spk-said__flame" id="spkSaidFlame" src="../assets/img/flame-macro-1536.webp" alt="" loading="lazy" decoding="async">
+        <div class="spk-said__bloom" id="spkSaidBloom" aria-hidden="true"></div>
+        <div class="spk-said__inner">
+          <h2 class="spk-said__h" id="spkSaidH">What he talks about.</h2>
+          <div class="spk-said__lines" id="spkSaidLines">
+            <p class="spk-said__line" data-beat="1"><span class="spk-said__no">01</span>You can be surrounded by colleagues and still on your own.</p>
+            <p class="spk-said__line" data-beat="2"><span class="spk-said__no">02</span>You&rsquo;re doing the job well and struggling quietly underneath it.</p>
+            <p class="spk-said__line" data-beat="3"><span class="spk-said__no">03</span>You carry everyone else&rsquo;s feelings and nobody asks about yours.</p>
+            <p class="spk-said__line" data-beat="4"><span class="spk-said__no">04</span>There&rsquo;s a conversation you keep moving to next week.</p>
+            <p class="spk-said__line" data-beat="5"><span class="spk-said__no">05</span>Small unsaid tensions add up until everyone is tired.</p>
+            <p class="spk-said__line spk-said__bridge" data-beat="6"><span class="spk-said__no">06</span>Left unsaid long enough, this becomes what the organization calls a performance problem.</p>
+          </div>
+          <p class="spk-sr" id="spkSaidLive" aria-live="polite" aria-atomic="true"></p>
+        </div>
       </div>
-
-      <div class="spk-said__ctrl" id="spkSaidCtrl">
-        <button type="button" class="spk-said__arrow spk-said__arrow--prev" id="spkSaidPrev" aria-label="Previous line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-        <span class="spk-said__count" id="spkSaidCount" aria-hidden="true">01 / 06</span>
-        <button type="button" class="spk-said__arrow spk-said__arrow--next" id="spkSaidNext" aria-label="Next line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      </div>
-
-      <ul class="spk-said__srlist">
-        <li>You can be surrounded by colleagues and still on your own.</li>
-        <li>You&rsquo;re doing the job well and struggling quietly underneath it.</li>
-        <li>You carry everyone else&rsquo;s feelings and nobody asks about yours.</li>
-        <li>There&rsquo;s a conversation you keep moving to next week.</li>
-        <li>Small unsaid tensions add up until everyone is tired.</li>
-      </ul>
-      <p class="spk-said__srlist">Left unsaid long enough, this becomes what the organization calls a performance problem.</p>
-      <p class="spk-sr" id="spkSaidLive" aria-live="off" aria-atomic="true"></p>
     </div>
   </section>
 
   <!-- ==============================================================
-       3. KEYNOTES - a pinned stage. The track is 540svh; the stage
-       inside it is sticky for 440svh of scroll, in phases:
-         0-100    the ground picture grows from a card to full-bleed
-         100-150  the heading alone over the full-bleed ground
-         150-230  talk 01
-         230-310  talk 02 wipes in from the right
-         310-390  talk 03 wipes in from the right
-         390-440  hold, while the room section rises over the stage
+       3. KEYNOTES - a pinned stage. The track is 440svh; the stage
+       inside it is sticky for 340svh of scroll. The section rises over
+       the last 60svh of the candle wheel's stage, and its full-bleed
+       ground fades in over the first 60svh of its own scroll, out of
+       the wheel's gold haze. Phases:
+         0-50     the heading alone over the full-bleed ground
+         50-130   talk 01
+         130-210  talk 02 wipes in from the right
+         210-290  talk 03 wipes in from the right
+         290-340  hold, while the room section rises over the stage
        Each talk is one full-screen picture carrying only its title and
        its one line, with one play ring under them (bottom-left). "Hear
        Stephen on this" plays that talk's segment of the reel with sound,

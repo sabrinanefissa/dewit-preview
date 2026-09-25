@@ -1522,18 +1522,22 @@
 })();
 
 /* ===== 2. Keynotes: three talks on a pinned stage, the scroll wipes between them ===
-   The section is a pinned stage (the track is 540svh, the stage sticky
-   inside it for 440svh of scroll). This module registers ONE entry with
-   the spine and has no scroll listener of its own; update(p) turns p into
-   svh of scroll (u = p * 440) and writes the phases as custom properties:
-     0-100    the ground picture grows from a card to full-bleed
-              (--rise over the first 25%, then --g)
-     100-150  the heading alone (--head: in over the last 20% of the
-              grow, out over the first 40svh of talk 01)
-     150-230  talk 01
-     230-310  talk 02 wipes in from the right (--wi over the first 40%)
-     310-390  talk 03 wipes in from the right
-     390-440  hold, while the room section rises over the stage
+   The section is a pinned stage (the track is 440svh, the stage sticky
+   inside it for 340svh of scroll). It rises over the last 60svh of the
+   candle wheel's held stage, so there is no grow any more: the ground is
+   full-bleed from the start (--rise and --g are written once, at 1) and
+   fades in over the wheel's gold haze. This module registers ONE entry
+   with the spine and has no scroll listener of its own; update(p) turns p
+   into svh of scroll (u = p * 340) and writes the phases as custom
+   properties:
+     0-60     the ground fades in (--reveal; 1 whenever the wheel is not
+              pinned above, so there is nothing to come out of)
+     0-50     the heading alone (--head: in over the first 20svh, out
+              over the first 40svh of talk 01)
+     50-130   talk 01
+     130-210  talk 02 wipes in from the right (--wi over the first 40%)
+     210-290  talk 03 wipes in from the right
+     290-340  hold, while the room section rises over the stage
    A talk becomes the live one when its wipe is half done; only the live
    panel's ring is interactive. "Hear Stephen on this" plays that talk's
    segment of the reel WITH SOUND on the one shared <video>, full-bleed
@@ -1799,7 +1803,8 @@
   }
 
   /* ---- the stage: one spine entry ---- */
-  var U = 440;                                  /* svh of scroll across the pin */
+  var U = 340;                                  /* svh of scroll across the pin */
+  var said = document.querySelector(".spk-said");
   function span() { return Math.max(0, track.offsetHeight - window.innerHeight); }
   var last = {};
   function put(el, key, name, v) {
@@ -1811,15 +1816,16 @@
   function update(p) {
     if (entry.disabled) return;
     var u = p * U;
-    var grow = clamp(u / 100);
-    var rise = clamp(grow / 0.25), g = clamp((grow - 0.25) / 0.75);
-    var hd = grow < 0.8 ? 0
-           : (u < 150 ? smooth((grow - 0.8) / 0.2) : 1 - smooth(clamp((u - 150) / 40)));
-    var on = u >= 150;
-    var wi2 = clamp(clamp((u - 230) / 80) / 0.4);
-    var wi3 = clamp(clamp((u - 310) / 80) / 0.4);
-    put(ground, "rise", "--rise", rise);
-    put(ground, "g", "--g", g);
+    var hd = u < 50 ? smooth(clamp(u / 20)) : 1 - smooth(clamp((u - 50) / 40));
+    var on = u >= 50;
+    var wi2 = clamp(clamp((u - 130) / 80) / 0.4);
+    var wi3 = clamp(clamp((u - 210) / 80) / 0.4);
+    var wheel = !!said && said.classList.contains("is-wheel");
+    var rv = wheel ? clamp(u / 60) : 1;
+    put(ground, "reveal", "--reveal", rv);
+    /* the wheel's bloom leaves with the hand-off (module 7's CSS reads it) */
+    if (wheel) put(document.documentElement, "rootReveal", "--spk-keys-reveal", rv);
+    else if (last.rootReveal) { document.documentElement.style.removeProperty("--spk-keys-reveal"); last.rootReveal = ""; }
     put(head, "head", "--head", hd);
     box.classList.toggle("is-on", on);
     index.classList.toggle("is-on", on);
@@ -1828,7 +1834,7 @@
     if (panels[1]) { put(panels[1], "w1", "--wi", wi2);
       put(panels[1], "c1", "--cap", Math.min(clamp((wi2 - 0.7) / 0.3), 1 - clamp(wi3 / 0.3))); }
     if (panels[2]) { put(panels[2], "w2", "--wi", wi3); put(panels[2], "c2", "--cap", clamp((wi3 - 0.7) / 0.3)); }
-    setCur(u < 230 + 80 * 0.2 ? 0 : (u < 310 + 80 * 0.2 ? 1 : 2));
+    setCur(u < 130 + 80 * 0.2 ? 0 : (u < 210 + 80 * 0.2 ? 1 : 2));
   }
   var entry = { disabled: true,
     start: function () { return sec.offsetTop; },
@@ -1865,7 +1871,7 @@
       return;
     }
     /* the middle of that talk's hold */
-    var y = sec.offsetTop + ((150 + 80 * i + 40) / U) * span();
+    var y = sec.offsetTop + ((50 + 80 * i + 40) / U) * span();
     if (window.spkLenis) window.spkLenis.scrollTo(y);
     else window.scrollTo({ top: y, behavior: "smooth" });
   }
@@ -1897,8 +1903,15 @@
     sec.setAttribute("data-spk-keys-mode", m);
     if (playing >= 0) stopClip(false);
     entry.disabled = (m !== "pin");
+    if (m !== "pin") {
+      ground.style.removeProperty("--reveal");
+      document.documentElement.style.removeProperty("--spk-keys-reveal");
+    }
     if (m === "pin") {
       last = {};
+      /* no grow: the ground is full-bleed from the start (written once) */
+      put(ground, "rise", "--rise", 1);
+      put(ground, "g", "--g", 1);
       if (!added) { window.spkSpine.add(entry); added = true; }
       else window.spkSpine.measure();          /* re-reads start/end and repaints */
     }
@@ -2538,442 +2551,351 @@
 
 })();
 
-/* ===== 7. A. What he talks about: one line at a time =====
-   The five lines and the bridge all ship in the markup, stacked, so the
-   section reads with no script and under reduced motion. With the script
-   running the stack becomes one cell on an 8 s dwell; from that moment the
-   visible stage is decorative (aria-hidden) and .spk-said__srlist is what a
-   screen reader reads. Hover and keyboard focus hold the sequence. An arrow
-   PINS it for good — nothing puts it back on a timer (WCAG 2.2.2).
-
-   The five lines are things people in a room do not say out loud, so the
-   room says them. The seat array from the formats section lies over the
-   still and five of its seats are occupied, one per line. When a line's
-   turn comes its seat lights gold a beat before the line surfaces, and a
-   hairline draws from the seat toward the line and fades as the line lands.
-   On the bridge all five hold gold and every other seat lifts one step
-   toward violet-100: the organization sees it. Gold is a person, violet the
-   organization, and gold never touches the type. No lean and no wave here:
-   the room is still between seat events and the loop sleeps. */
+/* ===== 7. A. What he talks about: the candle wheel =====
+   A pinned stage (the track is 720svh, the stage sticky inside it) over
+   the velvet. A giant wheel stands on its edge facing the viewer, its
+   centre below the screen (radius 0.40 W, its top point at 64% of the
+   height). Six candles stand 40 degrees apart on the rim; the one at the
+   top is upright and lit and its
+   line stands beside it. This module registers ONE entry with the spine
+   (start: the section's top, end: the bottom of its track, so u = p * 720
+   in svh of scroll) and has no scroll listener of its own:
+     0-480    six beats of 80svh. Beat k: the line arrives over the first
+              20%, the wheel turns 40 degrees (eased) over the last 45%
+              while the line leaves. Lines 01-05 are beats 0-4; the bridge
+              (06) arrives on beat 5 and holds, and the wheel stops.
+     480-560  every candle lit, the bridge holds
+     560-660  the grow: the top flame scales x6 about itself and drifts to
+              the centre, the macro flame comes over it, then the bloom
+     620-720  the stage is held in place (a transform, only while the
+              talks section is pinned and rises over it) until the talks
+              ground has come up
+   update(p) writes the lines' --on, the heading's --on and the macro and
+   bloom properties, and stores the wheel's state; the canvas is drawn by
+   this module's own rAF loop, which runs only while the stage is on
+   screen and the tab is visible (the flicker and the lighting are
+   time-based, the wheel is not). A candle that has spoken stays lit, and
+   a candle's lit frames fade in over 600ms.
+   The six lines are real text in reading order at all times; nothing is
+   announced while scrolling. Reduced motion, Save-Data, no canvas or no
+   spine: no pin, the six lines stacked on the velvet, each under one lit
+   candle (<img>). Phones run the same wheel with the line under the top
+   candle. */
 (function () {
   "use strict";
   var sec = document.querySelector(".spk-said");
   if (!sec) return;
-  var stage = document.getElementById("spkSaidStage");
-  var inner = sec.querySelector(".spk-said__inner");
-  var prev  = document.getElementById("spkSaidPrev");
-  var nxt   = document.getElementById("spkSaidNext");
-  var count = document.getElementById("spkSaidCount");
-  var live  = document.getElementById("spkSaidLive");
-  var img   = sec.querySelector(".media .spk-lights");
-  if (!stage || !inner || !prev || !nxt || !count) return;
+  var track   = document.getElementById("spkSaidTrack");
+  var stage   = document.getElementById("spkSaidStage");
+  var cv      = document.getElementById("spkSaidWheel");
+  var flameEl = document.getElementById("spkSaidFlame");
+  var bloomEl = document.getElementById("spkSaidBloom");
+  var linesEl = document.getElementById("spkSaidLines");
+  var head    = sec.querySelector(".spk-said__h");
+  var live    = document.getElementById("spkSaidLive");
+  var lines   = [].slice.call(sec.querySelectorAll(".spk-said__line"));
+  var N = 6;
+  if (!track || !stage || !linesEl || !head || lines.length !== N) return;
+  if (live) live.textContent = "";
 
-  var slides = [].slice.call(stage.children);
-  var N = slides.length;
-  if (!N) return;
+  var base = ((flameEl && flameEl.getAttribute("src")) || "../assets/img/x").replace(/[^\/]*$/, "");
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+              !!(navigator.connection && navigator.connection.saveData);
+  var ctx = cv && cv.getContext && cv.getContext("2d");
 
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
-  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
-  /* the lights come up once as the section arrives, and hold */
-  function lightUp() { if (img) img.classList.add("is-lit"); }
-  if (reduce || !("IntersectionObserver" in window)) lightUp();
-  else {
+  /* ---- the stacked path: one lit candle over each line ---- */
+  if (still || !ctx || !window.spkSpine || !flameEl || !bloomEl) {
+    sec.classList.add("is-stacked");
+    lines.forEach(function (l) {
+      var im = document.createElement("img");
+      im.className = "spk-said__candle";
+      im.src = base + "candle-lit-450.webp";
+      im.alt = "";
+      im.width = 107; im.height = 140;
+      im.loading = "lazy"; im.decoding = "async";
+      l.insertBefore(im, l.firstChild);
+    });
+    return;
+  }
+
+  sec.classList.add("is-wheel");
+  var phoneMq = window.matchMedia("(max-width: 768px)");
+  var keysSec = document.querySelector(".spk-keys");
+
+  /* ---- the frames ----
+     0 lit, 1 lit-b, 2 lit-lean, 3 unlit. The four were shot separately, so
+     each is placed by its own foot (measured on the 900 files): the centre
+     and the bottom of the brass foot sit on the rim, and each is scaled so
+     its foot is the lit frame's width. hC is the lit frame's full height. */
+  var NAMES = ["candle-lit", "candle-lit-b", "candle-lit-lean", "candle-unlit"];
+  var ASP  = [689 / 900, 657 / 900, 743 / 900, 711 / 900];     /* width / height */
+  var AX   = [348 / 689, 335 / 657, 362 / 743, 370 / 711];     /* foot centre, of width */
+  var AY   = [890 / 900, 874 / 900, 881 / 900, 897 / 900];     /* foot bottom, of height */
+  var FOOT = [328, 320, 334, 338];                             /* foot width at 900 */
+  var imgs = [[], []];                                         /* [450 set, 900 set] */
+  var loaded = false;
+  function loadAll() {
+    if (loaded) return;
+    loaded = true;
+    for (var s = 0; s < 2; s++) {
+      for (var f = 0; f < 4; f++) {
+        var im = new Image();
+        im.decoding = "async";
+        im.src = base + NAMES[f] + (s ? "-900" : "-450") + ".webp";
+        if (im.decode) im.decode().then(null, function () {});
+        imgs[s][f] = im;
+      }
+    }
+  }
+  function ready(im) { return !!im && im.complete && im.naturalWidth > 0; }
+
+  /* the glow: one gold sprite, built once, drawn at the flame's alpha */
+  var glow = document.createElement("canvas");
+  glow.width = glow.height = 128;
+  (function () {
+    var gc = glow.getContext("2d");
+    var gr = gc.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, "rgba(232,187,104,1)");
+    gr.addColorStop(1, "rgba(232,187,104,0)");
+    gc.fillStyle = gr;
+    gc.fillRect(0, 0, 128, 128);
+  })();
+
+  /* ---- geometry (CSS px), rebuilt on resize ---- */
+  var W = 1, H = 1, dpr = 1, hC = 300, Rw = 1, cyW = 1, svh = 1, phone = false;
+  var fw = new Float32Array(4), fh = new Float32Array(4), fx = new Float32Array(4), fy = new Float32Array(4);
+  function build() {
+    W = Math.max(1, stage.clientWidth); H = Math.max(1, stage.clientHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    phone = phoneMq.matches;
+    hC = phone ? Math.max(220, Math.min(520, H * 0.34)) : Math.max(300, Math.min(520, H * 0.44));
+    Rw = W * 0.40;
+    cyW = H * 0.64 + Rw;                       /* the rim's top point at 64% of H */
+    svh = track.offsetHeight / 720;
+    for (var f = 0; f < 4; f++) {
+      fh[f] = hC * FOOT[0] / FOOT[f];
+      fw[f] = fh[f] * ASP[f];
+      fx[f] = -AX[f] * fw[f];
+      fy[f] = -AY[f] * fh[f];
+    }
+  }
+
+  /* ---- the state the scroll sets ---- */
+  var SIDE = [0.40, 0.62, 0.40, 0.62, 0.40, 0.5, 0.5];    /* the top candle's x, of W, per beat */
+  var STEP = 40;                                           /* degrees between candles, and per beat */
+  var u = 0, beat = 0, theta = 0, cxF = 0.4, g = 0, first = true;
+  var litTo = new Int8Array(N), litFrom = new Float32Array(N), litT0 = new Float64Array(N);
+  var L = new Float32Array(N);
+  var fa = new Int8Array(N), fb = new Int8Array(N), fT = new Float64Array(N);
+  (function () {
+    var now = performance.now();
+    for (var i = 0; i < N; i++) {
+      fa[i] = (i * 2) % 3; fb[i] = (fa[i] + 1) % 3;
+      fT[i] = now + 420 + Math.random() * 480;
+    }
+  })();
+
+  var last = {};
+  function put(el, key, name, v) {
+    var s = v.toFixed(4);
+    if (last[key] === s) return;
+    last[key] = s;
+    el.style.setProperty(name, s);
+  }
+  function putPx(el, key, name, v) {
+    var s = v.toFixed(1) + "px";
+    if (last[key] === s) return;
+    last[key] = s;
+    el.style.setProperty(name, s);
+  }
+  var lastLeft = null, lastBridge = null, lastHold = "";
+
+  function update(p) {
+    if (entry.disabled) return;
+    u = p * 720;
+    var s = 1, turn = 0;
+    if (u < 560) { beat = Math.min(6, Math.floor(u / 80)); s = clamp(u / 80 - beat); }
+    else beat = 6;
+    /* the wheel turns on beats 0-4 only: from beat 5 the sixth candle
+       (the bridge's) stays at the top through the grow */
+    var tTurn = beat < 5 ? clamp((s - 0.65) / 0.35) : 0;    /* the turn's own progress */
+    turn = smooth(tTurn);
+    theta = -(Math.min(beat, 5) * STEP + turn * STEP);
+    cxF = phone ? 0.5 : SIDE[beat] + (SIDE[Math.min(6, beat + 1)] - SIDE[beat]) * turn;
+    g = clamp((u - 560) / 100);
+
+    /* the lines: in over the first 20% of their beat, out over the first
+       30% of the turn;
+       the bridge holds from beat 5 and is gone by g = 0.2 */
+    var arrive = smooth(clamp(s / 0.2));
+    for (var j = 0; j < N; j++) {
+      var on = 0;
+      /* gone within the first 30% of the turn, before the leaving candle
+         can cross it */
+      if (j < 5) { if (beat === j) on = Math.min(arrive, 1 - smooth(clamp(tTurn / 0.3))); }
+      else if (beat === 5) on = arrive;
+      else if (beat === 6) on = 1 - smooth(clamp(g / 0.2));
+      put(lines[j], "l" + j, "--on", on);
+    }
+    put(head, "h", "--on", beat === 0 ? 1 - smooth(clamp(s / 0.2)) : 0);
+    var left = beat === 1 || beat === 3, bridge = beat >= 5;
+    if (left !== lastLeft) { linesEl.classList.toggle("is-left", left); lastLeft = left; }
+    if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
+
+    /* lit: every candle up to the current beat (all six from beat 5) */
+    var now = performance.now();
+    for (var i = 0; i < N; i++) {
+      var to = (beat >= 5 || i <= beat) ? 1 : 0;
+      if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
+      else if (to !== litTo[i]) { litFrom[i] = L[i]; litTo[i] = to; litT0[i] = now; }
+    }
+    first = false;
+
+    /* the grow's DOM half: the macro, centred on the drifting flame
+       point, and the bloom */
+    var dg = smooth(g);
+    var Fx = W * cxF, Fy = cyW - Rw - 0.94 * hC;
+    var Dx = Fx + (W / 2 - Fx) * dg, Dy = Fy + (H / 2 - Fy) * dg;
+    putPx(flameEl, "fx", "--fx", Dx - W / 2);
+    putPx(flameEl, "fy", "--fy", Dy - H / 2);
+    put(flameEl, "fs", "--fs", 0.6 + 0.6 * g);
+    put(flameEl, "fo", "--fo", clamp((g - 0.45) / 0.3));
+    /* the bloom leaves with the hand-off: the CSS multiplies --bo by
+       (1 - --spk-keys-reveal), which module 2 writes on the root */
+    put(bloomEl, "bo", "--bo", clamp((g - 0.7) / 0.3));
+
+    /* held in place while the talks section rises over it (only when that
+       section is pinned over it: on phones it is a strip) */
+    var hold = (keysSec && keysSec.getAttribute("data-spk-keys-mode") === "pin" && u > 620)
+      ? "translate3d(0," + ((u - 620) * svh).toFixed(1) + "px,0)" : "";
+    if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
+    wake();
+  }
+
+  /* ---- the draw ---- */
+  var RAD = Math.PI / 180;
+  function frame(f, big, alpha) {
+    if (alpha <= 0.003) return;
+    var im = imgs[big][f];
+    if (!ready(im)) im = imgs[1 - big][f];
+    if (!ready(im)) return;
+    ctx.globalAlpha = alpha > 1 ? 1 : alpha;
+    ctx.drawImage(im, fx[f], fy[f], fw[f], fh[f]);
+  }
+  /* the lighting (600ms) and the flicker: each lit frame held 420-900ms,
+     then a 260ms crossfade to one of the other two */
+  function step(now) {
+    for (var i = 0; i < N; i++) {
+      var t = (now - litT0[i]) / 600;
+      L[i] = t >= 1 ? litTo[i] : litFrom[i] + (litTo[i] - litFrom[i]) * smooth(t);
+      if (now >= fT[i] + 260) {
+        fa[i] = fb[i];
+        fb[i] = (fa[i] + 1 + Math.floor(Math.random() * 2)) % 3;
+        fT[i] = now + 420 + Math.random() * 480;
+      }
+    }
+  }
+  function draw(now) {
+    step(now);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var cxW = W * cxF;
+    var others = 1 - clamp(g / 0.3);
+    var dg = smooth(g), S = 1 + 5 * dg;
+    var top = Math.min(beat, 5);
+    var gr = 0.55 * hC, fyL = -0.94 * hC;
+    for (var i = 0; i < N; i++) {
+      var phi = -90 + theta + i * STEP;
+      var rel = ((phi + 90) % 360 + 540) % 360 - 180;
+      if (rel > 100 || rel < -100) continue;
+      var rad = phi * RAD;
+      var x = cxW + Rw * Math.cos(rad), y = cyW + Rw * Math.sin(rad);
+      if (y > H + hC) continue;
+      var a = 0.35 + 0.65 * clamp(1 - Math.abs(rel) / 80);
+      var grow = g > 0 && i === top;
+      if (!grow) a *= others;
+      if (a <= 0.003) continue;
+      var rot = rad + Math.PI / 2, c = Math.cos(rot), sn = Math.sin(rot);
+      var k = 1, ex = x, ey = y;
+      if (grow) {
+        /* scale about the flame point, which drifts to the centre */
+        var Fx = x + 0.94 * hC * sn, Fy = y - 0.94 * hC * c;
+        var Dx = Fx + (W / 2 - Fx) * dg, Dy = Fy + (H / 2 - Fy) * dg;
+        k = S; ex = Dx + S * (x - Fx); ey = Dy + S * (y - Fy);
+      }
+      ctx.setTransform(dpr * k * c, dpr * k * sn, -dpr * k * sn, dpr * k * c, dpr * ex, dpr * ey);
+      var big = hC * dpr * k > 470 ? 1 : 0;
+      var Li = L[i];
+      if (Li > 0.001) {
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = (0.26 + 0.04 * Math.sin(now / 900 + i)) * Li * a;
+        ctx.drawImage(glow, -gr, fyL - gr, 2 * gr, 2 * gr);
+        ctx.globalCompositeOperation = "source-over";
+      }
+      if (Li < 0.999) frame(3, big, a * (1 - Li));
+      if (Li > 0.001) {
+        var t = (now - fT[i]) / 260;
+        if (t <= 0) frame(fa[i], big, a * Li);
+        else if (t < 1) { frame(fa[i], big, a * Li * (1 - t)); frame(fb[i], big, a * Li * t); }
+        else frame(fb[i], big, a * Li);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---- the loop: only while the stage is on screen and the tab shows ----
+     window.__spkProfile = true times each draw into window.__spkWheelCost
+     (the last 240 frames, in ms). */
+  var raf = 0, onScreen = false;
+  function tick(now) {
+    raf = 0;
+    if (entry.disabled || !onScreen || document.hidden) return;
+    var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
+    draw(now);
+    if (prof) {
+      var cost = window.__spkWheelCost || (window.__spkWheelCost = []);
+      cost.push(performance.now() - t0);
+      if (cost.length > 240) cost.shift();
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden) raf = requestAnimationFrame(tick); }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } } else wake();
+  });
+
+  function pageTop(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
+  var entry = { disabled: false,
+    start: function () { return pageTop(sec); },
+    end: function () { return pageTop(sec) + track.offsetHeight; },
+    update: update };
+
+  build();
+  window.spkSpine.add(entry);
+
+  if ("IntersectionObserver" in window) {
     new IntersectionObserver(function (e, obs) {
       if (!e[0].isIntersecting) return;
-      lightUp(); obs.disconnect();
-    }, { threshold: 0.2 }).observe(sec);
-  }
-
-  /* --- the room ---------------------------------------------------------
-     Geometry, palette and hole are the formats room's, duplicated rather
-     than shared so that module stays exactly as it is. */
-  var cv = document.getElementById("spkSaidRoom");
-  var seatsEl = document.getElementById("spkSaidSeats");
-  var ctx = cv && cv.getContext && cv.getContext("2d");
-  var srItems = [].slice.call(sec.querySelectorAll(".spk-said__srlist li"));
-
-  /* One occupied seat per line, as [row, seat fraction] in the widest
-     tier's nine rows. Rows 0–1 are front rows, below the text band; row 8
-     is the back row, above it (row 7 put lines 3 and 4 inside the hole at
-     1024, under the type's own box). */
-  var OCC = [[1, 0.24], [1, 0.76], [8, 0.14], [8, 0.86], [0, 0.50]];
-  var M = OCC.length;
-
-  var W = 1, H = 1, R = 9, S = 26, n = 0, T = null;
-  var bx = null, by = null, br = null, ba = null, occ = null;
-  var sk = new Int32Array(M);          /* seat index per line */
-  var hl = new Float32Array(M * 4);    /* hairline start x,y and end x,y per line */
-  var PAL = new Array(8 * 33);
-  (function () {
-    for (var l = 0; l < 8; l++) {
-      var f = l / 7;
-      var r = Math.round(169 + (231 - 169) * f);
-      var g = Math.round(133 + (220 - 133) * f);
-      var b = Math.round(230 + (246 - 230) * f);
-      for (var a = 0; a <= 32; a++) PAL[l * 33 + a] = "rgba(" + r + "," + g + "," + b + "," + (a / 32).toFixed(3) + ")";
-    }
-  })();
-  /* a seat's own base violet to gold #E8BB68, in 33 steps, by alpha — built
-     once so draw() never makes a string */
-  var GP = new Array(33 * 33);
-  (function () {
-    for (var c = 0; c <= 32; c++) {
-      var f = c / 32;
-      var r = Math.round(169 + (232 - 169) * f);
-      var g = Math.round(133 + (187 - 133) * f);
-      var b = Math.round(230 + (104 - 230) * f);
-      for (var a = 0; a <= 32; a++) GP[c * 33 + a] = "rgba(" + r + "," + g + "," + b + "," + (a / 32).toFixed(3) + ")";
-    }
-  })();
-  var HAIR = "rgba(169,133,230,.5)";
-
-  function tier() {
-    var w = window.innerWidth;
-    if (w >= 1200) return { R: 9, S: 26, r0: 2.6, r1: 1.2, a0: .42, a1: .14, reach: 260, lean: 3.0, sag0: 10, sag1: 5 };
-    if (w >= 768)  return { R: 7, S: 20, r0: 2.2, r1: 1.1, a0: .39, a1: .14, reach: 220, lean: 2.5, sag0: 10, sag1: 5 };
-    return { R: 5, S: 13, r0: 1.9, r1: 1.0, a0: .36, a1: .14, reach: 0, lean: 0, sag0: 7, sag1: 3.5 };
-  }
-
-  var hole = null;
-  function measureHole() {
-    hole = null;
-    var lr = stage.getBoundingClientRect(), sr = sec.getBoundingClientRect();
-    if (!lr.width || !lr.height) return;
-    var halfW = lr.width / 2 + 24, halfH = lr.height / 2 + 24;
-    var rx = halfW + 80, ry = halfH + 80;
-    var inner = Math.min(halfW / rx, halfH / ry);
-    var g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-    g.addColorStop(0, "rgba(0,0,0,1)");
-    g.addColorStop(inner, "rgba(0,0,0,1)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    hole = { x: lr.left - sr.left + lr.width / 2, y: lr.top - sr.top + lr.height / 2,
-             rx: rx, ry: ry, g: g };
-  }
-
-  /* each hairline runs from its seat toward the line box — front rows to
-     the bottom-centre, back rows to the top-centre — and stops 16px short */
-  function aim() {
-    var lr = stage.getBoundingClientRect(), sr = sec.getBoundingClientRect();
-    var cx = lr.left - sr.left + lr.width / 2;
-    var top = lr.top - sr.top, bot = top + lr.height;
-    for (var i = 0; i < M; i++) {
-      var k = sk[i], x0 = bx[k], y0 = by[k];
-      var tx = cx, ty = OCC[i][0] <= 1 ? bot : top;
-      var dx = tx - x0, dy = ty - y0, d = Math.sqrt(dx * dx + dy * dy);
-      var len = Math.max(0, d - 16), m = d > 0.001 ? len / d : 0;
-      hl[i * 4] = x0; hl[i * 4 + 1] = y0;
-      hl[i * 4 + 2] = x0 + dx * m; hl[i * 4 + 3] = y0 + dy * m;
-    }
-  }
-
-  var btns = [];
-  function placeSeats() {
-    var want = mode === "live" && !!seatsEl && window.innerWidth >= 768;
-    if (!want) {
-      btns.forEach(function (b) { if (b.parentNode) b.parentNode.removeChild(b); });
-      btns = [];
-      return;
-    }
-    if (!btns.length) {
-      for (var i = 0; i < M; i++) btns.push(seatButton(i));
-    }
-    for (var j = 0; j < M; j++) {
-      btns[j].style.left = Math.round(bx[sk[j]]) + "px";
-      btns[j].style.top  = Math.round(by[sk[j]]) + "px";
-    }
-  }
-  /* the buttons are the keyboard path to one particular line; the arrows
-     stay the path through the sequence */
-  function seatButton(i) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "spk-said__seat";
-    var li = srItems[i];
-    if (li) b.setAttribute("aria-label", li.textContent.replace(/\s+/g, " ").trim());
-    b.addEventListener("pointerenter", function (e) {
-      if (e.pointerType === "touch") return;
-      pin(i);
-    });
-    b.addEventListener("focus", function () { pin(i); });
-    b.addEventListener("click", function () { pin(i); });
-    seatsEl.appendChild(b);
-    return b;
-  }
-
-  function build() {
-    var r = sec.getBoundingClientRect();
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    T = tier(); R = T.R; S = T.S; n = R * S;
-    bx = new Float32Array(n); by = new Float32Array(n);
-    br = new Float32Array(n); ba = new Float32Array(n);
-    occ = new Int8Array(n);
-    var k = 0;
-    for (var i = 0; i < R; i++) {
-      var f = R > 1 ? i / (R - 1) : 0;
-      var yi = H * (0.92 - 0.72 * Math.pow(f, 0.78));
-      var spread = 0.62 + 0.34 * f;
-      var sag = T.sag0 + (T.sag1 - T.sag0) * f;
-      for (var j = 0; j < S; j++) {
-        var tt = (S > 1 ? j / (S - 1) : 0.5) - 0.5;
-        bx[k] = W * (0.5 + spread * tt);
-        by[k] = yi - sag * (1 - (2 * tt) * (2 * tt));
-        br[k] = T.r0 + (T.r1 - T.r0) * f;
-        ba[k] = T.a0 + (T.a1 - T.a0) * f;
-        occ[k] = -1;
-        k++;
-      }
-    }
-    /* the rows are authored against nine, so each is read as a fraction and
-       mapped onto the rows and seats this tier actually has */
-    for (var q = 0; q < M; q++) {
-      var rr = Math.max(0, Math.min(R - 1, Math.round(OCC[q][0] / 8 * (R - 1))));
-      var jj = Math.max(0, Math.min(S - 1, Math.round(OCC[q][1] * (S - 1))));
-      sk[q] = rr * S + jj;
-      occ[sk[q]] = q;
-    }
-    measureHole();
-    aim();
-    placeSeats();
-  }
-
-  /* seat, lift and hairline state; every easing runs off its own start time,
-     so a change made off screen has simply finished by the time it is seen */
-  var lit = new Float32Array(M), lFrom = new Float32Array(M), lTo = new Float32Array(M);
-  var lT0 = new Float64Array(M);
-  var lift = 0, fFrom = 0, fTo = 0, fT0 = -1e9;
-  var hlI = -1, hlT0 = 0, hlP = 0, hlA = 0;
-  var roomCur = -1;
-
-  function ease(x) { return 1 - (1 - x) * (1 - x) * (1 - x); }
-
-  function step(now) {
-    var busy = false, t;
-    for (var i = 0; i < M; i++) {
-      t = (now - lT0[i]) / 600;
-      if (t >= 1) { lit[i] = lTo[i]; continue; }
-      if (t < 0) t = 0;
-      lit[i] = lFrom[i] + (lTo[i] - lFrom[i]) * ease(t);
-      busy = true;
-    }
-    t = (now - fT0) / 900;
-    if (t >= 1) lift = fTo;
-    else { if (t < 0) t = 0; lift = fFrom + (fTo - fFrom) * ease(t); busy = true; }
-    if (hlI >= 0) {
-      var e = now - hlT0;
-      if (e < 0) e = 0;
-      if (e >= 1450) { hlI = -1; hlA = 0; }
-      else {
-        hlP = e >= 500 ? 1 : e / 500;
-        hlA = e <= 850 ? 1 : 1 - (e - 850) / 600;
-        busy = true;
-      }
-    }
-    return busy;
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    var lt = ((lift * 2 + 0.5) | 0) * 33, la = 0.14 * lift;
-    for (var k = 0; k < n; k++) {
-      var o = occ[k], a, rr = br[k];
-      if (o < 0) {
-        a = ba[k] + la;
-        if (a <= 0.005) continue;
-        if (a > 1) a = 1;
-        ctx.fillStyle = PAL[lt + ((a * 32) | 0)];
-      } else {
-        var l = lit[o];
-        a = 0.95 * l + ba[k] * (1 - l);
-        if (a > 1) a = 1;
-        rr += 0.9 * l;
-        ctx.fillStyle = GP[((l * 32 + 0.5) | 0) * 33 + ((a * 32) | 0)];
-      }
-      ctx.beginPath();
-      ctx.arc(bx[k], by[k], rr, 0, 6.28318530718);
-      ctx.fill();
-    }
-    if (hole) {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.save();
-      ctx.translate(hole.x, hole.y); ctx.scale(hole.rx, hole.ry);
-      ctx.fillStyle = hole.g;
-      ctx.beginPath(); ctx.arc(0, 0, 1, 0, 6.28318530718); ctx.fill();
-      ctx.restore();
-      ctx.globalCompositeOperation = "source-over";
-    }
-    /* the hairline goes on after the hole, so it can reach into the air
-       around the line that the dots are kept out of */
-    if (hlI >= 0 && hlA > 0.001) {
-      var q = hlI * 4;
-      ctx.globalAlpha = hlA;
-      ctx.strokeStyle = HAIR;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(hl[q], hl[q + 1]);
-      ctx.lineTo(hl[q] + (hl[q + 2] - hl[q]) * hlP, hl[q + 1] + (hl[q + 3] - hl[q + 1]) * hlP);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  var mode = null, raf = 0, rT = 0, onScreen = false;
-  function frame(now) {
-    raf = 0;
-    if (mode !== "live") return;
-    var busy = step(now);
-    draw();
-    if (busy && onScreen && !document.hidden) raf = requestAnimationFrame(frame);
-  }
-  function wake() { if (mode === "live" && onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame); }
-  function sleep() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-
-  /* A slide change: on 1–5 only that line's seat is lit and its hairline
-     draws; on the bridge all five hold and the room lifts. The first event
-     waits for the room to be seen. */
-  function roomGo(i) {
-    if (mode !== "live" || i === roomCur) return;
-    if (roomCur < 0 && !onScreen) return;
-    roomCur = i;
-    var now = performance.now();
-    step(now);
-    var all = i >= M;
-    for (var s = 0; s < M; s++) {
-      var to = (all || s === i) ? 1 : 0;
-      if (to !== lTo[s]) { lFrom[s] = lit[s]; lTo[s] = to; lT0[s] = now; }
-    }
-    var ft = all ? 1 : 0;
-    if (ft !== fTo) { fFrom = lift; fTo = ft; fT0 = now; }
-    hlI = all ? -1 : i; hlT0 = now; hlP = 0; hlA = 0;
-    wake();
-  }
-  function roomSeen(v) {
-    onScreen = v;
-    if (!v) { sleep(); return; }
-    if (roomCur < 0) roomGo(cur);
-    wake();
-  }
-
-  /* Reduced motion and Save-Data: the room drawn once, all five seats held
-     gold, no hairline, no lift, no buttons and no loop. */
-  function setRoomMode() {
-    var want = (rmq.matches || saveData) ? "static" : "live";
-    if (want === mode) return;
-    sleep();
-    mode = want;
-    var v = want === "static" ? 1 : 0;
-    for (var i = 0; i < M; i++) { lit[i] = v; lFrom[i] = v; lTo[i] = v; lT0[i] = -1e9; }
-    lift = 0; fFrom = 0; fTo = 0; fT0 = -1e9;
-    hlI = -1; hlA = 0; roomCur = -1;
-    build();
-    draw();
-    if (want === "live" && onScreen) roomGo(cur);
-  }
-  function relayout() { build(); draw(); wake(); }
-  function roomInit(watch) {
-    if (!ctx) return;
-    setRoomMode();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relayout);
-    window.addEventListener("load", relayout);
-    window.addEventListener("resize", function () {
-      clearTimeout(rT);
-      rT = setTimeout(relayout, 200);
-    }, { passive: true });
-    if (!watch) return;
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) sleep(); else wake();
-    });
-    if (rmq.addEventListener) rmq.addEventListener("change", setRoomMode);
-    else if (rmq.addListener) rmq.addListener(setRoomMode);
-  }
-
-  /* Reduced motion keeps the stacked state exactly as it ships: five lines
-     and the bridge, lit, no cycle and no arrows. */
-  if (reduce) { roomInit(false); return; }
-
-  sec.classList.add("is-live");
-  stage.setAttribute("aria-hidden", "true");
-
-  var DWELL = 8000;
-  var cur = 0, pinned = false, hover = false, focus = false, inView = false;
-  var auto = 0, outT = 0, swapT = 0;
-
-  function pad(i) { return (i < 10 ? "0" : "") + i; }
-  function wrapi(i) { return ((i % N) + N) % N; }
-
-  function show(k, byUser) {
-    slides.forEach(function (s, j) {
-      var was = s.classList.contains("is-on");
-      s.classList.toggle("is-on", j === k);
-      s.classList.toggle("is-out", was && j !== k);
-    });
-    clearTimeout(outT);
-    outT = setTimeout(function () {
-      slides.forEach(function (s) { s.classList.remove("is-out"); });
-    }, 560);
-    if (live) {
-      if (byUser) {
-        live.setAttribute("aria-live", "polite");
-        var t = slides[k].textContent.replace(/\s+/g, " ").trim();
-        setTimeout(function () { live.textContent = t; }, 60);
-      } else {
-        live.setAttribute("aria-live", "off");
-        live.textContent = "";
-      }
-    }
-  }
-
-  /* the count and the seat move at once; the line follows 350ms later, so
-     the seat lights a beat before its line surfaces */
-  function render(i, byUser) {
-    var k = cur = wrapi(i);
-    count.textContent = pad(cur + 1) + " / " + pad(N);
-    roomGo(cur);
-    clearTimeout(swapT);
-    swapT = setTimeout(function () { show(k, byUser); }, 350);
-  }
-
-  function sync() {
-    var run = !pinned && inView && !document.hidden && !hover && !focus;
-    if (run) { if (!auto) auto = setInterval(function () { render(cur + 1, false); }, DWELL); return; }
-    if (auto) { clearInterval(auto); auto = 0; }
-  }
-
-  /* an arrow pins the sequence for good — nothing releases it on a timer */
-  function pin(i) { pinned = true; render(i, true); sync(); }
-  prev.addEventListener("click", function () { pin(cur - 1); });
-  nxt.addEventListener("click", function () { pin(cur + 1); });
-
-  inner.addEventListener("pointerenter", function (e) {
-    if (e.pointerType === "touch") return;
-    hover = true; sync();
-  });
-  inner.addEventListener("pointerleave", function (e) {
-    if (e.pointerType === "touch") return;
-    hover = false; sync();
-  });
-  inner.addEventListener("focusin", function () { focus = true; sync(); });
-  inner.addEventListener("focusout", function (e) {
-    if (!inner.contains(e.relatedTarget)) { focus = false; sync(); }
-  });
-  document.addEventListener("visibilitychange", sync);
-
-  /* the first line is simply there when the section is; its seat lights
-     when the room is first seen */
-  count.textContent = pad(1) + " / " + pad(N);
-  show(0, false);
-  roomInit(true);
-  if ("IntersectionObserver" in window) {
+      loadAll(); obs.disconnect();
+    }, { rootMargin: "100% 0px" }).observe(sec);
     new IntersectionObserver(function (e) {
-      var r = e[0].intersectionRatio;
-      inView = r >= 0.25; sync();
-      roomSeen(e[0].isIntersecting && r >= 0.05);
-    }, { threshold: [0, 0.05, 0.25] }).observe(sec);
-  } else { inView = true; sync(); roomSeen(true); }
+      onScreen = e[0].isIntersecting && e[0].intersectionRatio >= 0.05;
+      if (onScreen) wake();
+    }, { threshold: [0, 0.05] }).observe(stage);
+  } else { loadAll(); onScreen = true; wake(); }
+
+  var rT = 0;
+  function relayout() { build(); last = {}; lastLeft = lastBridge = null; window.spkSpine.measure(); wake(); }
+  window.addEventListener("resize", function () {
+    clearTimeout(rT);
+    rT = setTimeout(relayout, 200);
+  }, { passive: true });
+  if (phoneMq.addEventListener) phoneMq.addEventListener("change", relayout);
+  else if (phoneMq.addListener) phoneMq.addListener(relayout);
 })();
 
 /* ===== 8. What it's like in the room: seven beats, three stills, one pin =====
