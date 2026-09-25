@@ -1753,8 +1753,11 @@ html.no-js .spk-said__candle { display:none; }
   font-size: clamp(5.5rem, 12vw, 11rem); height: 2em;
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
 .spk-said.is-wheel .spk-said__win--a { z-index:1; }
+/* the key word of each grow line in the italic face */
+.spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
-.spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
+.spk-said.is-wheel .spk-said__nextA,
+.spk-said.is-wheel .spk-said__nextB {
   display:block; margin:0 auto; pointer-events:none;
   font-family: var(--f-display); font-optical-sizing: auto; color: var(--tx-inv);
   font-size: 1em; font-weight:340; line-height: 1.0; letter-spacing: -0.035em;
