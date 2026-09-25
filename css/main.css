@@ -1741,21 +1741,22 @@ html.no-js .spk-said__candle { display:none; }
    canvas), up over g 0-0.2 while the candle is at rest; the wax covers it
    as the candle grows. B: the rest of the line, in front (z 4: over the
    canvas, the macro and the veil), rolled in from under its own top edge
-   over g 0.5-0.75. Both leave with the talks section's reveal. */
+   over g 0.2-0.5, as the candle starts to grow. Both leave with the talks section's reveal. */
 .spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
   display:block; position:absolute; left:50%; margin:0; pointer-events:none;
   font-family: var(--f-display); font-optical-sizing: auto; color: var(--tx-inv);
   text-align:center; text-wrap: balance; }
-.spk-said.is-wheel .spk-said__nextA { top:30%; z-index:1; width:max-content;
-  /* --step-5 (163px at 1440) pushes the box below the resting flame's
-     glow line (y 430 at 1440x900); the brief's fallback size keeps it clear */
+/* A and B share one size (128px at 1440); B sits above A (7% / 36%), so
+   the two never overlap, and A stays clear of the resting flame */
+.spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
   font-size: clamp(4.5rem, 9vw, 8rem); font-weight:340;
-  line-height: 1.02; letter-spacing: -0.035em;
+  line-height: 1.0; letter-spacing: -0.035em; }
+/* A at 36%, not 35%: at 35% its box touched B's resting box by 4px */
+.spk-said.is-wheel .spk-said__nextA { top:38%; z-index:1; width:max-content;
   transform: translate(-50%, calc((1 - var(--na, 0)) * 16px));
   opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
-.spk-said.is-wheel .spk-said__nextB { top:12%; z-index:4;
-  width:max-content; max-width: min(30ch, calc(100% - 2 * var(--gutter)));
-  font-size: var(--step-2); font-weight:360; line-height: var(--lh-snug); letter-spacing: -0.02em;
+.spk-said.is-wheel .spk-said__nextB { top:9%; z-index:4;
+  width:max-content; max-width: min(13ch, calc(100% - 2 * var(--gutter)));
   clip-path: inset(calc((1 - var(--nb, 0)) * 100%) 0 0 0);
   transform: translate(-50%, calc((1 - var(--nb, 0)) * 24px));
   opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
