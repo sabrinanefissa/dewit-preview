@@ -1737,29 +1737,35 @@ html.no-js .spk-said__candle { display:none; }
   pointer-events:none; opacity: calc(var(--bo, 0) * (1 - var(--spk-keys-reveal, 0)));
   background: radial-gradient(60% 60% at 50% 50%, rgba(232,187,104,.18), transparent 70%); }
 /* The grow's two lines (visual only; the real heading is in the talks
-   section). A: "Three talks.", big, behind the candle (z 1, under the
-   canvas), up over g 0-0.2 while the candle is at rest; the wax covers it
-   as the candle grows. B: the rest of the line, in front (z 4: over the
-   canvas, the macro and the veil), rolled in from under its own top edge
-   over g 0.2-0.5, as the candle starts to grow. Both leave with the talks section's reveal. */
+   section), one roll through one window. Two windows with identical
+   geometry sit at the same spot (centred, top 30%, two rows of the big
+   type tall, overflow hidden): one under the canvas (z 1) holding A,
+   "Three talks.", one over the canvas, the macro and the veil (z 4)
+   holding B, "for people, teams / and organizations.". A comes up on the
+   window's lower row over g 0-0.2 while the candle rests (--na: opacity
+   and a 16px rise); then over g 0.2-0.5 (--roll) A rolls up and out
+   through the window's top while B rolls up into it from below: one
+   roll, no fade, no size change. The windows only hold text; they never
+   clip the candle. Both leave with the talks section's reveal. */
+.spk-said__win { display:none; }
+.spk-said.is-wheel .spk-said__win { display:block; position:absolute; left:50%; top:30%;
+  transform: translateX(-50%); width: calc(100% - 2 * var(--gutter));
+  font-size: clamp(4.5rem, 9vw, 8rem); height: 2em;
+  overflow:hidden; clip-path: inset(0); pointer-events:none; }
+.spk-said.is-wheel .spk-said__win--a { z-index:1; }
+.spk-said.is-wheel .spk-said__win--b { z-index:4; }
 .spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
-  display:block; position:absolute; left:50%; margin:0; pointer-events:none;
+  display:block; margin:0 auto; pointer-events:none;
   font-family: var(--f-display); font-optical-sizing: auto; color: var(--tx-inv);
+  font-size: 1em; font-weight:340; line-height: 1.0; letter-spacing: -0.035em;
   text-align:center; text-wrap: balance; }
-/* A and B share one size (128px at 1440); B sits above A (7% / 36%), so
-   the two never overlap, and A stays clear of the resting flame */
-.spk-said.is-wheel .spk-said__nextA, .spk-said.is-wheel .spk-said__nextB {
-  font-size: clamp(4.5rem, 9vw, 8rem); font-weight:340;
-  line-height: 1.0; letter-spacing: -0.035em; }
-/* A at 36%, not 35%: at 35% its box touched B's resting box by 4px */
-.spk-said.is-wheel .spk-said__nextA { top:38%; z-index:1; width:max-content;
-  transform: translate(-50%, calc((1 - var(--na, 0)) * 16px));
+/* A sits on the window's lower row (a one-line padding above it) */
+.spk-said.is-wheel .spk-said__nextA { padding-top: 1em;
+  transform: translateY(calc((1 - var(--na, 0)) * 16px + var(--roll, 0) * -100%));
   opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
-.spk-said.is-wheel .spk-said__nextB { top:9%; z-index:4;
-  width:max-content; max-width: min(13ch, calc(100% - 2 * var(--gutter)));
-  clip-path: inset(calc((1 - var(--nb, 0)) * 100%) 0 0 0);
-  transform: translate(-50%, calc((1 - var(--nb, 0)) * 24px));
-  opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
+.spk-said.is-wheel .spk-said__nextB { max-width: 13ch;
+  transform: translateY(calc((1 - var(--roll, 0)) * 100%));
+  opacity: calc(1 - min(1, var(--spk-keys-reveal, 0) * 2.5)); }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }

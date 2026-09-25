@@ -2570,10 +2570,11 @@
      480-560  every candle lit, the bridge holds
      560-660  the grow (g 0-1): "Three talks." up behind the resting
               candle (0-0.2); the candle scales x8 about the middle of its
-              wax, which drifts to the centre (0.2-0.75), covering it;
-              "for people, teams and organizations." rolls in above it, in
-              front (0.2-0.5); the wax close-up settles (0.6-0.9), then a
-              warm veil (0.75-1)
+              wax, which drifts to the centre (0.2-0.75); as it starts,
+              one roll through one window (0.2-0.5): "Three talks." up and
+              out behind the candle, "for people, teams and organizations."
+              up and in, in front; the wax close-up settles (0.6-0.9),
+              then a warm veil (0.75-1)
      620-720  the stage is held in place (a transform, only while the
               talks section is pinned and rises over it) until the talks
               ground has come up
@@ -2756,11 +2757,13 @@
     first = false;
 
     /* the grow's DOM half, in order: line A up behind the resting candle
-       (g 0-0.2), line B rolled in above it in front as the candle starts
-       to grow (0.2-0.5), the wax
+       (g 0-0.2); the roll as the candle starts to grow (0.2-0.5); the wax
        macro settling over the canvas (0.6-0.9) */
     put(nextA, "na", "--na", smooth(clamp(g / 0.2)));
-    put(nextB, "nb", "--nb", smooth(clamp((g - 0.2) / 0.3)));
+    /* one roll through one window: A up and out, B up and in */
+    var roll = smooth(clamp((g - 0.2) / 0.3));
+    put(nextA, "rollA", "--roll", roll);
+    put(nextB, "rollB", "--roll", roll);
     put(macroEl, "ms", "--ms", 1.08 - 0.08 * g);
     put(macroEl, "mo", "--mo", clamp((g - 0.6) / 0.3));
     /* the bloom leaves with the hand-off: the CSS multiplies --bo by
