@@ -469,7 +469,7 @@ html.no-js .loader, .loader[hidden] { display:none; }
   color:var(--tx-inv-soft); font-size:var(--step--1); }
 .final__contact a:hover { color:var(--violet-300); }
 
-.foot { background: var(--plum-2); color:var(--tx-inv-soft); padding-block: 3.5rem 2.5rem; border-top:1px solid var(--line-inv); }
+.foot { position:relative; z-index:1; background: var(--plum-2); color:var(--tx-inv-soft); padding-block: 3.5rem 2.5rem; border-top:1px solid var(--line-inv); }
 .foot__grid { width:var(--wrap); margin-inline:auto; display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:2.5rem; }
 .foot .brand { color:var(--tx-inv); margin-bottom:1rem; display:block; }
 .foot h3 { font-family:var(--f-text); font-size:var(--step--1); letter-spacing:.16em; text-transform:uppercase;
@@ -1093,6 +1093,17 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 .spk-sr { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
   overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
 
+/* ---- 0. The ground ---- */
+.spk-ground { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;
+  background: var(--plum-2); }
+.spk-ground__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  object-position: 50% 42%; transform: scale(var(--spk-ground-zoom, 1)); transform-origin: 50% 40%;
+  will-change: transform; }
+.spk-ground__veil { position:absolute; inset:0;
+  background: rgb(var(--spk-ground, 26 16 38)); opacity: .78; }
+html.no-js .spk-ground__img { display:none; }
+.spk-hero, .spk-proof, .spk-said, .spk-keys, .spk-chap, .spk-out, .spk-formats, .spk-plan, .spk-bio { position:relative; z-index:1; }
+
 /* ---------------------------------------------------------------------
    0. Lights up — ONE shared treatment for every photo on this page:
    the keynote grounds, the walk-out still and the bio portrait. The
@@ -1640,7 +1651,7 @@ html.no-js .spk-out__word::before { display:none; }
    the type keeps clean ground: no scrim, no text-shadow.
    --------------------------------------------------------------------- */
 .spk-formats { position:relative; overflow:hidden;
-  background: var(--plum); color: var(--tx-inv);
+  background: transparent; color: var(--tx-inv);
   padding-block: clamp(5rem, 9vw, 9rem); }
 .spk-room { position:absolute; inset:0; z-index:0; display:block;
   width:100%; height:100%; pointer-events:none; }
@@ -1666,8 +1677,8 @@ html.no-js .spk-room { display:none; }
 
 /* The two tone swaps the new order needs, and the proof line's own ground.
    Nothing else about those sections changes. */
-.spk-proof   { background: var(--plum); }
-.spk-formats { background: var(--plum-2); }
+.spk-proof   { background: transparent; border-top:0; }
+.spk-formats { background: transparent; }
 
 /* ---------------------------------------------------------------------
    A. .spk-said — "What he talks about." One line at a time over a reel
@@ -1987,7 +1998,7 @@ html.no-js .spk-formats__rooms li,
    D. .spk-plan — "For planners." One centred column. The AV items are a
    list separated by rules, not cards and not icons.
    --------------------------------------------------------------------- */
-.spk-plan { background: var(--plum); color: var(--tx-inv);
+.spk-plan { background: transparent; color: var(--tx-inv);
   padding-block: clamp(5rem, 9vw, 9rem); }
 .spk-plan__inner { width: var(--wrap); max-width:62ch; margin-inline:auto;
   text-align:center; }
@@ -2008,7 +2019,7 @@ html.no-js .spk-formats__rooms li,
    portrait, one sentence, one link. The long bio and the rolling
    credentials belong to the About page.
    --------------------------------------------------------------------- */
-.spk-bio { background: var(--plum-2); color: var(--tx-inv);
+.spk-bio { background: transparent; color: var(--tx-inv);
   min-height: 420px; display:grid; place-items:center;
   padding-block: clamp(3rem, 6vw, 4.5rem); }
 .spk-bio__row { width: var(--wrap); max-width: 940px; margin-inline:auto;

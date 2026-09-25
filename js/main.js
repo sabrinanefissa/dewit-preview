@@ -1192,6 +1192,129 @@
    element, so this file stays inert on the homepage.
    ===================================================================== */
 
+/* ===== 0. The spine: one scroll, one loop, one ground =====
+   The page scrolls through Lenis (the scroll position itself eases, lerp
+   0.1) and every scroll-driven move hangs on ONE rAF loop that reads
+   scrollY once a frame. Lenis moves the window natively, so every other
+   scroll listener on the page keeps working. Other modules register with
+   window.spkSpine.add({ start, end, update }); start and end return page-y
+   in px and are read only in measure(); update(p, y) runs only when its p
+   changes. The first entry is the ground: the veil's tone and the room's
+   push-in, scrubbed across the whole page. Reduced motion and Save-Data:
+   no Lenis, and the ground holds the plum veil. */
+(function () {
+  "use strict";
+  var page = document.querySelector(".spk-hero");
+  if (!page) return;
+
+  var root = document.documentElement;
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+              !!(navigator.connection && navigator.connection.saveData);
+
+  var lenis = null;
+  if (window.Lenis && !still) {
+    lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, smoothWheel: true,
+                               syncTouch: false, autoRaf: false, anchors: true });
+    window.spkLenis = lenis;
+  }
+
+  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+
+  /* ---- the registry ---- */
+  var entries = [];           // { start:fn→px, end:fn→px, update:fn(p, y), s:px, e:px, last:-1 }
+  function add(entry) { entries.push(entry); measure(); return entry; }
+  function measure() { entries.forEach(function (en) { en.s = en.start(); en.e = en.end(); en.last = -1; }); }
+  window.spkSpine = { add: add, measure: measure };
+
+  /* ---- the loop: one rAF chain for the page, asleep while hidden ----
+     window.__spkProfile = true times the spine's own work per frame into
+     window.__spkCost (the last 240 frames, in ms). */
+  var rafId = null;
+  function frame(t) {
+    rafId = requestAnimationFrame(frame);
+    if (lenis) lenis.raf(t);
+    var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
+    var y = window.scrollY;
+    for (var i = 0; i < entries.length; i++) {
+      var en = entries[i];
+      var span = en.e - en.s;
+      var p = span > 0 ? clamp((y - en.s) / span) : (y >= en.e ? 1 : 0);
+      if (p !== en.last) { en.last = p; en.update(p, y); }
+    }
+    if (prof) {
+      var c = window.__spkCost || (window.__spkCost = []);
+      c.push(performance.now() - t0);
+      if (c.length > 240) c.shift();
+    }
+  }
+  function wake() {
+    if (document.hidden) {
+      if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+    } else if (rafId == null) {
+      rafId = requestAnimationFrame(frame);
+    }
+  }
+  document.addEventListener("visibilitychange", wake);
+
+  /* ---- the ground: tone and push-in, one entry across the whole page ----
+     Stops are page-y, measured with the entry; the veil's colour runs
+     piecewise-linear through them. */
+  var TONES = [[18, 10, 28], [26, 16, 38], [34, 18, 30], [26, 16, 38], [18, 10, 28]];
+  function top(sel) {
+    var el = document.querySelector(sel);
+    if (!el) return null;
+    var y = 0;
+    for (var n = el; n; n = n.offsetParent) y += n.offsetTop;
+    return { el: el, y: y };
+  }
+  var lastTone = "", lastZoom = "";
+  function paint(tone, zoom) {
+    if (tone !== lastTone) { root.style.setProperty("--spk-ground", tone); lastTone = tone; }
+    if (zoom !== lastZoom) { root.style.setProperty("--spk-ground-zoom", zoom); lastZoom = zoom; }
+  }
+  var ground = {
+    stops: [0, 0, 0, 0, 0],
+    start: function () { return 0; },
+    end: function () {
+      /* the section tops are taken here, with the rest of the measuring */
+      var keys = top(".spk-keys"), chap = top(".spk-chap"),
+          form = top(".spk-formats"), foot = top(".foot");
+      var max = root.scrollHeight - window.innerHeight;
+      var s = [0,
+               keys ? keys.y : max * 0.25,
+               chap ? chap.y + chap.el.offsetHeight / 2 : max * 0.5,
+               form ? form.y : max * 0.75,
+               foot ? Math.min(foot.y, max) : max];   /* the footer can sit below the last scroll position */
+      for (var i = 1; i < s.length; i++) if (s[i] < s[i - 1]) s[i] = s[i - 1];
+      ground.stops = s;
+      return max;
+    },
+    update: function (p, y) {
+      if (still) { paint("26 16 38", "1"); return; }
+      var s = ground.stops, k = 0;
+      while (k < s.length - 2 && y >= s[k + 1]) k++;
+      var a = TONES[k], b = TONES[k + 1];
+      var f = s[k + 1] > s[k] ? clamp((y - s[k]) / (s[k + 1] - s[k])) : 1;
+      paint(Math.round(a[0] + (b[0] - a[0]) * f) + " " +
+            Math.round(a[1] + (b[1] - a[1]) * f) + " " +
+            Math.round(a[2] + (b[2] - a[2]) * f),
+            (1 + 0.08 * p).toFixed(4));
+    }
+  };
+  add(ground);
+
+  /* ---- when the page changes shape ---- */
+  var rsT = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(rsT);
+    rsT = setTimeout(measure, 200);
+  }, { passive: true });
+  window.addEventListener("load", measure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+
+  wake();
+})();
+
 /* ===== 1. Hero: the reel. Sound never starts without a click. =====
    Spec: 05_Website/Design/SPEAKING-HERO-AUDIO-SPEC.md */
 (function () {

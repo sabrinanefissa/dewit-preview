@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..500;1,9..144,300..460&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="../assets/img/reel-poster-1280.webp" imagesrcset="../assets/img/reel-poster-860.webp 860w, ../assets/img/reel-poster-1280.webp 1280w, ../assets/img/reel-poster-1920.webp 1920w" imagesizes="100vw" fetchpriority="high">
-<link rel="stylesheet" href="../css/main.css?v=20260924b">
+<link rel="stylesheet" href="../css/main.css?v=20260925a">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
 </head>
 <body>
@@ -57,6 +57,17 @@
 </div>
 
 <main id="main" tabindex="-1">
+  <!-- The ground. One room under the whole page (a theatre from the back
+       row) and a colour veil over it whose tone the scroll spine warms and
+       cools as the page goes down. Every section that has no picture of its
+       own is transparent, so the page has no bands; sections that ARE a
+       picture (hero, the talks, the room, the walk-out) cover it. -->
+  <div class="spk-ground" aria-hidden="true">
+    <img class="spk-ground__img" src="../assets/img/ground-theatre-1664.webp"
+         srcset="../assets/img/ground-theatre-960.webp 960w, ../assets/img/ground-theatre-1664.webp 1664w"
+         sizes="100vw" alt="" decoding="async" fetchpriority="low">
+    <div class="spk-ground__veil"></div>
+  </div>
 
   <!-- ==============================================================
        1. HERO - full-screen reel, sound on a click only. No visible hero
@@ -514,6 +525,7 @@
   <div class="foot__base"><span>© <span data-year>2026</span> Dr. Stephen de Wit</span><span>Human Connection &amp; Relational Intelligence</span></div>
 </footer>
 
-<script src="../js/main.js?v=20260924b" defer></script>
+<script src="../js/vendor/lenis.min.js?v=20260925a" defer></script>
+<script src="../js/main.js?v=20260925a" defer></script>
 </body>
 </html>
