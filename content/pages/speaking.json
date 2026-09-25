@@ -215,7 +215,7 @@
       "heading": "What the room walks out with.",
       "settings": null,
       "image": {
-        "src": "assets/img/step-05-1280.webp",
+        "src": "/assets/img/out-aisle-1664.webp",
         "sizes": "100vw"
       },
       "words": [
@@ -271,7 +271,7 @@
         {
           "caption": "Managers and emerging leaders",
           "image": {
-            "src": "assets/img/room-corporate-1200.webp"
+            "src": "/assets/img/stephen in conference hall.png"
           }
         },
         {
