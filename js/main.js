@@ -3209,7 +3209,53 @@ var UI = (function () {
       }, { passive: true });
       document.documentElement.addEventListener("mouseleave", function () { mx = my = -1e9; wake(); }, { passive: true });
     }
+    /* ---- the tap: coarse pointers. A pointerdown (read on the document,
+       as the hover is; never prevented, so the page still scrolls) that
+       ends in a pointerup within 8px, over a lit candle's flame, glows that
+       candle: hov[] eases to 1 over 250ms, holds 900ms, eases out over
+       600ms, on its own clock (tapT0; a second tap restarts it from where
+       the glow is). A pointer that travels (a scroll) or is cancelled
+       lights nothing. ---- */
+    var coarse = window.matchMedia("(pointer: coarse)").matches;
+    var tapT0 = new Float64Array(NP), tapFrom = new Float32Array(NP);
+    if (coarse) {
+      var tp = null;
+      document.addEventListener("pointerdown", function (e) {
+        tp = null;
+        if (!onScreen || e.isPrimary === false) return;
+        var b = stage.getBoundingClientRect();
+        var x = e.clientX - b.left, y = e.clientY - b.top;
+        if (x < 0 || y < 0 || x > b.width || y > b.height) return;
+        tp = { id: e.pointerId, cx: e.clientX, cy: e.clientY, x: x, y: y };
+      }, { passive: true });
+      document.addEventListener("pointermove", function (e) {
+        if (tp && e.pointerId === tp.id && (Math.abs(e.clientX - tp.cx) > 8 || Math.abs(e.clientY - tp.cy) > 8)) tp = null;
+      }, { passive: true });
+      document.addEventListener("pointercancel", function () { tp = null; }, { passive: true });
+      document.addEventListener("pointerup", function (e) {
+        var t = tp; tp = null;
+        if (!t || e.pointerId !== t.id || !onScreen) return;
+        if (Math.abs(e.clientX - t.cx) > 8 || Math.abs(e.clientY - t.cy) > 8) return;
+        var now = performance.now();
+        for (var i = 0; i < NP; i++) {
+          if (litTo[i] !== 1 || !(flR[i] > 0)) continue;
+          var dx = t.x - flX[i], dy = t.y - flY[i];
+          if (dx * dx + dy * dy < flR[i] * flR[i]) { tapFrom[i] = hov[i]; tapT0[i] = now; }
+        }
+        wake();
+      }, { passive: true });
+    }
+    function tapGlow(i, now) {
+      if (!tapT0[i]) return 0;
+      var t = now - tapT0[i];
+      if (t < 0) t = 0;
+      if (t < 250) return tapFrom[i] + (1 - tapFrom[i]) * smooth(t / 250);
+      if (t < 1150) return 1;
+      if (t < 1750) return 1 - smooth((t - 1150) / 600);
+      tapT0[i] = 0; return 0;
+    }
     function hover(i, now, on) {
+      if (coarse) { hov[i] = tapGlow(i, now); return; }
       var to = on ? 1 : 0;
       if (to !== hovTo[i]) { hovFrom[i] = hov[i]; hovTo[i] = to; hovT0[i] = now; }
       var t = (now - hovT0[i]) / (hovTo[i] ? 250 : 400);
@@ -3292,7 +3338,7 @@ var UI = (function () {
           poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
         }
         if (i === 0) c0 = { x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3), a: +a.toFixed(3) };
-        if (a <= 0.003) { hover(i, now, false); continue; }
+        if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
         ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
@@ -4215,17 +4261,85 @@ var UI = (function () {
       row.addEventListener("pointerleave", function (e) {
         if (e.pointerType === "touch") return;
         var to = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest(".keynote") : null;
-        if (!to && document.activeElement !== row) hide();
+        if (!to && !row.contains(document.activeElement)) hide();
       });
-      /* keyboard: anchored at the row's right end, vertically centred */
-      row.addEventListener("focus", function () {
-        if (!row.matches(":focus-visible")) return;
+      /* keyboard (the row's link, its CTA, takes the focus): anchored at
+         the row's right end, vertically centred */
+      row.addEventListener("focusin", function (e) {
+        if (!e.target.matches(":focus-visible")) return;
         var r = sec.getBoundingClientRect(), rr = row.getBoundingClientRect();
         clampTo(rr.right - r.left - img.offsetWidth, rr.top - r.top + rr.height / 2 - img.offsetHeight / 2);
         show(row, true);
       });
-      row.addEventListener("blur", function () { if (cur === row) hide(); });
+      row.addEventListener("focusout", function (e) {
+        if (cur === row && !(e.relatedTarget && row.contains(e.relatedTarget))) hide();
+      });
     });
+  });
+})();
+
+/* ===== 10.C Talks on coarse pointers: tap to expand =====
+   Each row's title is a button (rendered for every pointer; on fine
+   pointers and with no script it stays out of the tab order, covered by
+   the row's stretched CTA link, and everything is shown). On a coarse
+   pointer the section takes .is-disc: the row's sub moves into its panel
+   (picture, sub, CTA), every panel starts closed, and tapping a title (or
+   anywhere on its row outside the open panel) opens that panel from a
+   measured max-height (360ms, the CSS transition) while any other open row
+   closes at the same time; tapping the open row closes it. The pictures
+   switch to eager loading once the section nears the screen. Reduced
+   motion: the panels open and close at once. */
+(function () {
+  "use strict";
+  if (!window.matchMedia("(pointer: coarse)").matches) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  [].slice.call(document.querySelectorAll(".keynotes-sec")).forEach(function (sec) {
+    var rows = [].slice.call(sec.querySelectorAll(".keynote")).map(function (row) {
+      var btn = row.querySelector(".keynote__title"), panel = row.querySelector(".keynote__panel");
+      if (!btn || !panel) return null;
+      var sub = row.querySelector(".keynote__main .keynote__sub"), cta = panel.querySelector(".keynote__cta");
+      if (sub && cta) panel.insertBefore(sub, cta);
+      return { row: row, btn: btn, panel: panel, open: false };
+    }).filter(Boolean);
+    if (!rows.length) return;
+    sec.classList.add("is-disc");
+    rows.forEach(function (r) {
+      r.btn.removeAttribute("tabindex");
+      r.btn.setAttribute("aria-expanded", "false");
+      r.panel.style.maxHeight = "0px";
+      r.panel.addEventListener("transitionend", function (e) {
+        if (e.target === r.panel && e.propertyName === "max-height" && r.open) r.panel.style.maxHeight = "none";
+      });
+      r.btn.addEventListener("click", function () { toggle(r); });
+    });
+    function set(r, open) {
+      if (r.open === open) return;
+      r.open = open;
+      r.btn.setAttribute("aria-expanded", open ? "true" : "false");
+      r.row.classList.toggle("is-open", open);
+      if (open) {
+        r.panel.style.maxHeight = reduce ? "none" : r.panel.scrollHeight + "px";
+      } else {
+        if (reduce) { r.panel.style.maxHeight = "0px"; return; }
+        r.panel.style.maxHeight = r.panel.scrollHeight + "px";
+        void r.panel.offsetHeight;                          /* from its measured height, not "none" */
+        r.panel.style.maxHeight = "0px";
+      }
+    }
+    function toggle(r) {
+      var to = !r.open;
+      rows.forEach(function (o) { if (o !== r) set(o, false); });
+      set(r, to);
+    }
+    function eager() {
+      [].slice.call(sec.querySelectorAll(".keynote__pic img")).forEach(function (im) { im.loading = "eager"; });
+    }
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) { eager(); io.disconnect(); }
+      }, { rootMargin: "100% 0px" });
+      io.observe(sec);
+    } else eager();
   });
 })();
 
