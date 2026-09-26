@@ -12,7 +12,10 @@
        the accessible tablist. -->
   <!-- rises over the pinned talks stage: see .spk-chap margin-top -->
   {%- set beat = block | motion('beat', 70) %}
-  <section class="spk-chap"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-arrive="{{ block | motion('arrive', 440) }}" data-leave="{{ block | motion('leave', 320) }}" data-cross="{{ block | motion('cross', 900) }}" data-dolly="{{ block | motion('dolly', 1.06) }}" style="--chapters:{{ block.chapters.length }};--beat:{{ beat }}">
+  {#- strike: true (said-vs-meant pairs): the word stays when its line
+       arrives, rises 0.6em, shrinks to 0.72 and a line draws through it
+       (data-strike-ms); both leave together at the next chapter. #}
+  <section class="spk-chap{% if block.strike %} spk-chap--strike{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-arrive="{{ block | motion('arrive', 440) }}" data-leave="{{ block | motion('leave', 320) }}" data-cross="{{ block | motion('cross', 900) }}" data-dolly="{{ block | motion('dolly', 1.06) }}"{% if block.strike %} data-strike-ms="{{ block | motion('strikeDraw', 420) }}"{% endif %} style="--chapters:{{ block.chapters.length }};--beat:{{ beat }}{% if block.settings and block.settings.veil !== undefined and block.settings.veil !== null and block.settings.veil !== '' %};--chap-veil:{{ block.settings.veil }}{% endif %}">
     <div class="spk-chap__track">
       <div class="spk-chap__stage">
         <div class="spk-chap__media" aria-hidden="true">

@@ -1,7 +1,13 @@
 {%- from "place.njk" import placeStyle %}
   <!-- HERO - static full-bleed scene (the framed-card handoff was lifted
        out on 2026-09-20 and saved to js|css/effects/frame-card.*) -->
-  <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+  <!-- The entrance (once, when the loader has gone): the headline's words
+       arrive one after another (data-stagger / data-delay, ms), then the
+       play ring draws itself, then the meta lines. On scroll the picture
+       pushes in by data-zoom (data-zoom-sm on phones) and a veil darkens
+       to data-dim over the first screen. Reduced motion and no script:
+       everything at rest. -->
+  <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-stagger="{{ block | motion('stagger', 110) }}" data-delay="{{ block | motion('delay', 250) }}" data-zoom="{{ block | motion('zoom', 0.12) }}" data-zoom-sm="{{ block | motion('zoomPhone', 0.08) }}" data-dim="{{ block | motion('dim', 0.55) }}">
     <div class="media media--plum">
       <!-- Instant poster / reduced-motion + fallback layer -->
       <img class="hero__poster" src="{{ block.poster.src | root(r) }}"
@@ -17,10 +23,12 @@
     {%- set ps = placeStyle(block.placement) | trim %}
     {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <div class="hero__inner">
-      <h1 class="reveal">{{ block.heading | inline() }}</h1>
-      <div class="hero__actions reveal" data-d="2">
+      <h1 aria-label="{{ block.heading | plain }}">
+      {%- for w in block.heading | words %}<span class="hero__w" aria-hidden="true" style="--i:{{ loop.index0 }}">{{ w | inline() }}</span>{% if not loop.last %} {% endif %}{% endfor -%}
+      </h1>
+      <div class="hero__actions">
         <button class="play" data-video="{{ block.play.video | root(r) }}" aria-label="{{ block.play.ariaLabel | inline() }}">
-          <span class="play__ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="play__ring"><svg class="play__circle" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31.5" pathLength="1"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
           <span class="play__label">{{ block.play.label | inline() }}<small>{{ block.play.small | inline() }}</small></span>
         </button>
       </div>

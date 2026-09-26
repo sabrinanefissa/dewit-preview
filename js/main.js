@@ -23,7 +23,12 @@ var UI = (function () {
   function dismissLoader() {
     if (!loader || loader.classList.contains("is-done")) return;
     if (bar) bar.style.width = "100%";
-    setTimeout(function () { loader.classList.add("is-done"); }, reduce ? 0 : 260);
+    setTimeout(function () {
+      loader.classList.add("is-done");
+      /* the page is uncovered: entrances that wait for it start from here */
+      window.dwLoaded = true;
+      document.dispatchEvent(new CustomEvent("dw:loaded"));
+    }, reduce ? 0 : 260);
     setTimeout(function () { if (loader) loader.style.display = "none"; }, 1100);
   }
   if (loader) {
@@ -68,23 +73,66 @@ var UI = (function () {
     revealEls.forEach(function (el) { ro.observe(el); });
   }
 
-  /* ---- Stat count-up ---- */
+  /* ---- Stat odometer ----
+     Each [data-count] keeps its plain figure in the markup (no script,
+     reduced motion, and assistive tech read that). When the count-up is
+     armed the figure moves into a visually hidden span and an aria-hidden
+     odometer takes its place: one column of 0-9 per digit, the thousands
+     separator and the suffix as plain text. When the figure enters, each
+     column rolls to its digit over the section's data-duration (1500ms),
+     ease-out, the rightmost first and each next column data-stagger
+     (60ms) later. */
   function fmt(n) { return n >= 1000 ? n.toLocaleString("en-US") : String(n); }
   var stats = document.querySelectorAll("[data-count]");
-  function runCount(el) {
+  function hostNum(el, name, d) {
+    var host = el.closest("[" + name + "]");
+    var v = host ? parseFloat(host.getAttribute(name)) : NaN;
+    return v >= 0 ? v : d;
+  }
+  function buildOdo(el) {
     var t = parseFloat(el.getAttribute("data-count")), suf = el.getAttribute("data-suffix") || "";
-    if (reduce) { el.textContent = fmt(t) + suf; return; }
-    /* the section's data-duration (ms), 1500 when absent */
-    var host = el.closest("[data-duration]");
-    var dur = (host && parseFloat(host.getAttribute("data-duration"))) || 1500, s = null;
-    (function step(ts){ if(!s)s=ts; var p=Math.min((ts-s)/dur,1), e=1-Math.pow(1-p,3);
-      el.textContent = fmt(Math.round(t*e)) + suf; if(p<1) requestAnimationFrame(step); })(0);
+    var txt = fmt(t), html = "";
+    for (var i = 0; i < txt.length; i++) {
+      var ch = txt.charAt(i);
+      if (ch >= "0" && ch <= "9") {
+        var stack = "";
+        for (var d = 0; d < 10; d++) stack += "<span>" + d + "</span>";
+        /* the column is as wide as its own final digit (the sizer), so the
+           figure keeps the plain text's spacing */
+        html += '<span class="odo__col"><span class="odo__w">' + ch + '</span><span class="odo__d" data-digit="' + ch + '">' + stack + "</span></span>";
+      } else {
+        html += '<span class="odo__sep">' + ch + "</span>";
+      }
+    }
+    if (suf) html += '<span class="odo__suf">' + suf.replace(/[&<>"]/g, "") + "</span>";
+    var plain = document.createElement("span");
+    plain.className = "odo__sr";
+    plain.textContent = el.textContent;
+    var odo = document.createElement("span");
+    odo.className = "odo";
+    odo.setAttribute("aria-hidden", "true");
+    odo.innerHTML = html;
+    el.textContent = "";
+    el.appendChild(plain);
+    el.appendChild(odo);
+    el.classList.add("is-odo");
+  }
+  function runCount(el) {
+    var dur = hostNum(el, "data-duration", 1500) || 1500;
+    var stag = hostNum(el, "data-stagger", 60);
+    var ds = [].slice.call(el.querySelectorAll(".odo__d"));
+    void el.offsetWidth;   /* the columns start at 0 before they roll */
+    ds.forEach(function (d, k) {
+      var fromRight = ds.length - 1 - k;
+      d.style.transition = "transform " + dur + "ms cubic-bezier(.22,1,.36,1) " + (fromRight * stag) + "ms";
+      d.style.transform = "translateY(" + (-10 * parseInt(d.getAttribute("data-digit"), 10)) + "%)";
+    });
   }
   /* The markup carries the final figures, so with no script (or before the
-     section arrives) the numbers are true. They drop to 0 only here, the
-     moment the count-up is armed, and only when it will actually run. */
+     section arrives) the numbers are true. The odometer replaces them only
+     here, at 0, the moment it is armed, and only when it will actually run. */
   if (stats.length && "IntersectionObserver" in window && !reduce) {
-    stats.forEach(function (s) { s.textContent = "0"; });
+    stats.forEach(buildOdo);
     var so = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (e) { if (e.isIntersecting) { runCount(e.target); obs.unobserve(e.target); } });
     }, { threshold: 0.6 });
@@ -1064,16 +1112,37 @@ var UI = (function () {
     var guard = 0;
     while (track.scrollWidth < vp.clientWidth * 2 + 40 && guard++ < 8) addSet();
     var imgs = [].slice.call(track.children);
-    var setW = 0, pos = 0, rafId = null;
+    var setW = 0, pos = 0, rafId = null, vpW = 0;
+    /* the glow: --near 0..1 per logo, 1 at the lane's centre and 0 at
+       data-reach (35%) of the lane's width either side; written only when
+       it moves by more than 0.02. Reduced motion: every logo at 1 (the
+       CSS fallback), since the strip is static. */
+    var REACH = num(band, "data-reach", 0.35);
 
     function measure() {
       setW = imgs[originalCount].offsetLeft - imgs[0].offsetLeft;
+      vpW = vp.clientWidth;
       for (var i = 0; i < imgs.length; i++) imgs[i]._cx = imgs[i].offsetLeft + imgs[i].offsetWidth / 2;
+    }
+    function glow() {
+      var c = vpW / 2, reach = REACH * vpW;
+      if (!(reach > 0)) return;
+      for (var i = 0; i < imgs.length; i++) {
+        var el = imgs[i];
+        var n = 1 - Math.abs(pos + el._cx - c) / reach;
+        n = n < 0 ? 0 : (n > 1 ? 1 : n);
+        var last = el._near;
+        if (last === undefined || Math.abs(n - last) > 0.02 || (n !== last && (n === 0 || n === 1))) {
+          el._near = n;
+          el.style.setProperty("--near", n.toFixed(3));
+        }
+      }
     }
     function frame() {
       pos -= speed;
       if (setW > 0) { if (pos <= -setW) pos += setW; else if (pos > 0) pos -= setW; }
       track.style.transform = "translate3d(" + pos.toFixed(2) + "px,0,0)";
+      glow();
       rafId = requestAnimationFrame(frame);
     }
 
@@ -1232,7 +1301,8 @@ var UI = (function () {
    one per page, whenever the page carries any section that uses it. */
 (function () {
   "use strict";
-  var page = document.querySelector(".spk-hero, .spk-said, .spk-keys, .spk-bio, .spk-formats");
+  /* the home hero's push-in (module 10.A) rides the spine too */
+  var page = document.querySelector(".spk-hero, .spk-said, .spk-keys, .spk-bio, .spk-formats, .hero[data-zoom]");
   if (!page) return;
 
   var root = document.documentElement;
@@ -1331,7 +1401,10 @@ var UI = (function () {
             (1 + 0.08 * p).toFixed(4));
     }
   };
-  add(ground);
+  /* only a page that has a ground paints one (a root custom property
+     written per frame restyles the whole page, so a page without the
+     ground element does not pay for it) */
+  if (document.querySelector(".spk-ground")) add(ground);
 
   /* ---- when the page changes shape ---- */
   var rsT = null;
@@ -3140,6 +3213,11 @@ var UI = (function () {
     var LEAVE  = num("data-leave", 320);       /* ms the leaving element keeps .is-leaving */
     var CROSS  = num("data-cross", 900);       /* ms the outgoing still stays lit under the incoming */
     var DOLLY  = num("data-dolly", 1.06);      /* the push-in across a chapter's two beats */
+    /* strike mode (said-vs-meant): a chapter's word stays when its line
+       arrives, struck through; both leave together */
+    var STRIKE = sec.classList.contains("spk-chap--strike");
+    var STRIKE_MS = num("data-strike-ms", 420);
+    if (STRIKE) sec.style.setProperty("--strike-ms", STRIKE_MS + "ms");
     var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
     var phone    = window.matchMedia("(max-width: 640px)");
     var saveData = !!(navigator.connection && navigator.connection.saveData);
@@ -3210,7 +3288,7 @@ var UI = (function () {
     function clearState() {
       tabs.forEach(function (t) { t.classList.remove("is-on", "is-lit"); });
       chapters.forEach(function (c) { c.classList.remove("is-live", "is-lit"); });
-      beatEls.forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving"); });
+      beatEls.forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving", "is-struck"); });
       heading.classList.remove("is-gone");
       stills.forEach(function (st, k) {
         st.classList.toggle("is-on", k === 0);
@@ -3281,35 +3359,52 @@ var UI = (function () {
 
     /* the beat on screen leaves, then the target arrives; a call mid-fade
        retargets without cutting short what is already leaving */
+    function leave(el) {
+      if (el === heading) { heading.classList.add("is-gone"); return; }
+      el.classList.remove("is-in");
+      el.classList.add("is-leaving");
+      var t = setTimeout(function () {
+        el.classList.remove("is-leaving", "is-struck");
+        var k = leaveTs.indexOf(t);
+        if (k > -1) leaveTs.splice(k, 1);
+      }, LEAVE);
+      leaveTs.push(t);
+    }
+    /* strike mode: the word that stays on screen for beat b (its own word
+       on a line beat), and the word currently struck through */
+    var struck = null;
+    function keptWord(b) {
+      return STRIKE && b > 0 && (b - 1) % 2 === 1 ? wordsEl[(b - 2) / 2] : null;
+    }
     function goTo(b) {
       clearTimeout(arriveT); arriveT = 0;
-      if (shown) {
-        var el = shown;
-        shown = null;
-        if (el === heading) {
-          heading.classList.add("is-gone");
-        } else {
-          el.classList.remove("is-in");
-          el.classList.add("is-leaving");
-          var t = setTimeout(function () {
-            el.classList.remove("is-leaving");
-            var k = leaveTs.indexOf(t);
-            if (k > -1) leaveTs.splice(k, 1);
-          }, LEAVE);
-          leaveTs.push(t);
-        }
-      }
+      var keep = keptWord(b);
+      /* back from a line to its own word: the word stays and un-strikes */
+      var back = STRIKE && struck && struck === elOf(b) ? struck : null;
+      if (shown && shown !== keep && shown !== back) leave(shown);
+      shown = null;
+      if (struck && struck !== keep && struck !== back) leave(struck);
+      if (back) { back.classList.remove("is-struck"); struck = null; shown = back; }
+      /* forward from a word to its own line: the word rises and is struck
+         at once; its line arrives on the usual clock */
+      if (keep && keep.classList.contains("is-in")) { keep.classList.add("is-struck"); struck = keep; }
       curBeat = b;
+      if (back) return;
       arriveT = setTimeout(function () {
         arriveT = 0;
         var target = elOf(b);
-        beatEls.forEach(function (e) { if (e) e.classList.remove("is-in"); });
+        beatEls.forEach(function (e) { if (e && e !== keep) e.classList.remove("is-in"); });
         if (target === heading) {
           heading.classList.remove("is-gone");
         } else if (target) {
           heading.classList.add("is-gone");
           target.classList.remove("is-leaving");
           target.classList.add("is-in");
+          if (keep && struck !== keep) {
+            keep.classList.remove("is-leaving");
+            keep.classList.add("is-in", "is-struck");
+            struck = keep;
+          }
         }
         shown = target;
       }, ARRIVE);
@@ -3422,7 +3517,7 @@ var UI = (function () {
       leaveTs.forEach(function (t) { clearTimeout(t); });
       offTs.forEach(function (t) { clearTimeout(t); });
       leaveTs = []; offTs = [];
-      curBeat = -1; curIdx = -1; shown = null;
+      curBeat = -1; curIdx = -1; shown = null; struck = null;
       restoreAria();
       clearState();
     }
@@ -3616,4 +3711,169 @@ var UI = (function () {
     clearTimeout(rsT);
     rsT = setTimeout(refresh, 200);
   }, { passive: true });
+})();
+
+/* =====================================================================
+   HOME PAGE MOMENTS (brief 22). Each IIFE is guarded on its own element.
+   ===================================================================== */
+
+/* ===== 10.A Home hero: the entrance, and the push-in on scroll =====
+   Once, when the loader has gone (the "dw:loaded" event; at once when the
+   page has no loader): the headline's words (.hero__w, split at build
+   time, aria-hidden; the h1 carries the plain text as its aria-label)
+   arrive one after another, data-stagger ms apart, starting data-delay ms
+   after the loader; each rises 0.4em out of a 6px blur over 640ms. When
+   the last word has landed the play ring's circle draws itself (700ms),
+   then the label fades in, then the meta lines. On scroll, one spine
+   entry over the first screen (or the hero's height, if shorter): the
+   poster and the loop scale 1 → 1 + data-zoom (data-zoom-sm on phones)
+   and a veil darkens 0 → data-dim. Reduced motion and Save-Data: no
+   entrance, no push-in; no script: everything at rest. */
+(function () {
+  "use strict";
+  var hero = document.querySelector(".hero[data-zoom]");
+  if (!hero) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  if (reduce) return;
+
+  function num(name, d) { var v = parseFloat(hero.getAttribute(name)); return isNaN(v) || v < 0 ? d : v; }
+  var STAGGER = num("data-stagger", 110);
+  var DELAY   = num("data-delay", 250);
+  var WORD = 640, RING = 700, LABEL = 380;
+
+  /* ---- the entrance ---- */
+  var words = hero.querySelectorAll(".hero__w");
+  var ring = hero.querySelector(".play__circle");
+  hero.style.setProperty("--stagger", STAGGER + "ms");
+  hero.classList.add("is-enter");
+  var started = false;
+  function go() {
+    if (started) return;
+    started = true;
+    setTimeout(function () {
+      hero.classList.add("is-go");
+      var lastIn = (Math.max(0, words.length - 1)) * STAGGER + WORD;
+      setTimeout(function () {
+        if (ring) hero.classList.add("is-ring");
+        setTimeout(function () {
+          hero.classList.add("is-label");
+          setTimeout(function () { hero.classList.add("is-meta"); }, LABEL);
+        }, ring ? RING : 0);
+      }, lastIn);
+    }, DELAY);
+  }
+  if (window.dwLoaded || !document.getElementById("loader")) go();
+  else {
+    document.addEventListener("dw:loaded", go);
+    setTimeout(go, 4000);   /* safety: the loader's own safety is 2.6s */
+  }
+
+  /* ---- the push-in: one spine entry over the first screen ---- */
+  var media = hero.querySelector(".media");
+  if (!media || saveData || !window.spkSpine) return;
+  var small = window.matchMedia("(max-width: 640px)");
+  var DIM = num("data-dim", 0.55);
+  function zoom() { return small.matches ? num("data-zoom-sm", 0.08) : num("data-zoom", 0.12); }
+  function pageY(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
+  var lastZ = "", lastD = "";
+  window.spkSpine.add({
+    start: function () { return pageY(hero); },
+    end: function () { return pageY(hero) + Math.min(hero.offsetHeight, window.innerHeight); },
+    update: function (p) {
+      var z = (1 + zoom() * p).toFixed(4), d = (DIM * p).toFixed(3);
+      if (z !== lastZ) { media.style.setProperty("--hero-zoom", z); lastZ = z; }
+      if (d !== lastD) { media.style.setProperty("--hero-dim", d); lastD = d; }
+    }
+  });
+})();
+
+/* ===== 10.B Talks: the hover picture =====
+   Desktop with a fine pointer only: hovering a talk row shows that row's
+   picture (its card image) as one 320×200 still per section that floats
+   24px right of and 40px above the cursor, clamped inside the section,
+   fading and scaling in (data-fade ms) and easing after the cursor
+   (data-follow of the remaining distance per frame; rAF only while a row
+   is hovered and the picture has not caught up). Keyboard focus on a
+   row's link shows the picture anchored at the row's right end. Touch:
+   nothing. Reduced motion: it shows and hides, and sits where it should,
+   with no easing. */
+(function () {
+  "use strict";
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  if (!fine.matches) return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  [].slice.call(document.querySelectorAll(".keynotes-sec")).forEach(function (sec) {
+    var img = sec.querySelector(".keynotes__float");
+    var rows = [].slice.call(sec.querySelectorAll(".keynote"));
+    if (!img || !rows.length) return;
+    var FOLLOW = parseFloat(sec.getAttribute("data-follow"));
+    if (!(FOLLOW > 0 && FOLLOW <= 1)) FOLLOW = 0.18;
+    var FADE = parseFloat(sec.getAttribute("data-fade"));
+    if (!(FADE >= 0)) FADE = 220;
+    var DX = 24, DY = -40;
+    img.hidden = false;
+    sec.classList.add("has-float");
+    if (reduce) sec.classList.add("is-still");
+    sec.style.setProperty("--float-fade", FADE + "ms");
+
+    var x = 0, y = 0, tx = 0, ty = 0, raf = 0, on = false, cur = null;
+    function srcOf(row) { var i = row.querySelector(".keynote__img img"); return i ? (i.currentSrc || i.src) : ""; }
+    function place() { img.style.translate = x.toFixed(1) + "px " + y.toFixed(1) + "px"; }
+    function clampTo(px, py) {
+      var w = img.offsetWidth, h = img.offsetHeight;
+      tx = Math.max(0, Math.min(sec.clientWidth - w, px));
+      ty = Math.max(0, Math.min(sec.clientHeight - h, py));
+    }
+    function frame() {
+      raf = 0;
+      x += (tx - x) * FOLLOW; y += (ty - y) * FOLLOW;
+      if (Math.abs(tx - x) < 0.2 && Math.abs(ty - y) < 0.2) { x = tx; y = ty; }
+      place();
+      if (on && (x !== tx || y !== ty)) raf = requestAnimationFrame(frame);
+    }
+    function kick() {
+      if (reduce) { x = tx; y = ty; place(); return; }
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+    function show(row, jump) {
+      if (cur !== row) { var s = srcOf(row); if (s && img.getAttribute("src") !== s) img.src = s; cur = row; }
+      if (!on || jump) { x = tx; y = ty; place(); }
+      on = true;
+      sec.classList.add("is-floating");
+      kick();
+    }
+    function hide() {
+      on = false; cur = null;
+      sec.classList.remove("is-floating");
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    }
+    function fromPointer(e) {
+      var r = sec.getBoundingClientRect();
+      clampTo(e.clientX - r.left + DX, e.clientY - r.top + DY);
+    }
+    rows.forEach(function (row) {
+      row.addEventListener("pointerenter", function (e) {
+        if (e.pointerType === "touch") return;
+        fromPointer(e); show(row, false);
+      });
+      row.addEventListener("pointermove", function (e) {
+        if (e.pointerType === "touch" || !on) return;
+        fromPointer(e); kick();
+      });
+      row.addEventListener("pointerleave", function (e) {
+        if (e.pointerType === "touch") return;
+        var to = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest(".keynote") : null;
+        if (!to && document.activeElement !== row) hide();
+      });
+      /* keyboard: anchored at the row's right end, vertically centred */
+      row.addEventListener("focus", function () {
+        if (!row.matches(":focus-visible")) return;
+        var r = sec.getBoundingClientRect(), rr = row.getBoundingClientRect();
+        clampTo(rr.right - r.left - img.offsetWidth, rr.top - r.top + rr.height / 2 - img.offsetHeight / 2);
+        show(row, true);
+      });
+      row.addEventListener("blur", function () { if (cur === row) hide(); });
+    });
+  });
 })();

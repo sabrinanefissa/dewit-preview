@@ -173,6 +173,43 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .hero__meta b { color: var(--tx-inv-soft); font-weight:600; }
 .hero__actions { max-width: min(100%, calc(66% - 2rem)); }
 
+/* The entrance and the push-in (js module 10.A). The words are split at
+   build time; the script arms .is-enter, then .is-go (the words), .is-ring
+   (the play circle draws), .is-label, .is-meta. At rest (no script,
+   reduced motion) every piece is simply there. */
+.hero__w { display:inline-block; }
+.hero.is-enter .hero__w { opacity:0; transform: translateY(.4em); filter: blur(6px); }
+.hero.is-enter.is-go .hero__w { opacity:1; transform:none; filter: blur(0);
+  transition: opacity 640ms var(--ease-out), transform 640ms var(--ease-out), filter 640ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * var(--stagger, 110ms)); }
+/* the ring is an SVG circle (it can draw itself), so the border goes */
+.hero .play__ring { border-color: transparent; }
+.hero .play__ring svg.play__circle { position:absolute; inset:0; width:100%; height:100%; margin:0;
+  fill:none; stroke: var(--line-inv-strong); stroke-width:1; transform: rotate(-90deg);
+  stroke-dasharray: 1; stroke-dashoffset: 0; overflow:visible; pointer-events:none; }
+.hero.is-enter .play__circle circle { stroke-dashoffset: 1; }
+.hero.is-enter .play__ring svg:not(.play__circle),
+.hero.is-enter .play__label,
+.hero.is-enter .hero__meta > span { opacity:0; }
+.hero.is-enter .hero__meta > span { transform: translateY(10px); }
+.hero.is-enter.is-ring .play__circle circle { stroke-dashoffset: 0;
+  transition: stroke-dashoffset 700ms var(--ease-out); }
+.hero.is-enter.is-ring .play__ring svg:not(.play__circle) { opacity:1; transition: opacity 700ms var(--ease-out); }
+.hero.is-enter.is-label .play__label { opacity:1; transition: opacity 380ms var(--ease-out); }
+.hero.is-enter.is-meta .hero__meta > span { opacity:1; transform:none;
+  transition: opacity 520ms var(--ease-out), transform 520ms var(--ease-out); }
+.hero.is-enter.is-meta .hero__meta > span + span { transition-delay: 110ms; }
+/* the push-in: --hero-zoom and --hero-dim are written on .media */
+.hero .hero__poster, .hero .hero__video { transform: scale(var(--hero-zoom, 1)); transform-origin: 70% 30%; }
+.hero .media::after {
+  background:
+    linear-gradient(rgba(14,8,22,var(--hero-dim, 0)), rgba(14,8,22,var(--hero-dim, 0))),
+    linear-gradient(90deg, rgba(14,8,22,0.92) 0%, rgba(14,8,22,0.55) 42%, rgba(14,8,22,0.05) 100%),
+    linear-gradient(0deg, rgba(14,8,22,0.90) 2%, rgba(14,8,22,0.10) 46%); }
+@media (prefers-reduced-motion: reduce) {
+  .hero .hero__poster, .hero .hero__video { transform:none; }
+}
+
 /* Below 900 the meta leaves the corner and stacks under the actions. */
 @media (max-width: 900px) {
   .hero { flex-direction:column; justify-content:flex-end; }
@@ -822,6 +859,22 @@ html.no-js .trow__under { opacity:1; transform:none; filter:none; }
   transition: opacity .45s var(--ease-out), transform .45s var(--ease-out), max-height .45s var(--ease-out); }
 .keynote:hover .keynote__sub, .keynote:focus-within .keynote__sub { opacity:1; transform:none; max-height:6rem; }
 
+/* The hover picture (js module 10.B, fine pointers only): one still per
+   section that follows the cursor (translate is written per frame, so only
+   opacity and scale transition; z-index 1 keeps it under the rows' type,
+   which sits at 2). While it is on, the row's own image
+   bleed stands down. */
+.keynotes-sec { position:relative; }
+.keynotes__float { position:absolute; left:0; top:0; z-index:1; width:320px; height:200px;
+  object-fit:cover; border-radius: 10px; pointer-events:none; filter: var(--img-filter);
+  box-shadow: 0 18px 50px rgba(8,4,14,.45);
+  opacity:0; scale: .92; transform-origin: 0 100%;
+  transition: opacity var(--float-fade, 220ms) var(--ease-out), scale var(--float-fade, 220ms) var(--ease-out); }
+.keynotes-sec.is-floating .keynotes__float { opacity:1; scale:1; }
+.keynotes-sec.is-still .keynotes__float { transition:none; }
+.keynotes-sec.has-float .keynote__img { display:none; }
+.keynotes__float[hidden] { display:none; }
+
 /* Reduced motion: both lines are simply there, the strike is drawn full
    width and still. */
 @media (prefers-reduced-motion: reduce) {
@@ -870,6 +923,20 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
   font-family: var(--f-display); font-weight: 340; font-size: var(--step-3); line-height: 1.12;
   letter-spacing: -0.03em; color: var(--tx-inv-faint); max-width: 26ch; }
 .stats__n { color: var(--tx-inv); font-variant-numeric: tabular-nums lining-nums; }
+
+/* The odometer (built by the script when the count-up is armed): the
+   plain figure stays in the markup, visually hidden; the columns are
+   aria-hidden. Each column is one line tall and clips a 0-9 stack, which
+   the script rolls with translateY(-10% per digit). */
+.odo__sr { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
+.odo { display:inline; white-space:nowrap; }
+.odo__col { position:relative; display:inline-block; height:1.12em; line-height:1.12; overflow:hidden; vertical-align:bottom; }
+.odo__w { visibility:hidden; }
+.odo__d { position:absolute; left:50%; top:0; display:block; margin-left:-1em; width:2em; text-align:center;
+  transform: translateY(0); will-change: transform; }
+.odo__d > span { display:block; height:1.12em; }
+@media (prefers-reduced-motion: reduce) { .odo__d { transition:none !important; } }
 
 /* Numerals that should never wobble */
 .keynote__no, [data-count] { font-variant-numeric: tabular-nums lining-nums; }
@@ -1024,9 +1091,15 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
   will-change:transform; }
 .cred__track img { height: clamp(26px,3vw,42px); width:auto; object-fit:contain; flex:0 0 auto;
   user-select:none; position:relative; z-index:1;
-  filter: grayscale(1) brightness(1.6) opacity(.42);
+  filter: grayscale(1) brightness(1.6) opacity(.42) brightness(calc(0.8 + 0.4 * var(--near, 1)));
   transition: filter 1100ms cubic-bezier(.4,0,.2,1), transform 1100ms cubic-bezier(.4,0,.2,1); }
 .cred__lane--sm .cred__track img { height: clamp(20px,2.4vw,32px); }
+/* the glow toward the lane's centre: --near (0..1) is written per logo by
+   the drift loop; without it (no script, reduced motion) every logo is at
+   1. The brightness rides on the end of each filter chain below; a lit
+   logo is fully on. */
+.cred__track img { opacity: calc(0.45 + 0.55 * var(--near, 1)); }
+.cred__track img.lit { opacity:1; }
 /* only the lit logo and the one queued next carry the compositing hint */
 .cred__track img.lit, .cred__track img.next { will-change: transform, filter; }
 
@@ -1038,7 +1111,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 /* Logos delivered as ink on an opaque white plate: inverted and screened so
    the plate drops out against the plum instead of flashing a white box. */
 .cred__track img[data-knockout] {
-  filter: grayscale(1) invert(1) brightness(1.5) opacity(.45); mix-blend-mode: screen; }
+  filter: grayscale(1) invert(1) brightness(1.5) opacity(.45) brightness(calc(0.8 + 0.4 * var(--near, 1))); mix-blend-mode: screen; }
 .cred__track img[data-knockout].lit {
   filter: grayscale(1) invert(1) brightness(1.9) opacity(1); }
 
@@ -1047,7 +1120,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
    desaturated and dimmed so the box recedes into the plum; lit, they come
    back in true brand colour. No inversion, no white plate. */
 .cred__track img[data-plate] {
-  filter: grayscale(1) brightness(.8) opacity(.38); mix-blend-mode: normal; }
+  filter: grayscale(1) brightness(.8) opacity(.38) brightness(calc(0.8 + 0.4 * var(--near, 1))); mix-blend-mode: normal; }
 .cred__track img[data-plate].lit { filter: none; }
 
 @media (max-width: 700px) {
@@ -1588,6 +1661,16 @@ html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
     padding-block: .35em; font-size: var(--step-2); text-align:left; }
   .spk-out__word::before { left:0; width:16rem; height:16rem; }
 }
+/* size "xl": the word at 1.6x its layer's size (the pool stays as is) */
+.spk-out__word--xl .spk-out__t { font-size: 1.6em; }
+/* No heading (the section is a statement, named by its aria-label):
+   phones stack the words centred, one per line. */
+@media (max-width: 640px) {
+  .spk-out[aria-label] .spk-out__list { margin-top:0; }
+  .spk-out[aria-label] .spk-out__word { text-align:center; }
+  .spk-out[aria-label] .spk-out__word::before { left:50%; }
+  .spk-out[aria-label] .spk-out__inner { min-height: 100svh; display:flex; align-items:center; }
+}
 /* Reduced motion: the five stand there, lit; no sequence, no pools. */
 @media (prefers-reduced-motion: reduce) {
   .spk-out__t { opacity:1; transform:none; filter:none; transition:none; }
@@ -1601,24 +1684,25 @@ html.no-js .spk-out__word::before { display:none; }
    there, over the leaving picture); the still and the five words start
    40svh down, so the words' --y percentages keep meaning inside the
    picture. z-index 3 beats the room's 2. */
-.spk-out { margin-top: -40svh; background: transparent; z-index:3; pointer-events:none; }  /* nothing here is interactive; the transparent band must not catch clicks meant for the room's tabs beneath it */
-.spk-out__media { top: 40svh; }
-.spk-out__inner { height: calc(100svh + 40svh); }
-.spk-out__list { top: 40svh; height: 100svh; inset: auto 0 0 0; }
+/* Only when the section follows a room directly (.spk-chap + .spk-out). */
+.spk-chap + .spk-out { margin-top: -40svh; background: transparent; z-index:3; pointer-events:none; }  /* nothing here is interactive; the transparent band must not catch clicks meant for the room's tabs beneath it */
+.spk-chap + .spk-out .spk-out__media { top: 40svh; }
+.spk-chap + .spk-out .spk-out__inner { height: calc(100svh + 40svh); }
+.spk-chap + .spk-out .spk-out__list { top: 40svh; height: 100svh; inset: auto 0 0 0; }
 /* only over a pinned room: phones, reduced motion and no script stack */
 @media (max-width: 640px) {
-  .spk-out { margin-top:0; }
-  .spk-out__media { top:0; }
-  .spk-out__inner { height:auto; }
-  .spk-out__list { top:auto; height:auto; inset:auto; }
+  .spk-chap + .spk-out { margin-top:0; }
+  .spk-chap + .spk-out .spk-out__media { top:0; }
+  .spk-chap + .spk-out .spk-out__inner { height:auto; }
+  .spk-chap + .spk-out .spk-out__list { top:auto; height:auto; inset:auto; }
 }
-html.no-js .spk-out, .spk-chap.is-static ~ .spk-out { margin-top:0; }
-html.no-js .spk-out__media, .spk-chap.is-static ~ .spk-out .spk-out__media { top:0; }
-html.no-js .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:100svh; }
-html.no-js .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:0; height:auto; }
+html.no-js .spk-out, html.no-js .spk-chap + .spk-out, .spk-chap.is-static ~ .spk-out { margin-top:0; }
+html.no-js .spk-out__media, html.no-js .spk-chap + .spk-out .spk-out__media, .spk-chap.is-static ~ .spk-out .spk-out__media { top:0; }
+html.no-js .spk-out__inner, html.no-js .spk-chap + .spk-out .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:100svh; }
+html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:0; height:auto; }
 @media (max-width: 640px) {
-  html.no-js .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:auto; }
-  html.no-js .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:auto; }
+  html.no-js .spk-out__inner, html.no-js .spk-chap + .spk-out .spk-out__inner, .spk-chap.is-static ~ .spk-out .spk-out__inner { height:auto; }
+  html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-chap.is-static ~ .spk-out .spk-out__list { inset:auto; }
 }
 
 /* ---------------------------------------------------------------------
@@ -1831,10 +1915,11 @@ html.no-js .spk-said__candle { display:none; }
 .spk-chap { position:relative; background: var(--plum-2); color: var(--tx-inv); }
 /* the curtain: the room rises over the pinned talks stage for its last
    50svh (the spine gave every section z-index 1, so 2 wins) */
-.spk-chap { margin-top: -50svh; z-index:2; }
+.spk-chap { z-index:2; }
+.spk-keys + .spk-chap { margin-top: -50svh; }
 /* only over a pinned stage: phones, reduced motion and no script have none */
 html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
-@media (max-width: 768px) { .spk-chap { margin-top:0; } }
+@media (max-width: 768px) { .spk-chap, .spk-keys + .spk-chap { margin-top:0; } }
 /* the turn's geometry: 1 + 2N beats (N chapters: --chapters) of 70vh
    (--beat) plus a tail; the script writes nothing to it */
 .spk-chap__track { height: calc((1 + 2 * var(--chapters, 3)) * var(--beat, 70) * 1vh + 60vh); }
@@ -1849,6 +1934,10 @@ html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
   transform: scale(var(--dolly, 1)); transform-origin: 50% 40%;
   transition: opacity .9s var(--ease-amb); will-change: opacity, transform; }
 .spk-chap__still.is-on { opacity:1; }
+/* the block's optional veil (settings.veil, 0–0.8 → --chap-veil): one
+   overlay over the stills, under the glow, the words and the rail */
+.spk-chap__media::after { content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
+  background: rgba(26,16,38, var(--chap-veil, 0)); }
 /* Light that belongs to the dot, carried on --px / --py (the homepage
    .thread__glow, slightly smaller) */
 .spk-chap__glow { position:absolute; inset:0; z-index:1; pointer-events:none;
@@ -2019,6 +2108,43 @@ html.no-js .spk-chap .spk-chap__still.is-on { opacity:1; }
 .spk-chap.is-static .spk-chap__frame, html.no-js .spk-chap__frame { display:none; }
 .spk-chap.is-static .spk-chap__chapters,
 html.no-js .spk-chap__chapters { padding-left:0; }
+
+/* Strike mode (.spk-chap--strike, said-vs-meant pairs). Pinned: the word
+   and its line get a row each; when the line arrives the word stays, rises
+   0.6em and shrinks to 0.72 (from its outer bottom corner), dims so the
+   violet strike reads over violet type, and a line draws through it from
+   the left (--strike-ms, 420ms). The line pulls up into the room the word
+   left. Stacked modes (phones, reduced motion, no script): the strike is
+   simply drawn. */
+.spk-chap--strike .spk-chap__word { position:relative; justify-self:start; }
+.spk-chap--strike .spk-chap__chapter[data-spot="lr"] .spk-chap__word { justify-self:end; }
+.spk-chap--strike .spk-chap__word::after { content:""; position:absolute; left:-.04em; right:-.04em;
+  top:54%; height: max(2px, .05em); background: var(--violet-300); border-radius:1px;
+  transform: scaleX(0); transform-origin: 0 50%; pointer-events:none; }
+html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__word { grid-area:1/1;
+  transform-origin: 0 100%; }
+html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__chapter[data-spot="lr"] .spk-chap__word { transform-origin: 100% 100%; }
+html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__text { grid-area:2/1;
+  margin-top: calc(-.6 * var(--step-4) + .35em); }
+.spk-chap--strike .spk-chap__word.is-in.is-struck,
+.spk-chap--strike .spk-chap__word.is-leaving.is-struck { transform: translateY(-.6em) scale(.72);
+  color: rgba(244,236,222,.62); }
+.spk-chap--strike .spk-chap__word.is-in.is-struck {
+  transition: opacity .7s var(--ease-out), transform var(--strike-ms, 420ms) var(--ease-out),
+    color var(--strike-ms, 420ms) var(--ease-out), filter .7s var(--ease-out), visibility 0s; }
+.spk-chap--strike .spk-chap__word.is-leaving.is-struck { transform: translateY(calc(-.6em - 10px)) scale(.72); }
+.spk-chap--strike .spk-chap__word.is-struck::after { transform: scaleX(1);
+  transition: transform var(--strike-ms, 420ms) var(--ease-out); }
+.spk-chap--strike.is-phone .spk-chap__word::after,
+.spk-chap--strike.is-static .spk-chap__word::after,
+html.no-js .spk-chap--strike .spk-chap__word::after { transform: scaleX(1); }
+.spk-chap--strike.is-phone .spk-chap__word,
+.spk-chap--strike.is-static .spk-chap__word,
+html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba(244,236,222,.62); }
+@media (max-width: 1199px) {
+  html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__text {
+    margin-top: calc(-.6 * var(--step-3) + .35em); }
+}
 
 /* ---------------------------------------------------------------------
    C. .spk-formats — now the rooms strip; its rules live in block 5.

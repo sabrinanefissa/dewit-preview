@@ -67,6 +67,23 @@ module.exports = function (eleventyConfig) {
     return new nunjucks.runtime.SafeString(s);
   });
 
+  // A heading string -> its words, for a per-word entrance: split on
+  // spaces, but an *emphasis* or **bold** run stays one piece even when it
+  // spans several words, so each piece still goes through `inline` whole.
+  eleventyConfig.addFilter('words', str => {
+    if (str == null) return [];
+    const out = [];
+    const re = /\*\*[^*]+?\*\*\S*|\*[^*]+?\*\S*|\S+/g;
+    let m;
+    while ((m = re.exec(String(str)))) out.push(m[0]);
+    return out;
+  });
+
+  // The same text with the inline marks taken out, HTML-escaped (for an
+  // aria-label).
+  eleventyConfig.addFilter('plain', str => new nunjucks.runtime.SafeString(str == null ? '' : escapeHtml(String(str)
+    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1').replace(/\n/g, ' '))));
+
   // Resolve a chrome link {href, slug?, overrides?} for the current page:
   // an override for this page wins; a link to the page itself becomes "./"
   // and is marked current; anything else is root-prefixed.

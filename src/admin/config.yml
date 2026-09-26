@@ -101,13 +101,22 @@ collections:
                     collapsed: true
                     hint: "Phones. Leave empty to use the same as desktop"
                     fields: [*place-x, *place-y, *place-align, *place-max]
-              - &settings-none
-                label: Settings
+              - label: Settings
                 name: settings
                 widget: object
                 required: false
                 fields:
                   - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Headline words: gap between words (ms)", name: stagger, widget: number, required: false, hint: "How long after one word starts arriving the next one starts. Default: 110" }
+                      - { label: "Headline words: wait after the loader (ms)", name: delay, widget: number, required: false, hint: "Pause between the loading screen going and the first word arriving. Default: 250" }
+                      - { label: "Picture push-in on scroll", name: zoom, widget: number, value_type: float, required: false, hint: "How much the picture grows while you scroll through the first screen (0.12 = 12% bigger). Default: 0.12" }
+                      - { label: "Picture push-in on scroll (phones)", name: zoomPhone, widget: number, value_type: float, required: false, hint: "The same on phones. Default: 0.08" }
+                      - { label: "Darkening on scroll", name: dim, widget: number, value_type: float, required: false, hint: "How dark the picture gets by the end of the first screen (0 = none, 1 = black). Default: 0.55" }
 
           # -------------------------------------------------------- thread
           - name: thread
@@ -244,7 +253,13 @@ collections:
                   - { label: Alt text, name: alt, widget: string }
               - { label: Statement, name: statement, widget: string, hint: "Allows *emphasis*." }
               - *placement
-              - *settings-none
+              - &settings-none
+                label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
 
           # ----------------------------------------------------------- why
           - name: why
@@ -308,7 +323,8 @@ collections:
                     widget: object
                     required: false
                     fields:
-                      - { label: "Count-up duration (ms)", name: duration, widget: number, required: false, hint: "Default: 1500" }
+                      - { label: "Count-up duration (ms)", name: duration, widget: number, required: false, hint: "How long each digit takes to roll to its number. Default: 1500" }
+                      - { label: "Odometer: gap between digit columns (ms)", name: stagger, widget: number, required: false, hint: "The rightmost digit rolls first; each column to its left starts this much later. Default: 60" }
 
           # ------------------------------------------------------- orgband
           - name: orgband
@@ -357,6 +373,7 @@ collections:
                       - { label: "Spotlight tick (ms)", name: tick, widget: number, required: false, hint: "Default: 2600" }
                       - { label: "Spotlight tick, small row (ms)", name: tickSmall, widget: number, required: false, hint: "Default: 2400" }
                       - { label: "Spell duration (ms)", name: spell, widget: number, required: false, hint: "Default: 4200" }
+                      - { label: "Glow reach (share of the row's width)", name: reach, widget: number, value_type: float, required: false, hint: "Logos brighten as they pass the middle of the row; at this distance from the middle (0.35 = 35% of the row's width either side) they are at their dimmest. Default: 0.35" }
 
           # ------------------------------------------------------- keynotes
           - name: keynotes
@@ -390,6 +407,13 @@ collections:
                 required: false
                 fields:
                   - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Hover picture: how closely it follows the pointer", name: follow, widget: number, value_type: float, required: false, hint: "Share of the remaining distance it covers each frame (0.05 = lazy, 1 = glued to the pointer). Desktop mouse only. Default: 0.18" }
+                      - { label: "Hover picture: fade in/out (ms)", name: fade, widget: number, required: false, hint: "Default: 220" }
 
           # ---------------------------------------------------------- care
           - name: care
@@ -646,7 +670,9 @@ collections:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: "Tab rail aria label", name: railLabel, widget: string, default: Chapters }
+              - { label: "Strike the word through when its line arrives (for said-vs-meant pairs)", name: strike, widget: boolean, default: false, required: false, hint: "On: each chapter's word stays when its line arrives, moves up, shrinks and gets a line drawn through it; the line appears underneath. Off: the word leaves before its line arrives." }
               - { label: "Position on the image (the rail)", name: railPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Chapters
                 name: chapters
@@ -670,6 +696,7 @@ collections:
                 required: false
                 fields:
                   - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: "Darken the pictures (0 = none, 0.5 = half)", name: veil, widget: number, value_type: float, min: 0, max: 0.8, step: 0.05, required: false, hint: "A plum veil over the chapter pictures so the words read on bright photos. 0 to 0.8. Default: 0 (none)" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -680,6 +707,7 @@ collections:
                       - { label: "Leave fade (ms)", name: leave, widget: number, required: false, hint: "Default: 320" }
                       - { label: "Still crossfade (ms)", name: cross, widget: number, required: false, hint: "Default: 900" }
                       - { label: "Still dolly-in scale", name: dolly, widget: number, value_type: float, required: false, hint: "Default: 1.06" }
+                      - { label: "Strike line draw (ms)", name: strikeDraw, widget: number, required: false, hint: "Only with the strike option on: how long the line takes to draw through the word. Default: 420" }
 
           # ------------------------------------------------------------ out
           - name: out
@@ -687,6 +715,7 @@ collections:
             summary: "Out — {{fields.heading}}"
             fields:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - label: Image
                 name: image
@@ -694,7 +723,8 @@ collections:
                 fields:
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
-              - { label: Heading, name: heading, widget: string }
+              - { label: Heading, name: heading, widget: string, required: false, hint: "Optional. Leave empty for a statement made only of the words." }
+              - { label: "Label for screen readers (no heading)", name: label, widget: string, required: false, hint: "Used only when there is no heading: what a screen reader announces for the section. Leave empty to use the words joined." }
               - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Words (scattered)
                 name: words
@@ -705,6 +735,7 @@ collections:
                   - { label: "X position (% from left)", name: x, widget: string, hint: "e.g. 26%" }
                   - { label: "Y position (% from top)", name: y, widget: string, hint: "e.g. 70%" }
                   - { label: Layer, name: layer, widget: select, options: [front, back] }
+                  - { label: Size, name: size, widget: select, options: [lg, xl], default: lg, required: false, hint: "xl = 1.6 times the normal word size. Text allows *emphasis*." }
                   - *placement
               - label: Settings
                 name: settings

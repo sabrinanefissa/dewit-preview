@@ -195,10 +195,57 @@
       "settings": {}
     },
     {
-      "type": "truth",
+      "type": "chap",
       "id": "truth",
       "anchor": false,
       "enabled": true,
+      "strike": true,
+      "heading": "What people say, and what they’re carrying.",
+      "railLabel": "What people say",
+      "chapters": [
+        {
+          "word": "“I’m fine.”",
+          "text": "I’m carrying all of it.",
+          "tone": "violet",
+          "spot": "ul",
+          "still": {
+            "src": "assets/img/permission-1280.webp",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "“We’re aligned.”",
+          "text": "No one has said the real thing.",
+          "tone": "bone",
+          "spot": "lr",
+          "still": {
+            "src": "assets/img/permission-1280.webp",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "“It’s handled.”",
+          "text": "We’re running on empty.",
+          "tone": "violet",
+          "spot": "ul",
+          "still": {
+            "src": "assets/img/permission-1280.webp",
+            "sizes": "100vw"
+          }
+        }
+      ],
+      "settings": {
+        "motion": {
+          "beat": 60
+        },
+        "veil": 0.5
+      }
+    },
+    {
+      "type": "truth",
+      "id": "truth",
+      "anchor": false,
+      "enabled": false,
       "image": {
         "src": "assets/img/permission-1280.webp",
         "sizes": "100vw",
@@ -222,10 +269,44 @@
       "settings": {}
     },
     {
-      "type": "bleed",
+      "type": "out",
       "id": "idea",
       "anchor": false,
       "enabled": true,
+      "label": "Relationships are the operating system.",
+      "image": {
+        "src": "assets/img/keynote-1280.webp",
+        "sizes": "100vw"
+      },
+      "words": [
+        {
+          "text": "Relationships",
+          "x": "26%",
+          "y": "36%",
+          "layer": "back",
+          "size": "xl"
+        },
+        {
+          "text": "are the",
+          "x": "50%",
+          "y": "52%",
+          "layer": "front"
+        },
+        {
+          "text": "*operating system.*",
+          "x": "70%",
+          "y": "68%",
+          "layer": "back",
+          "size": "xl"
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "bleed",
+      "id": "idea",
+      "anchor": false,
+      "enabled": false,
       "constellation": true,
       "image": {
         "src": "assets/img/keynote-1280.webp",

@@ -1,17 +1,19 @@
 {%- from "place.njk" import placeStyle %}
-  <section class="spk-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
+  <section class="spk-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.heading %} aria-labelledby="{{ block.id }}-h"{% else %} aria-label="{% if block.label %}{{ block.label | plain }}{% else %}{% for w in block.words %}{{ w.text | plain }}{% if not loop.last %} {% endif %}{% endfor %}{% endif %}"{% endif %} data-tone="{{ block | tone('transparent') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
     <div class="media media--plum spk-out__media" aria-hidden="true">
       <img class="spk-lights" src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
            sizes="{{ block.image.sizes }}" alt="" loading="lazy" decoding="async">
     </div>
     <div class="spk-out__inner">
+      {%- if block.heading %}
       {%- set ph = placeStyle(block.headingPlacement) | trim %}
       {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 class="spk-out__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>{% if ph | length %}</div></div>{% endif %}
+      {%- endif %}
       <ul class="spk-out__list">
       {%- for w in block.words %}
         {%- set pw = placeStyle(w.placement) | trim %}
-        <li class="spk-out__word spk-out__word--{{ w.layer }}{% if pw | length %} place{% endif %}"{% if w.layer == 'back' %} {% endif %} style="--x:{{ w.x }};--y:{{ w.y }}{% if pw | length %};{{ pw }}{% endif %}">{% if pw | length %}<span class="place__inner">{% endif %}<span class="spk-out__t">{{ w.text | inline() }}</span>{% if pw | length %}</span>{% endif %}</li>
+        <li class="spk-out__word spk-out__word--{{ w.layer }}{% if w.size == 'xl' %} spk-out__word--xl{% endif %}{% if pw | length %} place{% endif %}"{% if w.layer == 'back' %} {% endif %} style="--x:{{ w.x }};--y:{{ w.y }}{% if pw | length %};{{ pw }}{% endif %}">{% if pw | length %}<span class="place__inner">{% endif %}<span class="spk-out__t">{{ w.text | inline() }}</span>{% if pw | length %}</span>{% endif %}</li>
       {%- endfor %}
       </ul>
     </div>

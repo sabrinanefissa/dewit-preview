@@ -1,5 +1,5 @@
   <!-- Keynotes -->
-  <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
+  <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
     <div class="keynotes-head reveal">
       <h2 class="h-md">{{ block.heading | inline() }}</h2>
     </div>
@@ -20,4 +20,7 @@
       </a>
     {%- endfor %}
     </div>
+    <!-- the hover picture (fine pointers only, js module 10.B): one per
+         section, its src swapped to the hovered talk's image -->
+    <img class="keynotes__float" src="{{ block.cards[0].image.src | root(r) }}" alt="" aria-hidden="true" decoding="async" loading="lazy" hidden>
   </section>
