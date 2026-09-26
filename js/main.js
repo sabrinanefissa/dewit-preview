@@ -3093,8 +3093,8 @@ var UI = (function () {
         /* the other set was already loading: fetch this one instead */
         if (loaded450) { imgs = [[], []]; loadSet(0); if (loaded900) loadSet(1); }
       }
-      hC = phone ? Math.max(220, Math.min(520, H * 0.34)) : Math.max(300, Math.min(520, H * 0.44));
-      Rw = W * 0.40;
+      hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(520, H * 0.44));
+      Rw = W * (phone ? 0.44 : 0.40);
       cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
       svh = track.offsetHeight / U;
       for (var f = 0; f < NF; f++) {
@@ -3105,8 +3105,9 @@ var UI = (function () {
         fy[f] = -(un ? U_AY : T_AY) * fh[f];
       }
       D = (phone ? 0.40 : 0.34) * W;
-      sR = Math.min(phone ? 1.5 : 1.7, (phone ? 0.36 : 0.3) * W / fw[FACE]);
-      KP = phone ? 2.2 : 1.4;
+      /* phones: no row, so sR is the intro's rise only */
+      sR = phone ? 1.15 : Math.min(1.7, 0.3 * W / fw[FACE]);
+      KP = phone ? 0 : 1.4;
       Px = W / 2 - D / 2; Py = 0.55 * H;
       sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
       sec.style.setProperty("--push-oy", "55%");
@@ -3121,7 +3122,11 @@ var UI = (function () {
     var L = new Float32Array(NP);
     /* the three: the top candle and its neighbours, j = -1, 0, 1 */
     var THREE = [LAST - 1, LAST, (LAST + 1) % NP];
-    function role(q) { return q === THREE[0] ? -1 : (q === THREE[1] ? 0 : (q === THREE[2] ? 1 : 9)); }
+    /* phones: no row of three; the top candle alone (j 0) grows */
+    function role(q) {
+      if (phone) return q === LAST ? 0 : 9;
+      return q === THREE[0] ? -1 : (q === THREE[1] ? 0 : (q === THREE[2] ? 1 : 9));
+    }
 
     var last = {};
     function put(el, key, name, v) {
@@ -3149,7 +3154,7 @@ var UI = (function () {
       theta = -(Math.min(beat, LAST) * STEP + turn * STEP);
       g = clamp((u - B0) / GROW);
       /* the push: from g = 0.8 (the row of three at rest) to the end of the track */
-      push = smooth(clamp((u - (B0 + 0.8 * GROW)) / (0.2 * GROW + 60)));
+      push = phone ? 0 : smooth(clamp((u - (B0 + 0.8 * GROW)) / (0.2 * GROW + 60)));
       if (u > LAST * BEAT) loadBig();
 
       /* the lines: in over the first 20% of their beat, out over the first
@@ -3322,6 +3327,9 @@ var UI = (function () {
       var others = 1 - clamp(g / 0.3);
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
+      /* phones: the top candle grows instead (g 0.2-0.9), x1 -> x7 about
+         the middle of its wax, which drifts to the screen's centre */
+      var dg = phone ? smooth(clamp((g - 0.2) / 0.7)) : 0, S = 1 + 6 * dg;
       /* the camera: k about P, multiplied into every candle's transform */
       var k = 1 + KP * push;
       var gr = 0.55 * hC, fyL = -FL * hC;
@@ -3351,8 +3359,14 @@ var UI = (function () {
           } else if (i === 1 || i === NP - 1) { y += (1 - eI) * 0.5 * H; a *= eI; }
           else { hover(i, now, false); continue; }
         }
+        var Fx = 0, Fy = 0, grow = false;
         if (jR === 9) a *= others;
-        else {
+        else if (phone) {
+          grow = true;
+          Fx = x + 0.55 * hC * Math.sin(rot); Fy = y - 0.55 * hC * Math.cos(rot);
+          sc = S;
+          poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
+        } else {
           toRow(x, y, rot, jR, r);
           x = PZ.x; y = PZ.y; rot = PZ.rot; sc = PZ.s;
           a += (1 - a) * r;
@@ -3362,6 +3376,7 @@ var UI = (function () {
         if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
+        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (H / 2 - Fy) * dg + S * (y - Fy); }
         ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
         var big = hC * dpr * m > 470 ? 1 : 0;
         var Li = L[i];
@@ -3371,6 +3386,9 @@ var UI = (function () {
         hover(i, now, litTo[i] === 1 && dx * dx + dy * dy < flR[i] * flR[i]);
         if (Li > 0.001) {
           var hv = hov[i], gR = gr * (1 + 0.3 * hv);
+          /* the growing candle's glow grows with it, but never past 1.25x
+             its resting size on screen (it would wash the text) */
+          if (grow && m > 1.25) gR *= 1.25 / m;
           ctx.globalCompositeOperation = "lighter";
           ctx.globalAlpha = Math.min(1, (0.24 + 0.05 * Math.sin(now / 900 + i) + 0.03 * Math.sin(now / 310 + 2 * i)) * Li * a * (1 + 0.9 * hv));
           ctx.drawImage(glow, -gR, fyL - gR, 2 * gR, 2 * gR);
@@ -3400,6 +3418,7 @@ var UI = (function () {
         var fl = [];
         for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
         window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + KP * push).toFixed(3),
+          S: phone ? +(1 + 6 * smooth(clamp((g - 0.2) / 0.7))).toFixed(3) : 1, hC: +hC.toFixed(1),
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
       raf = requestAnimationFrame(tick);
