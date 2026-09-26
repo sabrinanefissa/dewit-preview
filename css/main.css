@@ -1274,21 +1274,22 @@ html.no-js .spk-voice { display:none; }
    none of them has a transition):
      --rise, --g  on the ground: both held at 1 (written once), so the
                   ground is exactly the viewport; the card rules stay
-     --reveal     on the ground: fades in over the first 60svh, out of
-                  the candle wheel's push between its candles
+     --reveal     on the ground: held at 1 (the wheel's velvet fades
+                  out over it instead, --spk-keys-reveal, first 60svh)
      --head       on the heading: in over the first 15svh (as the candle
                   wheel's own two lines fade out), out over the first
                   40svh of talk 01
      --wi         on panels 2 and 3: the wipe in from the right
      --cap        on each panel: its caption, the ring inside it
-   The section rises over the last 60svh of the candle wheel's stage
-   (its margin-top, over the wheel only) and is transparent, so the held
-   candles show until the ground has come up. The room section
+   The section rises UNDER the last 60svh of the candle wheel's stage
+   (its margin-top, over the wheel only; the wheel is z 3): the velvet
+   fades, the talks show in the gap between the candles, which stay in
+   front and scroll away. The room section
    (.spk-chap) rises over this stage in the last 50svh (see its
    margin-top).
    --------------------------------------------------------------------- */
 .spk-keys { position:relative; background: transparent; color: var(--tx-inv); }
-/* over the candle wheel's held stage (the said section keeps z-index 1) */
+/* under the candle wheel's held stage (a pinned wheel is z 3, see A.) */
 .spk-keys { margin-top: -60svh; z-index: 2; }
 /* only over a pinned wheel: no script, reduced motion, Save-Data and
    phones (where this section is not pinned) have none */
@@ -1726,10 +1727,11 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 .spk-said__candle { display:block; width:auto; height:140px; margin: 0 auto 1rem; }
 html.no-js .spk-said__candle { display:none; }
 
-/* The wheel: a pinned stage, N + 1 beats of 80svh (N lines: --beats), a
-   100svh ending and 60svh under the talks section as it rises: 720svh for
-   six lines (--beats, --beat, --grow: the section's inline style). */
-.spk-said.is-wheel .spk-said__track { height: calc(((var(--beats, 6) + 1) * var(--beat, 80) + var(--grow, 100) + 60) * 1svh); }
+/* The wheel: a pinned stage, a 60svh intro, N + 1 beats of 80svh (N
+   lines: --beats), a 100svh ending and 60svh over the talks section as it
+   rises: 780svh for six lines (--intro, --beats, --beat, --grow: the
+   section's inline style). */
+.spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) + 1) * var(--beat, 80) + var(--grow, 100) + 60) * 1svh); }
 .spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
 .spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
@@ -1737,6 +1739,15 @@ html.no-js .spk-said__candle { display:none; }
    about the point between the left and the middle candle */
 .spk-said.is-wheel .spk-said__velvet { transform: scale(calc(1 + 0.12 * var(--push, 0)));
   transform-origin: var(--push-ox, 39%) var(--push-oy, 55%); }
+/* the hand-off: the pinned wheel sits over the talks section (z 3 over its
+   z 2) with no ground of its own; its velvet and veil fade out as the
+   talks rise under it (--spk-keys-reveal, from module 2), so the talks show
+   in the gap while the candles stay in front. No pointer events, so the
+   talks' buttons under it stay live. */
+.spk-said.is-wheel { z-index:3; background: transparent; pointer-events:none; }
+.spk-said.is-wheel .spk-said__stage { pointer-events:none; }
+.spk-said.is-wheel .spk-said__velvet,
+.spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
    geometry sit at the same spot (centred, top 30%, two rows of the big

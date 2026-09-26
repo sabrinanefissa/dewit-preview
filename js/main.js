@@ -1563,12 +1563,15 @@ var UI = (function () {
    inside it for 340svh of scroll). It rises over the last 60svh of the
    candle wheel's held stage, so there is no grow any more: the ground is
    full-bleed from the start (--rise and --g are written once, at 1) and
-   fades in over the wheel's push between its candles. This module registers ONE entry
+   always up (--reveal 1); it rises UNDER the wheel's stage (z 3), whose
+   velvet fades out over its first 60svh (--spk-keys-reveal on the wheel's
+   section), so the talks show in the gap between the candles, which stay
+   in front and scroll away. This module registers ONE entry
    with the spine and has no scroll listener of its own; update(p) turns p
    into svh of scroll (u = p * 340) and writes the phases as custom
    properties:
-     0-60     the ground fades in (--reveal; 1 whenever the wheel is not
-              pinned above, so there is nothing to come out of)
+     0-60     the wheel's velvet fades out over the ground
+              (--spk-keys-reveal on the wheel's section; --reveal stays 1)
      0-50     the heading alone (--head: in over the first 15svh, a
               crossfade with the candle wheel's own lines; out over the
               first 40svh of talk 01)
@@ -1874,9 +1877,11 @@ var UI = (function () {
       for (k = 1; k < N; k++) wi[k] = clamp(clamp((u - HEAD - k * PANEL) / PANEL) / 0.4);
       var wheel = !!said && said.classList.contains("is-wheel");
       var rv = wheel ? clamp(u / 60) : 1;
-      put(ground, "reveal", "--reveal", rv);
-      /* the wheel's two window lines leave with the hand-off (module 7's
-         CSS reads it, on the wheel's own section) */
+      /* the ground is always up: the wheel stays in front (z 3) and its
+         velvet fades out over it instead */
+      put(ground, "reveal", "--reveal", 1);
+      /* the wheel's velvet, veil and window lines leave with the hand-off
+         (module 7's CSS reads it, on the wheel's own section) */
       if (wheel) put(said, "rootReveal", "--spk-keys-reveal", rv);
       else if (last.rootReveal) { if (said) said.style.removeProperty("--spk-keys-reveal"); last.rootReveal = ""; }
       put(head, "head", "--head", hd);
@@ -2628,7 +2633,7 @@ var UI = (function () {
 })();
 
 /* ===== 7. A. What he talks about: the candle wheel =====
-   A pinned stage (the track is 720svh, the stage sticky inside it) over
+   A pinned stage (the track is 780svh, the stage sticky inside it) over
    the velvet. A giant wheel stands on its edge facing the viewer, its
    centre below the screen (radius 0.40 W, centred on W/2, its top point
    at 96% of the height: the top candle stands on the bottom edge). The
@@ -2636,38 +2641,36 @@ var UI = (function () {
    line q's candle, the rest are fillers (the unlit frame, never a line),
    so there is always a candle each side of the top one, lit, its line
    above its flame. ONE spine entry (the section's top to the bottom of
-   its track, u = p * 720 svh of scroll), no scroll listener of its own:
-     0-480    six beats of 80svh. Beat k: the line arrives over the first
+   its track, u = p * 780 svh of scroll), no scroll listener of its own:
+     0-60     the intro (t 0-1): candle 0 rises unlit from below the screen
+              into the tall row pose (0-0.5), then lights and settles into
+              its rim spot while its two neighbours come up (0.5-1)
+     60-540   six beats of 80svh. Beat k: the line arrives over the first
               20%, the wheel turns 40 degrees (eased) over the last 45%
-              while the line leaves. Lines 01-05 are beats 0-4; the bridge
-              (06) arrives on beat 5 and holds, and the wheel stops.
-     480-560  the sixth candle lit, the bridge holds
-     560-660  the ending (g 0-1): "Three talks." up behind the resting
-              candle (0-0.2); the top candle and its two neighbours rise
-              out of the ring into a row of three upright candles, the
-              left and right one lighting as they go (0.2-0.75), the rest
-              fade (0-0.3); one roll through one window as they start
-              (0.2-0.5): A up and out behind, B up and in, in front
-     640-720  the push (0-1): a camera scale x3.8 about the point between
-              the left and the middle candle (the velvet follows, x1.12)
-     620-720  the stage is held in place (a transform, only while the
-              talks section is pinned and rises over it); that section's
-              ground fades in over the push: the hand-off
-   Every candle draws one still, candle-turn-03 (the opening facing the
-   camera) lit, candle-unlit dark; they crossfade as it lights (600ms,
-   time-based) and it goes dark at once (80ms) when the next one lights.
-   Only the current candle is lit during the beats; the
-   three are lit from the rise to the end. Hovering a lit candle's flame
-   (fine pointers only) eases its glow up (250ms in, 400ms out).
-   update(p) writes the lines, the heading, the windows and --push; the
-   canvas is drawn by this module's own rAF loop, only while the stage is
-   on screen and the tab visible. The lines are real text at all times.
+              while the line leaves; the bridge (06) arrives on beat 5
+     540-620  the sixth candle lit, the bridge holds
+     620-720  the ending (g 0-1): "Three talks." up behind the candle
+              (0-0.2); the top candle and its two neighbours rise out of
+              the ring into a row of three upright lit candles (0.2-0.75),
+              the rest fade (0-0.3); A rolls up and out, B up and in
+     700-780  the push: a camera scale x2.4 about the point between the
+              left and the middle candle (the velvet follows, x1.12)
+     680-780  the stage is held (only while the talks section is pinned
+              and rises under it); the velvet fades, the talks show in the
+              gap, the candles stay in front (z 3, no pointer events) and
+              then scroll away
+   Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
+   crossfaded as it lights (600ms; dark at once, 80ms). Only the current
+   candle is lit in the beats, the three from the rise on; a lit flame
+   under the pointer glows up (250ms in, 400ms out). An own rAF loop
+   draws, only on screen with the tab visible. Lines are real text.
    Reduced motion, Save-Data, no canvas or no spine: no pin, the lines
    stacked on the velvet, each under one lit candle (<img>).
-   Counts: N = the lines in the markup (3-9, the last is the bridge); the
-   numbers above are for N = 6, data-beat="80" and data-grow="100". The
-   ending starts at B = (N + 1) * beat; U = B + grow + 60 svh (the CSS
-   reads --beats, --beat and --grow from the section's inline style). */
+   Counts: N = the lines (3-9, the last is the bridge); the numbers above
+   are for N = 6, data-intro="60", data-beat="80" and data-grow="100".
+   After the intro (I), the ending starts at B = (N + 1) * beat, and
+   U = I + B + grow + 60 svh (--intro, --beats, --beat, --grow: the
+   section's inline style, read by the CSS). */
 (function () {
   "use strict";
   [].slice.call(document.querySelectorAll(".spk-said")).forEach(said);
@@ -2687,10 +2690,11 @@ var UI = (function () {
     if (live) live.textContent = "";
 
     function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
+    var INTRO = num("data-intro", 60);          /* svh of scroll across the intro */
     var BEAT = num("data-beat", 80);            /* svh of scroll per beat */
     var GROW = num("data-grow", 100);           /* svh of scroll across the ending */
-    var B0 = (N + 1) * BEAT;                    /* the ending starts here (560) */
-    var U = B0 + GROW + 60;                     /* svh across the track (720) */
+    var B0 = (N + 1) * BEAT;                    /* the ending starts here, after the intro (560) */
+    var U = INTRO + B0 + GROW + 60;             /* svh across the track (780) */
     var LAST = N - 1;                           /* the bridge's beat, and the top candle from it on */
 
     var base = (cv && cv.getAttribute("data-frames")) || "../assets/img/";
@@ -2795,8 +2799,8 @@ var UI = (function () {
         fx[f] = -(un ? U_AX : T_AX) * fw[f];
         fy[f] = -(un ? U_AY : T_AY) * fh[f];
       }
-      D = (phone ? 0.33 : 0.28) * W;
-      sR = Math.min(phone ? 1.45 : 1.9, (phone ? 0.27 : 0.3) * W / fw[FACE]);
+      D = (phone ? 0.33 : 0.34) * W;
+      sR = Math.min(phone ? 1.45 : 1.7, (phone ? 0.27 : 0.3) * W / fw[FACE]);
       Px = W / 2 - D / 2; Py = 0.55 * H;
       sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
       sec.style.setProperty("--push-oy", "55%");
@@ -2806,7 +2810,7 @@ var UI = (function () {
     /* ---- the state the scroll sets (per rim place: NP entries) ---- */
     var STEP = 40;                                           /* degrees between places, and per beat */
     var NP = 360 / STEP;                                     /* nine places on the ring */
-    var u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, push = 0, first = true;   /* the wheel's centre stays at W/2 */
+    var uT = 0, tI = 0, u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, push = 0, first = true;   /* the wheel's centre stays at W/2 */
     var litTo = new Int8Array(NP), litFrom = new Float32Array(NP), litT0 = new Float64Array(NP);
     var L = new Float32Array(NP);
     /* the three: the top candle and its neighbours, j = -1, 0, 1 */
@@ -2824,7 +2828,11 @@ var UI = (function () {
 
     function update(p) {
       if (entry.disabled) return;
-      u = p * U;
+      /* uT: svh into the track; u: svh after the intro, which every beat
+         and the ending count from; tI: the intro's progress */
+      uT = p * U;
+      u = Math.max(0, uT - INTRO);
+      tI = clamp(uT / INTRO);
       var s = 1, turn = 0;
       if (u < B0) { beat = Math.min(N, Math.floor(u / BEAT)); s = clamp(u / BEAT - beat); }
       else beat = N;
@@ -2855,13 +2863,13 @@ var UI = (function () {
       var bridge = beat >= LAST;
       if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
 
-      /* lit: the current candle only during the beats; the three from the
-         rise on (g > 0.2), through the end. A filler is lit only as one of
-         the three. */
+      /* lit: the current candle only during the beats (candle 0 from the
+         intro's settle, t > 0.5); the three from the rise on (g > 0.2),
+         through the end. A filler is lit only as one of the three. */
       var now = performance.now();
       var rise = g > 0.2;
       for (var i = 0; i < NP; i++) {
-        var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST)) ? 1 : 0;
+        var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST) && tI > 0.5) ? 1 : 0;
         if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
         else if (to !== litTo[i]) { litFrom[i] = L[i]; litTo[i] = to; litT0[i] = now; }
       }
@@ -2879,10 +2887,10 @@ var UI = (function () {
 
       /* held in place while the talks section rises over it (only when that
          section is pinned over it: on phones it is a strip) */
-      /* the stage's sticky run ends 100svh before the track does (620 of 720) */
+      /* the stage's sticky run ends 100svh before the track does (680 of 780) */
       var HOLD = U - 100;
-      var hold = (keysSec && keysSec.getAttribute("data-spk-keys-mode") === "pin" && u > HOLD)
-        ? "translate3d(0," + ((u - HOLD) * svh).toFixed(1) + "px,0)" : "";
+      var hold = (keysSec && keysSec.getAttribute("data-spk-keys-mode") === "pin" && uT > HOLD)
+        ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
       wake();
     }
@@ -2894,13 +2902,18 @@ var UI = (function () {
     var mx = -1e9, my = -1e9;
     var hov = new Float32Array(NP), hovTo = new Int8Array(NP), hovFrom = new Float32Array(NP), hovT0 = new Float64Array(NP);
     var flX = new Float32Array(NP), flY = new Float32Array(NP), flR = new Float32Array(NP);
+    /* the stage takes no pointer events (the talks' buttons under it stay
+       live), so the pointer is read on the document; outside the stage's
+       rect it is cleared */
     if (!window.matchMedia("(pointer: coarse)").matches) {
-      stage.addEventListener("mousemove", function (e) {
+      document.addEventListener("mousemove", function (e) {
+        if (!onScreen) { mx = my = -1e9; return; }
         var b = stage.getBoundingClientRect();
         mx = e.clientX - b.left; my = e.clientY - b.top;
+        if (mx < 0 || my < 0 || mx > b.width || my > b.height) mx = my = -1e9;
         wake();
       }, { passive: true });
-      stage.addEventListener("mouseleave", function () { mx = my = -1e9; wake(); }, { passive: true });
+      document.documentElement.addEventListener("mouseleave", function () { mx = my = -1e9; wake(); }, { passive: true });
     }
     function hover(i, now, on) {
       var to = on ? 1 : 0;
@@ -2926,7 +2939,20 @@ var UI = (function () {
         L[i] = t >= 1 ? litTo[i] : litFrom[i] + (litTo[i] - litFrom[i]) * smooth(t);
       }
     }
-    var poses = [];                                          /* the three's poses, for the profile */
+    var poses = [], c0 = null;                               /* the three's poses and candle 0's, for the profile */
+    /* rim pose -> row pose: from a rim pose (x, y, rot, scale 1) to the
+       row's upright pose j (foot at W/2 + j D, 99% of H, scale sR), linear
+       in r (r is eased by the caller); the rotation goes the shortest way.
+       Used by the ending (r up) and by the intro's settle (r down). */
+    var PZ = { x: 0, y: 0, rot: 0, s: 1 };
+    function toRow(x, y, rot, j, r) {
+      rot = Math.atan2(Math.sin(rot), Math.cos(rot));
+      PZ.x = x + (W / 2 + j * D - x) * r;
+      PZ.y = y + (0.99 * H - y) * r;
+      PZ.rot = rot - rot * r;
+      PZ.s = 1 + (sR - 1) * r;
+      return PZ;
+    }
     function draw(now) {
       step(now);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2936,9 +2962,9 @@ var UI = (function () {
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
       /* the camera: k about P, multiplied into every candle's transform */
-      var k = 1 + 2.8 * push;
+      var k = 1 + 1.4 * push;
       var gr = 0.55 * hC, fyL = -0.94 * hC;
-      poses.length = 0;
+      poses.length = 0; c0 = null;
       for (var i = 0; i < NP; i++) {
         var phi = -90 + theta + i * STEP;
         var rel = ((phi + 90) % 360 + 540) % 360 - 180;
@@ -2950,18 +2976,28 @@ var UI = (function () {
         if (jR === 9 && y > H + hC) { hover(i, now, false); continue; }
         var a = 0.35 + 0.65 * clamp(1 - Math.abs(rel) / 80);
         var rot = rad + Math.PI / 2, sc = 1;
+        if (tI < 1) {
+          /* the intro: candle 0 rises from below the screen into the
+             middle row pose (t 0-0.5), then settles back into its rim spot
+             (0.5-1) while places 1 and NP-1 come up from 0.5 H below at
+             alpha e; nothing else until t = 1, where the rim takes over
+             in place */
+          var eI = smooth((tI - 0.5) / 0.5);
+          if (i === 0) {
+            toRow(x, y, rot, 0, tI < 0.5 ? 1 : 1 - eI);
+            x = PZ.x; y = PZ.y; rot = PZ.rot; sc = PZ.s; a = 1;
+            if (tI < 0.5) y += (1 - smooth(tI / 0.5)) * (1.02 * sR * hC + 0.02 * H);
+          } else if (i === 1 || i === NP - 1) { y += (1 - eI) * 0.5 * H; a *= eI; }
+          else { hover(i, now, false); continue; }
+        }
         if (jR === 9) a *= others;
         else {
-          /* rim pose -> pillar pose: x, y, the rotation (the shortest way,
-             to upright) and the scale, linear in r (r is eased) */
-          rot = Math.atan2(Math.sin(rot), Math.cos(rot));
-          x += (W / 2 + jR * D - x) * r;
-          y += (0.99 * H - y) * r;
-          rot -= rot * r;
-          sc += (sR - 1) * r;
+          toRow(x, y, rot, jR, r);
+          x = PZ.x; y = PZ.y; rot = PZ.rot; sc = PZ.s;
           a += (1 - a) * r;
           poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
         }
+        if (i === 0) c0 = { x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3), a: +a.toFixed(3) };
         if (a <= 0.003) { hover(i, now, false); continue; }
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
@@ -3002,7 +3038,7 @@ var UI = (function () {
         if (cost.length > 240) cost.shift();
         var fl = [];
         for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
-        window.__spkWheelState = { u: +u.toFixed(1), g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + 2.8 * push).toFixed(3),
+        window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + 1.4 * push).toFixed(3),
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
       raf = requestAnimationFrame(tick);

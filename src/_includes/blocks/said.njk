@@ -1,7 +1,10 @@
 {%- from "place.njk" import placeStyle %}
   <!-- ==============================================================
        A. WHAT HE TALKS ABOUT - the candle wheel. A pinned stage over
-       velvet: a wheel stands on its edge below the screen, a full ring
+       velvet. First one candle rises from below the screen, tall, then
+       settles and lights in its spot on the wheel while its neighbours
+       come up either side. The wheel stands on its edge below the
+       screen, a full ring
        of nine candle places 40 degrees apart (one candle per line, the
        rest unlit fillers), so there is always a candle each side of the
        top one. The top candle is lit and its line stands above its
@@ -12,22 +15,23 @@
        talks." rolls up and out of an invisible window and "for people,
        teams and organizations." rolls up into it, in front; then the
        camera pushes into the gap between the left and the middle
-       candle while the talks section's ground fades in over the stage
-       (two visual lines, aria-hidden; the real heading is in the talks
+       candle while the velvet fades and the talks section shows in the
+       gap; the candles stay in front, then scroll away (two visual lines, aria-hidden; the real heading is in the talks
        section). Hovering a lit candle's flame brightens its glow. The
-       track is 720svh:
-         0-480    six beats, one line each (the sixth is the bridge)
-         480-560  the sixth candle lit, the bridge holds
-         560-660  the ending: line A, the three rise, line B
-         640-720  the push, on through the hold (660-720) while the
-                  talks section rises over the stage
+       track is 780svh:
+         0-60     the intro: the first candle rises, then settles
+         60-540   six beats, one line each (the sixth is the bridge)
+         540-620  the sixth candle lit, the bridge holds
+         620-720  the ending: line A, the three rise, line B
+         700-780  the push, on through the hold (720-780) while the
+                  talks section rises under the stage
        The six lines are real text in reading order at all times; the
        wheel is a decorative canvas. Reduced motion, Save-Data and no
        script: no pin, the six lines stacked (with script, each under a
        lit candle) on the velvet.
        ============================================================== -->
-  {%- set beat = block | motion('beat', 80) %}{% set grow = block | motion('grow', 100) %}
-  <section class="spk-said"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-beat="{{ beat }}" data-grow="{{ grow }}" style="--beats:{{ block.lines.length }};--beat:{{ beat }};--grow:{{ grow }}">
+  {%- set intro = block | motion('intro', 60) %}{% set beat = block | motion('beat', 80) %}{% set grow = block | motion('grow', 100) %}
+  <section class="spk-said"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-intro="{{ intro }}" data-beat="{{ beat }}" data-grow="{{ grow }}" style="--intro:{{ intro }};--beats:{{ block.lines.length }};--beat:{{ beat }};--grow:{{ grow }}">
     <div class="spk-said__track">
       <div class="spk-said__stage">
         <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" {%- set ss1 = block.velvet.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">

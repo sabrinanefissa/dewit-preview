@@ -566,6 +566,7 @@ collections:
                     widget: object
                     required: false
                     fields:
+                      - { label: "Intro length (svh)", name: intro, widget: number, required: false, hint: "The first candle rising into the wheel before the first line. Default: 60" }
                       - { label: "Scroll per beat (svh)", name: beat, widget: number, required: false, hint: "How much scroll turns the wheel one candle. Default: 80" }
                       - { label: "Ending length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on the three candles rising and the push between them. Default: 100" }
 
