@@ -8,11 +8,11 @@
        9.4 MB (<= 10 MB), so muted autoplay is allowed under 820px:
        that is what data-mobile-autoplay="true" states.
        ============================================================== -->
-  <section class="hero spk-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-parallax="{{ block | motion('parallax', 0.5) }}">
+  <section class="hero spk-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-parallax="{{ block | motion('parallax', 0.5) }}" data-dim="{{ block | motion('dim', 0.55) }}" data-name-morph="{{ block | motion('nameMorph', 0.4) }}">
     <div class="media media--plum">
-      <img class="hero__poster" src="{{ block.poster.src | root(r) }}"
+      {%- set pp = block.poster.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="hero__poster" src="{{ block.poster.src | root(r) }}"
            {%- set ss1 = block.poster.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.poster.sizes }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">
+           sizes="{{ block.poster.sizes or '100vw' }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">{% if pp %}</picture>{% endif %}
       <video class="spk-hero__video" playsinline muted preload="metadata"
              poster="{{ block.video.poster | root(r) }}"
              aria-label="{{ block.video.ariaLabel | inline() }}"

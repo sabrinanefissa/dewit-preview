@@ -4,13 +4,13 @@
     <div class="media media--warm">
       <img data-reveal-clip src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" decoding="async">
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" decoding="async">
     </div>
     <div class="care__inner">
       {%- set ps = placeStyle(block.placement) | trim %}
       {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
       <div class="care__body reveal">
-        <h2>{{ block.heading | inline() }}</h2>
+        <h2 class="fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
         <p class="lead lead--inv"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | inline() }}</p>
         <ul class="care__list">
           {% for it in block.items %}<li>{{ it | inline() }}</li>{% endfor %}

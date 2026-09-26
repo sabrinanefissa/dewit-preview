@@ -1,14 +1,14 @@
 {%- from "place.njk" import placeStyle %}
   <section class="spk-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.heading %} aria-labelledby="{{ block.id }}-h"{% else %} aria-label="{% if block.label %}{{ block.label | plain }}{% else %}{% for w in block.words %}{{ w.text | plain }}{% if not loop.last %} {% endif %}{% endfor %}{% endif %}"{% endif %} data-tone="{{ block | tone('transparent') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
     <div class="media media--plum spk-out__media" aria-hidden="true">
-      <img class="spk-lights" src="{{ block.image.src | root(r) }}"
+      {%- set pp = block.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="spk-lights" src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes }}" alt="" loading="lazy" decoding="async">
+           sizes="{{ block.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">{% if pp %}</picture>{% endif %}
     </div>
     <div class="spk-out__inner">
       {%- if block.heading %}
       {%- set ph = placeStyle(block.headingPlacement) | trim %}
-      {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 class="spk-out__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>{% if ph | length %}</div></div>{% endif %}
+      {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 class="spk-out__h fill" id="{{ block.id }}-h"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>{% if ph | length %}</div></div>{% endif %}
       {%- endif %}
       <ul class="spk-out__list">
       {%- for w in block.words %}

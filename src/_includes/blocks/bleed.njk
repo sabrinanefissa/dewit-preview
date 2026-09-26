@@ -2,9 +2,9 @@
   <!-- Cinematic bleed: the idea (live constellation) -->
   <section class="bleed{% if block.constellation %} bleed--net{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
     <div class="media media--plum">
-      <img src="{{ block.image.src | root(r) }}"
+      {%- set pp = block.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" loading="lazy">
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy">{% if pp %}</picture>{% endif %}
     </div>
     {%- if block.constellation %}
     <canvas class="bleed__canvas" aria-hidden="true"></canvas>
@@ -12,7 +12,7 @@
     {%- set ps = placeStyle(block.placement) | trim %}
     {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <div class="bleed__inner reveal">
-      <h2>{{ block.statement | inline() }}</h2>
+      <h2 class="fill"{{ block.statement | fillAttrs }}>{{ block.statement | fillWords }}</h2>
     </div>
     {% if ps | length %}</div></div>{% endif %}
   </section>

@@ -7,12 +7,12 @@
        pushes in by data-zoom (data-zoom-sm on phones) and a veil darkens
        to data-dim over the first screen. Reduced motion and no script:
        everything at rest. -->
-  <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-stagger="{{ block | motion('stagger', 110) }}" data-delay="{{ block | motion('delay', 250) }}" data-zoom="{{ block | motion('zoom', 0.12) }}" data-zoom-sm="{{ block | motion('zoomPhone', 0.08) }}" data-dim="{{ block | motion('dim', 0.55) }}">
+  <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-stagger="{{ block | motion('stagger', 110) }}" data-delay="{{ block | motion('delay', 250) }}" data-zoom="{{ block | motion('zoom', 0.12) }}" data-zoom-sm="{{ block | motion('zoomPhone', 0.08) }}" data-dim="{{ block | motion('dim', 0.55) }}" data-name-morph="{{ block | motion('nameMorph', 0.4) }}">
     <div class="media media--plum">
       <!-- Instant poster / reduced-motion + fallback layer -->
-      <img class="hero__poster" src="{{ block.poster.src | root(r) }}"
+      {%- set pp = block.poster.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="hero__poster" src="{{ block.poster.src | root(r) }}"
            {%- set ss1 = block.poster.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.poster.sizes }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">
+           sizes="{{ block.poster.sizes or '100vw' }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">{% if pp %}</picture>{% endif %}
       <!-- Ambient muted keynote loop (upgraded in via JS unless prefers-reduced-motion) -->
       <video class="hero__video" muted loop playsinline preload="none"
              poster="{{ block.video.poster | root(r) }}" aria-hidden="true"
@@ -33,6 +33,6 @@
         </button>
       </div>
     </div>
-    <div class="hero__meta">{% for m in block.meta %}<span>{{ m | inline() }}</span>{% endfor %}</div>
+    <div class="hero__meta">{% for m in block.meta %}<span class="fill"{{ m | fillAttrs(false) }}>{{ m | fillWords(undefined, false) }}</span>{% endfor %}</div>
     {% if ps | length %}</div></div>{% endif %}
   </section>

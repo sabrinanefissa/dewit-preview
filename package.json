@@ -4,7 +4,9 @@
   "private": true,
   "description": "Dr. Stephen de Wit site: Eleventy block build",
   "scripts": {
+    "prebuild": "node tools/images.js",
     "build": "eleventy",
+    "predev": "node tools/images.js",
     "dev": "eleventy --serve",
     "check": "node tools/check-build.js"
   },
@@ -12,6 +14,7 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.1.6"
+    "@11ty/eleventy": "^3.1.6",
+    "sharp": "^0.35.4"
   }
 }

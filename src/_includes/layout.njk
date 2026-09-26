@@ -26,7 +26,11 @@
 <link href="{{ site.head.fonts | inline() }}" rel="stylesheet">
 {%- if page.preload %}
 {%- set ss1 = page.preload.sizes and (page.preload.href | srcset(r)) %}
-<link rel="preload" as="image" href="{{ page.preload.href | root(r) }}"{% if ss1 %} imagesrcset="{{ ss1 }}" imagesizes="{{ page.preload.sizes }}"{% endif %} fetchpriority="high">
+{%- set pp1 = page.preload.href | portrait(r) %}
+<link rel="preload" as="image" href="{{ page.preload.href | root(r) }}"{% if ss1 %} imagesrcset="{{ ss1 }}" imagesizes="{{ page.preload.sizes or '100vw' }}"{% endif %}{% if pp1 %} media="not all and (max-width: 768px) and (orientation: portrait)"{% endif %} fetchpriority="high">
+{%- if pp1 %}
+<link rel="preload" as="image" imagesrcset="{{ pp1 }}" imagesizes="100vw" media="(max-width: 768px) and (orientation: portrait)" fetchpriority="high">
+{%- endif %}
 {%- endif %}
 <link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ build.v }}">
 <script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
@@ -42,7 +46,7 @@
 </script>
 {%- endif %}
 </head>
-<body>
+<body data-fill="{{ site.ui.fillHeadings or 'phone' }}"{% if site.ui.fillStart %} data-fill-start="{{ site.ui.fillStart }}"{% endif %}{% if site.ui.fillEnd %} data-fill-end="{{ site.ui.fillEnd }}"{% endif %}{% if site.ui.fillStagger %} style="--fill-stagger:{{ site.ui.fillStagger }}"{% endif %}>
 <script type="application/json" id="ui">{{ site.ui | dump | safe }}</script>
 <a class="skip" href="#main">{{ site.ui.skip }}</a>
 
@@ -54,6 +58,8 @@
 <div class="grain" aria-hidden="true"></div>
 
 <!-- {{ page.comments.nav | safe }} -->
+<!-- phones: the brand large under the nav, moving into the nav as the hero scrolls (js module 13) -->
+<span class="hero__name" aria-hidden="true">{{ site.brand }}</span>
 <header class="nav" id="nav">
   {%- set bl = site.brandLink | navlink(slug, r) %}
   <a class="brand" href="{{ bl.href }}">{{ site.brand }}</a>
@@ -86,7 +92,7 @@
   <div class="spk-ground" aria-hidden="true">
     <img class="spk-ground__img" src="{{ page.ground.image | root(r) }}"
          {%- set ss2 = page.ground.image | srcset(r) %}{% if ss2 %} srcset="{{ ss2 }}"{% endif %}
-         sizes="{{ page.ground.sizes }}" alt="" decoding="async" fetchpriority="low">
+         sizes="{{ page.ground.sizes or '100vw' }}" alt="" decoding="async" fetchpriority="low">
     {%- if page.ground.veil %}
     <div class="spk-ground__veil"></div>
     {%- endif %}

@@ -4,13 +4,13 @@
     <div class="media media--plum">
       <img data-reveal-clip src="{{ block.portrait.src | root(r) }}"
            {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.portrait.sizes }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
+           sizes="{{ block.portrait.sizes or '100vw' }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
     </div>
     <div class="why__grid">
       {%- set ps = placeStyle(block.placement) | trim %}
       {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
       <div class="why__body reveal">
-        <h2>{{ block.heading | inline() }}</h2>
+        <h2 class="fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
         <p class="lead">{{ block.lead | inline() }}</p>
         <div class="creds">
         {%- for c in block.creds %}

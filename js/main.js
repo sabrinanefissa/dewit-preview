@@ -3537,11 +3537,36 @@ var UI = (function () {
       if (rail) rail.style.setProperty("--dot", clamp((yT - railTop) / railH).toFixed(4));
       chapters.forEach(function (c) { c.classList.toggle("is-lit", yT >= c.offsetTop + 12); });
     }
+    /* The candidate the browser would pick for this still at full width:
+       a matching <source> of its <picture> (the phone's portrait crop)
+       first, else its own srcset, else its src. Keeps the frame off the
+       full-size upload. */
+    function bestSrc(img) {
+      var set = "", pic = img.parentNode;
+      if (pic && pic.nodeName === "PICTURE" && window.matchMedia) {
+        var ss = pic.getElementsByTagName("source");
+        for (var k = 0; k < ss.length; k++) {
+          var m = ss[k].getAttribute("media");
+          if (!m || window.matchMedia(m).matches) { set = ss[k].getAttribute("srcset") || ""; break; }
+        }
+      }
+      if (!set) set = img.getAttribute("srcset") || "";
+      if (!set) return img.src;
+      var need = window.innerWidth * (window.devicePixelRatio || 1), pick = null, big = null;
+      set.split(/,\s*/).forEach(function (c) {
+        var p = c.trim().split(/\s+/), w = parseInt(p[1], 10) || 0;
+        if (!p[0]) return;
+        if (!big || w > big.w) big = { u: p[0], w: w };
+        if (w >= need && (!pick || w < pick.w)) pick = { u: p[0], w: w };
+      });
+      var u = (pick || big).u, a = document.createElement("a");
+      a.href = u; return a.href;
+    }
     /* each frame shows its chapter's still, set once when the block is near */
     function frameStill(i) {
       var f = frames[i], st = stillOf(i);
       if (!f || !st || f.style.backgroundImage) return;
-      f.style.backgroundImage = "url(\"" + st.src + "\")";
+      f.style.backgroundImage = "url(\"" + bestSrc(st) + "\")";
     }
 
     function startPhone() {
@@ -3631,13 +3656,20 @@ var UI = (function () {
     if (!media || reduce) return;
     var PAR = parseFloat(hero.getAttribute("data-parallax"));
     if (isNaN(PAR)) PAR = 0.5;
+    /* phones: the hero holds still while the next section slides over it
+       (module 13), so no parallax; its picture dims instead (data-dim) */
+    var DIM = parseFloat(hero.getAttribute("data-dim"));
+    if (isNaN(DIM) || DIM < 0) DIM = 0.55;
     var heroH = 0;
     /* the page-y the hero starts at: 0 for the page's first section */
     spine.add({
       start: function () { return pageY(hero); },
       end: function () { heroH = hero.offsetHeight; return pageY(hero) + heroH; },
       update: function (p) {
-        media.style.setProperty("--spk-hero-par", (p * heroH * PAR).toFixed(1) + "px");
+        var ph = !desk.matches;
+        media.style.setProperty("--spk-hero-par", (ph ? 0 : p * heroH * PAR).toFixed(1) + "px");
+        if (ph) media.style.setProperty("--hero-dim", (DIM * p).toFixed(3));
+        else media.style.removeProperty("--hero-dim");
       }
     });
   });
@@ -3876,4 +3908,178 @@ var UI = (function () {
       row.addEventListener("blur", function () { if (cur === row) hide(); });
     });
   });
+})();
+
+/* ===== 12. Scroll-fill headings =====
+   Every .fill heading (block h2s, the hero's meta lines) carries its words
+   as .fill__w spans (--i, and --n on the heading), split at build time.
+   One shared module: an IntersectionObserver keeps the set of .fill
+   headings on screen, and a scroll listener runs only while that set is
+   not empty. Per frame it writes --fp (0..1) on each visible heading from
+   its top edge: 0 when the top is at data-fill-start of the viewport
+   (0.85), 1 at data-fill-end (0.45). The CSS derives each word's fill from
+   --fp, --i and --n; no per-word writes. Where it applies: <body
+   data-fill> "phone" (<= 768px, the default), "all" or "off"; never under
+   reduced motion; and not on a heading whose own module animates it (the
+   said heading on the wheel, the keys heading on the pin, the chapters
+   heading in the pin); those take the fill once their module is in its
+   stacked / strip / phone mode. No script: plain colour. */
+(function () {
+  "use strict";
+  var body = document.body;
+  var mode = body.getAttribute("data-fill") || "phone";
+  var heads = [].slice.call(document.querySelectorAll(".fill"));
+  if (!heads.length || mode === "off") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!("IntersectionObserver" in window)) return;
+  function num(name, d) { var v = parseFloat(body.getAttribute(name)); return isNaN(v) ? d : v; }
+  var START = num("data-fill-start", 0.85), END = num("data-fill-end", 0.45);
+  if (START <= END) { START = 0.85; END = 0.45; }
+  var phone = window.matchMedia("(max-width: 768px)");
+
+  function owned(h) {
+    var s = h.closest(".spk-said");
+    if (s && s.classList.contains("is-wheel")) return true;
+    s = h.closest(".spk-keys");
+    if (s && s.getAttribute("data-spk-keys-mode") === "pin") return true;
+    s = h.closest(".spk-chap");
+    if (s && h.classList.contains("spk-chap__h") && !s.classList.contains("is-phone")) return true;
+    return false;
+  }
+  var live = [];                 /* headings on screen that take the fill */
+  var seen = [];                 /* headings on screen */
+  var listening = false, ticking = false;
+
+  function frame() {
+    ticking = false;
+    var vh = window.innerHeight, a = START * vh, span = (START - END) * vh;
+    for (var k = 0; k < live.length; k++) {
+      var h = live[k], t = h.getBoundingClientRect().top;
+      /* inside a hero held still (phones, module 13) a line does not move:
+         it fills as if it scrolled with the page */
+      var hs = h.__hero;
+      if (hs === undefined) hs = h.__hero = h.closest(".hero");
+      if (hs && getComputedStyle(hs).position === "sticky") {
+        /* where the hero sits in the flow: the next block's top less its height */
+        var nx = hs.nextElementSibling, y0 = nx ? nx.getBoundingClientRect().top + (window.pageYOffset || 0) - hs.offsetHeight : 0;
+        t -= Math.max(0, (window.pageYOffset || 0) - y0);
+      }
+      var p = Math.max(0, Math.min(1, (a - t) / span)).toFixed(3);
+      if (h.__fp !== p) { h.style.setProperty("--fp", p); h.__fp = p; }
+    }
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  function sync() {
+    var on = mode === "all" || phone.matches;
+    live = seen.filter(function (h) { return h.classList.contains("is-filling"); });
+    heads.forEach(function (h) {
+      var want = on && !owned(h);
+      if (want !== h.classList.contains("is-filling")) {
+        h.classList.toggle("is-filling", want);
+        if (!want) { h.style.removeProperty("--fp"); h.__fp = null; }
+      }
+    });
+    live = seen.filter(function (h) { return h.classList.contains("is-filling"); });
+    if (live.length && !listening) { window.addEventListener("scroll", onScroll, { passive: true }); listening = true; }
+    else if (!live.length && listening) { window.removeEventListener("scroll", onScroll); listening = false; }
+    if (live.length) frame();
+  }
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var i = seen.indexOf(e.target);
+      if (e.isIntersecting && i < 0) seen.push(e.target);
+      else if (!e.isIntersecting && i >= 0) seen.splice(i, 1);
+    });
+    sync();
+  });
+  /* the fill needs a start value before a heading is seen */
+  heads.forEach(function (h) { h.style.setProperty("--fp", "0"); h.__fp = "0.000"; io.observe(h); });
+  sync();
+  /* the owning modules settle their modes at load and on resize */
+  window.addEventListener("load", sync);
+  window.addEventListener("resize", function () { setTimeout(sync, 60); });
+  if (phone.addEventListener) phone.addEventListener("change", sync);
+  else if (phone.addListener) phone.addListener(sync);
+})();
+
+/* ===== 13. Phones: the hero card-slide, and the name into the header =====
+   A. The card-slide (CSS: the hero is sticky for its own height, the next
+      section slides over it as a card; the hero's picture dims through
+      --hero-dim, written by 9.A / 10.A). Here only: once the hero is fully
+      covered it takes .is-covered (hidden), so a transparent section
+      further down never shows it through.
+   B. The name: .hero__name (the brand, large, under the nav at the hero's
+      top-left) moves and scales into the nav's .brand over the first
+      data-name-morph (0.4) of the hero's height: translate(dx, dy)
+      scale(s) from its top-left, the brand's rect measured once on load
+      and on resize (with the nav in its solid state, which it is by then).
+      The real .brand is hidden until the morph completes, then swapped.
+      Reduced motion: no morph, the nav brand as always. */
+(function () {
+  "use strict";
+  var hero = document.querySelector("main .hero");
+  if (!hero) return;
+  var phone = window.matchMedia("(max-width: 768px)");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var nav = document.querySelector(".nav");
+  var brand = nav ? nav.querySelector(".brand") : null;
+  var name = document.querySelector(".hero__name");
+  var M = parseFloat(hero.getAttribute("data-name-morph"));
+  if (isNaN(M) || M <= 0) M = 0.4;
+  var morph = !!(name && brand && !reduce);
+  var heroTop = 0, heroH = 1, from = null, to = null, ticking = false, last = "";
+
+  /* the hero's place in the flow (it may be stuck, so read it off the
+     next block, which is not) */
+  function flowTop() {
+    var nx = hero.nextElementSibling;
+    return nx ? nx.getBoundingClientRect().top + (window.pageYOffset || 0) - hero.offsetHeight : 0;
+  }
+  function measure() {
+    heroTop = flowTop(); heroH = hero.offsetHeight || 1;
+    if (!morph || !phone.matches) return;
+    name.style.transform = "none";
+    var a = name.getBoundingClientRect();
+    /* the brand's slot with the nav solid (padding settles there on scroll) */
+    var had = nav.classList.contains("is-solid"), tr = nav.style.transition;
+    nav.style.transition = "none";
+    nav.classList.add("is-solid");
+    var b = brand.getBoundingClientRect();
+    if (!had) nav.classList.remove("is-solid");
+    void nav.offsetHeight;
+    nav.style.transition = tr;
+    from = { x: a.left, y: a.top, w: a.width };
+    to = { x: b.left, y: b.top, w: b.width };
+    last = "";
+  }
+  function frame() {
+    ticking = false;
+    var y = window.scrollY || window.pageYOffset || 0;
+    var ph = phone.matches;
+    hero.classList.toggle("is-covered", ph && y >= heroTop + heroH);
+    if (!morph) return;
+    if (!ph || !from) {
+      if (last !== "off") { name.classList.remove("is-armed", "is-done"); nav.classList.remove("is-name-morph"); name.style.transform = ""; last = "off"; }
+      return;
+    }
+    var p = Math.max(0, Math.min(1, (y - heroTop) / (M * heroH)));
+    var key = p.toFixed(4);
+    if (key === last) return;
+    last = key;
+    var s = 1 + (to.w / from.w - 1) * p;
+    name.style.transform = "translate(" + ((to.x - from.x) * p).toFixed(2) + "px," + ((to.y - from.y) * p).toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
+    var done = p >= 1;
+    name.classList.toggle("is-done", done);
+    nav.classList.toggle("is-name-morph", !done);
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }
+  function reset() { if (morph && phone.matches) name.classList.add("is-armed"); measure(); frame(); }
+
+  reset();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", function () { setTimeout(reset, 60); });
+  window.addEventListener("load", reset);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reset);
+  if (phone.addEventListener) phone.addEventListener("change", reset);
+  else if (phone.addListener) phone.addListener(reset);
 })();

@@ -117,6 +117,7 @@ collections:
                       - { label: "Picture push-in on scroll", name: zoom, widget: number, value_type: float, required: false, hint: "How much the picture grows while you scroll through the first screen (0.12 = 12% bigger). Default: 0.12" }
                       - { label: "Picture push-in on scroll (phones)", name: zoomPhone, widget: number, value_type: float, required: false, hint: "The same on phones. Default: 0.08" }
                       - { label: "Darkening on scroll", name: dim, widget: number, value_type: float, required: false, hint: "How dark the picture gets by the end of the first screen (0 = none, 1 = black). Default: 0.55" }
+                      - { label: "Phones: name into the header", name: nameMorph, widget: number, value_type: float, required: false, hint: "Phones only. The large name under the menu moves into the header over this share of the hero's height as you scroll (0.4 = the first 40%). Default: 0.4" }
 
           # -------------------------------------------------------- thread
           - name: thread
@@ -555,6 +556,8 @@ collections:
                     required: false
                     fields:
                       - { label: "Poster parallax (0–1)", name: parallax, widget: number, value_type: float, required: false, hint: "Default: 0.5" }
+                      - { label: "Phones: darkening as the next section covers it", name: dim, widget: number, value_type: float, required: false, hint: "Phones only: how dark the reel's picture gets as the next section slides up over it (0 = none, 1 = black). Default: 0.55" }
+                      - { label: "Phones: name into the header", name: nameMorph, widget: number, value_type: float, required: false, hint: "Phones only. The large name under the menu moves into the header over this share of the hero's height as you scroll (0.4 = the first 40%). Default: 0.4" }
 
           # ----------------------------------------------------------- said
           - name: said
@@ -931,6 +934,10 @@ collections:
               - { label: Playing (announced), name: playing, widget: string }
               - { label: Paused (announced), name: paused, widget: string }
               - { label: "Rolling resumed (announced)", name: rollingResumed, widget: string }
+              - { label: "Headings fill with colour as you scroll", name: fillHeadings, widget: select, options: [phone, all, "off"], default: phone, required: false, hint: "Each heading's words start faint and fill in as the heading scrolls up the screen. phone = phones only, all = every screen, off = never. Default: phone" }
+              - { label: "Heading fill: starts at (share of the screen)", name: fillStart, widget: number, value_type: float, required: false, hint: "The fill starts when the heading's top passes this point of the screen, from the top (0.85 = 85% down). Default: 0.85" }
+              - { label: "Heading fill: ends at (share of the screen)", name: fillEnd, widget: number, value_type: float, required: false, hint: "The heading is fully filled when its top reaches this point (0.45 = 45% down). Default: 0.45" }
+              - { label: "Heading fill: gap between words", name: fillStagger, widget: number, value_type: float, required: false, hint: "How far behind the previous word each word fills (0 = all together). Default: 0.12" }
           - label: "Brand link (top-left wordmark)"
             name: brandLink
             widget: object

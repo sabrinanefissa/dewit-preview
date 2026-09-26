@@ -20,15 +20,15 @@
       <div class="spk-chap__stage">
         <div class="spk-chap__media" aria-hidden="true">
         {%- for c in block.chapters %}
-          <img class="spk-chap__still{% if loop.first %} is-on{% endif %}" data-chapter="{{ loop.index0 }}" src="{{ c.still.src | root(r) }}"
+          {%- set pp = c.still.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="spk-chap__still{% if loop.first %} is-on{% endif %}" data-chapter="{{ loop.index0 }}" src="{{ c.still.src | root(r) }}"
                {%- set ss1 = c.still.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-               sizes="{{ c.still.sizes }}" alt="" loading="lazy" decoding="async">
+               sizes="{{ c.still.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">{% if pp %}</picture>{% endif %}
         {%- endfor %}
         </div>
         <div class="spk-chap__glow" aria-hidden="true"></div>
 
         <div class="spk-chap__inner">
-          <h2 class="spk-chap__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+          <h2 class="spk-chap__h fill" id="{{ block.id }}-h"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
 
           {%- set pr = placeStyle(block.railPlacement) | trim %}
           {% if pr | length %}<div class="place place--rail" style="{{ pr }}"><div class="place__inner">{% endif %}

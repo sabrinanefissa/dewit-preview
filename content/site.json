@@ -73,7 +73,8 @@
     "captionsOff": "Captions off",
     "playing": "Playing",
     "paused": "Paused",
-    "rollingResumed": "Rolling resumed."
+    "rollingResumed": "Rolling resumed.",
+    "fillHeadings": "phone"
   },
   "brandLink": {
     "href": "",

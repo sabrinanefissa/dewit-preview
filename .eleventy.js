@@ -23,29 +23,63 @@ module.exports = function (eleventyConfig) {
   // the trailing "-<digits>" from the file name, glob the same directory for
   // "<base>-<w>.<ext>" siblings (the file itself included), and return them
   // sorted by width, root-prefixed: "a-860.webp 860w, a-1280.webp 1280w".
-  // A file whose name has no trailing "-<digits>", or that has no sibling
-  // widths on disk, returns "" (the template then omits the attribute).
+  // A file whose name has no trailing "-<digits>" (an upload such as
+  // "ACT.png") lists the "<base>-<w>.webp" files tools/images.js derives
+  // from it (webp candidates under a png src are fine: the browser picks
+  // from the srcset). No sibling widths on disk returns "" (the template
+  // then omits the attribute). Spaces in file names are written %20.
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const url = (file, r) => root(file, r).replace(/ /g, '%20');
+  const siblings = (dir, re) => {
+    let files;
+    try { files = fs.readdirSync(path.join(__dirname, dir)); } catch (e) { return []; }
+    const out = [];
+    files.forEach(f => { const mm = re.exec(f); if (mm) out.push({ f, n: parseInt(mm[1], 10), file: dir === '.' ? f : `${dir}/${f}` }); });
+    return out;
+  };
   eleventyConfig.addFilter('srcset', (src, r) => {
     if (!src) return '';
-    const m = /^(.*)-(\d+)(\.[A-Za-z0-9]+)$/.exec(src);
-    if (!m) return '';
-    const [, stem, , ext] = m;
     const dir = path.posix.dirname(src);
-    const absDir = path.join(__dirname, dir);
-    let files;
-    try { files = fs.readdirSync(absDir); } catch (e) { return ''; }
-    const base = path.posix.basename(stem);
-    const escBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const escExt = ext.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(`^${escBase}-(\\d+)${escExt}$`);
-    const cands = [];
-    files.forEach(f => {
-      const mm = re.exec(f);
-      if (mm) cands.push({ w: parseInt(mm[1], 10), file: dir === '.' ? f : `${dir}/${f}` });
-    });
-    if (cands.length <= 1) return '';
+    const m = /^(.*)-(\d+)(\.[A-Za-z0-9]+)$/.exec(src);
+    let re, min = 2;
+    if (m) {
+      re = new RegExp(`^${escRe(path.posix.basename(m[1]))}-(\\d+)${escRe(m[3])}$`);
+    } else {
+      const u = /^(.*)\.(png|jpe?g)$/i.exec(src);
+      if (!u) return '';
+      re = new RegExp(`^${escRe(path.posix.basename(u[1]))}-(\\d+)\\.webp$`);
+      min = 1;
+    }
+    const cands = siblings(dir, re);
+    if (cands.length < min) return '';
+    cands.sort((a, b) => a.n - b.n);
+    return cands.map(c => `${url(c.file, r)} ${c.n}w`).join(', ');
+  });
+
+  // One image path -> the srcset of its portrait crops for phones held
+  // upright: every "<base>-portrait-<n>.webp" next to it (<base> is the
+  // name without "-<width>" and extension), with each file's real width
+  // read from its WebP header. "" when there is none (the template then
+  // renders a plain <img>, no <picture>).
+  const webpWidth = file => {
+    const b = fs.readFileSync(file);
+    if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return 0;
+    const c = b.toString('ascii', 12, 16);
+    if (c === 'VP8 ') return b.readUInt16LE(26) & 0x3fff;
+    if (c === 'VP8L') return 1 + (((b[22] & 0x3f) << 8) | b[21]);
+    if (c === 'VP8X') return 1 + b.readUIntLE(24, 3);
+    return 0;
+  };
+  eleventyConfig.addFilter('portrait', (src, r) => {
+    if (!src) return '';
+    const dir = path.posix.dirname(src);
+    const base = path.posix.basename(src).replace(/\.[A-Za-z0-9]+$/, '').replace(/-\d+$/, '');
+    const cands = siblings(dir, new RegExp(`^${escRe(base)}-portrait-(\\d+)\\.webp$`))
+      .map(c => Object.assign(c, { w: webpWidth(path.join(__dirname, c.file)) }))
+      .filter(c => c.w > 0);
+    if (!cands.length) return '';
     cands.sort((a, b) => a.w - b.w);
-    return cands.map(c => `${root(c.file, r)} ${c.w}w`).join(', ');
+    return cands.map(c => `${url(c.file, r)} ${c.w}w`).join(', ');
   });
 
   // 7000 -> "7,000"
@@ -77,6 +111,36 @@ module.exports = function (eleventyConfig) {
     let m;
     while ((m = re.exec(String(str)))) out.push(m[0]);
     return out;
+  });
+
+  // Scroll-fill headings: a heading's words, each wrapped in
+  // <span class="fill__w" aria-hidden="true" style="--i:k"> (an *emphasis*
+  // run stays one piece, as in `words`), line breaks kept as <br>. The
+  // heading itself takes `fillAttrs`: aria-label with the plain text and
+  // --n, the word count. CSS fills word k from the heading's --fp (written
+  // by the one scroll module) with a 0.12 stagger; no per-word JS.
+  // hidden=false leaves the words readable (for a line that is not a
+  // heading and so cannot carry an aria-label).
+  const wordsOf = str => {
+    const out = [];
+    const re = /\*\*[^*]+?\*\*\S*|\*[^*]+?\*\S*|\S+/g;
+    let m;
+    while ((m = re.exec(String(str)))) out.push(m[0]);
+    return out;
+  };
+  eleventyConfig.addFilter('fillWords', (str, emClass, hidden) => {
+    if (str == null) return new nunjucks.runtime.SafeString('');
+    const inl = eleventyConfig.getFilter('inline');
+    const ah = hidden === false ? '' : ' aria-hidden="true"';
+    let i = 0;
+    const html = String(str).split('\n').map(line => wordsOf(line).map(w =>
+      `<span class="fill__w"${ah} style="--i:${i++}">${inl(w, emClass)}</span>`).join(' ')).join('<br>');
+    return new nunjucks.runtime.SafeString(html);
+  });
+  eleventyConfig.addFilter('fillAttrs', (str, label) => {
+    const n = String(str == null ? '' : str).split('\n').reduce((a, l) => a + wordsOf(l).length, 0);
+    const pl = eleventyConfig.getFilter('plain')(str);
+    return new nunjucks.runtime.SafeString(`${label === false ? '' : ` aria-label="${pl}"`} style="--n:${n}"`);
   });
 
   // The same text with the inline marks taken out, HTML-escaped (for an

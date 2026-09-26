@@ -24,7 +24,7 @@
           <figure class="still">
             <img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
             {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-                 sizes="{{ s.image.sizes }}" alt="{{ s.image.alt | inline() }}" loading="eager" decoding="async">
+                 sizes="{{ s.image.sizes or '100vw' }}" alt="{{ s.image.alt | inline() }}" loading="eager" decoding="async">
           </figure>
           <div class="knot"><span class="dot"></span></div>
           <div class="body">

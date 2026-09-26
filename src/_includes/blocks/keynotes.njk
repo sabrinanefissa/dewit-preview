@@ -1,12 +1,12 @@
   <!-- Keynotes -->
   <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
     <div class="keynotes-head reveal">
-      <h2 class="h-md">{{ block.heading | inline() }}</h2>
+      <h2 class="h-md fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
     </div>
     <div class="keynotes">
     {%- for k in block.cards %}
       <a class="keynote reveal" href="{{ k.href | root(r) }}" style="--_acc:var(--{{ k.accent }})">
-        <span class="keynote__img" aria-hidden="true"><img src="{{ k.image.src | root(r) }}" {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ k.image.sizes }}" alt="" loading="lazy"></span>
+        <span class="keynote__img" aria-hidden="true"><img src="{{ k.image.src | root(r) }}" {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ k.image.sizes or '100vw' }}" alt="" loading="lazy"></span>
         <span class="keynote__no">{{ loop.index | pad2 }}</span>
         <span class="keynote__main">
         {%- if k.tag %}

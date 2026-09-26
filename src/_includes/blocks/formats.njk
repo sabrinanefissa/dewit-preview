@@ -7,10 +7,10 @@
       <div class="spk-formats__stage">
         {%- set ps = placeStyle(block.placement) | trim %}
         {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}<p class="spk-formats__line reveal">{{ block.sentence | inline() }}</p>{% if ps | length %}</div></div>{% endif %}
-        <h2 class="spk-formats__h">{{ block.heading | inline() }}</h2>
+        <h2 class="spk-formats__h fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
         <ul class="spk-formats__strip">
         {%- for room in block.rooms %}
-          <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" {%- set ss1 = room.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.sizes }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | inline() }}</span></li>
+          <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" {%- set ss1 = room.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.sizes or '100vw' }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | inline() }}</span></li>
         {%- endfor %}
         </ul>
       </div>

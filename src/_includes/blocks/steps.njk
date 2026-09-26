@@ -8,7 +8,7 @@
         {%- for s in block.steps %}
           <img class="steps__still{% if loop.first %} is-on{% endif %}" src="{{ s.image.src | root(r) }}"
                {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-               sizes="{{ s.image.sizes }}" alt=""{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
+               sizes="{{ s.image.sizes or '100vw' }}" alt=""{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
         {%- endfor %}
         </div>
         <div class="steps__grade" aria-hidden="true"></div>
@@ -16,7 +16,7 @@
         {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
         <div class="steps__copy">
           <p class="eyebrow eyebrow--inv">{{ block.eyebrow | inline() }}</p>
-          <h2>{{ block.heading | inline() }}</h2>
+          <h2 class="fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
           <ol class="steps__list">
           {%- for s in block.steps %}
             <li{% if loop.first %} class="is-on"{% endif %}><span class="steps__n">{{ loop.index | pad2 }}</span><span class="steps__t">{{ s.title | inline() }}</span><span class="steps__d">{{ s.text | inline() }}</span></li>
@@ -33,7 +33,7 @@
         {%- set pf = placeStyle(f.placement) | trim %}
         {% if pf | length %}<div class="place" style="{{ pf }}"><div class="place__inner">{% endif %}
         <div class="final__inner">
-          <h2>{{ f.heading | inline() }}</h2>
+          <h2 class="fill"{{ f.heading | fillAttrs }}>{{ f.heading | fillWords }}</h2>
           <p class="lead lead--inv"{% if f.leadStyle %} style="{{ f.leadStyle }}"{% endif %}>{{ f.lead | inline() }}</p>
           <div class="final__actions">
           {%- for btn in f.buttons %}

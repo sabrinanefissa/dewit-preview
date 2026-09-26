@@ -29,15 +29,15 @@
     <div class="spk-keys__track">
       <div class="spk-keys__stage">
         <div class="spk-keys__ground">
-          <img class="spk-keys__rest" src="{{ block.rest.src | root(r) }}"
+          {%- set pp = block.rest.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="spk-keys__rest" src="{{ block.rest.src | root(r) }}"
                {%- set ss1 = block.rest.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-               sizes="{{ block.rest.sizes }}" alt="" loading="lazy" decoding="async">
+               sizes="{{ block.rest.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">{% if pp %}</picture>{% endif %}
           <div class="spk-keys__panels">
           {%- for t in block.talks %}
             <div class="spk-keys__panel{% if loop.first %} is-on{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" data-accent="{{ t.accent }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0">
-              <img class="spk-keys__still" src="{{ t.image.src | root(r) }}"
+              {%- set pp2 = t.image.src | portrait(r) %}{% if pp2 %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp2 }}" sizes="100vw">{% endif %}<img class="spk-keys__still" src="{{ t.image.src | root(r) }}"
                    {%- set ss2 = t.image.src | srcset(r) %}{% if ss2 %} srcset="{{ ss2 }}"{% endif %}
-                   sizes="{{ t.image.sizes }}" alt="" loading="lazy" decoding="async">
+                   sizes="{{ t.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">{% if pp2 %}</picture>{% endif %}
               {%- set pc = placeStyle(t.placement) | trim %}
               {% if pc | length %}<div class="place" style="{{ pc }}"><div class="place__inner">{% endif %}
               <div class="spk-keys__caption">
@@ -67,7 +67,7 @@
         </video>
         <div class="spk-keys__head">
           {%- set ph = placeStyle(block.headingPlacement) | trim %}
-          {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>{% if ph | length %}</div></div>{% endif %}
+          {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 class="fill" id="{{ block.id }}-h"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>{% if ph | length %}</div></div>{% endif %}
         </div>
         <div class="spk-keys__index" role="tablist" aria-label="{{ block.indexLabel }}">
         {%- for t in block.talks %}
