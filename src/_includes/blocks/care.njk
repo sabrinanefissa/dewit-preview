@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- Healthcare -->
   <section class="care"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="media media--warm">
@@ -6,6 +7,8 @@
            sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" decoding="async">
     </div>
     <div class="care__inner">
+      {%- set ps = placeStyle(block.placement) | trim %}
+      {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
       <div class="care__body reveal">
         <h2>{{ block.heading | inline() }}</h2>
         <p class="lead lead--inv"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | inline() }}</p>
@@ -14,5 +17,6 @@
         </ul>
         <div class="care__cta"><a class="btn btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a></div>
       </div>
+      {% if ps | length %}</div></div>{% endif %}
     </div>
   </section>

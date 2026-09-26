@@ -43,6 +43,11 @@
         "play": "Play",
         "sound": "Sound on",
         "captions": "Captions on"
+      },
+      "placement": {
+        "x": 100,
+        "y": 100,
+        "align": "right"
       }
     },
     {
@@ -299,6 +304,14 @@
           "still": {
             "src": "assets/img/chap-think-1664.webp",
             "sizes": "100vw"
+          },
+          "placement": {
+            "x": 50,
+            "y": 50,
+            "mobile": {
+              "x": 50,
+              "y": 70
+            }
           }
         },
         {
@@ -328,7 +341,11 @@
           "text": "Trust",
           "x": "26%",
           "y": "70%",
-          "layer": "front"
+          "layer": "front",
+          "placement": {
+            "x": 15,
+            "y": 25
+          }
         },
         {
           "text": "Honest conversation",
@@ -464,6 +481,10 @@
       "image": {
         "src": "assets/img/close-stage-1664.webp",
         "sizes": "100vw"
+      },
+      "placement": {
+        "x": 0,
+        "y": 0
       }
     }
   ],

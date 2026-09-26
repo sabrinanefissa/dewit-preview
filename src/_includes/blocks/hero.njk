@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- HERO - static full-bleed scene (the framed-card handoff was lifted
        out on 2026-09-20 and saved to js|css/effects/frame-card.*) -->
   <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
@@ -13,6 +14,8 @@
              data-src-mp4="{{ block.video.mp4 | root(r) }}"
              data-src-mp4-sm="{{ block.video.mp4Sm | root(r) }}"></video>
     </div>
+    {%- set ps = placeStyle(block.placement) | trim %}
+    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <div class="hero__inner">
       <h1 class="reveal">{{ block.heading | inline() }}</h1>
       <div class="hero__actions reveal" data-d="2">
@@ -23,4 +26,5 @@
       </div>
     </div>
     <div class="hero__meta">{% for m in block.meta %}<span>{{ m | inline() }}</span>{% endfor %}</div>
+    {% if ps | length %}</div></div>{% endif %}
   </section>

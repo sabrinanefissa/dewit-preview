@@ -57,6 +57,20 @@ Click into an image field and upload a file. A few notes:
 - Videos go through the same kind of field; there's no automatic resizing
   for video, so upload a file that's already reasonably sized for the web.
 
+## Move text on an image
+
+Open **Position on the image** under the text you want to move. **X** runs
+across (0 = left edge, 100 = right edge), **Y** runs down (0 = top, 100 =
+bottom); 50 and 50 is the middle. **Text alignment** and **Max width** (e.g.
+`16ch`) shape the block; **Phones** sets its own position, or leave it empty to
+use the desktop one. Clear the fields to put the text back where it was.
+
+| | Left | Middle | Right |
+|---|---|---|---|
+| **Top** | 0, 0 | 50, 0 | 100, 0 |
+| **Middle** | 0, 50 | 50, 50 | 100, 50 |
+| **Bottom** | 0, 100 | 50, 100 | 100, 100 |
+
 ## Timings and backgrounds
 
 Every block has a **Settings** group at the bottom with:

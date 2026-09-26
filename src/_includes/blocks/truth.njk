@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- Recognition: surface -> truth (interactive) -->
   <section class="truth"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media">
@@ -6,9 +7,12 @@
            sizes="{{ block.image.sizes }}" alt="{{ block.image.alt | inline() }}" loading="lazy">
     </div>
     <div class="truth__inner">
+      {%- set ps = placeStyle(block.placement) | trim %}
+      {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
       <div class="truth__head reveal">
         <h2>{{ block.heading | inline() }}</h2>
       </div>
+      {% if ps | length %}</div></div>{% endif %}
       <div class="trows">
       {%- for row in block.rows %}
         <button class="trow" type="button" aria-pressed="false">

@@ -1,0 +1,39 @@
+{#- Placement of a text group over its picture (CMS step 2b).
+    placeStyle(p) turns a block's optional `placement` object
+      { x, y, align, maxWidth, mobile: { x, y, align, maxWidth } }
+    into inline custom properties for a .place wrapper:
+      --px --py            anchor point, 0-100 % of the picture (clamped)
+      --place-align        left | center | right (text-align)
+      --place-justify      start | center | end (how stacked children line up)
+      --place-max          a CSS length or none
+    and the same with an -m suffix for phones (max-width: 768px).
+    It returns nothing when `p` is unset or holds no usable value, and the
+    template then writes no wrapper at all: today's CSS positions apply.
+    Anything not in the whitelist is dropped (the result goes into a style
+    attribute). -#}
+{%- macro _axis(v, name) -%}
+{%- set n = v | float(-99999) -%}
+{%- if v is defined and v !== null and v !== "" and n != -99999 -%}
+{%- if n < 0 %}{% set n = 0 %}{% elif n > 100 %}{% set n = 100 %}{% endif -%}
+{{ name }}:{{ n }}%;
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro _set(q, sfx) -%}
+{%- if q -%}
+{{- _axis(q.x, "--px" + sfx) -}}
+{{- _axis(q.y, "--py" + sfx) -}}
+{%- if q.align == "left" or q.align == "center" or q.align == "right" -%}
+--place-align{{ sfx }}:{{ q.align }};--place-justify{{ sfx }}:{% if q.align == "left" %}start{% elif q.align == "right" %}end{% else %}center{% endif %};
+{%- endif -%}
+{%- if q.maxWidth and r/^(none|\d+(\.\d+)?(ch|rem|em|px|%|vw))$/.test(q.maxWidth | string) -%}
+--place-max{{ sfx }}:{{ "100%" if q.maxWidth == "none" else q.maxWidth }};
+{%- endif -%}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro placeStyle(p) -%}
+{%- if p -%}
+{{- _set(p, "") -}}{{- _set(p.mobile, "-m") -}}
+{%- endif -%}
+{%- endmacro -%}

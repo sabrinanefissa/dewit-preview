@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- Why Stephen -->
   <section class="why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
     <div class="media media--plum">
@@ -6,6 +7,8 @@
            sizes="{{ block.portrait.sizes }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
     </div>
     <div class="why__grid">
+      {%- set ps = placeStyle(block.placement) | trim %}
+      {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
       <div class="why__body reveal">
         <h2>{{ block.heading | inline() }}</h2>
         <p class="lead">{{ block.lead | inline() }}</p>
@@ -17,5 +20,6 @@
         <p class="why__link"><a class="textlink" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
       </div>
+      {% if ps | length %}</div></div>{% endif %}
     </div>
   </section>

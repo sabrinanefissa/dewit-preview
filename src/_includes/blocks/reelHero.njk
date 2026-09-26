@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- ==============================================================
        1. HERO - full-screen reel, sound on a click only. No visible hero
        text: the reel carries its own on-screen titles, so only the three
@@ -31,6 +32,8 @@
          "Replay with sound". The small controls below keep the rest; the
          play/pause control among them appears only once the reel has been
          started. -->
+    {%- set ps = placeStyle(block.placement) | trim %}
+    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <button type="button" class="spk-hero__cta" data-state="start">
       <span class="play__ring" aria-hidden="true">
         <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -38,6 +41,7 @@
       </span>
       <span class="spk-hero__cta-label">{{ block.labels.cta | inline() }}</span>
     </button>
+    {% if ps | length %}</div></div>{% endif %}
 
     <!-- The voice line. Decorative: it is the reel's own audio drawn as one
          open line by an AnalyserNode. It is invisible while the reel is muted

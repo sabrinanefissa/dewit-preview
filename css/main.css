@@ -2109,3 +2109,175 @@ section[data-tone="plum-2"]      { background-color: var(--plum-2); }
 section[data-tone="ink"]         { background-color: var(--ink); }
 section[data-tone="paper"]       { background-color: var(--paper); color: var(--tx); }
 section[data-tone="transparent"] { background-color: transparent; }
+
+/* =====================================================================
+   Placement (CMS step 2b): text over a picture, placed by the editor.
+   A block's optional `placement` { x, y, align, maxWidth, mobile } is
+   written by src/_includes/place.njk as inline custom properties on a
+   .place wrapper; with no placement the template writes no wrapper and
+   everything above applies unchanged.
+     .place         the safe area: the picture less --inset on every side
+                    (absolute, so it measures the block's positioned frame)
+     .place__inner  the text box: its own (x%, y%) point is pinned to the
+                    area's (x%, y%) point, so 50/50 centres it and 0/100
+                    puts its bottom-left corner in the bottom-left corner
+   The motion a module runs stays on the original elements, which now sit
+   inside .place__inner: placement owns the box, motion owns what is in it.
+   --pdx/--pdy/--pda/--pdj (and -m) are each block's defaults: today's
+   position expressed in the model, used for any key the JSON leaves out.
+   ===================================================================== */
+.place {
+  --px: initial; --py: initial; --place-align: initial; --place-justify: initial; --place-max: initial;
+  --px-m: initial; --py-m: initial; --place-align-m: initial; --place-justify-m: initial; --place-max-m: initial;
+  --inset: clamp(1.25rem, 4vw, 3.5rem);
+  position:absolute; inset: var(--inset); pointer-events:none; }
+.place__inner {
+  --place-x: var(--px, var(--pdx, 50%)); --place-y: var(--py, var(--pdy, 50%));
+  --place-a: var(--place-align, var(--pda, left)); --place-j: var(--place-justify, var(--pdj, start));
+  position:absolute; left: var(--place-x); top: var(--place-y);
+  transform: translate(calc(-1 * var(--place-x)), calc(-1 * var(--place-y)));
+  width: max-content; max-width: 100%;
+  display:grid; justify-items: var(--place-j); text-align: var(--place-a);
+  pointer-events:auto; }
+/* maxWidth: the measure of the text elements in the box, in their own size */
+.place[style*="--place-max:"] > .place__inner :is(h1, h2, h3, h4, h5, h6, p, li, .spk-out__t) {
+  max-width: var(--place-max); }
+@media (max-width: 768px) {
+  .place__inner {
+    --place-x: var(--px-m, var(--px, var(--pdx-m, var(--pdx, 50%))));
+    --place-y: var(--py-m, var(--py, var(--pdy-m, var(--pdy, 50%))));
+    --place-a: var(--place-align-m, var(--place-align, var(--pda-m, var(--pda, left))));
+    --place-j: var(--place-justify-m, var(--place-justify, var(--pdj-m, var(--pdj, start)))); }
+  .place[style*="--place-max"] > .place__inner :is(h1, h2, h3, h4, h5, h6, p, li, .spk-out__t) {
+    max-width: var(--place-max-m, var(--place-max)); }
+}
+
+/* --- Home ------------------------------------------------------------ */
+/* hero: h1, play and meta as one group; today bottom-left */
+.hero:not(.spk-hero) > .place { --pdx:0%; --pdy:100%; z-index:2; }
+.hero:not(.spk-hero) > .place .hero__inner { width:auto; margin:0; padding:0; }
+.hero:not(.spk-hero) > .place .hero__actions { max-width:none; justify-content: var(--place-j); }
+.hero:not(.spk-hero) > .place .hero__meta { position:static; width:auto; max-width:none;
+  margin: clamp(1.4rem, 3vh, 2.2rem) 0 0; text-align:inherit;
+  align-items: var(--place-j); justify-content: var(--place-j); }
+/* bleed: the statement; today centred */
+.bleed > .place { --pdx:50%; --pdy:50%; --pda:center; --pdj:center; z-index:2; }
+.bleed > .place .bleed__inner { width:auto; max-width: min(94vw, 1100px); padding-block:0; }
+/* truth: the heading, in the block's content frame; today top-left */
+.truth__inner > .place { --pdx:0%; --pdy:0%; z-index:2; }
+.truth__inner > .place .truth__head { margin-bottom:0; }
+/* why / care: the text group in the block's frame (the frame keeps its
+   height when the group leaves the flow) */
+.why__grid > .place { --pdx:100%; --pdy:50%; }
+.why__grid:has(> .place) { min-height: 100svh; }
+.why__grid > .place .why__body { grid-column:auto; }
+.care__inner > .place { --pdx:0%; --pdy:50%; }
+.care__inner:has(> .place) { min-height: 92svh; }
+/* steps: the copy column (today left, middle; bottom on phones) and the
+   final call to action (centred); only while the scene is pinned */
+@media (prefers-reduced-motion: no-preference) {
+  .steps__sticky > .place { --pdx:0%; --pdy:50%; --pdy-m:100%; z-index:2; }
+  .steps__sticky > .place .steps__copy { position:relative; left:auto; top:auto; bottom:auto;
+    transform:none; width: min(46rem, calc(100vw - 2 * var(--gutter) - 2 * var(--inset))); }
+  .js .steps__final > .place { --pdx:50%; --pdy:50%; --pda:center; --pdj:center; }
+  .js .steps__final > .place .final__inner { width:auto; max-width: min(94vw, 1000px); margin:0; }
+  .js .steps__final > .place :is(.final__actions, .final__contact) { justify-content: var(--place-j); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .steps .place, .steps .place__inner { display:contents; }
+}
+html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
+/* patterns: the title, its hint and its controls; today top, centred */
+.patterns__inner .place { --pdx:50%; --pdy:0%; --pda:center; --pdj:center; }
+.patterns__inner .place .patterns__title { text-align:inherit; }
+.patterns__inner .place .patterns__ctrl { justify-content: var(--place-j); }
+
+/* --- Speaking -------------------------------------------------------- */
+/* reel hero: the sound button; today bottom-centre */
+.spk-hero > .place { --pdx:50%; --pdy:100%; --pda:center; --pdj:center; z-index:3; }
+.spk-hero > .place .spk-hero__cta { position:relative; left:auto; bottom:auto; transform:none;
+  align-items: var(--place-j); }
+/* said: heading, lines, and the two grow windows (one shared placement);
+   only on the pinned wheel, the stacked fallback keeps its flow */
+.spk-said:not(.is-wheel) .place, .spk-said:not(.is-wheel) .place__inner { display:contents; }
+.spk-said.is-wheel .place--h { --pdx:50%; --pdy:12%; --pda:center; --pdj:center; }
+.spk-said.is-wheel .place--h .spk-said__h { position:relative; left:auto; top:auto; width:auto;
+  transform:none; text-align:inherit; }
+.spk-said.is-wheel .place--lines { --pdx:50%; --pdy:22%; --pdy-m:16%; --pda:center; --pdj:center; }
+.spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
+  transform:none; text-align:inherit; justify-items: var(--place-j); }
+.spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pda:center; --pdj:center; }
+.spk-said.is-wheel .place--win-a { z-index:1; }
+.spk-said.is-wheel .place--win-b { z-index:4; }
+.spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;
+  width:auto; transform:none; }
+.spk-said.is-wheel :is(.place--win-a, .place--win-b) :is(.spk-said__nextA, .spk-said__nextB) { text-align:inherit; }
+/* keys: the heading (only over the pinned ground) and each talk's caption
+   (over its picture in every mode); captions today bottom-left */
+.spk-keys__head .place { --pdx:50%; --pdy:50%; --pda:center; --pdj:center; }
+.spk-keys__head .place__inner { pointer-events:none; }
+html.no-js .spk-keys__head .place, html.no-js .spk-keys__head .place__inner,
+.spk-keys.is-stacked .spk-keys__head .place, .spk-keys.is-stacked .spk-keys__head .place__inner { display:contents; }
+@media (max-width: 768px) { .spk-keys__head .place, .spk-keys__head .place__inner { display:contents; } }
+.spk-keys__panel > .place { --pdx:0%; --pdy:100%; }
+.spk-keys__panel > .place .spk-keys__caption { position:relative; left:auto; bottom:auto; text-align:inherit; }
+/* chap: each chapter's word and its line over its still (one placement,
+   two boxes on the same anchor: they take turns on the stage), and the
+   rail. The placed chapter fills the stage's frame; its data-spot preset
+   stays the default (ul: upper-left, lr: lower-right). Phones: the word
+   sits over the chapter's own still (its 16:10 frame), the line follows
+   under it as today. Static and no script: flow. */
+.spk-chap__chapter.is-placed { left:0; right:0; top:0; bottom:0; max-width:none; }
+.spk-chap__chapter.is-placed > .place { --pdx:0%; --pdy:27%; }
+.spk-chap__chapter.is-placed[data-spot="lr"] > .place { --pdx:100%; --pdy:100%; --pda:right; --pdj:end; }
+.spk-chap__chapter.is-placed > .place > .place__inner { max-width: min(100%, 26ch); }
+.spk-chap__chapter.is-placed .place__inner > :is(.spk-chap__word, .spk-chap__text) { text-align:inherit; }
+.spk-chap.is-phone .spk-chap__chapter.is-placed { container-type: inline-size; }
+.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--word { inset:auto; top: var(--inset); left: var(--inset);
+  width: calc(100cqw - 2 * var(--inset)); height: calc(100cqw * 10 / 16 - 2 * var(--inset)); }
+.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--word > .place__inner { max-width:100%; }
+.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--text,
+.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--text > .place__inner { display:contents; }
+.spk-chap .place--rail { --pdx:0%; --pdy:50%; z-index:1; }
+/* the stop labels hang to the right of the line: the box keeps room for them */
+.spk-chap .place--rail > .place__inner { padding-right: 7rem; }
+.spk-chap .place--rail .spk-chap__rail { position:relative; left:auto; top:auto; bottom:auto; height:72svh; }
+.spk-chap.is-static .place, .spk-chap.is-static .place__inner,
+html.no-js .spk-chap .place, html.no-js .spk-chap .place__inner,
+.spk-chap.is-phone .place--rail, .spk-chap.is-phone .place--rail > .place__inner { display:contents; }
+/* out: the heading (over the band and the picture; today top, centred) and
+   each word: a placed word's <li> is its own area, the picture less the
+   inset, and its pool of light moves onto the box. Phones stack. */
+.spk-out .place__inner { pointer-events:none; }
+@media (min-width: 641px) {
+  .spk-out__inner > .place { --pdx:50%; --pdy:8%; --pda:center; --pdj:center; z-index:3; }
+  .spk-out__inner > .place .spk-out__h { position:relative; left:auto; top:auto; width:auto;
+    max-width: var(--wrap); transform:none; text-align:inherit; }
+  .spk-out__word.place { --pdx: var(--x, 50%); --pdy: var(--y, 50%); --pda:center; --pdj:center;
+    transform:none; }
+  .spk-out__word.place::before { display:none; }
+  .spk-out__word.place > .place__inner::before { content:""; position:absolute; left:50%; top:50%; z-index:0;
+    width:22rem; height:22rem; transform: translate(-50%, -50%); border-radius:50%; pointer-events:none;
+    background: radial-gradient(closest-side, rgba(169,133,230,.22), transparent 60%);
+    opacity:0; transition: opacity .9s var(--ease-out); }
+  .spk-out__word.place.is-on > .place__inner::before { opacity:1; }
+}
+@media (min-width: 641px) and (prefers-reduced-motion: reduce) {
+  .spk-out__word.place > .place__inner::before { display:none; }
+}
+html.no-js .spk-out__word.place > .place__inner::before { display:none; }
+@media (max-width: 640px) {
+  .spk-out__inner > .place, .spk-out__inner > .place > .place__inner,
+  .spk-out__word.place > .place__inner { display:contents; }
+  .spk-out__word.place { position:relative; inset:auto; }
+}
+/* formats: the sentence, only while the stage is pinned; today upper-middle */
+.spk-formats__stage > .place { --pdx:50%; --pdy:30%; --pda:center; --pdj:center; z-index:1; }
+.spk-formats__stage > .place .spk-formats__line { width:auto; margin:0; text-align:inherit; }
+html.no-js .spk-formats__stage > .place, html.no-js .spk-formats__stage > .place > .place__inner { display:contents; }
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .spk-formats__stage > .place, .spk-formats__stage > .place > .place__inner { display:contents; }
+}
+/* close: heading and button as one group; today left, middle */
+.spk-close > .place { --pdx:0%; --pdy:50%; z-index:1; }
+.spk-close > .place .spk-close__inner { width:auto; margin:0; }

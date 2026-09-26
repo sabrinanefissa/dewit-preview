@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- What happens when you book: sticky step list; a sixth stage turns the
        scene into the final call to action -->
   <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum-2') }}">
@@ -11,6 +12,8 @@
         {%- endfor %}
         </div>
         <div class="steps__grade" aria-hidden="true"></div>
+        {%- set ps = placeStyle(block.placement) | trim %}
+        {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
         <div class="steps__copy">
           <p class="eyebrow eyebrow--inv">{{ block.eyebrow | inline() }}</p>
           <h2>{{ block.heading | inline() }}</h2>
@@ -21,11 +24,14 @@
           </ol>
           <a class="textlink textlink--inv" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
+        {% if ps | length %}</div></div>{% endif %}
       </div>
       {%- set f = block.final %}
       {%- if f %}
       <!-- Stage 6: the scene becomes the final call to action (was section.final) -->
       <div class="final steps__final"{% if f.id %} id="{{ f.id }}"{% endif %}>
+        {%- set pf = placeStyle(f.placement) | trim %}
+        {% if pf | length %}<div class="place" style="{{ pf }}"><div class="place__inner">{% endif %}
         <div class="final__inner">
           <h2>{{ f.heading | inline() }}</h2>
           <p class="lead lead--inv"{% if f.leadStyle %} style="{{ f.leadStyle }}"{% endif %}>{{ f.lead | inline() }}</p>
@@ -48,6 +54,7 @@
           </div>
           {%- endif %}
         </div>
+        {% if pf | length %}</div></div>{% endif %}
       </div>
       {%- endif %}
     </div>

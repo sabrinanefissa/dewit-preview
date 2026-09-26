@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- What it's like in the room: the page's one pin, seven beats. The
        heading alone; then for each chapter its word, then its line. One
        thing on screen at a time, each arriving and leaving on the same
@@ -26,6 +27,8 @@
         <div class="spk-chap__inner">
           <h2 class="spk-chap__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
 
+          {%- set pr = placeStyle(block.railPlacement) | trim %}
+          {% if pr | length %}<div class="place place--rail" style="{{ pr }}"><div class="place__inner">{% endif %}
           <div class="spk-chap__rail" role="tablist" aria-label="{{ block.railLabel }}">
             <i class="spk-chap__line" aria-hidden="true"></i>
             <b class="spk-chap__fill" aria-hidden="true"></b>
@@ -36,14 +39,16 @@
                     data-tone="{{ c.tone }}"><i class="spk-chap__stop" aria-hidden="true"></i>{{ c.word | inline() }}</button>
           {%- endfor %}
           </div>
+          {% if pr | length %}</div></div>{% endif %}
 
           <div class="spk-chap__chapters">
           {%- for c in block.chapters %}
-            <div class="spk-chap__chapter{% if loop.first %} is-live{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0"
+            {%- set pc = placeStyle(c.placement) | trim %}
+            <div class="spk-chap__chapter{% if loop.first %} is-live{% endif %}{% if pc | length %} is-placed{% endif %}" role="tabpanel" id="{{ block.id }}-panel-{{ loop.index }}" aria-labelledby="{{ block.id }}-tab-{{ loop.index }}" tabindex="0"
                  data-tone="{{ c.tone }}" data-spot="{{ c.spot }}">
               <div class="spk-chap__frame" aria-hidden="true"></div>
-              <p class="spk-chap__word">{{ c.word | inline() }}</p>
-              <p class="spk-chap__text">{{ c.text | inline('spk-chap__key') }}</p>
+              {% if pc | length %}<div class="place place--word" style="{{ pc }}"><div class="place__inner">{% endif %}<p class="spk-chap__word">{{ c.word | inline() }}</p>{% if pc | length %}</div></div>{% endif %}
+              {% if pc | length %}<div class="place place--text" style="{{ pc }}"><div class="place__inner">{% endif %}<p class="spk-chap__text">{{ c.text | inline('spk-chap__key') }}</p>{% if pc | length %}</div></div>{% endif %}
             </div>
           {%- endfor %}
           </div>

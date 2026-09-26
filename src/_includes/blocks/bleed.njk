@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- Cinematic bleed: the idea (live constellation) -->
   <section class="bleed{% if block.constellation %} bleed--net{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
     <div class="media media--plum">
@@ -8,7 +9,10 @@
     {%- if block.constellation %}
     <canvas class="bleed__canvas" aria-hidden="true"></canvas>
     {%- endif %}
+    {%- set ps = placeStyle(block.placement) | trim %}
+    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <div class="bleed__inner reveal">
       <h2>{{ block.statement | inline() }}</h2>
     </div>
+    {% if ps | length %}</div></div>{% endif %}
   </section>

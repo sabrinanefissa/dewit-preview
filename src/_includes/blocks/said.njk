@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- ==============================================================
        A. WHAT HE TALKS ABOUT - the candle wheel. A pinned stage over
        velvet: a wheel stands on its edge below the screen, six candles
@@ -27,18 +28,23 @@
       <div class="spk-said__stage">
         <img class="spk-said__velvet" src="{{ block.velvet.src | root(r) }}" {%- set ss1 = block.velvet.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.velvet.sizes }}" alt="" loading="lazy" decoding="async">
         <div class="spk-said__veil" aria-hidden="true"></div>
-        <div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | inline('spk-said__cur') }}</p></div>
+        {%- set pw = placeStyle(block.windowPlacement) | trim %}
+        {% if pw | length %}<div class="place place--win-a" style="{{ pw }}"><div class="place__inner">{% endif %}<div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | inline('spk-said__cur') }}</p></div>{% if pw | length %}</div></div>{% endif %}
         <canvas class="spk-said__wheel" aria-hidden="true"></canvas>
         <img class="spk-said__macro" src="{{ block.macro | root(r) }}" alt="" loading="lazy" decoding="async">
         <div class="spk-said__bloom" aria-hidden="true"></div>
-        <div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | inline('spk-said__cur') }}</p></div>
+        {% if pw | length %}<div class="place place--win-b" style="{{ pw }}"><div class="place__inner">{% endif %}<div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | inline('spk-said__cur') }}</p></div>{% if pw | length %}</div></div>{% endif %}
         <div class="spk-said__inner">
-          <h2 class="spk-said__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+          {%- set ph = placeStyle(block.headingPlacement) | trim %}
+          {% if ph | length %}<div class="place place--h" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 class="spk-said__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>{% if ph | length %}</div></div>{% endif %}
+          {%- set pl = placeStyle(block.linesPlacement) | trim %}
+          {% if pl | length %}<div class="place place--lines" style="{{ pl }}"><div class="place__inner">{% endif %}
           <div class="spk-said__lines">
           {%- for line in block.lines %}
             <p class="spk-said__line{% if loop.last %} spk-said__bridge{% endif %}" data-beat="{{ loop.index }}"><span class="spk-said__no">{{ loop.index | pad2 }}</span>{{ line | inline() }}</p>
           {%- endfor %}
           </div>
+          {% if pl | length %}</div></div>{% endif %}
           <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
         </div>
       </div>

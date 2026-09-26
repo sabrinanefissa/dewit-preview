@@ -1,3 +1,4 @@
+{%- from "place.njk" import placeStyle %}
   <!-- ==============================================================
        3. KEYNOTES - a pinned stage. The track is 440svh; the stage
        inside it is sticky for 340svh of scroll. The section rises over
@@ -37,6 +38,8 @@
               <img class="spk-keys__still" src="{{ t.image.src | root(r) }}"
                    {%- set ss2 = t.image.src | srcset(r) %}{% if ss2 %} srcset="{{ ss2 }}"{% endif %}
                    sizes="{{ t.image.sizes }}" alt="" loading="lazy" decoding="async">
+              {%- set pc = placeStyle(t.placement) | trim %}
+              {% if pc | length %}<div class="place" style="{{ pc }}"><div class="place__inner">{% endif %}
               <div class="spk-keys__caption">
                 <h3 class="spk-keys__ptitle">{% if t.titleHtml %}{{ t.titleHtml | safe }}{% else %}{{ t.title | inline() }}{% endif %}</h3>
                 <p class="spk-keys__sub">{{ t.sub | inline() }}</p>
@@ -49,6 +52,7 @@
                   <span class="spk-keys__hearlabel">{{ block.hearLabel | inline() }}</span>
                 </button>
               </div>
+              {% if pc | length %}</div></div>{% endif %}
             </div>
 {% endfor %}
           </div>
@@ -62,7 +66,8 @@
           <track kind="captions" srclang="{{ block.captions.srclang }}" label="{{ block.captions.label }}" src="{{ block.captions.src | root(r) }}">
         </video>
         <div class="spk-keys__head">
-          <h2 id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+          {%- set ph = placeStyle(block.headingPlacement) | trim %}
+          {% if ph | length %}<div class="place" style="{{ ph }}"><div class="place__inner">{% endif %}<h2 id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>{% if ph | length %}</div></div>{% endif %}
         </div>
         <div class="spk-keys__index" role="tablist" aria-label="{{ block.indexLabel }}">
         {%- for t in block.talks %}

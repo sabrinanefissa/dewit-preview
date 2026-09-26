@@ -82,6 +82,25 @@ collections:
                   - { label: Label, name: label, widget: string }
                   - { label: Small label, name: small, widget: string }
               - { label: "Meta line(s)", name: meta, widget: list, field: { label: Line, name: line, widget: string, hint: "Allows **bold**." } }
+              - &placement
+                label: Position on the image
+                name: placement
+                widget: object
+                required: false
+                collapsed: true
+                hint: "Where this text sits over its picture. Leave empty to keep the design's own position."
+                fields: &placement-fields
+                  - &place-x { label: "X (across)", name: x, widget: number, value_type: float, min: 0, max: 100, required: false, hint: "0 = left edge, 50 = middle, 100 = right edge" }
+                  - &place-y { label: "Y (down)", name: y, widget: number, value_type: float, min: 0, max: 100, required: false, hint: "0 = top, 50 = middle, 100 = bottom" }
+                  - &place-align { label: Text alignment, name: align, widget: select, options: [left, center, right], required: false }
+                  - &place-max { label: Max width, name: maxWidth, widget: string, required: false, hint: "e.g. 16ch, or none" }
+                  - label: Phones
+                    name: mobile
+                    widget: object
+                    required: false
+                    collapsed: true
+                    hint: "Phones. Leave empty to use the same as desktop"
+                    fields: [*place-x, *place-y, *place-align, *place-max]
               - &settings-none
                 label: Settings
                 name: settings
@@ -139,6 +158,7 @@ collections:
               - { label: Aria label, name: ariaLabel, widget: string }
               - { label: "How (leading word)", name: how, widget: string, default: How }
               - { label: "Tail (trailing words)", name: tail, widget: string }
+              - *placement
               - { label: "Hint (screen-reader, on hold)", name: hint, widget: string }
               - { label: "Previous-arrow label", name: prevLabel, widget: string }
               - { label: "Next-arrow label", name: nextLabel, widget: string }
@@ -191,6 +211,7 @@ collections:
                   - { label: Sizes attribute, name: sizes, widget: string }
                   - { label: Alt text, name: alt, widget: string }
               - { label: Heading, name: heading, widget: string }
+              - *placement
               - label: Rows (surface / truth)
                 name: rows
                 widget: list
@@ -222,6 +243,7 @@ collections:
                   - { label: Sizes attribute, name: sizes, widget: string }
                   - { label: Alt text, name: alt, widget: string }
               - { label: Statement, name: statement, widget: string, hint: "Allows *emphasis*." }
+              - *placement
               - *settings-none
 
           # ----------------------------------------------------------- why
@@ -247,6 +269,7 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -392,6 +415,7 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -428,6 +452,7 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - *placement
               - label: "Final stage (the call to action)"
                 name: final
                 widget: object
@@ -446,6 +471,7 @@ collections:
                       - { label: "Link (leave blank if this button plays a video)", name: href, widget: string, required: false }
                       - { label: "Video file (leave blank if this button links)", name: video, widget: file, media_folder: "/assets/video", required: false }
                   - { label: "Show phone / email / socials", name: contacts, widget: boolean, default: true }
+                  - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -493,6 +519,7 @@ collections:
                   - { label: Play control, name: play, widget: string }
                   - { label: Sound control, name: sound, widget: string }
                   - { label: Captions control, name: captions, widget: string }
+              - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -521,11 +548,14 @@ collections:
               - { label: "Wax close-up image", name: macro, widget: image }
               - { label: "Window A (rolls up first, behind the candle)", name: windowA, widget: string, hint: "Allows one *emphasis* word." }
               - { label: "Window B (rolls up after, in front of the candle)", name: windowB, widget: string, hint: "Allows one *emphasis* word." }
+              - { label: "Position on the image (windows A and B)", name: windowPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - { label: Heading, name: heading, widget: string }
+              - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: "Lines (3–9; the last is the bridge line)"
                 name: lines
                 widget: list
                 field: { label: Line, name: line, widget: text }
+              - { label: "Position on the image (lines)", name: linesPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Settings
                 name: settings
                 widget: object
@@ -548,6 +578,7 @@ collections:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
+              - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - { label: "Tab list aria label", name: indexLabel, widget: string, default: Keynotes }
               - { label: '"Hear this" button label', name: hearLabel, widget: string, default: "Hear Stephen on this" }
               - { label: Pause button label, name: pauseLabel, widget: string, default: Pause }
@@ -592,6 +623,7 @@ collections:
                       - { label: "Start (seconds into the reel)", name: start, widget: number, value_type: float }
                       - { label: "End (seconds into the reel)", name: end, widget: number, value_type: float }
                       - { label: "Poster frame (seconds)", name: poster, widget: number, value_type: float }
+                  - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -615,6 +647,7 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
               - { label: "Tab rail aria label", name: railLabel, widget: string, default: Chapters }
+              - { label: "Position on the image (the rail)", name: railPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Chapters
                 name: chapters
                 widget: list
@@ -624,6 +657,7 @@ collections:
                   - { label: Text, name: text, widget: text, hint: "Allows one *emphasis* word (styled as the chapter's key word)." }
                   - { label: Tone, name: tone, widget: select, options: [violet, bone] }
                   - { label: "Spot (where the type sits)", name: spot, widget: select, options: [ul, lr] }
+                  - *placement
                   - label: Still image
                     name: still
                     widget: object
@@ -661,6 +695,7 @@ collections:
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
               - { label: Heading, name: heading, widget: string }
+              - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Words (scattered)
                 name: words
                 widget: list
@@ -670,6 +705,7 @@ collections:
                   - { label: "X position (% from left)", name: x, widget: string, hint: "e.g. 26%" }
                   - { label: "Y position (% from top)", name: y, widget: string, hint: "e.g. 70%" }
                   - { label: Layer, name: layer, widget: select, options: [front, back] }
+                  - *placement
               - label: Settings
                 name: settings
                 widget: object
@@ -694,6 +730,7 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Aria label, name: ariaLabel, widget: string }
               - { label: Sentence, name: sentence, widget: text, hint: "Allows *emphasis*." }
+              - *placement
               - { label: Heading, name: heading, widget: string }
               - { label: "Room image sizes attribute", name: sizes, widget: string, default: 70vw }
               - label: Rooms
@@ -783,6 +820,7 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - *placement
               - *settings-none
 
   - name: site
