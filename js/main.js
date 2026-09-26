@@ -1662,9 +1662,12 @@ var UI = (function () {
    Only one audio source is ever running: pressing a talk claims the audio
    through the document-level "spk:audio" event, which stops the hero reel,
    and the hero's own controls claim it back.
-   Three modes, written to data-spk-keys-mode: "pin"; "strip" (phones: no
-   pin, the talks as a horizontal snap strip, the spine entry disabled);
-   "stacked" (reduced motion: the three talks one under another). */
+   Four modes, written to data-spk-keys-mode: "pin"; "reel" (phones: no
+   pin, N + 1 full-screen cards snapping in the page's flow, dots for the
+   index, the spine entry disabled; see the reel section below); "strip"
+   (phones with reduced motion: the talks as a horizontal snap strip);
+   "stacked" (reduced motion wider than a phone, or no spine: the talks one
+   under another). No script: stacked. */
 (function () {
   "use strict";
   [].slice.call(document.querySelectorAll(".spk-keys")).forEach(keys);
@@ -1869,7 +1872,8 @@ var UI = (function () {
        ratio never reaches .25. */
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (e) {
-        if (e[0].intersectionRatio < 0.25 && playing >= 0) stopClip(false);
+        /* the reel's stage is N + 1 screens tall: its cards watch instead */
+        if (mode !== "reel" && e[0].intersectionRatio < 0.25 && playing >= 0) stopClip(false);
       }, { threshold: [0, 0.25, 1] }).observe(stage);
     }
     document.addEventListener("visibilitychange", function () {
@@ -1884,7 +1888,9 @@ var UI = (function () {
        one under another, and the index stops being a tablist. The one thing
        that still works on a click is "Watch Stephen speak". Without the
        spine there is nothing to drive the stage, so it stacks too. */
-    if (reduce || !window.spkSpine) {
+    var mode = "";
+    function goStacked() {
+      mode = "stacked";
       sec.classList.add("is-stacked");
       sec.setAttribute("data-spk-keys-mode", "stacked");
       index.removeAttribute("role");
@@ -1896,10 +1902,10 @@ var UI = (function () {
         p.removeAttribute("inert"); p.classList.add("is-on"); p.classList.remove("is-off");
         p.removeAttribute("role"); p.removeAttribute("aria-labelledby"); p.removeAttribute("tabindex");
       });
-      return;
     }
-
-    var mode = "";
+    /* reduced motion on a phone keeps the strip (no pin, the swipe is the
+       visitor's own); wider, or with no spine, the talks stack */
+    if (!window.spkSpine || (reduce && !strip.matches)) { goStacked(); return; }
 
     /* ---- the live talk ---- */
     /* In the pin only the live panel is reachable: the others take no
@@ -2006,6 +2012,7 @@ var UI = (function () {
 
     /* ---- the index ---- */
     function go(i) {
+      if (mode === "reel") { reelTo(i + 1); return; }
       if (mode === "strip") {
         setCur(i);
         autoScroll = true;
@@ -2038,12 +2045,208 @@ var UI = (function () {
       });
     });
 
+    /* ---- the reel (phones): N + 1 full-height cards in the page's flow ----
+       Card 0 is the rest picture with the heading (the scroll-fill, module
+       12); cards 1..N are the talks, each caption centred as on the pin.
+       A card is "arrived" when 60% of it is on screen (an
+       IntersectionObserver): its caption rises in (--cap 0 → 1 over
+       --cap-ms, 360) and the one before fades. The document snaps to the
+       cards only while the viewport's top is between the first card's top
+       and the last card's (html.spk-snap, from an IntersectionObserver),
+       so the rest of the page scrolls freely. The index row is hidden; a column of dots (1 + N)
+       at the bottom right takes its place, the N talk dots being the
+       tablist (the index's ids and ARIA move onto them, and back). */
+    var railTabs = tabs, dotWrap = null, dotHead = null, dotTabs = [];
+    var cardIO = null, coverIO = null, cards = [], active = -1, covering = false;
+    var CAP_MS = num("data-cap-ms", 360);
+    var capV = panels.map(function () { return 0; }), capTo = capV.slice(), capRaf = 0, capT0 = 0, capFrom = capV.slice();
+    var TAB_A = ["role", "aria-selected", "aria-controls", "tabindex"];
+    var tabSaved = railTabs.map(function (t) {
+      var o = {}; TAB_A.forEach(function (n) { o[n] = t.getAttribute(n); }); return o;
+    });
+    var indexRole = index.getAttribute("role");
+
+    function capTick(now) {
+      var k = Math.min(1, (now - capT0) / CAP_MS), e = 1 - Math.pow(1 - k, 3), more = false;
+      panels.forEach(function (p, i) {
+        var v = capFrom[i] + (capTo[i] - capFrom[i]) * e;
+        capV[i] = v;
+        p.style.setProperty("--cap", v.toFixed(3));
+      });
+      if (k < 1) more = true;
+      capRaf = more ? requestAnimationFrame(capTick) : 0;
+    }
+    function capsTo(i) {
+      panels.forEach(function (p, k) { capFrom[k] = capV[k]; capTo[k] = (k === i ? 1 : 0); });
+      capT0 = performance.now();
+      if (!capRaf) capRaf = requestAnimationFrame(capTick);
+    }
+    function arrive(c) {
+      if (c === active) return;
+      active = c;
+      capsTo(c - 1);
+      if (c >= 1) setCur(c - 1);
+      if (dotHead) dotHead.classList.toggle("is-cur", c === 0);
+      dotTabs.forEach(function (d, k) { d.classList.toggle("is-cur", k === c - 1); });
+    }
+    function reelTo(c) {
+      var el = cards[c];
+      if (!el) return;
+      var y = el.getBoundingClientRect().top + window.pageYOffset;
+      /* native smooth scroll: it lands on a snap point (Lenis's own tween
+         would fight the snap) */
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+    /* the dots show while the section fills the screen */
+    function setCover(on) {
+      if (on === covering) return;
+      covering = on;
+      if (dotWrap) dotWrap.classList.toggle("is-in", on);
+    }
+    /* The snap: on only while the viewport's top edge lies between the top
+       of card 0 and the top of the last card (an IntersectionObserver whose
+       root is a 1px line at that edge, over cards 0..N-1), so a thumb that pulls past the
+       last card, or stops short of the first, is never pulled back. */
+    var zoneIO = null, inZone = [];
+    function setSnap(on) { document.documentElement.classList.toggle("spk-snap", on); }
+    /* a link that jumps (an in-page anchor, Lenis's anchors) must not be
+       pulled back to a card: the snap lets go first, and comes back only
+       if the jump lands inside the reel */
+    function onLinkDown(e) {
+      var a = e.target && e.target.closest ? e.target.closest("a[href*='#']") : null;
+      if (a) setSnap(false);
+    }
+    function watchZone() {
+      if (zoneIO) zoneIO.disconnect();
+      inZone = [];
+      zoneIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          var k = inZone.indexOf(e.target);
+          /* an edge touch does not count: resting on the last card, the
+             one before it only touches the line, and the snap is off */
+          var on = e.isIntersecting && e.boundingClientRect.bottom > 1;
+          if (on && k < 0) inZone.push(e.target);
+          else if (!on && k > -1) inZone.splice(k, 1);
+        });
+        setSnap(inZone.length > 0);
+      }, { rootMargin: "0px 0px -" + Math.max(0, window.innerHeight - 1) + "px 0px",     /* a 1px line */
+           threshold: [0, 0.5 / Math.max(1, window.innerHeight)] });     /* ...and a call as a card leaves it */
+      cards.slice(0, -1).forEach(function (c) { if (c) zoneIO.observe(c); });
+    }
+    function watchCover() {
+      if (coverIO) coverIO.disconnect();
+      /* covering = the section's visible part is the whole viewport: its
+         ratio reaches innerHeight / its height */
+      var t = Math.min(1, Math.max(0, (window.innerHeight - 2) / Math.max(1, sec.offsetHeight)));
+      coverIO = new IntersectionObserver(function (es) {
+        var e = es[es.length - 1];
+        var rb = e.rootBounds ? e.rootBounds.height : window.innerHeight;
+        setCover(e.isIntersecting && e.intersectionRect.height >= rb - 2);
+      }, { threshold: [0, t * 0.98, t] });
+      coverIO.observe(sec);
+    }
+    var coverRT = 0;
+    function onReelResize() { clearTimeout(coverRT); coverRT = setTimeout(function () { if (mode === "reel") { watchCover(); watchZone(); } }, 120); }
+
+    function startReel() {
+      sec.classList.add("is-reel");
+      sec.style.setProperty("--cap-ms", CAP_MS + "ms");
+      index.hidden = true;
+      index.removeAttribute("role");
+      dotWrap = document.createElement("div");
+      dotWrap.className = "spk-keys__dots";
+      dotHead = document.createElement("button");
+      dotHead.type = "button";
+      dotHead.className = "spk-keys__dot spk-keys__dot--head";
+      var hh = head.querySelector("h2");
+      dotHead.setAttribute("aria-label", hh ? (hh.getAttribute("aria-label") || hh.textContent.trim()) : "1");
+      dotHead.addEventListener("click", function () { reelTo(0); });
+      dotWrap.appendChild(dotHead);
+      var tl = document.createElement("div");
+      tl.className = "spk-keys__dotlist";
+      tl.setAttribute("role", "tablist");
+      if (index.getAttribute("aria-label")) tl.setAttribute("aria-label", index.getAttribute("aria-label"));
+      dotTabs = railTabs.map(function (t, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "spk-keys__dot";
+        if (t.getAttribute("data-accent")) b.setAttribute("data-accent", t.getAttribute("data-accent"));
+        if (t.id) { b.id = t.id; t.removeAttribute("id"); }
+        TAB_A.forEach(function (n) { if (tabSaved[i][n] !== null) b.setAttribute(n, t.getAttribute(n) || tabSaved[i][n]); t.removeAttribute(n); });
+        var nm = t.querySelector(".spk-keys__name");
+        b.setAttribute("aria-label", (nm ? nm.textContent : t.textContent).replace(/\s+/g, " ").trim());
+        b.addEventListener("click", function () { go(i); });
+        b.addEventListener("focus", function () { dotTabs.forEach(function (o) { o.tabIndex = (o === b ? 0 : -1); }); });
+        b.addEventListener("keydown", function (e) {
+          var k = e.key, n = -1, L = dotTabs.length;
+          if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
+          else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
+          else if (k === "Home") n = 0;
+          else if (k === "End") n = L - 1;
+          else return;
+          e.preventDefault();
+          dotTabs[n].focus();
+        });
+        tl.appendChild(b);
+        return b;
+      });
+      dotWrap.appendChild(tl);
+      stage.appendChild(dotWrap);
+      tabs = dotTabs;
+
+      var rest = ground.querySelector(".spk-keys__rest");
+      cards = [rest].concat(panels);
+      active = -1;
+      panels.forEach(function (p, k) { capV[k] = 0; p.style.setProperty("--cap", "0"); });
+      cardIO = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          var c = cards.indexOf(e.target);
+          if (c < 0) return;
+          if (e.intersectionRatio >= 0.6) arrive(c);
+          /* a playing talk stops once its card is mostly gone */
+          if (c >= 1 && playing === c - 1 && e.intersectionRatio < 0.25) stopClip(false);
+        });
+      }, { threshold: [0, 0.25, 0.6, 1] });
+      cards.forEach(function (c) { if (c) cardIO.observe(c); });
+      watchCover();
+      watchZone();
+      document.addEventListener("click", onLinkDown, true);
+      window.addEventListener("resize", onReelResize, { passive: true });
+    }
+    function stopReel() {
+      if (cardIO) { cardIO.disconnect(); cardIO = null; }
+      if (coverIO) { coverIO.disconnect(); coverIO = null; }
+      if (zoneIO) { zoneIO.disconnect(); zoneIO = null; }
+      document.removeEventListener("click", onLinkDown, true);
+      setSnap(false);
+      window.removeEventListener("resize", onReelResize);
+      if (capRaf) { cancelAnimationFrame(capRaf); capRaf = 0; }
+      setCover(false);
+      dotTabs.forEach(function (b, i) {
+        var t = railTabs[i];
+        if (b.id) { t.id = b.id; }
+        TAB_A.forEach(function (n) { var v = b.getAttribute(n); if (v !== null) t.setAttribute(n, v); });
+      });
+      if (dotWrap && dotWrap.parentNode) dotWrap.parentNode.removeChild(dotWrap);
+      dotWrap = dotHead = null; dotTabs = [];
+      tabs = railTabs;
+      if (indexRole) index.setAttribute("role", indexRole);
+      index.hidden = false;
+      sec.classList.remove("is-reel");
+      sec.style.removeProperty("--cap-ms");
+      panels.forEach(function (p) { p.style.removeProperty("--cap"); });
+      active = -1;
+    }
+
     /* ---- modes: the spine has no remove, so leaving the pin disables
        the entry through its flag ---- */
     var added = false;
     function setMode() {
-      var m = strip.matches ? "strip" : "pin";
+      if (mode === "stacked") return;
+      if (reduce && !strip.matches) { if (mode === "reel") stopReel(); goStacked(); return; }
+      var m = strip.matches ? (reduce ? "strip" : "reel") : "pin";
       if (m === mode) return;
+      if (mode === "reel") stopReel();
       mode = m;
       sec.setAttribute("data-spk-keys-mode", m);
       if (playing >= 0) stopClip(false);
@@ -2060,6 +2263,7 @@ var UI = (function () {
         if (!added) { window.spkSpine.add(entry); added = true; }
         else window.spkSpine.measure();          /* re-reads start/end and repaints */
       }
+      if (m === "reel") startReel();
       syncPanels();
     }
     setMode();
@@ -2742,7 +2946,9 @@ var UI = (function () {
               and rises under it); the velvet fades, the talks show in the
               gap, the candles stay in front (z 3, no pointer events) and
               scroll away, fading out over the talks' u 40-70
-              (--spk-keys-gone, from module 2)
+              (--spk-keys-gone, from module 2); on phones (no pinned talks)
+              the stage fades itself out over the track's last 40svh
+              (--spk-said-gone)
    Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
    crossfaded as it lights (600ms; dark at once, 80ms). Only the current
    candle is lit in the beats, the three from the rise on; a lit flame
@@ -2976,6 +3182,10 @@ var UI = (function () {
       var hold = (keysSec && keysSec.getAttribute("data-spk-keys-mode") === "pin" && uT > HOLD)
         ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
+      /* phones: no pinned talks to hand to (--spk-keys-gone is never
+         written there), so the stage fades itself out over the track's
+         last 40svh and the reel's first card arrives on a clean frame */
+      put(sec, "phoneGone", "--spk-said-gone", phone ? clamp((uT - (U - 40)) / 40) : 0);
       wake();
     }
 
@@ -3183,8 +3393,9 @@ var UI = (function () {
    beat. This module keeps its own scroll handling (one rAF per scroll
    event, asleep off screen) and does not register with the spine.
    Three modes, rebuilt whenever either media query flips: "pin", "phone"
-   (no pin, three stacked blocks, a rail whose fill rises with the scroll,
-   each block's frame showing its still) and "static" (reduced motion and
+   (<= 768px: a pinned full-screen stage of N * data-beat-phone svh, one
+   beat per chapter, scroll-scrubbed, the dots at the bottom as the
+   tablist; see the phone section below) and "static" (reduced motion and
    Save-Data: the Think still holds, every chapter open, no handlers).
    One instance per .spk-chap; N = the chapters in the markup (BEATS =
    1 + 2N, the CSS track (1 + 2 * --chapters) * --beat vh + 60vh). The
@@ -3219,13 +3430,12 @@ var UI = (function () {
     var STRIKE_MS = num("data-strike-ms", 420);
     if (STRIKE) sec.style.setProperty("--strike-ms", STRIKE_MS + "ms");
     var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
-    var phone    = window.matchMedia("(max-width: 640px)");
+    var phone    = window.matchMedia("(max-width: 768px)");
     var saveData = !!(navigator.connection && navigator.connection.saveData);
     var hasIO    = "IntersectionObserver" in window;
 
     var wordsEl = chapters.map(function (c) { return c.querySelector(".spk-chap__word"); });
     var linesEl = chapters.map(function (c) { return c.querySelector(".spk-chap__text"); });
-    var frames  = chapters.map(function (c) { return c.querySelector(".spk-chap__frame"); });
     /* the six beat elements, in beat order after the heading */
     var beatEls = [];
     chapters.forEach(function (c, i) { beatEls.push(wordsEl[i], linesEl[i]); });
@@ -3522,76 +3732,186 @@ var UI = (function () {
       clearState();
     }
 
-    /* ---- phone: no pin, a rail whose fill rises with the 62% cursor ---- */
-    var railTop = 0, railH = 0, phoneNear = null;
-    var CURSOR = 0.62;
+    /* ---- phone: a pinned full-screen stage, one beat per chapter ----
+       The track is N * data-beat-phone svh (100) plus the stage's own
+       screen; P is the svh scrolled into it and s (0 → 1) runs across a
+       chapter's beat. The scroll is the clock here: every phase is written
+       as a custom property (--o on a still, --in / --out on a word and its
+       line, --hout on the heading), so nothing waits on a timer.
+         heading   alone over the first still, leaves over P 28-40
+         0-25%     the chapter's still crossfades in over the previous one
+         25-45%    the word arrives, large and centred
+         45-65%    its line arrives under it (strike: 65-80%, after the
+                   strike draws through the quote at 55%, time-based)
+         90-100%   both leave together
+       The rail is hidden; a row of dots at the bottom is the tablist
+       (the rail's ids and ARIA move onto the dots, and back). Strike mode:
+       a tap on the stage while the quote shows jumps to the strike point
+       (the flip done); a second tap goes on to the next chapter. */
+    var BEATP = num("data-beat-phone", 100);
+    var railTabs = tabs, dotsEl = null, dots = [], dotFns = [];
+    var ph = {}, phIdx = -1;
+    function phPut(el, key, name, v) {
+      var s = v.toFixed(3);
+      if (ph[key] === s) return;
+      ph[key] = s;
+      el.style.setProperty(name, s);
+    }
+    function svhPx() { return (stage.offsetHeight || window.innerHeight) / 100; }
+    function trackTop() { return track.getBoundingClientRect().top + window.pageYOffset; }
+    /* the page y at which chapter i reaches local s */
+    function yAt(i, s) { return trackTop() + (i + s) * BEATP * svhPx(); }
+    function jump(y) {
+      if (window.spkLenis) window.spkLenis.scrollTo(y);
+      else window.scrollTo({ top: y, behavior: "smooth" });
+    }
+    /* a dot lands on its chapter arrived: the quote held (strike) or the
+       word and its line held */
+    function dotGo(i) { jump(yAt(i, STRIKE ? 0.5 : 0.7)); }
 
-    function phoneLayout() {
-      railTop = chapters[0].offsetTop + 12;
-      railH = Math.max(1, chapters[N - 1].offsetTop + 12 - railTop);
-      sec.style.setProperty("--rail-top", railTop + "px");
-      sec.style.setProperty("--rail-h", railH + "px");
-    }
-    function phoneMeasure() {
-      var yT = window.innerHeight * CURSOR - sec.getBoundingClientRect().top;
-      if (rail) rail.style.setProperty("--dot", clamp((yT - railTop) / railH).toFixed(4));
-      chapters.forEach(function (c) { c.classList.toggle("is-lit", yT >= c.offsetTop + 12); });
-    }
-    /* The candidate the browser would pick for this still at full width:
-       a matching <source> of its <picture> (the phone's portrait crop)
-       first, else its own srcset, else its src. Keeps the frame off the
-       full-size upload. */
-    function bestSrc(img) {
-      var set = "", pic = img.parentNode;
-      if (pic && pic.nodeName === "PICTURE" && window.matchMedia) {
-        var ss = pic.getElementsByTagName("source");
-        for (var k = 0; k < ss.length; k++) {
-          var m = ss[k].getAttribute("media");
-          if (!m || window.matchMedia(m).matches) { set = ss[k].getAttribute("srcset") || ""; break; }
-        }
-      }
-      if (!set) set = img.getAttribute("srcset") || "";
-      if (!set) return img.src;
-      var need = window.innerWidth * (window.devicePixelRatio || 1), pick = null, big = null;
-      set.split(/,\s*/).forEach(function (c) {
-        var p = c.trim().split(/\s+/), w = parseInt(p[1], 10) || 0;
-        if (!p[0]) return;
-        if (!big || w > big.w) big = { u: p[0], w: w };
-        if (w >= need && (!pick || w < pick.w)) pick = { u: p[0], w: w };
+    function buildDots() {
+      dotsEl = document.createElement("div");
+      dotsEl.className = "spk-chap__dots";
+      dotsEl.setAttribute("role", "tablist");
+      if (rail && rail.getAttribute("aria-label")) dotsEl.setAttribute("aria-label", rail.getAttribute("aria-label"));
+      dots = railTabs.map(function (t, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "spk-chap__pdot";
+        var id = t.id;
+        if (id) { t.removeAttribute("id"); b.id = id; }
+        b.setAttribute("role", "tab");
+        if (authored.tabs[i]["aria-controls"]) b.setAttribute("aria-controls", authored.tabs[i]["aria-controls"]);
+        b.setAttribute("aria-selected", i === 0 ? "true" : "false");
+        b.tabIndex = i === 0 ? 0 : -1;
+        b.setAttribute("aria-label", wordsEl[i] ? wordsEl[i].textContent.trim() : String(i + 1));
+        dotsEl.appendChild(b);
+        return b;
       });
-      var u = (pick || big).u, a = document.createElement("a");
-      a.href = u; return a.href;
+      dotFns = dots.map(function (b, i) {
+        return {
+          click: function (e) { e.stopPropagation(); dotGo(i); },
+          focus: function () { dots.forEach(function (o) { o.tabIndex = (o === b ? 0 : -1); }); },
+          key: function (e) {
+            var k = e.key, n = -1, L = dots.length;
+            if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
+            else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
+            else if (k === "Home") n = 0;
+            else if (k === "End") n = L - 1;
+            else return;
+            e.preventDefault();
+            dots[n].focus();
+          }
+        };
+      });
+      dots.forEach(function (b, i) {
+        b.addEventListener("click", dotFns[i].click);
+        b.addEventListener("focus", dotFns[i].focus);
+        b.addEventListener("keydown", dotFns[i].key);
+      });
+      stage.appendChild(dotsEl);
     }
-    /* each frame shows its chapter's still, set once when the block is near */
-    function frameStill(i) {
-      var f = frames[i], st = stillOf(i);
-      if (!f || !st || f.style.backgroundImage) return;
-      f.style.backgroundImage = "url(\"" + bestSrc(st) + "\")";
+    function dropDots() {
+      if (!dotsEl) return;
+      dots.forEach(function (b, i) {
+        if (b.id && railTabs[i]) { railTabs[i].id = b.id; b.removeAttribute("id"); }
+      });
+      if (dotsEl.parentNode) dotsEl.parentNode.removeChild(dotsEl);
+      dotsEl = null; dots = []; dotFns = [];
+    }
+
+    /* the chapter on screen: the dots, the panels, the live region */
+    function phoneChapter(idx) {
+      if (idx === phIdx) return;
+      var first = phIdx === -1;
+      phIdx = idx;
+      chapters.forEach(function (c, n) { c.classList.toggle("is-live", n === idx); });
+      tabs.forEach(function (t, n) {
+        t.setAttribute("aria-selected", n === idx ? "true" : "false");
+        /* roving tabindex follows the scroll unless focus is in the dots */
+        if (!dotsEl || !dotsEl.contains(document.activeElement)) t.tabIndex = n === idx ? 0 : -1;
+        t.classList.toggle("is-on", n === idx);
+      });
+      if (!first) say(words(idx));
+    }
+
+    function phoneMeasure() {
+      var u = svhPx();
+      var P = -track.getBoundingClientRect().top / u;       /* svh into the track */
+      var total = N * BEATP;
+      var Pc = Math.max(0, Math.min(total, P));
+      var idx = Math.min(N - 1, Math.floor(Pc / BEATP));
+      phoneChapter(idx);
+      phPut(heading, "h", "--hout", smooth(clamp((P - 28) / 12)));
+      for (var k = 0; k < N; k++) {
+        var s = (P - k * BEATP) / BEATP;
+        var st = stillOf(k);
+        if (st) {
+          phPut(st, "o" + k, "--o", k === 0 ? 1 : smooth(clamp(s / 0.25)));
+          phPut(st, "d" + k, "--dolly", 1 + (DOLLY - 1) * clamp(s));
+        }
+        var out = smooth(clamp((s - 0.9) / 0.1));
+        if (wordsEl[k]) {
+          phPut(wordsEl[k], "wi" + k, "--in", smooth(clamp((s - 0.25) / 0.2)));
+          phPut(wordsEl[k], "wo" + k, "--out", out);
+        }
+        if (linesEl[k]) {
+          phPut(linesEl[k], "li" + k, "--in", STRIKE ? smooth(clamp((s - 0.65) / 0.15)) : smooth(clamp((s - 0.45) / 0.2)));
+          phPut(linesEl[k], "lo" + k, "--out", out);
+        }
+        /* strike: the line draws through the quote at 55% (420ms, the
+           CSS is the clock) as it dims and rises; undone on the way back */
+        if (STRIKE && wordsEl[k]) wordsEl[k].classList.toggle("is-struck", s >= 0.55 && s < 1);
+      }
+      phState = { P: P, idx: idx, s: (Pc - idx * BEATP) / BEATP };
+    }
+    var phState = { P: 0, idx: 0, s: 0 };
+
+    /* strike mode: a tap flips the quote, a second tap moves on */
+    function onStageTap(e) {
+      if (mode !== "phone" || !STRIKE) return;
+      if (dotsEl && dotsEl.contains(e.target)) return;
+      if (e.target.closest && e.target.closest("a, button")) return;
+      phoneMeasure();
+      var i = phState.idx, s = phState.s;
+      if (phState.P < 0) return;
+      if (s < 0.55) jump(yAt(i, 0.8));
+      else if (i < N - 1) jump(yAt(i + 1, 0.5));
+      else jump(yAt(N, 0));
     }
 
     function startPhone() {
       sec.classList.add("is-phone");
-      stripAria();
-      phoneLayout();
-      if (hasIO) {
-        phoneNear = new IntersectionObserver(function (es, obs) {
-          es.forEach(function (e) {
-            if (!e.isIntersecting) return;
-            obs.unobserve(e.target);
-            frameStill(chapters.indexOf(e.target));
-          });
-        }, { rootMargin: "100% 0px" });
-        chapters.forEach(function (c) { phoneNear.observe(c); });
-      } else {
-        chapters.forEach(function (c, i) { frameStill(i); });
-      }
+      sec.style.setProperty("--beat-phone", BEATP);
+      clearState();
+      /* the rail's tablist goes (hidden); the panels stay, labelled by the dots */
+      if (rail) TAB_ATTRS.forEach(function (n) { rail.removeAttribute(n); });
+      railTabs.forEach(function (t) { TAB_ATTRS.forEach(function (n) { t.removeAttribute(n); }); });
+      if (rail) rail.hidden = true;
+      buildDots();
+      tabs = dots;
+      phIdx = -1; ph = {};
+      stills.forEach(function (st) { st.classList.remove("is-on"); });
+      stage.addEventListener("click", onStageTap);
       phoneMeasure();
       watchScreen();
     }
     function stopPhone() {
       unwatchScreen();
-      if (phoneNear) { phoneNear.disconnect(); phoneNear = null; }
+      stage.removeEventListener("click", onStageTap);
+      clearTimeout(sayT); sayT = 0;
+      tabs = railTabs;
+      dropDots();
+      if (rail) rail.hidden = false;
       sec.classList.remove("is-phone");
+      sec.style.removeProperty("--beat-phone");
+      heading.style.removeProperty("--hout");
+      stills.forEach(function (st) { st.style.removeProperty("--o"); });
+      beatEls.forEach(function (e) {
+        if (!e) return;
+        e.style.removeProperty("--in"); e.style.removeProperty("--out");
+      });
+      ph = {}; phIdx = -1;
       restoreAria();
       clearState();
     }
@@ -3617,7 +3937,6 @@ var UI = (function () {
       clearTimeout(resizeT);
       resizeT = setTimeout(function () {
         if (setMode()) return;
-        if (mode === "phone") phoneLayout();
         onScroll();
       }, 60);
     }, { passive: true });

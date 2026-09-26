@@ -706,6 +706,7 @@ collections:
                     required: false
                     fields:
                       - { label: "Scroll per chapter beat (vh)", name: beat, widget: number, required: false, hint: "Default: 70" }
+                      - { label: "Scroll per chapter on phones (svh)", name: beatPhone, widget: number, required: false, hint: "Scroll per chapter on phones. Default: 100" }
                       - { label: "Arrive fade (ms)", name: arrive, widget: number, required: false, hint: "Default: 440" }
                       - { label: "Leave fade (ms)", name: leave, widget: number, required: false, hint: "Default: 320" }
                       - { label: "Still crossfade (ms)", name: cross, widget: number, required: false, hint: "Default: 900" }

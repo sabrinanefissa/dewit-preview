@@ -1564,6 +1564,49 @@ html[data-spk-cc="off"] .spk-keys__cap { display:none; }
   .spk-keys__video, .spk-keys__play, .spk-keys__pause { position:fixed; }
 }
 
+/* Phones with motion (.is-reel, js module 2): the reel. N + 1 cards of a
+   full screen each in the page's own flow: card 0 the rest picture with
+   the heading centred on it (the scroll-fill), then one card per talk, its
+   caption centred exactly as on the pin. The ground and the panel box let
+   go of their boxes (display: contents) so the stage's grid holds the
+   cards. Each card snaps to the top, but only while the viewport's top is
+   between the first card's top and the last card's: the script puts
+   .spk-snap on <html> for that long. A card's
+   caption rises in on arrival (--cap 0 → 1, written by the script over
+   --cap-ms); the dots (1 + N, bottom right, vertical) replace the index. */
+html.spk-snap { scroll-snap-type: y mandatory; }
+@media (max-width: 768px) {
+  .spk-keys.is-reel { padding-block:0; }
+  .spk-keys.is-reel .spk-keys__stage { display:grid; grid-template-columns: 100%; }
+  .spk-keys.is-reel .spk-keys__ground,
+  .spk-keys.is-reel .spk-keys__panels { display:contents; }
+  .spk-keys.is-reel .spk-keys__rest { grid-area: 1 / 1; display:block; position:relative; inset:auto;
+    width:100%; height:100svh; scroll-snap-align:start; }
+  .spk-keys.is-reel .spk-keys__head { grid-area: 1 / 1; position:relative; z-index:2; display:grid;
+    place-items:center; height:100svh; padding-inline: var(--gutter);
+    background: radial-gradient(70% 45% at 50% 50%, rgba(20,10,28,.5), transparent 100%); }
+  .spk-keys.is-reel .spk-keys__panel { position:relative; inset:auto; width:100%; height:100svh;
+    aspect-ratio:auto; scroll-snap-align:start; }
+  .spk-keys.is-reel .spk-keys__caption { opacity: var(--cap, 0);
+    transform: translate(-50%, calc(-50% + (1 - var(--cap, 0)) * 16px)); }
+  .spk-keys.is-reel .spk-keys__panel::after { opacity: var(--cap, 0); }
+  .spk-keys.is-reel .spk-keys__panel.is-off { pointer-events:auto; }
+  .spk-keys.is-reel .spk-keys__index[hidden] { display:none; }
+}
+.spk-keys__dots { position:fixed; right: 12px; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:6;
+  display:flex; flex-direction:column; align-items:center;
+  opacity:0; visibility:hidden; transition: opacity .32s var(--ease-out), visibility 0s linear .32s; }
+.spk-keys__dots.is-in { opacity:1; visibility:visible; transition: opacity .32s var(--ease-out), visibility 0s; }
+.spk-keys.is-playing .spk-keys__dots { opacity:0; visibility:hidden; }
+.spk-keys__dotlist { display:flex; flex-direction:column; align-items:center; }
+.spk-keys__dot { position:relative; width:44px; height:32px; padding:0; border:0; background:none; cursor:pointer; }
+.spk-keys__dot::before { content:""; position:absolute; left:50%; top:50%; width:8px; height:8px;
+  border-radius:4px; transform: translate(-50%, -50%); background: rgba(244,236,222,.45);
+  box-shadow: 0 0 10px rgba(0,0,0,.35);
+  transition: height .32s var(--ease-out), background-color .32s var(--ease-out); }
+.spk-keys__dot.is-cur::before { height:22px; background: var(--acc, var(--tx-inv)); }
+.spk-keys__dot:focus-visible { outline:2px solid var(--violet-300); outline-offset:-4px; border-radius:16px; }
+
 /* No script, or the stacked mode reduced motion switches on: no pin, no
    grow, no index. The heading, then the three talks stacked, each a 16:9
    picture with its caption and its ring. */
@@ -1851,6 +1894,11 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__velvet,
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
+/* phones: the wheel fades itself out over its track's last 40svh
+   (--spk-said-gone, module 7), since no pinned talks take it over */
+@media (max-width: 768px) {
+  .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-said-gone, 0)); }
+}
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
    geometry sit at the same spot (centred, top 30%, two rows of the big
@@ -2037,67 +2085,75 @@ html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
   .spk-chap__text { font-size: var(--step-1); }
 }
 
-/* Stacked, no pin: phones (.is-phone), reduced motion and Save-Data
-   (.is-static) and no script. */
-.spk-chap.is-phone .spk-chap__track,
+/* Stacked, no pin: reduced motion and Save-Data (.is-static) and no
+   script. (Phones, .is-phone, have their own pinned stage: see below.) */
 .spk-chap.is-static .spk-chap__track,
 html.no-js .spk-chap__track { height:auto; }
-.spk-chap.is-phone .spk-chap__stage,
 .spk-chap.is-static .spk-chap__stage,
 html.no-js .spk-chap__stage { position:static; height:auto; overflow:visible; }
-.spk-chap.is-phone .spk-chap__media,
-.spk-chap.is-phone .spk-chap__glow, .spk-chap.is-static .spk-chap__glow,
+.spk-chap.is-static .spk-chap__glow,
 html.no-js .spk-chap__glow { display:none; }
-.spk-chap.is-phone .spk-chap__inner,
 .spk-chap.is-static .spk-chap__inner,
 html.no-js .spk-chap__inner { position:static; width: var(--wrap); margin-inline:auto;
   padding: clamp(3.5rem, 9vw, 5rem) 0; }
-.spk-chap.is-phone .spk-chap__h,
 .spk-chap.is-static .spk-chap__h,
 html.no-js .spk-chap__h { position:static; text-align:left; }
-.spk-chap.is-phone .spk-chap__chapters,
 .spk-chap.is-static .spk-chap__chapters,
 html.no-js .spk-chap__chapters { position:static; display:block; text-align:left;
   margin-top: clamp(1.6rem, 4vh, 2.6rem); padding-left:3rem; }
-.spk-chap.is-phone .spk-chap__chapter,
 .spk-chap.is-static .spk-chap__chapter,
 html.no-js .spk-chap__chapter { position:relative; display:block; left:auto; right:auto; top:auto;
   bottom:auto; text-align:left; max-width:none; min-height:0; padding:0; font-size:inherit;
   opacity:1; visibility:visible; transform:none; filter:none; }
-.spk-chap.is-phone .spk-chap__chapter + .spk-chap__chapter,
 .spk-chap.is-static .spk-chap__chapter + .spk-chap__chapter,
 html.no-js .spk-chap__chapter + .spk-chap__chapter { margin-top: clamp(2.2rem, 7vw, 3.2rem); }
-.spk-chap.is-phone .spk-chap__word,
 .spk-chap.is-static .spk-chap__word,
 html.no-js .spk-chap__word { font-size: var(--step-2); }
-.spk-chap.is-phone .spk-chap__word, .spk-chap.is-phone .spk-chap__text,
 .spk-chap.is-static .spk-chap__word, .spk-chap.is-static .spk-chap__text,
 html.no-js .spk-chap__word, html.no-js .spk-chap__text { opacity:1; transform:none; filter:none;
   visibility:visible; transition:none; }
-.spk-chap.is-phone .spk-chap__text,
 .spk-chap.is-static .spk-chap__text,
 html.no-js .spk-chap__text { position:static; margin-top: clamp(.9rem, 2vh, 1.4rem); }
 
-/* Phones: the homepage's mobile rail. The script sets --rail-top and
-   --rail-h on the section in px so the line runs from the first chapter's
-   stop to the last one's; the fill rises as the 62% cursor passes down the
-   chapters. The blocks carry the words, so the tabs and the dot go. */
-.spk-chap.is-phone .spk-chap__rail { position:absolute; left: calc(50% - var(--wrap) / 2 + 1.5rem);
-  top: var(--rail-top, 0); bottom:auto; height: var(--rail-h, 0); transform:none; }
-.spk-chap.is-phone .spk-chap__tab,
-.spk-chap.is-phone .spk-chap__dot { display:none; }
-/* a stop on the rail at each block's top-left: the rail is 1.5rem in from
-   the wrap edge and the blocks are padded 3rem, so -1.5rem lands it on the
-   line */
-.spk-chap.is-phone .spk-chap__chapter::before { content:""; position:absolute; left:-1.5rem; top:.55em;
-  width:12px; height:12px; margin-left:-6px; border-radius:50%;
-  border:1.5px solid rgba(169,133,230,.35); background: var(--plum-2); }
-.spk-chap.is-phone .spk-chap__chapter.is-lit::before { border-color: var(--violet-300); }
-/* each frame holds its chapter's still; the script sets background-image
-   once the block is near */
-.spk-chap.is-phone .spk-chap__frame { display:block; width:100%; aspect-ratio: 16 / 10;
-  margin-bottom: clamp(1rem, 3vw, 1.4rem); overflow:hidden; background-color: var(--plum-2);
-  background-size: cover; background-position: 50% 40%; }
+/* Phones (.is-phone, <= 768px, js module 8): a pinned full-screen stage,
+   one beat of --beat-phone svh (100) per chapter. The still fills the
+   screen (the portrait crop from the <picture>), under the block's veil;
+   the word and its line are centred and large. The scroll is the clock:
+   the script writes --o on each still (the crossfade), --in / --out on
+   each word and line (the desktop's arrive and leave looks, scrubbed:
+   opacity, a 12px rise, an 8px blur in; a 10px lift, a 6px blur out) and
+   --hout on the heading. The rail is hidden; the dots at the bottom are
+   the tablist, the current one long. */
+.spk-chap.is-phone .spk-chap__track { height: calc(var(--chapters, 3) * var(--beat-phone, 100) * 1svh + 100svh); }
+.spk-chap.is-phone .spk-chap__still { opacity: var(--o, 0); transition:none; }
+.spk-chap.is-phone .spk-chap__glow { display:none; }
+.spk-chap.is-phone .spk-chap__h { opacity: calc(1 - var(--hout, 0));
+  transform: translateY(calc(var(--hout, 0) * -10px)); filter: blur(calc(var(--hout, 0) * 6px));
+  transition:none; padding-inline: var(--gutter); text-shadow: 0 2px 24px rgba(0,0,0,.55); }
+.spk-chap.is-phone .spk-chap__inner { width:auto; }
+.spk-chap.is-phone .spk-chap__chapter { position:absolute; inset:0; max-width:none; min-height:0;
+  padding: 0 var(--gutter) 4.5rem; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; visibility:hidden; }
+.spk-chap.is-phone .spk-chap__chapter.is-live { visibility:visible; }
+.spk-chap.is-phone .spk-chap__word,
+.spk-chap.is-phone .spk-chap__text { visibility:inherit; align-self:auto;
+  opacity: calc(var(--in, 0) * (1 - var(--out, 0)));
+  translate: 0 calc((1 - var(--in, 0)) * 12px - var(--out, 0) * 10px);
+  filter: blur(calc((1 - var(--in, 0)) * 8px + var(--out, 0) * 6px));
+  transform:none; transition:none; text-shadow: 0 2px 24px rgba(0,0,0,.55); }
+.spk-chap.is-phone .spk-chap__word { font-size: var(--step-5); }
+.spk-chap.is-phone .spk-chap__text { margin-top: clamp(.9rem, 2.4vh, 1.4rem); max-width: 22ch;
+  font-size: var(--step-1); }
+.spk-chap.is-phone .spk-chap__chapter:focus-visible { outline-offset:-6px; }
+/* the dots: one per chapter, the current one long; each is a 44px target */
+.spk-chap__dots { position:absolute; left:0; right:0; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:4;
+  display:flex; justify-content:center; gap:0; }
+.spk-chap__pdot { position:relative; width:44px; height:44px; padding:0; border:0; background:none; cursor:pointer; }
+.spk-chap__pdot::before { content:""; position:absolute; left:50%; top:50%; width:8px; height:8px;
+  border-radius:4px; transform: translate(-50%, -50%); background: rgba(244,236,222,.45);
+  transition: width .32s var(--ease-out), background-color .32s var(--ease-out); }
+.spk-chap__pdot[aria-selected="true"]::before { width:26px; background: var(--tx-inv); }
+.spk-chap__pdot:focus-visible { outline:2px solid var(--violet-300); outline-offset:-8px; border-radius:22px; }
 
 /* Reduced motion, Save-Data and no script: the Think still is shown once,
    at the top, as a lit 16:9 band; no rail, no frames, every chapter open. */
@@ -2139,12 +2195,21 @@ html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__text { grid-
 .spk-chap--strike .spk-chap__word.is-leaving.is-struck { transform: translateY(calc(-.6em - 10px)) scale(.72); }
 .spk-chap--strike .spk-chap__word.is-struck::after { transform: scaleX(1);
   transition: transform var(--strike-ms, 420ms) var(--ease-out); }
-.spk-chap--strike.is-phone .spk-chap__word::after,
 .spk-chap--strike.is-static .spk-chap__word::after,
 html.no-js .spk-chap--strike .spk-chap__word::after { transform: scaleX(1); }
-.spk-chap--strike.is-phone .spk-chap__word,
 .spk-chap--strike.is-static .spk-chap__word,
 html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba(244,236,222,.62); }
+/* Phones' stage: the quote large and centred; at 55% of its beat the line
+   draws through it (--strike-ms) as it dims and rises from its bottom
+   centre, and the real line arrives beneath it. */
+.spk-chap--strike.is-phone .spk-chap__word { display:inline-block; font-size: var(--step-4); max-width: 9ch; line-height:1.05;
+  transform-origin: 50% 100%;
+  transition: transform var(--strike-ms, 420ms) var(--ease-out), color var(--strike-ms, 420ms) var(--ease-out); }
+.spk-chap--strike.is-phone .spk-chap__word.is-struck { transform: translateY(-.6em) scale(.72);
+  color: rgba(244,236,222,.62); }
+.spk-chap--strike.is-phone .spk-chap__word::after { transition: transform var(--strike-ms, 420ms) var(--ease-out); }
+.spk-chap--strike.is-phone .spk-chap__word.is-struck::after { transform: scaleX(1); }
+.spk-chap--strike.is-phone .spk-chap__text { margin-top: calc(-.2 * var(--step-3)); }
 @media (max-width: 1199px) {
   html.js .spk-chap--strike:not(.is-phone):not(.is-static) .spk-chap__text {
     margin-top: calc(-.6 * var(--step-3) + .35em); }
@@ -2387,19 +2452,15 @@ html.no-js .spk-keys__head .place, html.no-js .spk-keys__head .place__inner,
 .spk-chap__chapter.is-placed[data-spot="lr"] > .place { --pdx:100%; --pdy:100%; --pda:right; --pdj:end; }
 .spk-chap__chapter.is-placed > .place > .place__inner { max-width: min(100%, 26ch); }
 .spk-chap__chapter.is-placed .place__inner > :is(.spk-chap__word, .spk-chap__text) { text-align:inherit; }
-.spk-chap.is-phone .spk-chap__chapter.is-placed { container-type: inline-size; }
-.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--word { inset:auto; top: var(--inset); left: var(--inset);
-  width: calc(100cqw - 2 * var(--inset)); height: calc(100cqw * 10 / 16 - 2 * var(--inset)); }
-.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--word > .place__inner { max-width:100%; }
-.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--text,
-.spk-chap.is-phone .spk-chap__chapter.is-placed > .place--text > .place__inner { display:contents; }
 .spk-chap .place--rail { --pdx:0%; --pdy:50%; z-index:1; }
 /* the stop labels hang to the right of the line: the box keeps room for them */
 .spk-chap .place--rail > .place__inner { padding-right: 7rem; }
 .spk-chap .place--rail .spk-chap__rail { position:relative; left:auto; top:auto; bottom:auto; height:72svh; }
 .spk-chap.is-static .place, .spk-chap.is-static .place__inner,
-html.no-js .spk-chap .place, html.no-js .spk-chap .place__inner,
-.spk-chap.is-phone .place--rail, .spk-chap.is-phone .place--rail > .place__inner { display:contents; }
+html.no-js .spk-chap .place, html.no-js .spk-chap .place__inner { display:contents; }
+/* phones' stage: the rail is hidden and every placement is let go (the
+   chapter centres its word and line) */
+.spk-chap.is-phone .place, .spk-chap.is-phone .place__inner { display:contents; }
 /* out: the heading (over the band and the picture; today top, centred) and
    each word: a placed word's <li> is its own area, the picture less the
    inset, and its pool of light moves onto the box. Phones stack. */
