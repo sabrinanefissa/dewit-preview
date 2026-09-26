@@ -2655,7 +2655,8 @@ var UI = (function () {
               ground fades in over the push: the hand-off
    Every candle draws one still, candle-turn-03 (the opening facing the
    camera) lit, candle-unlit dark; they crossfade as it lights (600ms,
-   time-based). Only the current candle is lit during the beats; the
+   time-based) and it goes dark at once (80ms) when the next one lights.
+   Only the current candle is lit during the beats; the
    three are lit from the rise to the end. Hovering a lit candle's flame
    (fine pointers only) eases its glow up (250ms in, 400ms out).
    update(p) writes the lines, the heading, the windows and --push; the
@@ -2918,10 +2919,10 @@ var UI = (function () {
       ctx.globalAlpha = alpha > 1 ? 1 : alpha;
       ctx.drawImage(im, fx[f], fy[f], fw[f], fh[f]);
     }
-    /* the lighting (600ms) */
+    /* the lighting (600ms in; out at once, 80ms) */
     function step(now) {
       for (var i = 0; i < NP; i++) {
-        var t = (now - litT0[i]) / 600;
+        var t = (now - litT0[i]) / (litTo[i] ? 600 : 80);
         L[i] = t >= 1 ? litTo[i] : litFrom[i] + (litTo[i] - litFrom[i]) * smooth(t);
       }
     }
