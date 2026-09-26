@@ -1953,10 +1953,17 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__velvet,
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
-/* phones: the wheel fades itself out over its track's last 40svh
-   (--spk-said-gone, module 7), since no pinned talks take it over */
+/* phones: no pinned talks take the wheel over, so it hands off by itself
+   over its track's last 60svh (module 7): the held stage's bottom
+   dissolves (--gone-h, 0 -> 70%) while the talks reel's first card rises
+   under it, and it fades out over the last 20svh (--spk-said-gone). The
+   track has no hold beat and a long grow (--grow-phone): 752svh for six
+   lines. */
 @media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-said-gone, 0)); }
+  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 200) + 60) * 1svh); }
+  .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-said-gone, 0));
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent 100%); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
@@ -2002,6 +2009,10 @@ html.no-js .spk-said__candle { display:none; }
   .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.4rem, 10.5vw, 3.6rem); line-height: 1.0; height: 2.4em; }
   .spk-said.is-wheel .spk-said__nextB { max-width: 13ch; min-height: 2.4em;
     text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+  /* both lines in front of the canvas (the "behind" is desktop's): A over
+     the resting candle, then B pinned over the growing wax */
+  .spk-said.is-wheel .spk-said__win--a { z-index:4; }
+  .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
 }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
@@ -2497,6 +2508,7 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
   transform:none; text-align:inherit; justify-items: var(--place-j); }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:9%; --pda:center; --pdj:center; }
 .spk-said.is-wheel .place--win-a { z-index:1; }
+@media (max-width: 768px) { .spk-said.is-wheel .place--win-a { z-index:4; } }
 .spk-said.is-wheel .place--win-b { z-index:4; }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;
   width:auto; transform:none; }
