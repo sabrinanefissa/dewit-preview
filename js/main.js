@@ -3028,6 +3028,15 @@ var UI = (function () {
     var T_ASP = 336 / 900, T_AX = 0.502, T_AY = 0.997;          /* FACE: width / height, foot centre, foot bottom */
     var U_ASP = 711 / 900, U_AX = 370 / 711, U_AY = 897 / 900;  /* unlit */
     var U_H = 328 / 338;                                        /* unlit height, of hC */
+    var FL = 0.94;                                              /* the flame, up the axis, of hC */
+    /* phones draw the taller candle (candle-tall-lit / -unlit: one cutout,
+       so both frames share the anchors and the height) */
+    var tall = false;
+    function pickSet(t) {
+      tall = t;
+      if (t) { NAMES = ["candle-tall-lit", "candle-tall-unlit"]; T_ASP = U_ASP = 512 / 1589; T_AX = U_AX = 0.496; T_AY = U_AY = 0.998; U_H = 1; FL = 0.90; }
+      else   { NAMES = ["candle-turn-03", "candle-unlit"]; T_ASP = 336 / 900; T_AX = 0.502; T_AY = 0.997; U_ASP = 711 / 900; U_AX = 370 / 711; U_AY = 897 / 900; U_H = 328 / 338; FL = 0.94; }
+    }
     var imgs = [[], []];                                        /* [450 set, 900 set] */
     var loaded450 = false, loaded900 = false;
     function loadSet(s) {
@@ -3079,6 +3088,11 @@ var UI = (function () {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       phone = phoneMq.matches;
+      if (phone !== tall) {
+        pickSet(phone);
+        /* the other set was already loading: fetch this one instead */
+        if (loaded450) { imgs = [[], []]; loadSet(0); if (loaded900) loadSet(1); }
+      }
       hC = phone ? Math.max(220, Math.min(520, H * 0.34)) : Math.max(300, Math.min(520, H * 0.44));
       Rw = W * 0.40;
       cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
@@ -3091,7 +3105,7 @@ var UI = (function () {
         fy[f] = -(un ? U_AY : T_AY) * fh[f];
       }
       D = (phone ? 0.40 : 0.34) * W;
-      sR = Math.min(phone ? 1.2 : 1.7, (phone ? 0.32 : 0.3) * W / fw[FACE]);
+      sR = Math.min(phone ? 1.5 : 1.7, (phone ? 0.36 : 0.3) * W / fw[FACE]);
       KP = phone ? 2.2 : 1.4;
       Px = W / 2 - D / 2; Py = 0.55 * H;
       sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
@@ -3310,7 +3324,7 @@ var UI = (function () {
       var r = smooth(clamp((g - 0.2) / 0.55));
       /* the camera: k about P, multiplied into every candle's transform */
       var k = 1 + KP * push;
-      var gr = 0.55 * hC, fyL = -0.94 * hC;
+      var gr = 0.55 * hC, fyL = -FL * hC;
       poses.length = 0; c0 = null;
       for (var i = 0; i < NP; i++) {
         var phi = -90 + theta + i * STEP;
@@ -3352,7 +3366,7 @@ var UI = (function () {
         var big = hC * dpr * m > 470 ? 1 : 0;
         var Li = L[i];
         /* the flame: 0.94 hC up the axis, through the full transform */
-        flX[i] = ex + m * sn * 0.94 * hC; flY[i] = ey - m * c * 0.94 * hC; flR[i] = 0.22 * hC * m;
+        flX[i] = ex + m * sn * FL * hC; flY[i] = ey - m * c * FL * hC; flR[i] = 0.22 * hC * m;
         var dx = mx - flX[i], dy = my - flY[i];
         hover(i, now, litTo[i] === 1 && dx * dx + dy * dy < flR[i] * flR[i]);
         if (Li > 0.001) {
