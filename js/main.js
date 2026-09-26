@@ -3034,7 +3034,7 @@ var UI = (function () {
     var tall = false;
     function pickSet(t) {
       tall = t;
-      if (t) { NAMES = ["candle-tall-lit", "candle-tall-unlit"]; T_ASP = U_ASP = 512 / 1589; T_AX = U_AX = 0.496; T_AY = U_AY = 0.998; U_H = 1; FL = 0.90; }
+      if (t) { NAMES = ["candle-tall-lit", "candle-tall-unlit"]; T_ASP = U_ASP = 507 / 1584; T_AX = U_AX = 0.495; T_AY = U_AY = 0.999; U_H = 1; FL = 0.94; }
       else   { NAMES = ["candle-turn-03", "candle-unlit"]; T_ASP = 336 / 900; T_AX = 0.502; T_AY = 0.997; U_ASP = 711 / 900; U_AX = 370 / 711; U_AY = 897 / 900; U_H = 328 / 338; FL = 0.94; }
     }
     var imgs = [[], []];                                        /* [450 set, 900 set] */
