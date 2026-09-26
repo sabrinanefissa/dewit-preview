@@ -1275,7 +1275,7 @@ html.no-js .spk-voice { display:none; }
      --rise, --g  on the ground: both held at 1 (written once), so the
                   ground is exactly the viewport; the card rules stay
      --reveal     on the ground: fades in over the first 60svh, out of
-                  the candle wheel's wax close-up
+                  the candle wheel's push between its candles
      --head       on the heading: in over the first 15svh (as the candle
                   wheel's own two lines fade out), out over the first
                   40svh of talk 01
@@ -1283,7 +1283,7 @@ html.no-js .spk-voice { display:none; }
      --cap        on each panel: its caption, the ring inside it
    The section rises over the last 60svh of the candle wheel's stage
    (its margin-top, over the wheel only) and is transparent, so the held
-   bloom shows until the ground has come up. The room section
+   candles show until the ground has come up. The room section
    (.spk-chap) rises over this stage in the last 50svh (see its
    margin-top).
    --------------------------------------------------------------------- */
@@ -1687,8 +1687,10 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
    becomes a pinned stage (.is-wheel): a 720svh track, the velvet under a
    plum veil, the wheel on a canvas above them, and the six lines in one
    grid cell, each carrying --on (0..1) from the scroll. The scroll is the
-   clock: nothing here has a transition. The grow writes --ms/--mo
-   on the macro flame and --bo on the bloom.
+   clock: nothing here has a transition. The ending (three candles rise
+   out of the ring, the camera pushes between the left and the middle
+   one) is drawn on the canvas; the script also writes --push (0..1) on
+   the section, which scales the velvet slightly about --push-ox/-oy.
    --------------------------------------------------------------------- */
 .spk-said { position:relative; background: var(--plum-2); color: var(--tx-inv); }
 .spk-said__stage { position:relative; overflow:hidden;
@@ -1697,7 +1699,7 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
   width:100%; height:100%; object-fit:cover; object-position: 50% 50%; }
 .spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(26,16,38,.42); }
-.spk-said__wheel, .spk-said__macro, .spk-said__bloom,
+.spk-said__wheel,
 .spk-said__nextA, .spk-said__nextB { display:none; }
 .spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
@@ -1725,29 +1727,25 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 html.no-js .spk-said__candle { display:none; }
 
 /* The wheel: a pinned stage, N + 1 beats of 80svh (N lines: --beats), a
-   100svh grow and 60svh under the talks section as it rises: 720svh for
+   100svh ending and 60svh under the talks section as it rises: 720svh for
    six lines (--beats, --beat, --grow: the section's inline style). */
 .spk-said.is-wheel .spk-said__track { height: calc(((var(--beats, 6) + 1) * var(--beat, 80) + var(--grow, 100) + 60) * 1svh); }
 .spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
 .spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
-/* the macro: the wax close-up, the stage's size, cover, edge to edge,
-   settling (--ms 1.08 -> 1) as it comes over the canvas */
-.spk-said.is-wheel .spk-said__macro { display:block; position:absolute; inset:0; z-index:3;
-  width:100%; height:100%; object-fit:cover; pointer-events:none; opacity: var(--mo, 0);
-  transform: scale(var(--ms, 1.08)); }
-/* a faint warm veil over the wax, gone with the hand-off */
-.spk-said.is-wheel .spk-said__bloom { display:block; position:absolute; inset:0; z-index:3;
-  pointer-events:none; opacity: calc(var(--bo, 0) * (1 - var(--spk-keys-reveal, 0)));
-  background: radial-gradient(60% 60% at 50% 50%, rgba(232,187,104,.18), transparent 70%); }
-/* The grow's two lines (visual only; the real heading is in the talks
+/* the push: the velvet follows the camera a little (x1.12 at the end),
+   about the point between the left and the middle candle */
+.spk-said.is-wheel .spk-said__velvet { transform: scale(calc(1 + 0.12 * var(--push, 0)));
+  transform-origin: var(--push-ox, 39%) var(--push-oy, 55%); }
+/* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
    geometry sit at the same spot (centred, top 30%, two rows of the big
    type tall, overflow hidden): one under the canvas (z 1) holding A,
-   "Three talks.", one over the canvas, the macro and the veil (z 4)
+   "Three talks.", one over the canvas (z 4)
    holding B, "for people, teams / and organizations.". A comes up on the
    window's lower row over g 0-0.2 while the candle rests (--na: opacity
-   and a 16px rise); then over g 0.2-0.5 (--roll) A rolls up and out
+   and a 16px rise); then over g 0.2-0.5 (--roll), as the three candles
+   start to rise, A rolls up and out
    through the window's top while B rolls up into it from below: one
    roll, no fade, no size change. The windows only hold text; they never
    clip the candle. Both leave with the talks section's reveal. */
@@ -1757,7 +1755,7 @@ html.no-js .spk-said__candle { display:none; }
   font-size: clamp(5.5rem, 12vw, 11rem); height: 2em;
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
 .spk-said.is-wheel .spk-said__win--a { z-index:1; }
-/* the key word of each grow line in the italic face */
+/* the key word of each ending line in the italic face */
 .spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
 .spk-said.is-wheel .spk-said__nextA,

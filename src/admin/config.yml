@@ -545,7 +545,6 @@ collections:
                 fields:
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
-              - { label: "Wax close-up image", name: macro, widget: image }
               - { label: "Window A (rolls up first, behind the candle)", name: windowA, widget: string, hint: "Allows one *emphasis* word." }
               - { label: "Window B (rolls up after, in front of the candle)", name: windowB, widget: string, hint: "Allows one *emphasis* word." }
               - { label: "Position on the image (windows A and B)", name: windowPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
@@ -568,7 +567,7 @@ collections:
                     required: false
                     fields:
                       - { label: "Scroll per beat (svh)", name: beat, widget: number, required: false, hint: "How much scroll turns the wheel one candle. Default: 80" }
-                      - { label: "Grow stage length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on the candle growing into the wax close-up. Default: 100" }
+                      - { label: "Ending length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on the three candles rising and the push between them. Default: 100" }
 
           # ----------------------------------------------------------- keys
           - name: keys
