@@ -1992,6 +1992,14 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__nextB { max-width: 13ch;
   transform: translateY(calc((1 - var(--roll, 0)) * 100%));
   opacity: calc(1 - min(1, var(--spk-keys-reveal, 0) * 2.5)); }
+/* Phones: the big type would clip (B needs four or five rows at this
+   measure), so smaller type in a taller window, higher on the screen: five
+   rows of the type, top 14%. B is as tall as the window, so before the
+   roll it waits wholly below it; A keeps its one-row padding. */
+@media (max-width: 768px) {
+  .spk-said.is-wheel .spk-said__win { top:14%; font-size: clamp(2.2rem, 9.5vw, 3.4rem); height: 5em; }
+  .spk-said.is-wheel .spk-said__nextB { min-height: 5em; }
+}
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
@@ -2484,7 +2492,7 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
 .spk-said.is-wheel .place--lines { --pdx:50%; --pdy:22%; --pdy-m:16%; --pda:center; --pdj:center; }
 .spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
   transform:none; text-align:inherit; justify-items: var(--place-j); }
-.spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pda:center; --pdj:center; }
+.spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:14%; --pda:center; --pdj:center; }
 .spk-said.is-wheel .place--win-a { z-index:1; }
 .spk-said.is-wheel .place--win-b { z-index:4; }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;

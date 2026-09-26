@@ -2940,10 +2940,11 @@ var UI = (function () {
               (0-0.2); the top candle and its two neighbours rise out of
               the ring into a row of three upright lit candles (0.2-0.75),
               the rest fade (0-0.3); A rolls up and out, B up and in
-     700-780  the push: a camera scale x2.4 about the point between the
-              left and the middle candle (the velvet follows, x1.12)
-     680-780  the stage is held (only while the talks section is pinned
-              and rises under it); the velvet fades, the talks show in the
+     700-780  the push: a camera scale x2.4 (phones x3.2) about the point
+              between the left and the middle candle (the velvet follows,
+              x1.12)
+     680-780  the stage is held (on every screen); where the talks section
+              is pinned it rises under it: the velvet fades, the talks show in the
               gap, the candles stay in front (z 3, no pointer events) and
               scroll away, fading out over the talks' u 40-70
               (--spk-keys-gone, from module 2); on phones (no pinned talks)
@@ -3013,9 +3014,6 @@ var UI = (function () {
 
     sec.classList.add("is-wheel");
     var phoneMq = window.matchMedia("(max-width: 768px)");
-    /* the talks section that rises over this stage: the one right after it */
-    var keysSec = sec.nextElementSibling;
-    if (keysSec && !keysSec.classList.contains("spk-keys")) keysSec = null;
 
     /* ---- the frames ----
        Two: candle-turn-03 (FACE, lit, the opening facing the camera) and
@@ -3067,11 +3065,14 @@ var UI = (function () {
 
     /* ---- geometry (CSS px), rebuilt on resize ----
        The three's row: foot centres at W/2 + j * D (j = -1, 0, 1), feet
-       on 99% of H, scaled sR about the foot (never wider than 0.3 W;
-       phones 0.27 W).
-       The push scales about P, between the left and the middle candle. */
+       on 99% of H, scaled sR about the foot (never wider than 0.3 W).
+       Phones: D = 0.40 W, sR 1.2 (never wider than 0.32 W), so the outer
+       two are cut a little by the screen's edges and the middle one has
+       room to grow.
+       The push scales about P, between the left and the middle candle:
+       x2.4 at the end (phones x3.2, KP). */
     var W = 1, H = 1, dpr = 1, hC = 300, Rw = 1, cyW = 1, svh = 1, phone = false;
-    var D = 1, sR = 1, Px = 0, Py = 0;
+    var D = 1, sR = 1, Px = 0, Py = 0, KP = 1.4;
     var fw = new Float32Array(NF), fh = new Float32Array(NF), fx = new Float32Array(NF), fy = new Float32Array(NF);
     function build() {
       W = Math.max(1, stage.clientWidth); H = Math.max(1, stage.clientHeight);
@@ -3089,8 +3090,9 @@ var UI = (function () {
         fx[f] = -(un ? U_AX : T_AX) * fw[f];
         fy[f] = -(un ? U_AY : T_AY) * fh[f];
       }
-      D = (phone ? 0.33 : 0.34) * W;
-      sR = Math.min(phone ? 1.45 : 1.7, (phone ? 0.27 : 0.3) * W / fw[FACE]);
+      D = (phone ? 0.40 : 0.34) * W;
+      sR = Math.min(phone ? 1.2 : 1.7, (phone ? 0.32 : 0.3) * W / fw[FACE]);
+      KP = phone ? 2.2 : 1.4;
       Px = W / 2 - D / 2; Py = 0.55 * H;
       sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
       sec.style.setProperty("--push-oy", "55%");
@@ -3114,7 +3116,7 @@ var UI = (function () {
       last[key] = s;
       el.style.setProperty(name, s);
     }
-    var lastBridge = null, lastHold = "";
+    var lastBridge = null, lastHold = "", gone = false;
 
     function update(p) {
       if (entry.disabled) return;
@@ -3175,17 +3177,22 @@ var UI = (function () {
       /* the velvet follows the camera (the CSS scales it by 1 + 0.12 --push) */
       put(sec, "push", "--push", push);
 
-      /* held in place while the talks section rises over it (only when that
-         section is pinned over it: on phones it is a strip) */
-      /* the stage's sticky run ends 100svh before the track does (680 of 780) */
+      /* held in place to the end of the track: the stage's sticky run ends
+         100svh before the track does (680 of 780), and the ending (the
+         row, the push) plays in those last 100svh. On desktop the pinned
+         talks section rises under it there; on phones (the talks a reel,
+         not pinned) the reel's first card scrolls up under it while it
+         fades (--spk-said-gone below), so it is held there too */
       var HOLD = U - 100;
-      var hold = (keysSec && keysSec.getAttribute("data-spk-keys-mode") === "pin" && uT > HOLD)
+      var hold = uT > HOLD
         ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
       /* phones: no pinned talks to hand to (--spk-keys-gone is never
          written there), so the stage fades itself out over the track's
          last 40svh and the reel's first card arrives on a clean frame */
       put(sec, "phoneGone", "--spk-said-gone", phone ? clamp((uT - (U - 40)) / 40) : 0);
+      /* faded out and held over the reel's first card: nothing to draw */
+      gone = phone && uT >= U;
       wake();
     }
 
@@ -3302,7 +3309,7 @@ var UI = (function () {
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
       /* the camera: k about P, multiplied into every candle's transform */
-      var k = 1 + 1.4 * push;
+      var k = 1 + KP * push;
       var gr = 0.55 * hC, fyL = -0.94 * hC;
       poses.length = 0; c0 = null;
       for (var i = 0; i < NP; i++) {
@@ -3369,7 +3376,7 @@ var UI = (function () {
     var raf = 0, onScreen = false;
     function tick(now) {
       raf = 0;
-      if (entry.disabled || !onScreen || document.hidden) return;
+      if (entry.disabled || !onScreen || document.hidden || gone) return;
       var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
       draw(now);
       if (prof) {
@@ -3378,12 +3385,12 @@ var UI = (function () {
         if (cost.length > 240) cost.shift();
         var fl = [];
         for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
-        window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + 1.4 * push).toFixed(3),
+        window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + KP * push).toFixed(3),
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
       raf = requestAnimationFrame(tick);
     }
-    function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden) raf = requestAnimationFrame(tick); }
+    function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden && !gone) raf = requestAnimationFrame(tick); }
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } } else wake();
     });
