@@ -102,7 +102,7 @@
       "type": "keys",
       "id": "keynotes",
       "enabled": true,
-      "heading": "Three talks, for people, teams and organizations.",
+      "heading": "Three videos of Stephen speaking",
       "settings": null,
       "video": {
         "src1080": "assets/video/reel-1080.mp4",
@@ -114,10 +114,10 @@
         "label": "English"
       },
       "indexLabel": "Keynotes",
-      "hearLabel": "Hear Stephen on this",
+      "hearLabel": "Watch Stephen speak",
       "pauseLabel": "Pause",
       "rest": {
-        "src": "assets/img/keys-stage-1664.webp",
+        "src": "assets/img/on stage.png",
         "sizes": "100vw"
       },
       "talks": [

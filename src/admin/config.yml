@@ -580,7 +580,7 @@ collections:
               - { label: Heading, name: heading, widget: string }
               - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - { label: "Tab list aria label", name: indexLabel, widget: string, default: Keynotes }
-              - { label: '"Hear this" button label', name: hearLabel, widget: string, default: "Hear Stephen on this" }
+              - { label: '"Hear this" button label', name: hearLabel, widget: string, default: "Watch Stephen speak" }
               - { label: Pause button label, name: pauseLabel, widget: string, default: Pause }
               - label: "Rest image (before any talk plays)"
                 name: rest
@@ -635,7 +635,7 @@ collections:
                     widget: object
                     required: false
                     fields:
-                      - { label: "Heading-alone stage length (svh)", name: head, widget: number, required: false, hint: "Default: 50" }
+                      - { label: "Heading-alone stage length (svh)", name: head, widget: number, required: false, hint: "Default: 90" }
                       - { label: "Scroll per talk panel (svh)", name: panel, widget: number, required: false, hint: "Default: 80" }
 
           # ----------------------------------------------------------- chap

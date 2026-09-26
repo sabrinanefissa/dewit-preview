@@ -1556,11 +1556,11 @@ var UI = (function () {
 
 /* ===== 2. Keynotes: N talks on a pinned stage, the scroll wipes between them ===
    One instance per .spk-keys. N = the panels in the markup (2-5); the
-   phase lengths come from the section's data-head (50) and data-panel (80),
-   so U = head + N * panel + 50 (340 for three talks) and the CSS track is
+   phase lengths come from the section's data-head (90) and data-panel (80),
+   so U = head + N * panel + 50 (380 for three talks) and the CSS track is
    U + 100svh (--panels, --head-svh, --panel-svh on the section).
-   The section is a pinned stage (the track is 440svh, the stage sticky
-   inside it for 340svh of scroll). It rises over the last 60svh of the
+   The section is a pinned stage (the track is 480svh, the stage sticky
+   inside it for 380svh of scroll). It rises over the last 60svh of the
    candle wheel's held stage, so there is no grow any more: the ground is
    full-bleed from the start (--rise and --g are written once, at 1) and
    always up (--reveal 1); it rises UNDER the wheel's stage (z 3), whose
@@ -1568,20 +1568,22 @@ var UI = (function () {
    section), so the talks show in the gap between the candles, which stay
    in front and scroll away. This module registers ONE entry
    with the spine and has no scroll listener of its own; update(p) turns p
-   into svh of scroll (u = p * 340) and writes the phases as custom
+   into svh of scroll (u = p * 380) and writes the phases as custom
    properties:
      0-60     the wheel's velvet fades out over the ground
               (--spk-keys-reveal on the wheel's section; --reveal stays 1)
-     0-50     the heading alone (--head: in over the first 15svh, a
-              crossfade with the candle wheel's own lines; out over the
-              first 40svh of talk 01)
-     50-130   talk 01
-     130-210  talk 02 wipes in from the right (--wi over the first 40%)
-     210-290  talk 03 wipes in from the right
-     290-340  hold, while the room section rises over the stage
+     40-70    the wheel's candles fade out as they slide (--spk-keys-gone
+              on the wheel's section)
+     0-90     the heading alone (--head: in over 63-81, 70%-90% of the
+              head, once the candles have faded; held to 90; out over
+              the first 40svh of talk 01)
+     90-170   talk 01
+     170-250  talk 02 wipes in from the right (--wi over the first 40%)
+     250-330  talk 03 wipes in from the right
+     330-380  hold, while the room section rises over the stage
    (in general: talk k occupies head + k * panel ... head + (k + 1) * panel)
    A talk becomes the live one when its wipe is half done; only the live
-   panel's ring is interactive. "Hear Stephen on this" plays that talk's
+   panel's ring is interactive. "Watch Stephen speak" plays that talk's
    segment of the reel WITH SOUND on the one shared <video>, full-bleed
    above the pictures; the video is seen only while a clip plays.
    Only one audio source is ever running: pressing a talk claims the audio
@@ -1693,7 +1695,9 @@ var UI = (function () {
       b.setAttribute("data-state", on ? "pause" : "play");
       b.setAttribute("aria-pressed", on ? "true" : "false");
       var l = b.querySelector(".spk-keys__hearlabel");
-      if (l) l.textContent = on ? "Pause" : "Hear Stephen on this";
+      /* the block's own label (hearLabel), kept from the markup */
+      if (l && !l.hasAttribute("data-label")) l.setAttribute("data-label", l.textContent);
+      if (l) l.textContent = on ? "Pause" : l.getAttribute("data-label");
     }
     /* The out point is watched on a frame callback, not on timeupdate, which
        fires about four times a second and would overshoot the line. */
@@ -1805,7 +1809,7 @@ var UI = (function () {
 
     /* Reduced motion: no pin, no grow, no wipe. All the talks are present
        one under another, and the index stops being a tablist. The one thing
-       that still works on a click is "Hear Stephen on this". Without the
+       that still works on a click is "Watch Stephen speak". Without the
        spine there is nothing to drive the stage, so it stacks too. */
     if (reduce || !window.spkSpine) {
       sec.classList.add("is-stacked");
@@ -1848,9 +1852,9 @@ var UI = (function () {
 
     /* ---- the stage: one spine entry ---- */
     function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
-    var HEAD  = num("data-head", 50);             /* svh: the heading alone */
+    var HEAD  = num("data-head", 90);             /* svh: the heading alone */
     var PANEL = num("data-panel", 80);            /* svh: one talk */
-    var U = HEAD + N * PANEL + 50;                /* svh of scroll across the pin (340 for three) */
+    var U = HEAD + N * PANEL + 50;                /* svh of scroll across the pin (380 for three) */
     /* the candle wheel this stage rises over: the section right before it */
     var said = sec.previousElementSibling;
     if (said && !said.classList.contains("spk-said")) said = null;
@@ -1866,10 +1870,10 @@ var UI = (function () {
     function update(p) {
       if (entry.disabled) return;
       var u = p * U, k;
-      /* the heading waits until the wheel's second line has left (it fades over
-         the first 24svh of the reveal), then rises over 24–40 (for a 50svh
-         head: 48%-80% of it); it leaves over the first half of talk 01 */
-      var hd = u < HEAD ? smooth(clamp((u - 0.48 * HEAD) / (0.32 * HEAD)))
+      /* the heading waits until the wheel's candles have faded (u 40-70),
+         then rises over 70%-90% of the head (63-81 for a 90svh head) and
+         holds to its end; it leaves over the first half of talk 01 */
+      var hd = u < HEAD ? smooth(clamp((u - 0.7 * HEAD) / (0.2 * HEAD)))
                         : 1 - smooth(clamp((u - HEAD) / (0.5 * PANEL)));
       var on = u >= HEAD;
       /* talk k (k >= 1) wipes in over the first 40% of its own phase */
@@ -1882,8 +1886,14 @@ var UI = (function () {
       put(ground, "reveal", "--reveal", 1);
       /* the wheel's velvet, veil and window lines leave with the hand-off
          (module 7's CSS reads it, on the wheel's own section) */
-      if (wheel) put(said, "rootReveal", "--spk-keys-reveal", rv);
-      else if (last.rootReveal) { if (said) said.style.removeProperty("--spk-keys-reveal"); last.rootReveal = ""; }
+      /* ...and then its candles fade out as they slide (u 40-70) */
+      if (wheel) {
+        put(said, "rootReveal", "--spk-keys-reveal", rv);
+        put(said, "rootGone", "--spk-keys-gone", clamp((u - 40) / 30));
+      } else if (last.rootReveal) {
+        if (said) { said.style.removeProperty("--spk-keys-reveal"); said.style.removeProperty("--spk-keys-gone"); }
+        last.rootReveal = ""; last.rootGone = "";
+      }
       put(head, "head", "--head", hd);
       box.classList.toggle("is-on", on);
       index.classList.toggle("is-on", on);
@@ -1967,7 +1977,7 @@ var UI = (function () {
       entry.disabled = (m !== "pin");
       if (m !== "pin") {
         ground.style.removeProperty("--reveal");
-        if (said) said.style.removeProperty("--spk-keys-reveal");
+        if (said) { said.style.removeProperty("--spk-keys-reveal"); said.style.removeProperty("--spk-keys-gone"); }
       }
       if (m === "pin") {
         last = {};
@@ -2658,7 +2668,8 @@ var UI = (function () {
      680-780  the stage is held (only while the talks section is pinned
               and rises under it); the velvet fades, the talks show in the
               gap, the candles stay in front (z 3, no pointer events) and
-              then scroll away
+              scroll away, fading out over the talks' u 40-70
+              (--spk-keys-gone, from module 2)
    Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
    crossfaded as it lights (600ms; dark at once, 80ms). Only the current
    candle is lit in the beats, the three from the rise on; a lit flame

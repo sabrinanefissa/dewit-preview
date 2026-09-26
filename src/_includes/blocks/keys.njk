@@ -1,19 +1,19 @@
 {%- from "place.njk" import placeStyle %}
   <!-- ==============================================================
-       3. KEYNOTES - a pinned stage. The track is 440svh; the stage
-       inside it is sticky for 340svh of scroll. The section rises over
+       3. KEYNOTES - a pinned stage. The track is 480svh; the stage
+       inside it is sticky for 380svh of scroll. The section rises over
        the last 60svh of the candle wheel's stage, and its full-bleed
        ground fades in over the first 60svh of its own scroll, out of
        the wheel's push between its candles. Phases:
-         0-50     the heading alone over the full-bleed ground (it takes
-                  over, in place, from the candle wheel's copy)
-         50-130   talk 01
-         130-210  talk 02 wipes in from the right
-         210-290  talk 03 wipes in from the right
-         290-340  hold, while the room section rises over the stage
+         0-90     the heading alone over the full-bleed ground: the wheel's
+                  candles fade out over 40-70, then it rises over 63-81
+         90-170   talk 01
+         170-250  talk 02 wipes in from the right
+         250-330  talk 03 wipes in from the right
+         330-380  hold, while the room section rises over the stage
        Each talk is one full-screen picture carrying only its title and
-       its one line, with one play ring under them (bottom-left). "Hear
-       Stephen on this" plays that talk's segment of the reel with sound,
+       its one line, centred, with one play ring under them. "Watch
+       Stephen speak" plays that talk's segment of the reel with sound,
        full-bleed, on the one shared <video> above the pictures. The
        three panel pictures are placeholders: the reel stills at 1:50 /
        2:06 / 2:24 replace them once exported.
@@ -24,7 +24,7 @@
        Phones: no pin, a horizontal snap strip of the three talks.
        Reduced motion and no script: the three talks stacked.
        ============================================================== -->
-  {%- set head = block | motion('head', 50) %}{% set panel = block | motion('panel', 80) %}
+  {%- set head = block | motion('head', 90) %}{% set panel = block | motion('panel', 80) %}
   <section class="spk-keys"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-head="{{ head }}" data-panel="{{ panel }}" style="--panels:{{ block.talks.length }};--head-svh:{{ head }};--panel-svh:{{ panel }}">
     <div class="spk-keys__track">
       <div class="spk-keys__stage">
