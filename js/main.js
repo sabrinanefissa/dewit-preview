@@ -3175,12 +3175,14 @@ var UI = (function () {
       if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
 
       /* lit: the current candle only during the beats (candle 0 from the
-         intro's settle, t > 0.5); the three from the rise on (g > 0.2),
-         through the end. A filler is lit only as one of the three. */
+         intro's settle, t > 0.5; on phones it rises already lit, so the
+         first candle seen is the same as every other); the three from the
+         rise on (g > 0.2), through the end. A filler is lit only as one of
+         the three. */
       var now = performance.now();
       var rise = g > 0.2;
       for (var i = 0; i < NP; i++) {
-        var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST) && tI > 0.5) ? 1 : 0;
+        var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST) && (phone || tI > 0.5)) ? 1 : 0;
         if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
         else if (to !== litTo[i]) { litFrom[i] = L[i]; litTo[i] = to; litT0[i] = now; }
       }
