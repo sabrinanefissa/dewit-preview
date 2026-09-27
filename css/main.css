@@ -2090,7 +2090,7 @@ html.no-js .spk-said__candle { display:none; }
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
 /* A alone, high: one row from 6% down, above the resting candle's flame,
    so the lifting row of three covers it */
-.spk-said.is-wheel .spk-said__win--a { z-index:1; top:6%; height:2.2em; }
+.spk-said.is-wheel .spk-said__win--a { z-index:1; }
 /* the key word of each ending line in the italic face */
 .spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
@@ -2109,6 +2109,19 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__nextB { max-width: 15ch; min-height: 2.08em;
   transform: translateY(calc((1 - var(--roll, 0)) * 100%));
   opacity: calc(1 - min(1, var(--spk-keys-reveal, 0) * 2.5)); }
+/* desktop: both windows high (11%) and two rows tall at a size that fits
+   ("You don't need / more resilience."), above the row's flames (31%) */
+@media (min-width: 769px) {
+  .spk-said.is-wheel .spk-said__win { top:11%; font-size: clamp(2.6rem, 4.4vw, 5rem); height: auto;
+    overflow:visible; clip-path:none; }
+  .spk-said.is-wheel .spk-said__nextA { padding-top: 0;
+    transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
+    opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
+  .spk-said.is-wheel .spk-said__nextB { min-height:0;
+    transform: translateY(calc((1 - var(--nb, 0)) * 16px));
+    opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
+}
+
 /* Phones: smaller type in the same two-row window, high on the screen
    (top 9%): the one candle grows under it until its wax fills the frame,
    so B carries a shadow over the wax. B is two rows at 13ch (at 11ch
@@ -2156,12 +2169,24 @@ html.no-js .spk-said__candle { display:none; }
      candle passes over it), B pinned in front of it (z 4) */
   .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
 }
+/* Desktop: each line's picture, lit by the flame: a wide window between
+   the line (11-20%) and the flame (49% at rest), its edges feathered into
+   the velvet and its bottom brightest, where the flame is; behind the
+   canvas, following its line (--on) */
+@media (min-width: 769px) {
+  .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
+  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:21%; width: min(64vw, 76svh); height: 30svh;
+    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 45%;
+    -webkit-mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
+            mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
+    filter: brightness(1.05) saturate(1.05) sepia(.12); opacity: calc(var(--on, 0) * .95); }
+}
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
   transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
 /* The lines: centred above the top candle's flame on every beat, the
    bridge included (it keeps its own typography). */
-.spk-said.is-wheel .spk-said__lines { position:absolute; left:50%; top:22%; margin:0;
+.spk-said.is-wheel .spk-said__lines { position:absolute; left:50%; top:11%; margin:0;
   width: calc(100% - 32px); transform: translate(-50%, 0);
   justify-items:center; text-align:center; row-gap:0; }
 .spk-said.is-wheel .spk-said__line { grid-area: 1 / 1; opacity: var(--on, 0);
@@ -2700,7 +2725,7 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
 .spk-said.is-wheel .place--h { --pdx:50%; --pdy:12%; --pda:center; --pdj:center; }
 .spk-said.is-wheel .place--h .spk-said__h { position:relative; left:auto; top:auto; width:auto;
   transform:none; text-align:inherit; }
-.spk-said.is-wheel .place--lines { --pdx:50%; --pdy:22%; --pdy-m:16%; --pda:center; --pdj:center; }
+.spk-said.is-wheel .place--lines { --pdx:50%; --pdy:11%; --pdy-m:16%; --pda:center; --pdj:center; }
 .spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
   transform:none; text-align:inherit; justify-items: var(--place-j); }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:9%; --pda:center; --pdj:center; }

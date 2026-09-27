@@ -3787,8 +3787,9 @@ var UI = (function () {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       phone = phoneMq.matches;
-      if (phone !== tall) {
-        pickSet(phone);
+      /* the tall candle everywhere (desktop too, as on phones) */
+      if (!tall) {
+        pickSet(true);
         /* the other set was already loading: fetch this one instead */
         if (loaded450) { imgs = [[], []]; loadSet(0); if (loaded900) loadSet(1); }
       }
@@ -3797,7 +3798,7 @@ var UI = (function () {
          beat): "Three talks." comes up 24svh after line 06 is in */
       B0 = phone ? (N - 0.6) * BEAT : (N - 0.5) * BEAT;
       U = INTRO + B0 + GROW + (phone ? 100 : 60 + FADE_D);
-      hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(520, H * 0.44));
+      hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(600, H * 0.50));
       Rw = W * (phone ? 0.44 : 0.40);
       cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
       svh = track.offsetHeight / U;
@@ -3810,7 +3811,9 @@ var UI = (function () {
       }
       D = (phone ? 0.40 : 0.34) * W;
       /* phones: no row, so sR is the intro's rise only */
-      sR = phone ? 1.15 : Math.min(1.7, 0.3 * W / fw[FACE]);
+      /* desktop: the row stands with its flames at 33% of H, under the
+         ending's lines (which sit at 11-27%), never cut by the top */
+      sR = phone ? 1.15 : Math.min(0.66 * H / (FL * hC), 0.3 * W / fw[FACE]);
       KP = phone ? 0 : 1.4;
       Px = W / 2 - D / 2; Py = 0.55 * H;
       sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
@@ -3909,14 +3912,17 @@ var UI = (function () {
          (0.35-0.62) until their wax covers it (A is behind the canvas); it
          fades out under them (0.55-0.68); then B rolls up into its own
          window in front of the wax (0.6-0.78) */
-      put(nextA, "na", "--na", phone ? smooth(clamp(g / 0.06))
-                                      : smooth(clamp(g / 0.1)) * (1 - smooth(clamp((g - 0.55) / 0.13))));
+      /* desktop: A (high, fully on screen) while the three rise into their
+         row under it; then A fades out rising (0.40-0.50) and B fades in
+         rising in the same place, in front (0.48-0.60) */
+      put(nextA, "na", "--na", phone ? smooth(clamp(g / 0.06)) : smooth(clamp(g / 0.1)));
       put(nextA, "rollA", "--roll", 0);
-      put(nextB, "rollB", "--roll", phone ? 0 : smooth(clamp((g - 0.6) / 0.18)));
+      put(nextB, "rollB", "--roll", 0);
+      /* A out rising, then B in rising, in the same place; nothing clipped */
+      var nao = phone ? smooth(clamp((g - 0.38) / 0.10)) : smooth(clamp((g - 0.40) / 0.10));
+      put(nextA, "nao", "--nao", nao);
+      put(nextB, "nb", "--nb", phone ? smooth(clamp((g - 0.44) / 0.12)) : smooth(clamp((g - 0.48) / 0.12)));
       if (phone) {
-        var nao = smooth(clamp((g - 0.38) / 0.10));
-        put(nextA, "nao", "--nao", nao);
-        put(nextB, "nb", "--nb", smooth(clamp((g - 0.44) / 0.12)));
         /* the lit picture between A and the flame follows A (the CSS reads
            these on the section) */
         put(sec, "gna", "--glow-na", smooth(clamp(g / 0.06)));
@@ -4066,7 +4072,7 @@ var UI = (function () {
       /* the three rise from their rim poses to the row over g 0.1-0.4,
          then the row lifts 0.26 H over g 0.35-0.62, over "Three talks." */
       var r = smooth(clamp((g - 0.1) / 0.3));
-      var lift = phone ? 0 : 0.26 * H * smooth(clamp((g - 0.35) / 0.27));
+      var lift = 0;
       /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
          x2, linear with an ease-in over the first 8% of its p only, about
          the point PIV hC up its axis, which itself travels up to PIV_Y H on
