@@ -268,8 +268,10 @@ html.no-js .loader, .loader[hidden] { display:none; }
 
 /* The photo: the whole screen, graded */
 .station .still { position:absolute; inset:0; z-index:2; margin:0; overflow:hidden; isolation:isolate; background: var(--plum-2);
-  clip-path: circle(calc(var(--reveal, 0) * 75vmax) at var(--hx, 50%) var(--hy, 50%));
-  will-change: clip-path; }
+  /* surfacing out of the light: a feathered circle, never a hard edge */
+  -webkit-mask-image: radial-gradient(circle calc(8vmax + var(--reveal, 0) * 110vmax) at var(--hx, 50%) var(--hy, 50%), #000 55%, transparent 100%);
+          mask-image: radial-gradient(circle calc(8vmax + var(--reveal, 0) * 110vmax) at var(--hx, 50%) var(--hy, 50%), #000 55%, transparent 100%);
+  opacity: var(--reveal, 0); }
 .station .still .pic, .station .still img { display:block; width:100%; height:100%; }
 .station .still img { object-fit:cover; filter: contrast(1.06) saturate(.82) brightness(.9);
   transform: scale(var(--dolly, 1)); transform-origin: var(--hx, 50%) var(--hy, 50%); will-change: transform; }
@@ -342,7 +344,7 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .thread.is-static .station, html.no-js .station { position:relative; inset:auto; visibility:visible; pointer-events:auto;
   clip-path:none; opacity:1; transform:none; will-change:auto;
   display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap:1.5rem 24px; align-items:end; }
-.thread.is-static .station .still, html.no-js .station .still { position:relative; inset:auto; clip-path:none; will-change:auto; grid-row:1;
+.thread.is-static .station .still, html.no-js .station .still { position:relative; inset:auto; -webkit-mask-image:none; mask-image:none; opacity:1; grid-row:1;
   grid-column: 1 / 6; width:auto; height:auto; aspect-ratio: 5 / 4; transform:none;
   -webkit-mask-image:none; mask-image:none; border:2px solid rgba(245,240,231,.10); border-radius:4px; }
 .thread.is-static .station.is-pillar .still, html.no-js .station.is-pillar .still { grid-column: 1 / 7; }

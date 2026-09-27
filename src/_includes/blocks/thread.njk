@@ -12,7 +12,7 @@
   {%- set beatPhone = block | motion('beatPhone', 130) %}
   {%- set tail = block | motion('tail', 100) %}
   {%- set bid = block.id or 'thread' %}
-  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-tail="{{ tail }}" data-zoom="{{ block | motion('zoom', 14) }}" data-zoom-phone="{{ block | motion('zoomPhone', 14) }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--tail:{{ tail }};--grade:{{ block | motion('grade', 0.6) }}">
+  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-tail="{{ tail }}" data-zoom="{{ block | motion('zoom', 7) }}" data-zoom-phone="{{ block | motion('zoomPhone', 7) }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--tail:{{ tail }};--grade:{{ block | motion('grade', 0.6) }}">
     <div class="thread__track">
       <div class="thread__stage">
         <canvas class="thread__sky" aria-hidden="true"></canvas>

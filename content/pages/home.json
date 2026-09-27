@@ -117,8 +117,8 @@
         "motion": {
           "beat": 150,
           "beatPhone": 150,
-          "zoom": 14,
-          "zoomPhone": 14,
+          "zoom": 7,
+          "zoomPhone": 7,
           "tail": 100,
           "dolly": 1.04,
           "grade": 0.6

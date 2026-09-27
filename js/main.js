@@ -285,8 +285,8 @@ var UI = (function () {
 
     var N = stations.length;
     /* how far the camera flies into a star (the field's zoom at the bottom of the dive) */
-    var ZFD = parseFloat(sec.getAttribute("data-zoom")) || 14;
-    var ZFP = parseFloat(sec.getAttribute("data-zoom-phone")) || 14;
+    var ZFD = parseFloat(sec.getAttribute("data-zoom")) || 7;
+    var ZFP = parseFloat(sec.getAttribute("data-zoom-phone")) || 7;
     var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
     var phone = window.matchMedia("(max-width: 767px)");
     var saveData = !!(navigator.connection && navigator.connection.saveData);
@@ -367,71 +367,36 @@ var UI = (function () {
     var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0, DIM = 0.22;
     /* the camera glides after the scroll: uS chases u (time constant GLIDE),
        so a wheel notch or a flick is one continuous flight, never a jump */
-    var uS = -1, lastT = 0, lastF = 0, vel = 0, GLIDE = 0.16;
+    var uS = -1, lastT = 0, lastF = 0, vel = 0, GLIDE = 0.28;
 
-    /* the flight's star streaks: fixed points in a tunnel, each an angle,
-       a distance off the axis and a depth; the dive moves the eye down the
-       tunnel (by f), so the streaks are a function of the scroll and run
-       backwards on the way out */
-    var dust = [];
-    (function () {
-      var sd = 7;
-      function rnd() { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }
-      for (var q = 0; q < 170; q++) dust.push({ a: rnd() * 6.2832, r: 0.07 + 0.93 * Math.sqrt(rnd()), z: rnd(), w: 0.6 + rnd() });
-    })();
-
+    /* the flight: no spikes, no flash. The star swells into a soft
+       champagne light, like breathing in; inside it the light is a warm
+       haze that never goes past a gentle wash, and the photo surfaces out
+       of it with a feathered edge */
     function drawFlight(hx, hy, f, sunA, flood, gold, t) {
-      var c = sunCtx, D = Math.sqrt(W * W + H * H) / 2, k, g;
+      var c = sunCtx, D = Math.sqrt(W * W + H * H) / 2, g;
       c.setTransform(sunDpr, 0, 0, sunDpr, 0, 0);
       c.clearRect(0, 0, W, H);
       if (f <= 0.001 && flood <= 0.001) return;
-      c.globalCompositeOperation = "lighter";
-      /* the streaks: the other stars rushing past as the camera flies in */
-      var sa = Math.min(1, vel * 2.2) * (1 - flood) * Math.min(1, f * 6);
-      if (sa > 0.01) {
-        var travel = f * 3, len = Math.min(0.35, 0.04 + vel * 0.25), base = Math.min(W, H) * 0.3;
-        c.lineCap = "round";
-        for (k = 0; k < dust.length; k++) {
-          var d = dust[k], rel = d.z - travel; rel = rel - Math.floor(rel); rel = 0.03 + rel * 0.97;
-          var ca = Math.cos(d.a), sn = Math.sin(d.a);
-          var r1 = d.r * base / rel, r2 = d.r * base / (rel + len);
-          if (r2 > D * 1.2) continue;
-          var al = sa * (1 - rel) * (1 - rel) * 0.9;
-          if (al < 0.02) continue;
-          c.strokeStyle = "rgba(250,236,204," + al.toFixed(3) + ")";
-          c.lineWidth = d.w * (0.6 + 1.6 * (1 - rel));
-          c.beginPath(); c.moveTo(hx + ca * r2, hy + sn * r2); c.lineTo(hx + ca * r1, hy + sn * r1); c.stroke();
-        }
-      }
-      /* the star itself: a dot that becomes a sun, then fills the screen */
+      var tint = gold ? "240,210,150" : "244,222,180", deep = gold ? "196,150,80" : "206,170,110";
       if (sunA > 0.01 && f > 0.001) {
-        var R = 26 + D * 1.35 * Math.pow(f, 2.2);
-        var tint = gold ? "240,206,140" : "246,224,178", deep = gold ? "201,146,56" : "214,168,88";
+        var breath = 1 + 0.04 * Math.sin(t / 1400);
+        var R = (24 + D * 0.9 * Math.pow(f, 1.8)) * breath, a = sunA * (0.55 - 0.2 * f);
+        c.globalCompositeOperation = "lighter";
         g = c.createRadialGradient(hx, hy, 0, hx, hy, R);
-        g.addColorStop(0, "rgba(255,255,255," + sunA + ")");
-        g.addColorStop(0.07, "rgba(255,250,236," + (0.95 * sunA) + ")");
-        g.addColorStop(0.2, "rgba(" + tint + "," + (0.6 * sunA) + ")");
-        g.addColorStop(0.5, "rgba(" + deep + "," + (0.22 * sunA) + ")");
+        g.addColorStop(0, "rgba(255,246,228," + a.toFixed(3) + ")");
+        g.addColorStop(0.12, "rgba(" + tint + "," + (0.7 * a).toFixed(3) + ")");
+        g.addColorStop(0.4, "rgba(" + deep + "," + (0.25 * a).toFixed(3) + ")");
         g.addColorStop(1, "rgba(" + deep + ",0)");
         c.fillStyle = g; c.beginPath(); c.arc(hx, hy, R, 0, 6.2832); c.fill();
-        /* its rays, turning slowly */
-        var rl = R * 1.4, rot = t / 9000;
-        c.lineCap = "round";
-        for (k = 0; k < 8; k++) {
-          var an = rot + k * 0.7854 + (k % 2 ? 0.2 : 0), rr = rl * (k % 2 ? 0.6 : 1);
-          var lg = c.createLinearGradient(hx, hy, hx + Math.cos(an) * rr, hy + Math.sin(an) * rr);
-          lg.addColorStop(0, "rgba(255,246,226," + (0.5 * sunA) + ")");
-          lg.addColorStop(1, "rgba(" + tint + ",0)");
-          c.strokeStyle = lg; c.lineWidth = Math.max(1.5, R * 0.035) * (k % 2 ? 0.6 : 1);
-          c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx + Math.cos(an) * rr, hy + Math.sin(an) * rr); c.stroke();
-        }
+        c.globalCompositeOperation = "source-over";
       }
-      c.globalCompositeOperation = "source-over";
-      /* inside the star: its light fills the screen */
       if (flood > 0.001) {
-        g = c.createRadialGradient(hx, hy, 0, hx, hy, D * 1.2);
-        g.addColorStop(0, "rgba(255,250,238," + flood + ")");
-        g.addColorStop(1, "rgba(" + (gold ? "238,208,150" : "244,222,178") + "," + flood + ")");
+        var fa = 0.3 * flood;
+        g = c.createRadialGradient(hx, hy, 0, hx, hy, D * 1.1);
+        g.addColorStop(0, "rgba(" + tint + "," + fa.toFixed(3) + ")");
+        g.addColorStop(0.6, "rgba(" + deep + "," + (0.45 * fa).toFixed(3) + ")");
+        g.addColorStop(1, "rgba(" + deep + ",0)");
         c.fillStyle = g; c.fillRect(0, 0, W, H);
       }
     }
@@ -478,21 +443,20 @@ var UI = (function () {
           cx = fx + (h.x - fx) * tt; cy = fy + (h.y - fy) * tt;
         } else { cx = h.x; cy = h.y; }
         /* the dive: .12–.46 in (accelerating into the star), .80–1 out */
-        f = s < 0.8 ? eIO((s - 0.12) / 0.34) : 1 - eIO((s - 0.8) / 0.2);
+        f = s < 0.8 ? smooth((s - 0.12) / 0.36) : 1 - smooth((s - 0.8) / 0.2);
         z = Math.pow(mode === "phone" ? ZFP : ZFD, f);
         /* the photo opens out of the light, holds, and sinks back into it */
-        rev = s < 0.38 ? 0 : s < 0.52 ? eOut((s - 0.38) / 0.14) : s < 0.74 ? 1 : s < 0.86 ? 1 - eIn((s - 0.74) / 0.12) : 0;
-        dolly = s < 0.74 ? 1.1 - 0.1 * eOut((s - 0.38) / 0.36) : 1 + 0.06 * smooth((s - 0.74) / 0.12);
-        txt = smooth((s - 0.5) / 0.07) * (1 - smooth((s - 0.7) / 0.06));
-        sunA = s < 0.6 ? 1 - smooth((s - 0.44) / 0.12) : smooth((s - 0.7) / 0.08);
-        flood = s < 0.6 ? smooth((f - 0.6) / 0.4) * (1 - smooth((s - 0.44) / 0.12))
-                        : smooth((s - 0.7) / 0.08) * (1 - smooth((s - 0.84) / 0.1));
+        rev = s < 0.34 ? 0 : s < 0.54 ? smooth((s - 0.34) / 0.2) : s < 0.74 ? 1 : s < 0.88 ? 1 - smooth((s - 0.74) / 0.14) : 0;
+        dolly = s < 0.74 ? 1.05 - 0.05 * smooth((s - 0.34) / 0.4) : 1 + 0.03 * smooth((s - 0.74) / 0.14);
+        txt = smooth((s - 0.48) / 0.1) * (1 - smooth((s - 0.7) / 0.08));
+        sunA = s < 0.6 ? 1 - smooth((s - 0.4) / 0.16) : smooth((s - 0.72) / 0.12);
+        flood = s < 0.6 ? smooth((f - 0.5) / 0.5) * (1 - smooth((s - 0.42) / 0.16))
+                        : smooth((s - 0.72) / 0.1) * (1 - smooth((s - 0.84) / 0.14));
       } else {
         var e = u - N, last = spots[N - 1], b = eIO(e / 0.3);
         cx = last.x + (0.5 - last.x) * b; cy = last.y + (0.5 - last.y) * b;
       }
       cam.z = z; cam.cx = cx; cam.cy = cy;
-      vel += ((dt > 0 ? Math.abs(f - lastF) / dt : 0) - vel) * 0.25; lastF = f;
 
       /* the field */
       sky0.setCamera(z, cx * W, cy * H);
@@ -1390,9 +1354,9 @@ var UI = (function () {
       for (k = 0; k < spots.length; k++) {
         if (!V[n + k]) continue;
         var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
-        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 380);
+        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 900);
         /* the glow: a wide bloom, added light; it breathes while the star calls */
-        var hs = (16 + 30 * g + 34 * cl * beat);
+        var hs = (16 + 26 * g + 18 * cl * beat);
         ctx.globalCompositeOperation = "lighter";
         ctx.globalAlpha = Math.min(1, 0.18 + 0.82 * g);
         ctx.drawImage(s.gold ? bloomG : bloomL, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
@@ -1402,19 +1366,19 @@ var UI = (function () {
           ctx.drawImage(s.gold ? bloomG : bloomL, x - hw2 * iz, y - hw2 * iz, 2 * hw2 * iz, 2 * hw2 * iz);
         }
         ctx.globalAlpha = 1;
-        /* calling: rings of light going out of the star and fading */
+        /* calling: one slow, faint ring of light drifting out and fading */
         if (cl > 0.01) {
-          for (var q = 0; q < 3; q++) {
-            var ph = (now / 1600 + q / 3) % 1;
-            ctx.lineWidth = (2.2 - 1.4 * ph) * iz;
-            ctx.strokeStyle = (s.gold ? "rgba(240,206,140," : "rgba(246,224,178,") + (0.8 * cl * (1 - ph) * (1 - ph)).toFixed(3) + ")";
-            ctx.beginPath(); ctx.arc(x, y, (8 + 70 * eOutC(ph)) * iz, 0, 6.2832); ctx.stroke();
+          for (var q = 0; q < 2; q++) {
+            var ph = (now / 3200 + q / 2) % 1;
+            ctx.lineWidth = 1 * iz;
+            ctx.strokeStyle = (s.gold ? "rgba(240,210,150," : "rgba(244,224,184,") + (0.35 * cl * Math.sin(ph * 3.1416)).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(x, y, (10 + 46 * eOutC(ph)) * iz, 0, 6.2832); ctx.stroke();
           }
         }
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
         ctx.fillStyle = s.gold ? "#F3D08A" : "#FBEBC8";
-        ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4.5 : 3.5) + 1.2 * cl * beat) * iz, 0, 6.2832); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4 : 3.2) + 0.6 * cl * beat) * iz, 0, 6.2832); ctx.fill();
         ctx.globalAlpha = 1;
       }
 
