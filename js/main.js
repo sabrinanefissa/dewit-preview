@@ -227,192 +227,413 @@ var UI = (function () {
   var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
 })();
 
-/* ===== The through-line: one dot, carried by the scroll =====
-   One instance per section.thread; every part is found inside it. */
+/* ===== The through-line: "the wire" =====
+   A pinned stage (.thread__track > .thread__stage, sticky). One line runs
+   edge to edge (desktop: 62% down, a gentle S; phones: 84% down, straight)
+   with a stop per station, evenly spaced from 12% to 88% across. The
+   section registers ONE entry with the spine (window.spkSpine, module 0;
+   its own rAF scroll loop when the page has no spine): p runs 0 → 1 over
+   the pin, u = p * N, station i = floor(u), s = u - i, and each station's
+   s is split in three:
+     0   – .2  travel: the dot slides from stop i-1 to stop i and the drawn
+                line follows it; the outgoing still slides 60px back along
+                the wire and blurs out
+     .2  – .4  arrive: the still clips in from the wire upward, the idx,
+                kicker and label rise out of their masks, the gloss fades in
+     .4  – 1   hold: the still pushes in (--dolly 1 → data-dolly)
+   Only one station's still and words are on screen at a time. Everything
+   is scrubbed as custom properties per frame (--a arrive, --d depart,
+   --dolly); the one time-based touch is the gold bloom on the dot when it
+   lands on a pillar (600ms). Stops and their labels are the tablist (a
+   click scrolls to that station's s = .5); the dot can be dragged along
+   the wire; on phones a tap on the picture moves on to the next station.
+   Three modes, rebuilt when a media query flips: "pin", "phone" (< 768px)
+   and "static" (reduced motion and Save-Data: the stations stack under the
+   wire drawn full, no dot; html.no-js gets the same from the CSS). */
 (function () {
   "use strict";
-
-  var settle = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   [].slice.call(document.querySelectorAll("section.thread")).forEach(thread);
 
   function thread(sec) {
-    var inner    = sec.querySelector(".thread__inner");
+    var track    = sec.querySelector(".thread__track");
+    var stage    = sec.querySelector(".thread__stage");
     var svg      = sec.querySelector(".thread__svg");
-    var guide    = sec.querySelector(".thread__svg .guide");
+    var paths    = [].slice.call(sec.querySelectorAll(".thread__svg path"));
     var drawn    = sec.querySelector(".thread__svg .drawn");
+    var glow     = sec.querySelector(".thread__svg .glow");
     var pulse    = sec.querySelector(".pulse");
-    var rail     = sec.querySelector(".rail");
-    var railFill = rail && rail.querySelector("b");
+    var grip     = sec.querySelector(".thread__grip");
+    var tablist  = sec.querySelector(".thread__tabs");
+    var tabs     = [].slice.call(sec.querySelectorAll(".thread__tab"));
     var stations = [].slice.call(sec.querySelectorAll(".station"));
-    var dots     = stations.map(function (s) { return s.querySelector(".dot"); });
-    var stills   = stations.map(function (s) { return s.querySelector(".still"); });
-    var bgs      = [].slice.call(sec.querySelectorAll(".thread__bg img"));
-    if (!svg || !guide || !drawn) return;
+    if (!track || !stage || !svg || !drawn || !tablist || !tabs.length || tabs.length !== stations.length) return;
 
-    var mq = window.matchMedia("(max-width: 720px)");
-    /* the dot rides this fraction of the viewport (the section's data-cursor) */
-    var CURSOR = parseFloat(sec.getAttribute("data-cursor")) || 0.62;
-    var len = 0, ticking = false, active = -1;
+    var N = stations.length;
+    var DOLLY = parseFloat(sec.getAttribute("data-dolly")) || 1.04;
+    var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var phone = window.matchMedia("(max-width: 767px)");
+    var saveData = !!(navigator.connection && navigator.connection.saveData);
+    var pillar = stations.map(function (s) { return s.classList.contains("is-pillar"); });
+    var stills = stations.map(function (s) { return s.querySelector(".still"); });
+    var bodies = stations.map(function (s) { return s.querySelector(".body"); });
+    var labels = stations.map(function (s) { return s.querySelector(".label"); });
 
-    /* ---- build the path through the measured dot centres ---------- */
-    function build() {
-      var r = sec.getBoundingClientRect();
-      var w = Math.round(r.width), h = Math.round(r.height);
-      if (!w || !h) return;
-      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+    function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
-      /* the line enters at the top of the wrap and leaves at the bottom of the
-         section, so it reads as continuing from the hero card and into what follows */
-      var ir = inner.getBoundingClientRect();
-      var cx = ir.left - r.left + ir.width / 2;
-      var pts = dots.map(function (d) {
-        var b = d.getBoundingClientRect();
-        return { x: b.left - r.left + b.width / 2, y: b.top - r.top + b.height / 2 };
-      });
-      pts.unshift({ x: cx, y: 0 });
-      pts.push({ x: cx, y: h });
+    /* the authored wire (a straight line in a 1000 x 40 box): the static
+       mode and no script draw it full */
+    var AUTH_VB = svg.getAttribute("viewBox");
+    var AUTH_D  = drawn.getAttribute("d");
 
-      var d = "M " + pts[0].x.toFixed(2) + " " + pts[0].y.toFixed(2);
-      for (var i = 1; i < pts.length; i++) {
-        var a = pts[i - 1], b = pts[i], dy = (b.y - a.y) * 0.5;
-        d += " C " + a.x.toFixed(2) + " " + (a.y + dy).toFixed(2) +
-             " " + b.x.toFixed(2) + " " + (b.y - dy).toFixed(2) +
-             " " + b.x.toFixed(2) + " " + b.y.toFixed(2);
-      }
-      guide.setAttribute("d", d);
-      drawn.setAttribute("d", d);
-      len = drawn.getTotalLength();
-      drawn.style.strokeDasharray = len.toFixed(2);
-      apply();
+    /* the tablist as authored, so the static mode can strip it and put it back */
+    var TAB_ATTRS = ["role", "aria-selected", "aria-controls", "tabindex", "aria-label"];
+    var PANEL_ATTRS = ["role", "aria-labelledby"];
+    function snap(el, names) { var o = {}; names.forEach(function (n) { o[n] = el.getAttribute(n); }); return o; }
+    function put(el, saved) { for (var n in saved) { if (saved[n] === null) el.removeAttribute(n); else el.setAttribute(n, saved[n]); } }
+    var authored = {
+      list: snap(tablist, TAB_ATTRS),
+      tabs: tabs.map(function (t) { return snap(t, TAB_ATTRS); }),
+      panels: stations.map(function (s) { return snap(s, PANEL_ATTRS); })
+    };
+    function stripAria() {
+      TAB_ATTRS.forEach(function (n) { tablist.removeAttribute(n); });
+      tabs.forEach(function (t) { TAB_ATTRS.forEach(function (n) { t.removeAttribute(n); }); });
+      stations.forEach(function (s) { PANEL_ATTRS.forEach(function (n) { s.removeAttribute(n); }); });
+    }
+    function restoreAria() {
+      put(tablist, authored.list);
+      tabs.forEach(function (t, i) { put(t, authored.tabs[i]); });
+      stations.forEach(function (s, i) { put(s, authored.panels[i]); });
     }
 
-    /* ---- the path's control points are vertical, so its y only ever
-            increases: a binary search finds the length that sits at y ---- */
-    function lengthAtY(yT) {
+    /* ---- geometry: the wire, its stops, each still and its words ---- */
+    var mode = null, W = 0, H = 0, len = 0, wireY = 0;
+    var stopL = [], stopX = [], stopY = [];
+
+    function lengthAtX(x) {
       var lo = 0, hi = len, mid;
-      for (var i = 0; i < 22; i++) {
+      for (var i = 0; i < 24; i++) {
         mid = (lo + hi) / 2;
-        if (drawn.getPointAtLength(mid).y < yT) lo = mid; else hi = mid;
+        if (drawn.getPointAtLength(mid).x < x) lo = mid; else hi = mid;
       }
       return (lo + hi) / 2;
     }
 
-    /* ---- one station carries the ground, the passed ones stay lit -- */
-    function setActive(i) {
-      if (i === active) return;
-      active = i;
-      for (var k = 0; k < stations.length; k++) {
-        stations[k].classList.toggle("is-active", k === i);
-      }
-      for (var j = 0; j < bgs.length; j++) {
-        bgs[j].classList.toggle("is-on", j === i);
-      }
+    var PROPS = ["--sx", "--sw", "--sh", "--bx", "--bw", "--fs", "--a", "--d", "--dolly"];
+    function clearStation(k) {
+      PROPS.forEach(function (n) { stations[k].style.removeProperty(n); });
+      stations[k].classList.remove("is-on", "is-left");
+      cache[k] = {};
     }
 
-    function light(yT, top) {
-      var last = -1;
-      for (var i = 0; i < stations.length; i++) {
-        var b = dots[i].getBoundingClientRect();
-        if (b.top + b.height / 2 - top <= yT) {
-          stations[i].classList.add("is-lit");
-          last = i;
-        }
+    function layout() {
+      if (mode !== "pin" && mode !== "phone") return;
+      W = stage.clientWidth; H = stage.clientHeight;
+      if (!W || !H) return;
+      var ph = mode === "phone";
+      wireY = H * (ph ? 0.84 : 0.62);
+      var A = ph ? 0 : Math.min(26, H * 0.028);          /* the S: gentle, flat at both edges */
+      var d = "M 0 " + (wireY - A).toFixed(1) +
+              " C " + (W * 0.5).toFixed(1) + " " + (wireY - A).toFixed(1) +
+              " " + (W * 0.5).toFixed(1) + " " + (wireY + A).toFixed(1) +
+              " " + W + " " + (wireY + A).toFixed(1);
+      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+      paths.forEach(function (p) { p.setAttribute("d", d); });
+      len = drawn.getTotalLength();
+      [drawn, glow].forEach(function (p) { if (p) p.style.strokeDasharray = len.toFixed(1) + " " + (len + 20).toFixed(1); });
+
+      for (var k = 0; k < N; k++) {
+        var x = W * (0.12 + (N > 1 ? 0.76 * k / (N - 1) : 0.38));
+        var L = lengthAtX(x), pt = drawn.getPointAtLength(L);
+        stopL[k] = L; stopX[k] = pt.x; stopY[k] = pt.y;
+        tabs[k].style.setProperty("--x", pt.x.toFixed(1) + "px");
+        tabs[k].style.setProperty("--y", pt.y.toFixed(1) + "px");
       }
-      setActive(last < 0 ? 0 : last);
+      for (var j = 0; j < N; j++) { placeStation(j, ph); }
+      for (var f = 0; f < N; f++) { fitLabel(f, ph); }
     }
 
-    function parallax() {
-      if (settle) return;
-      var vh = window.innerHeight;
-      for (var i = 0; i < stills.length; i++) {
-        var b = stills[i].getBoundingClientRect();
-        var t = (b.top + b.height / 2) / vh;                 /* 0 top, 1 bottom */
-        var y = Math.max(-10, Math.min(10, (0.5 - t) * 20));
-        stills[i].style.transform = "translate3d(0," + y.toFixed(1) + "px,0)";
-      }
-    }
-
-    /* ---- the dot sits on the cursor line, the line is drawn to it -- */
-    function apply() {
-      var r = sec.getBoundingClientRect();
-      var h = r.height;
-      if (!h) return;
-
-      if (settle) {
-        if (len) drawn.style.strokeDashoffset = "0";
-        if (railFill) railFill.style.height = "100%";
-        for (var i = 0; i < stations.length; i++) {
-          stations[i].classList.add("is-lit");
-        }
-        setActive(0);
-        if (pulse) pulse.style.opacity = "0";
-        sec.style.setProperty("--px", "50%");
-        sec.style.setProperty("--py", (h / 2).toFixed(1) + "px");
+    /* desktop: the still hangs from the wire (bottom at 58%), its left edge
+       40px before its stop, kept 4vw inside the screen; its top clears the
+       nav and the eyebrow (7.5rem), so on a short screen the card flattens
+       from 5:4 rather than narrowing. The words sit right of it, or left
+       when there is no room. */
+    function placeStation(k, ph) {
+      var st = stations[k];
+      if (ph) {
+        ["--sx", "--sw", "--sh", "--bx", "--bw"].forEach(function (n) { st.style.removeProperty(n); });
+        st.classList.remove("is-left");
         return;
       }
-
-      var raw = window.innerHeight * CURSOR - r.top;   /* cursor, section relative */
-      var yT  = Math.min(h, Math.max(0, raw));
-      var px, py;
-
-      if (mq.matches) {
-        var rr = rail ? rail.getBoundingClientRect() : null;
-        px = rr ? rr.left - r.left + rr.width / 2 : r.width / 2;
-        py = yT;
-        if (railFill) railFill.style.height = yT.toFixed(2) + "px";
-      } else {
-        var s = len ? lengthAtY(yT) : 0;
-        if (len) drawn.style.strokeDashoffset = (len - s).toFixed(2);
-        var p = len ? drawn.getPointAtLength(s) : { x: r.width / 2, y: yT };
-        px = p.x; py = p.y;
-      }
-
-      if (pulse) {
-        pulse.style.transform = "translate3d(" + px.toFixed(2) + "px," + py.toFixed(2) + "px,0)";
-        pulse.style.opacity = (raw > 0 && raw < h) ? "1" : "0";
-      }
-      sec.style.setProperty("--px", px.toFixed(2) + "px");
-      sec.style.setProperty("--py", py.toFixed(2) + "px");
-
-      light(yT, r.top);
+      var m = W * 0.04, gap = Math.max(32, W * 0.03);
+      var w = Math.min(W * (pillar[k] ? 0.44 : 0.34), pillar[k] ? 640 : 520);
+      var h = Math.max(120, Math.min(w * 0.8, H * 0.58 - 120));
+      var left = Math.max(m, Math.min(stopX[k] - 40, W - m - w));
+      var rightRoom = W - m - (left + w + gap), leftRoom = left - gap - m;
+      var onLeft = rightRoom < 340 && leftRoom > rightRoom;
+      var bw = Math.min(onLeft ? leftRoom : rightRoom, 620);
+      var bx = onLeft ? left - gap - bw : left + w + gap;
+      st.style.setProperty("--sx", left.toFixed(1) + "px");
+      st.style.setProperty("--sw", w.toFixed(1) + "px");
+      st.style.setProperty("--sh", h.toFixed(1) + "px");
+      st.style.setProperty("--bx", bx.toFixed(1) + "px");
+      st.style.setProperty("--bw", bw.toFixed(1) + "px");
+      st.classList.toggle("is-left", onLeft);
     }
 
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-        apply(); parallax();
+    /* the label keeps its step (step-4, pillars step-5) unless its longest
+       word would overflow its column, or (phones) it would run past two
+       lines or into the wire; then it shrinks just enough */
+    function fitLabel(k, ph) {
+      var lab = labels[k], body = bodies[k];
+      if (!lab) return;
+      stations[k].style.removeProperty("--fs");
+      var f = parseFloat(window.getComputedStyle(lab).fontSize) || 48, n = 0;
+      function over() {
+        if (lab.scrollWidth > lab.clientWidth + 1) return true;
+        if (ph) {
+          var r = lab.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+          return lab.offsetHeight > f * 2.4 || (r.bottom - sr.top) > wireY - 26;
+        }
+        return body.offsetHeight > H * 0.58 - 120;
+      }
+      while (over() && f > 18 && n++ < 30) {
+        f = Math.floor(f * 0.94);
+        stations[k].style.setProperty("--fs", f + "px");
+      }
+    }
+
+    /* ---- the frame: p → one station on screen ---- */
+    var cache = stations.map(function () { return {}; });
+    function setP(k, name, v) {
+      var s = v.toFixed(4);
+      if (cache[k][name] === s) return;
+      cache[k][name] = s;
+      stations[k].style.setProperty(name, s);
+    }
+    var lastP = 0, cur = -1, lastLand = -1, bloomT = 0, lastDot = "";
+
+    function update(p) {
+      lastP = p;
+      if ((mode !== "pin" && mode !== "phone") || !len) return;
+      var u = clamp(p) * N;
+      var i = Math.min(N - 1, Math.floor(u));
+      var s = Math.min(1, u - i);
+      var t = smooth(clamp(s / 0.2));                 /* travel */
+      var a = smooth(clamp((s - 0.2) / 0.2));         /* arrive */
+      var h = clamp((s - 0.4) / 0.6);                 /* hold */
+
+      /* the dot, and the line drawn up to it */
+      var from = i === 0 ? 0 : stopL[i - 1];
+      var L = from + (stopL[i] - from) * t;
+      var pt = drawn.getPointAtLength(L);
+      var tf = "translate3d(" + pt.x.toFixed(1) + "px," + pt.y.toFixed(1) + "px,0)";
+      if (tf !== lastDot) {
+        lastDot = tf;
+        if (pulse) pulse.style.transform = tf;
+        if (grip) grip.style.transform = tf;
+        var off = (len - L).toFixed(1);
+        drawn.style.strokeDashoffset = off;
+        if (glow) glow.style.strokeDashoffset = off;
+      }
+
+      /* the stations: i arriving or holding, i-1 leaving while the dot travels */
+      for (var k = 0; k < N; k++) {
+        var on = false;
+        if (k === i) {
+          on = true;
+          setP(k, "--a", a); setP(k, "--d", 0); setP(k, "--dolly", 1 + (DOLLY - 1) * h);
+        } else if (k === i - 1 && t < 1) {
+          on = true;
+          setP(k, "--a", 1); setP(k, "--d", t); setP(k, "--dolly", DOLLY);
+        }
+        if (stations[k].classList.contains("is-on") !== on) stations[k].classList.toggle("is-on", on);
+      }
+
+      if (i !== cur) {
+        cur = i;
+        tabs.forEach(function (tb, k) {
+          tb.classList.toggle("is-on", k === i);
+          tb.setAttribute("aria-selected", k === i ? "true" : "false");
+          tb.setAttribute("tabindex", k === i ? "0" : "-1");
+        });
+      }
+      for (var q = 0; q < N; q++) {
+        var lit = q < i || (q === i && t >= 1);
+        if (tabs[q].classList.contains("is-lit") !== lit) tabs[q].classList.toggle("is-lit", lit);
+      }
+
+      /* a pillar's landing: the dot blooms gold for 600ms */
+      var land = t >= 1 ? i : -1;
+      if (land !== lastLand) {
+        lastLand = land;
+        if (land >= 0 && pillar[land] && pulse) {
+          clearTimeout(bloomT);
+          pulse.classList.add("is-bloom");
+          bloomT = setTimeout(function () { pulse.classList.remove("is-bloom"); }, 600);
+        }
+      }
+    }
+
+    /* ---- scroll positions ---- */
+    function startY() { return track.getBoundingClientRect().top + window.scrollY; }
+    function endY() { return startY() + track.offsetHeight - window.innerHeight; }
+    function yAtU(u) { var s0 = startY(), e0 = endY(); return s0 + (e0 - s0) * clamp(u / N); }
+    function yAt(k, s) { return yAtU(k + s); }
+    function go(y, immediate) {
+      y = Math.max(0, Math.round(y));
+      if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y, { immediate: !!immediate });
+      else window.scrollTo({ top: y, behavior: immediate ? "instant" : "smooth" });
+    }
+
+    /* x along the wire → u: through (0, 0), each stop at its station's
+       s = .5, and (W, N) */
+    function uAtX(x) {
+      var xs = [0].concat(stopX, [W]), us = [0];
+      for (var k = 0; k < N; k++) us.push(k + 0.5);
+      us.push(N);
+      if (x <= 0) return 0;
+      for (var j = 1; j < xs.length; j++) {
+        if (x <= xs[j]) return us[j - 1] + (us[j] - us[j - 1]) * (x - xs[j - 1]) / Math.max(1, xs[j] - xs[j - 1]);
+      }
+      return N;
+    }
+
+    /* ---- interaction ---- */
+    tabs.forEach(function (tb, k) {
+      tb.addEventListener("click", function () {
+        if (mode === "static") {
+          stations[k].scrollIntoView({ behavior: "auto", block: "start" });
+          return;
+        }
+        go(yAt(k, 0.5), false);
       });
-    }
-
-    /* ---- wiring ---------------------------------------------------- */
-    var rebuild = 0;
-    function queueBuild() {
-      clearTimeout(rebuild);
-      rebuild = setTimeout(build, 60);
-    }
-
-    build();
-    apply(); parallax();
-
-    if (!settle) {
-      window.addEventListener("scroll", onScroll, { passive: true });
-      window.addEventListener("resize", function () { queueBuild(); onScroll(); }, { passive: true });
-      if ("ResizeObserver" in window) new ResizeObserver(queueBuild).observe(sec);
-    }
-
-    window.addEventListener("load", function () { build(); apply(); parallax(); });
-    [].slice.call(sec.querySelectorAll("img")).forEach(function (im) {
-      if (!im.complete) im.addEventListener("load", queueBuild);
     });
+    tablist.addEventListener("keydown", function (e) {
+      if (mode === "static") return;
+      var k = tabs.indexOf(document.activeElement);
+      if (k < 0) return;
+      var n = e.key === "ArrowRight" || e.key === "ArrowDown" ? k + 1 :
+              e.key === "ArrowLeft" || e.key === "ArrowUp" ? k - 1 :
+              e.key === "Home" ? 0 : e.key === "End" ? N - 1 : -2;
+      if (n === -2) return;
+      e.preventDefault();
+      n = Math.max(0, Math.min(N - 1, n));
+      tabs[n].focus();
+      go(yAt(n, 0.5), false);
+    });
+
+    /* the dot can be dragged along the wire; on release it settles on the
+       nearest station */
+    var drag = null;
+    if (grip) {
+      grip.addEventListener("pointerdown", function (e) {
+        if (mode === "static") return;
+        e.preventDefault();
+        drag = { id: e.pointerId, u: lastP * N };
+        try { grip.setPointerCapture(e.pointerId); } catch (err) { /* old engines */ }
+        sec.classList.add("is-dragging");
+      });
+      grip.addEventListener("pointermove", function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var x = e.clientX - stage.getBoundingClientRect().left;
+        drag.u = uAtX(x);
+        go(yAtU(drag.u), true);
+      });
+      var end = function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var k = Math.max(0, Math.min(N - 1, Math.round(drag.u - 0.5)));
+        drag = null;
+        sec.classList.remove("is-dragging");
+        go(yAt(k, 0.5), false);
+      };
+      grip.addEventListener("pointerup", end);
+      grip.addEventListener("pointercancel", end);
+    }
+
+    /* phones: a tap on the picture moves on to the next station */
+    stage.addEventListener("click", function (e) {
+      if (mode !== "phone" || cur < 0) return;
+      var st = e.target.closest && e.target.closest(".still");
+      if (!st || !stations[cur].contains(st)) return;
+      if (cur < N - 1) go(yAt(cur + 1, 0.5), false);
+      else go(endY() + 2, false);
+    });
+
+    /* ---- modes ---- */
+    function reset() {
+      for (var k = 0; k < N; k++) clearStation(k);
+      tabs.forEach(function (tb) {
+        tb.classList.remove("is-on", "is-lit");
+        tb.style.removeProperty("--x"); tb.style.removeProperty("--y");
+      });
+      svg.setAttribute("viewBox", AUTH_VB);
+      paths.forEach(function (p) {
+        p.setAttribute("d", AUTH_D);
+        p.style.removeProperty("stroke-dasharray"); p.style.removeProperty("stroke-dashoffset");
+      });
+      if (pulse) { pulse.style.transform = ""; pulse.classList.remove("is-bloom"); }
+      if (grip) grip.style.transform = "";
+      len = 0; cur = -1; lastLand = -1; lastDot = "";
+    }
+
+    function setMode() {
+      var want = (rmq.matches || saveData) ? "static" : (phone.matches ? "phone" : "pin");
+      if (want === mode) return false;
+      if (mode === "static") restoreAria();
+      reset();
+      mode = want;
+      sec.classList.toggle("is-static", want === "static");
+      sec.classList.toggle("is-phone", want === "phone");
+      sec.classList.toggle("is-pin", want === "pin");
+      if (want === "static") stripAria();
+      else { layout(); update(lastP); }
+      if (window.spkSpine) window.spkSpine.measure();
+      return true;
+    }
+
+    /* ---- the scroll: the spine (module 0) when the page has one ---- */
+    var entry = { start: startY, end: endY, update: function (p) { update(p); } };
+    function register() {
+      if (window.spkSpine) { window.spkSpine.add(entry); return; }
+      var raf = 0;
+      var read = function () {
+        raf = 0;
+        var s0 = startY(), e0 = endY();
+        update(e0 > s0 ? clamp((window.scrollY - s0) / (e0 - s0)) : 0);
+      };
+      window.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(read); }, { passive: true });
+      read();
+    }
+
+    setMode();
+    /* the spine is set up further down this file: register once it exists */
+    setTimeout(register, 0);
+
+    var rsT = 0;
+    window.addEventListener("resize", function () {
+      clearTimeout(rsT);
+      rsT = setTimeout(function () {
+        if (setMode()) return;
+        layout(); update(lastP);
+        if (window.spkSpine) window.spkSpine.measure();
+      }, 60);
+    }, { passive: true });
+    [phone, rmq].forEach(function (q) {
+      if (q.addEventListener) q.addEventListener("change", setMode);
+      else if (q.addListener) q.addListener(setMode);
+    });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); update(lastP); });
+    window.addEventListener("load", function () { layout(); update(lastP); });
 
     /* exposed for verification: the first instance */
     if (!window.__thread) window.__thread = {
-      len: function () { return len; },
-      sAtY: lengthAtY,
-      active: function () { return active; },
-      cursor: CURSOR
+      mode: function () { return mode; },
+      current: function () { return cur; },
+      yAt: yAt,
+      stops: function () { return stopX.map(function (x, k) { return { x: x, y: stopY[k] }; }); },
+      N: N
     };
   }
 })();
