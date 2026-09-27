@@ -227,396 +227,334 @@ var UI = (function () {
   var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
 })();
 
-/* ===== The through-line: "the wire" =====
-   A pinned stage (.thread__track > .thread__stage, sticky). One line runs
-   edge to edge (desktop: 62% down, a gentle S; phones: 84% down, straight)
-   with a stop per station, evenly spaced from 12% to 88% across. The
-   section registers ONE entry with the spine (window.spkSpine, module 0;
-   its own rAF scroll loop when the page has no spine): p runs 0 → 1 over
-   the pin, u = p * N, station i = floor(u), s = u - i, and each station's
-   s is split in three:
-     0   – .2  travel: the dot slides from stop i-1 to stop i and the drawn
-                line follows it; the outgoing still slides 60px back along
-                the wire and blurs out
-     .2  – .4  arrive: the still clips in from the wire upward, the idx,
-                kicker and label rise out of their masks, the gloss fades in
-     .4  – 1   hold: the still pushes in (--dolly 1 → data-dolly)
-   Only one station's still and words are on screen at a time. Everything
-   is scrubbed as custom properties per frame (--a arrive, --d depart,
-   --dolly); the one time-based touch is the gold bloom on the dot when it
-   lands on a pillar (600ms). Stops and their labels are the tablist (a
-   click scrolls to that station's s = .5); the dot can be dragged along
-   the wire; on phones a tap on the picture moves on to the next station.
-   Three modes, rebuilt when a media query flips: "pin", "phone" (< 768px)
-   and "static" (reduced motion and Save-Data: the stations stack under the
-   wire drawn full, no dot; html.no-js gets the same from the CSS). */
+/* ===== The through-line: "the constellation" =====
+   A pinned stage (.thread__track > .thread__stage, sticky) over a star
+   field: canvas.thread__sky, drawn by the shared constellation
+   (window.spkConstellation, "--- Constellation ---" further down) with
+   one fixed star per idea. The section registers ONE entry with the spine
+   (module 0; a scroll listener when the page has none) and that entry only
+   stores p; everything else happens in one rAF loop that runs only while
+   the section is on screen and the page is visible.
+     u = p * (N + 1); station i = min(N - 1, floor(u)), s = u - i:
+       .00–.15 travel: the view slides from star i-1 (the first: the field's
+               centre) to star i at zoom 1, star i lights (glow 0 → 1) and
+               the line from star i-1 is drawn up to the view
+       .15–.35 zoom in on star i (1 → Z)
+       .35–.80 hold (Z → Z * 1.04, data-dolly); the card is fully open
+       .80–1   zoom out (→ 1); the star stays lit at .6
+     The card (.station.is-on) opens out of the star: --hx/--hy (the star
+     on screen) and --reveal (0 → 1 over s .18–.40, 1 → 0 over .80–.92),
+     written only when they move. The reveal windows never overlap, so
+     there is never more than one picture on screen.
+     u ≥ N, the ending: the view returns to the field's centre, the stars
+     settle at .6, the ghost pointer starts; the statement fades in over
+     .3–.6 (its scroll-fill, module 12, is driven from u); from N + .3 the
+     stage is .is-live and the field takes the pointer (desktop: the gold
+     node; touch: tap to cluster, drag to lead, 2.5s hold).
+   A click or tap within 28px of a star (or its hidden button) scrolls to
+   that station's s = .55. Three modes, rebuilt when a media query flips:
+   "pin", "phone" (< 768px) and "static" (reduced motion and Save-Data:
+   the stations stack and the field is one still frame behind the
+   statement; html.no-js gets the stack from the CSS).
+   window.__threadCost: the loop's own work per frame, the last 240 (ms). */
 (function () {
   "use strict";
-  [].slice.call(document.querySelectorAll("section.thread")).forEach(thread);
+  /* the stars, in field units: pillars are gold */
+  var SPOTS = [[0.22, 0.34], [0.66, 0.26], [0.50, 0.58], [0.26, 0.74], [0.74, 0.70]];
+  var run = function () { [].slice.call(document.querySelectorAll("section.thread")).forEach(thread); };
+  /* the constellation is defined further down this file */
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
+  else setTimeout(run, 0);
+
+  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function eIO(x) { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  function eOut(x) { x = clamp(x); return 1 - Math.pow(1 - x, 3); }
+  function eIn(x) { x = clamp(x); return x * x * x; }
+  function smooth(x) { x = clamp(x); return x * x * (3 - 2 * x); }
 
   function thread(sec) {
     var track    = sec.querySelector(".thread__track");
     var stage    = sec.querySelector(".thread__stage");
-    var svg      = sec.querySelector(".thread__svg");
-    var paths    = [].slice.call(sec.querySelectorAll(".thread__svg path"));
-    var drawn    = sec.querySelector(".thread__svg .drawn");
-    var glow     = sec.querySelector(".thread__svg .glow");
-    var pulse    = sec.querySelector(".pulse");
-    var grip     = sec.querySelector(".thread__grip");
-    var tablist  = sec.querySelector(".thread__tabs");
-    var tabs     = [].slice.call(sec.querySelectorAll(".thread__tab"));
+    var sky      = sec.querySelector(".thread__sky");
+    var endEl    = sec.querySelector(".thread__end");
+    var statement = sec.querySelector(".thread__statement");
     var stations = [].slice.call(sec.querySelectorAll(".station"));
-    if (!track || !stage || !svg || !drawn || !tablist || !tabs.length || tabs.length !== stations.length) return;
+    var buttons  = [].slice.call(sec.querySelectorAll(".thread__jump button"));
+    var liveMsg  = sec.querySelector(".thread__jump [aria-live]");
+    if (!track || !stage || !sky || !sky.getContext || !stations.length || !window.spkConstellation) return;
 
     var N = stations.length;
-    var DOLLY = parseFloat(sec.getAttribute("data-dolly")) || 1.04;
+    var ZD = parseFloat(sec.getAttribute("data-zoom")) || 2.4;
+    var ZP = parseFloat(sec.getAttribute("data-zoom-phone")) || 2.0;
+    var DOLLY = parseFloat(sec.getAttribute("data-dolly")) || 1.04;   /* the hold's slow push-in */
     var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
     var phone = window.matchMedia("(max-width: 767px)");
     var saveData = !!(navigator.connection && navigator.connection.saveData);
-    var pillar = stations.map(function (s) { return s.classList.contains("is-pillar"); });
-    var stills = stations.map(function (s) { return s.querySelector(".still"); });
-    var bodies = stations.map(function (s) { return s.querySelector(".body"); });
     var labels = stations.map(function (s) { return s.querySelector(".label"); });
+    var names = labels.map(function (l) { return l ? l.textContent.replace(/\s+/g, " ").trim() : ""; });
 
-    function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
-    function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
-
-    /* the authored wire (a straight line in a 1000 x 40 box): the static
-       mode and no script draw it full */
-    var AUTH_VB = svg.getAttribute("viewBox");
-    var AUTH_D  = drawn.getAttribute("d");
-
-    /* the tablist as authored, so the static mode can strip it and put it back */
-    var TAB_ATTRS = ["role", "aria-selected", "aria-controls", "tabindex", "aria-label"];
-    var PANEL_ATTRS = ["role", "aria-labelledby"];
-    function snap(el, names) { var o = {}; names.forEach(function (n) { o[n] = el.getAttribute(n); }); return o; }
-    function put(el, saved) { for (var n in saved) { if (saved[n] === null) el.removeAttribute(n); else el.setAttribute(n, saved[n]); } }
-    var authored = {
-      list: snap(tablist, TAB_ATTRS),
-      tabs: tabs.map(function (t) { return snap(t, TAB_ATTRS); }),
-      panels: stations.map(function (s) { return snap(s, PANEL_ATTRS); })
-    };
-    function stripAria() {
-      TAB_ATTRS.forEach(function (n) { tablist.removeAttribute(n); });
-      tabs.forEach(function (t) { TAB_ATTRS.forEach(function (n) { t.removeAttribute(n); }); });
-      stations.forEach(function (s) { PANEL_ATTRS.forEach(function (n) { s.removeAttribute(n); }); });
-    }
-    function restoreAria() {
-      put(tablist, authored.list);
-      tabs.forEach(function (t, i) { put(t, authored.tabs[i]); });
-      stations.forEach(function (s, i) { put(s, authored.panels[i]); });
-    }
-
-    /* ---- geometry: the wire, its stops, each still and its words ---- */
-    var mode = null, W = 0, H = 0, len = 0, wireY = 0;
-    var stopL = [], stopX = [], stopY = [];
-
-    function lengthAtX(x) {
-      var lo = 0, hi = len, mid;
-      for (var i = 0; i < 24; i++) {
-        mid = (lo + hi) / 2;
-        if (drawn.getPointAtLength(mid).x < x) lo = mid; else hi = mid;
+    /* one star per station; past five, the rest fall on a golden-angle spiral */
+    var spots = stations.map(function (st, k) {
+      var q = SPOTS[k];
+      if (!q) {
+        var a = k * 2.39996, r = 0.18 + 0.1 * ((k * 0.618) % 1);
+        q = [0.5 + r * Math.cos(a), 0.5 + r * 0.9 * Math.sin(a)];
       }
-      return (lo + hi) / 2;
-    }
+      st.classList.toggle("is-flip", q[0] >= 0.5);     /* the still goes to the side away from its star */
+      return { x: q[0], y: q[1], gold: st.classList.contains("is-pillar"), glow: 0, reach: 0, found: false };
+    });
 
-    var PROPS = ["--sx", "--sw", "--sh", "--bx", "--bw", "--fs", "--a", "--d", "--dolly"];
-    function clearStation(k) {
-      PROPS.forEach(function (n) { stations[k].style.removeProperty(n); });
-      stations[k].classList.remove("is-on", "is-left");
-      cache[k] = {};
-    }
+    var mode = null, W = 0, H = 0, p = 0, live = false;
+    var sky0 = null;
+    var gateLive = function () { return live; };
 
-    function layout() {
-      if (mode !== "pin" && mode !== "phone") return;
-      W = stage.clientWidth; H = stage.clientHeight;
-      if (!W || !H) return;
-      var ph = mode === "phone";
-      wireY = H * (ph ? 0.84 : 0.62);
-      var A = ph ? 0 : Math.min(26, H * 0.028);          /* the S: gentle, flat at both edges */
-      var d = "M 0 " + (wireY - A).toFixed(1) +
-              " C " + (W * 0.5).toFixed(1) + " " + (wireY - A).toFixed(1) +
-              " " + (W * 0.5).toFixed(1) + " " + (wireY + A).toFixed(1) +
-              " " + W + " " + (wireY + A).toFixed(1);
-      svg.setAttribute("viewBox", "0 0 " + W + " " + H);
-      paths.forEach(function (p) { p.setAttribute("d", d); });
-      len = drawn.getTotalLength();
-      [drawn, glow].forEach(function (p) { if (p) p.style.strokeDasharray = len.toFixed(1) + " " + (len + 20).toFixed(1); });
-
-      for (var k = 0; k < N; k++) {
-        var x = W * (0.12 + (N > 1 ? 0.76 * k / (N - 1) : 0.38));
-        var L = lengthAtX(x), pt = drawn.getPointAtLength(L);
-        stopL[k] = L; stopX[k] = pt.x; stopY[k] = pt.y;
-        tabs[k].style.setProperty("--x", pt.x.toFixed(1) + "px");
-        tabs[k].style.setProperty("--y", pt.y.toFixed(1) + "px");
-      }
-      for (var j = 0; j < N; j++) { placeStation(j, ph); }
-      for (var f = 0; f < N; f++) { fitLabel(f, ph); }
-    }
-
-    /* desktop: the still hangs from the wire (bottom at 58%), its left edge
-       40px before its stop, kept 4vw inside the screen; its top clears the
-       nav and the eyebrow (7.5rem), so on a short screen the card flattens
-       from 5:4 rather than narrowing. The words sit right of it, or left
-       when there is no room. */
-    function placeStation(k, ph) {
-      var st = stations[k];
-      if (ph) {
-        ["--sx", "--sw", "--sh", "--bx", "--bw"].forEach(function (n) { st.style.removeProperty(n); });
-        st.classList.remove("is-left");
-        return;
-      }
-      var m = W * 0.04, gap = Math.max(32, W * 0.03);
-      var w = Math.min(W * (pillar[k] ? 0.44 : 0.34), pillar[k] ? 640 : 520);
-      var h = Math.max(120, Math.min(w * 0.8, H * 0.58 - 120));
-      var left = Math.max(m, Math.min(stopX[k] - 40, W - m - w));
-      var rightRoom = W - m - (left + w + gap), leftRoom = left - gap - m;
-      var onLeft = rightRoom < 340 && leftRoom > rightRoom;
-      var bw = Math.min(onLeft ? leftRoom : rightRoom, 620);
-      var bx = onLeft ? left - gap - bw : left + w + gap;
-      st.style.setProperty("--sx", left.toFixed(1) + "px");
-      st.style.setProperty("--sw", w.toFixed(1) + "px");
-      st.style.setProperty("--sh", h.toFixed(1) + "px");
-      st.style.setProperty("--bx", bx.toFixed(1) + "px");
-      st.style.setProperty("--bw", bw.toFixed(1) + "px");
-      st.classList.toggle("is-left", onLeft);
+    /* ---- geometry, measured on layout only ---- */
+    var s0 = 0, e0 = 0;
+    function startY() { return track.getBoundingClientRect().top + window.scrollY; }
+    function endY() { return startY() + track.offsetHeight - window.innerHeight; }
+    function measure() { s0 = startY(); e0 = endY(); }
+    function yAtU(u) { return s0 + (e0 - s0) * clamp(u / (N + 1)); }
+    function yAt(k, s) { return yAtU(k + s); }
+    function go(y) {
+      y = Math.max(0, Math.round(y));
+      if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y);
+      else window.scrollTo({ top: y, behavior: "smooth" });
     }
 
     /* the label keeps its step (step-4, pillars step-5) unless its longest
-       word would overflow its column, or (phones) it would run past two
-       lines or into the wire; then it shrinks just enough */
-    function fitLabel(k, ph) {
-      var lab = labels[k], body = bodies[k];
+       word would overflow its column, or (phones) it would run past two lines */
+    function fitLabel(k) {
+      var lab = labels[k];
       if (!lab) return;
       stations[k].style.removeProperty("--fs");
+      if (mode === "static") return;
       var f = parseFloat(window.getComputedStyle(lab).fontSize) || 48, n = 0;
-      function over() {
+      var over = function () {
         if (lab.scrollWidth > lab.clientWidth + 1) return true;
-        if (ph) {
-          var r = lab.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-          return lab.offsetHeight > f * 2.4 || (r.bottom - sr.top) > wireY - 26;
-        }
-        return body.offsetHeight > H * 0.58 - 120;
-      }
+        return mode === "phone" && lab.offsetHeight > f * 2.35;
+      };
       while (over() && f > 18 && n++ < 30) {
         f = Math.floor(f * 0.94);
         stations[k].style.setProperty("--fs", f + "px");
       }
     }
 
-    /* ---- the frame: p → one station on screen ---- */
-    var cache = stations.map(function () { return {}; });
-    function setP(k, name, v) {
-      var s = v.toFixed(4);
-      if (cache[k][name] === s) return;
-      cache[k][name] = s;
-      stations[k].style.setProperty(name, s);
+    function layout() {
+      measure();
+      if (!sky0) return;
+      W = stage.clientWidth; H = stage.clientHeight;
+      sky0.size();
+      for (var k = 0; k < N; k++) fitLabel(k);
+      if (mode === "static") paintStatic();
     }
-    var lastP = 0, cur = -1, lastLand = -1, bloomT = 0, lastDot = "";
 
-    function update(p) {
-      lastP = p;
-      if ((mode !== "pin" && mode !== "phone") || !len) return;
-      var u = clamp(p) * N;
+    /* ---- the frame ---- */
+    var cache = stations.map(function () { return {}; });
+    var endCache = {};
+    function setVar(el, c, name, v) {
+      var old = c[name];
+      if (old !== undefined && Math.abs(old - v) <= 0.002) return;
+      c[name] = v;
+      el.style.setProperty(name, name === "--reveal" || name === "--end" ? v.toFixed(4) : v.toFixed(1) + "px");
+    }
+    var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0, DIM = 0.22;
+
+    function render(t) {
+      var u = clamp(p) * (N + 1);
+      lastU = u;
+      var ending = u >= N;
       var i = Math.min(N - 1, Math.floor(u));
-      var s = Math.min(1, u - i);
-      var t = smooth(clamp(s / 0.2));                 /* travel */
-      var a = smooth(clamp((s - 0.2) / 0.2));         /* arrive */
-      var h = clamp((s - 0.4) / 0.6);                 /* hold */
+      var s = ending ? 1 : u - i;
+      var Z = mode === "phone" ? ZP : ZD;
+      var cx, cy, z = 1, rev = 0, k;
 
-      /* the dot, and the line drawn up to it */
-      var from = i === 0 ? 0 : stopL[i - 1];
-      var L = from + (stopL[i] - from) * t;
-      var pt = drawn.getPointAtLength(L);
-      var tf = "translate3d(" + pt.x.toFixed(1) + "px," + pt.y.toFixed(1) + "px,0)";
-      if (tf !== lastDot) {
-        lastDot = tf;
-        if (pulse) pulse.style.transform = tf;
-        if (grip) grip.style.transform = tf;
-        var off = (len - L).toFixed(1);
-        drawn.style.strokeDashoffset = off;
-        if (glow) glow.style.strokeDashoffset = off;
+      /* the stars' states: the NEXT star calls (bright and pulsing) from
+         the moment the one before starts to zoom out, through the travel
+         to it; it stops pulsing (steady, bright) as the camera closes in
+         and holds; as the camera pulls away it dims, and the one after
+         starts calling. Stars already visited stay dim; at the ending
+         they all settle softly lit. */
+      for (k = 0; k < N; k++) {
+        var sp = spots[k], g = 0, r = 0, call = 0;
+        if (ending) { g = 0.6; r = 1; }
+        else if (k < i) { g = DIM; r = 1; }
+        else if (k === i) {
+          r = s < 0.15 ? eIO(s / 0.15) : 1;
+          if (s < 0.15) { g = 1; call = 1; }                             /* calling while the camera travels to it */
+          else if (s < 0.8) { g = 1; call = 1 - smooth((s - 0.15) / 0.06); }  /* steady once it closes in */
+          else { g = 1 - (1 - DIM) * eIO((s - 0.8) / 0.2); }            /* dims as it is left */
+          if (i === 0 && s < 0.15) r = 0;
+        } else if (k === i + 1 && s >= 0.8) {
+          g = eIO((s - 0.8) / 0.2); call = g;                           /* the next one starts calling */
+        }
+        sp.glow = g; sp.call = call; sp.reach = k === 0 ? 0 : r; sp.found = !ending && k === i;
       }
 
-      /* the stations: i arriving or holding, i-1 leaving while the dot travels */
-      for (var k = 0; k < N; k++) {
-        var on = false;
-        if (k === i) {
-          on = true;
-          setP(k, "--a", a); setP(k, "--d", 0); setP(k, "--dolly", 1 + (DOLLY - 1) * h);
-        } else if (k === i - 1 && t < 1) {
-          on = true;
-          setP(k, "--a", 1); setP(k, "--d", t); setP(k, "--dolly", DOLLY);
+      if (!ending) {
+        var h = spots[i];
+        if (s < 0.15) {
+          var fx = i ? spots[i - 1].x : 0.5, fy = i ? spots[i - 1].y : 0.5, tt = eIO(s / 0.15);
+          cx = fx + (h.x - fx) * tt; cy = fy + (h.y - fy) * tt;
+        } else {
+          cx = h.x; cy = h.y;
+          if (s < 0.35) z = 1 + (Z - 1) * eOut((s - 0.15) / 0.2);
+          else if (s < 0.8) z = Z * (1 + (DOLLY - 1) * (s - 0.35) / 0.45);
+          else z = Z * DOLLY + (1 - Z * DOLLY) * eIn((s - 0.8) / 0.2);
         }
+        rev = s < 0.18 ? 0 : s < 0.4 ? smooth((s - 0.18) / 0.22) : s < 0.8 ? 1 : s < 0.92 ? 1 - smooth((s - 0.8) / 0.12) : 0;
+      } else {
+        var e = u - N, last = spots[N - 1], b = eIO(e / 0.3);
+        cx = last.x + (0.5 - last.x) * b; cy = last.y + (0.5 - last.y) * b;
+      }
+      cam.z = z; cam.cx = cx; cam.cy = cy;
+
+      /* the field */
+      sky0.setCamera(z, cx * W, cy * H);
+      sky0.setHotspots(spots);
+      sky0.setLive(ending);
+      sky0.step(t);
+      sky0.draw();
+
+      /* the card: one station, opening out of its star */
+      for (k = 0; k < N; k++) {
+        var on = !ending && k === i && rev > 0;
         if (stations[k].classList.contains("is-on") !== on) stations[k].classList.toggle("is-on", on);
       }
-
-      if (i !== cur) {
-        cur = i;
-        tabs.forEach(function (tb, k) {
-          tb.classList.toggle("is-on", k === i);
-          tb.setAttribute("aria-selected", k === i ? "true" : "false");
-          tb.setAttribute("tabindex", k === i ? "0" : "-1");
-        });
-      }
-      for (var q = 0; q < N; q++) {
-        var lit = q < i || (q === i && t >= 1);
-        if (tabs[q].classList.contains("is-lit") !== lit) tabs[q].classList.toggle("is-lit", lit);
+      if (!ending && rev > 0) {
+        var hx = W / 2 + (spots[i].x - cx) * W * z, hy = H / 2 + (spots[i].y - cy) * H * z;
+        setVar(stations[i], cache[i], "--hx", hx);
+        setVar(stations[i], cache[i], "--hy", hy);
+        setVar(stations[i], cache[i], "--reveal", rev);
       }
 
-      /* a pillar's landing: the dot blooms gold for 600ms */
-      var land = t >= 1 ? i : -1;
-      if (land !== lastLand) {
-        lastLand = land;
-        if (land >= 0 && pillar[land] && pulse) {
-          clearTimeout(bloomT);
-          pulse.classList.add("is-bloom");
-          bloomT = setTimeout(function () { pulse.classList.remove("is-bloom"); }, 600);
-        }
-      }
+      /* the ending */
+      if (endEl) setVar(endEl, endCache, "--end", ending ? clamp((u - N - 0.3) / 0.3) : 0);
+      var isLive = u >= N + 0.3;
+      if (isLive !== live) { live = isLive; stage.classList.toggle("is-live", live); }
+
+      var c = ending ? -1 : i;
+      if (c !== cur) { cur = c; announce(c); }
     }
 
-    /* ---- scroll positions ---- */
-    function startY() { return track.getBoundingClientRect().top + window.scrollY; }
-    function endY() { return startY() + track.offsetHeight - window.innerHeight; }
-    function yAtU(u) { var s0 = startY(), e0 = endY(); return s0 + (e0 - s0) * clamp(u / N); }
-    function yAt(k, s) { return yAtU(k + s); }
-    function go(y, immediate) {
-      y = Math.max(0, Math.round(y));
-      if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y, { immediate: !!immediate });
-      else window.scrollTo({ top: y, behavior: immediate ? "instant" : "smooth" });
+    /* the station now on screen: the hidden buttons and the live region */
+    var sayT = 0, said = -1;
+    function announce(c) {
+      buttons.forEach(function (bt, k) { bt.setAttribute("aria-pressed", k === c ? "true" : "false"); });
+      clearTimeout(sayT);
+      if (c < 0 || !liveMsg) return;
+      sayT = setTimeout(function () {
+        if (c === said) return;
+        said = c;
+        liveMsg.textContent = "Idea " + (c + 1) + " of " + N + ": " + names[c];
+      }, 300);
     }
 
-    /* x along the wire → u: through (0, 0), each stop at its station's
-       s = .5, and (W, N) */
-    function uAtX(x) {
-      var xs = [0].concat(stopX, [W]), us = [0];
-      for (var k = 0; k < N; k++) us.push(k + 0.5);
-      us.push(N);
-      if (x <= 0) return 0;
-      for (var j = 1; j < xs.length; j++) {
-        if (x <= xs[j]) return us[j - 1] + (us[j] - us[j - 1]) * (x - xs[j - 1]) / Math.max(1, xs[j] - xs[j - 1]);
-      }
-      return N;
+    /* the static frame: every star lit, the path drawn, no loop */
+    function paintStatic() {
+      if (!sky0) return;
+      spots.forEach(function (sp, k) { sp.glow = 0.6; sp.reach = k ? 1 : 0; sp.found = false; });
+      W = sky.clientWidth; H = sky.clientHeight;
+      sky0.setCamera(1, W / 2, H / 2);
+      sky0.setHotspots(spots);
+      sky0.setLive(false);
+      sky0.draw();
     }
 
-    /* ---- interaction ---- */
-    tabs.forEach(function (tb, k) {
-      tb.addEventListener("click", function () {
-        if (mode === "static") {
-          stations[k].scrollIntoView({ behavior: "auto", block: "start" });
-          return;
-        }
-        go(yAt(k, 0.5), false);
+    /* ---- the loop: only while on screen and the page is visible ---- */
+    var onScreen = false, raf = 0, cost = window.__threadCost = [];
+    function frame(t) {
+      raf = 0;
+      if (!running()) return;
+      var t0 = performance.now();
+      render(t);
+      cost.push(performance.now() - t0);
+      if (cost.length > 240) cost.shift();
+      raf = requestAnimationFrame(frame);
+    }
+    function running() { return onScreen && !document.hidden && (mode === "pin" || mode === "phone"); }
+    function wake() {
+      if (running()) { if (!raf) raf = requestAnimationFrame(frame); }
+      else if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    }
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) { onScreen = es[es.length - 1].isIntersecting; wake(); }, { threshold: 0.02 }).observe(sec);
+    } else onScreen = true;
+    document.addEventListener("visibilitychange", wake);
+
+    /* ---- interaction: a star, or its hidden button, takes you to its idea ---- */
+    buttons.forEach(function (bt) {
+      bt.addEventListener("click", function () {
+        var k = parseInt(bt.getAttribute("data-i"), 10) || 0;
+        if (mode === "static") { stations[k].scrollIntoView({ behavior: "auto", block: "start" }); return; }
+        go(yAt(k, 0.55));
       });
     });
-    tablist.addEventListener("keydown", function (e) {
-      if (mode === "static") return;
-      var k = tabs.indexOf(document.activeElement);
-      if (k < 0) return;
-      var n = e.key === "ArrowRight" || e.key === "ArrowDown" ? k + 1 :
-              e.key === "ArrowLeft" || e.key === "ArrowUp" ? k - 1 :
-              e.key === "Home" ? 0 : e.key === "End" ? N - 1 : -2;
-      if (n === -2) return;
-      e.preventDefault();
-      n = Math.max(0, Math.min(N - 1, n));
-      tabs[n].focus();
-      go(yAt(n, 0.5), false);
-    });
-
-    /* the dot can be dragged along the wire; on release it settles on the
-       nearest station */
-    var drag = null;
-    if (grip) {
-      grip.addEventListener("pointerdown", function (e) {
-        if (mode === "static") return;
-        e.preventDefault();
-        drag = { id: e.pointerId, u: lastP * N };
-        try { grip.setPointerCapture(e.pointerId); } catch (err) { /* old engines */ }
-        sec.classList.add("is-dragging");
-      });
-      grip.addEventListener("pointermove", function (e) {
-        if (!drag || e.pointerId !== drag.id) return;
-        var x = e.clientX - stage.getBoundingClientRect().left;
-        drag.u = uAtX(x);
-        go(yAtU(drag.u), true);
-      });
-      var end = function (e) {
-        if (!drag || e.pointerId !== drag.id) return;
-        var k = Math.max(0, Math.min(N - 1, Math.round(drag.u - 0.5)));
-        drag = null;
-        sec.classList.remove("is-dragging");
-        go(yAt(k, 0.5), false);
-      };
-      grip.addEventListener("pointerup", end);
-      grip.addEventListener("pointercancel", end);
-    }
-
-    /* phones: a tap on the picture moves on to the next station */
     stage.addEventListener("click", function (e) {
-      if (mode !== "phone" || cur < 0) return;
-      var st = e.target.closest && e.target.closest(".still");
-      if (!st || !stations[cur].contains(st)) return;
-      if (cur < N - 1) go(yAt(cur + 1, 0.5), false);
-      else go(endY() + 2, false);
+      if (mode !== "pin" && mode !== "phone") return;
+      if (lastU >= N) return;
+      if (e.target.closest && e.target.closest("a, button")) return;
+      var r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, best = -1, bd = 28 * 28;
+      for (var k = 0; k < N; k++) {
+        var sx = W / 2 + (spots[k].x - cam.cx) * W * cam.z, sy = H / 2 + (spots[k].y - cam.cy) * H * cam.z;
+        var d2 = (sx - x) * (sx - x) + (sy - y) * (sy - y);
+        if (d2 <= bd) { bd = d2; best = k; }
+      }
+      if (best >= 0) go(yAt(best, 0.55));
     });
+
+    /* the statement's scroll-fill (module 12) follows the ending, not the
+       heading's place on screen (it does not move inside the pin) */
+    if (statement) statement.__fillAt = function () {
+      if (mode !== "pin" && mode !== "phone") return null;
+      return clamp((lastU - N - 0.3) / 0.5);
+    };
 
     /* ---- modes ---- */
     function reset() {
-      for (var k = 0; k < N; k++) clearStation(k);
-      tabs.forEach(function (tb) {
-        tb.classList.remove("is-on", "is-lit");
-        tb.style.removeProperty("--x"); tb.style.removeProperty("--y");
+      stations.forEach(function (st, k) {
+        ["--hx", "--hy", "--reveal", "--fs"].forEach(function (n) { st.style.removeProperty(n); });
+        st.classList.remove("is-on");
+        cache[k] = {};
       });
-      svg.setAttribute("viewBox", AUTH_VB);
-      paths.forEach(function (p) {
-        p.setAttribute("d", AUTH_D);
-        p.style.removeProperty("stroke-dasharray"); p.style.removeProperty("stroke-dashoffset");
-      });
-      if (pulse) { pulse.style.transform = ""; pulse.classList.remove("is-bloom"); }
-      if (grip) grip.style.transform = "";
-      len = 0; cur = -1; lastLand = -1; lastDot = "";
+      if (endEl) endEl.style.removeProperty("--end");
+      endCache = {};
+      stage.classList.remove("is-live");
+      live = false; cur = -2;
     }
-
     function setMode() {
       var want = (rmq.matches || saveData) ? "static" : (phone.matches ? "phone" : "pin");
       if (want === mode) return false;
-      if (mode === "static") restoreAria();
       reset();
       mode = want;
       sec.classList.toggle("is-static", want === "static");
       sec.classList.toggle("is-phone", want === "phone");
       sec.classList.toggle("is-pin", want === "pin");
-      if (want === "static") stripAria();
-      else { layout(); update(lastP); }
+      if (!sky0) sky0 = window.spkConstellation(stage, sky, { fixed: true, hotspots: spots, gate: gateLive });
+      layout();
       if (window.spkSpine) window.spkSpine.measure();
+      measure();
+      wake();
       return true;
     }
 
-    /* ---- the scroll: the spine (module 0) when the page has one ---- */
-    var entry = { start: startY, end: endY, update: function (p) { update(p); } };
-    function register() {
-      if (window.spkSpine) { window.spkSpine.add(entry); return; }
-      var raf = 0;
-      var read = function () {
-        raf = 0;
-        var s0 = startY(), e0 = endY();
-        update(e0 > s0 ? clamp((window.scrollY - s0) / (e0 - s0)) : 0);
-      };
-      window.addEventListener("scroll", function () { if (!raf) raf = requestAnimationFrame(read); }, { passive: true });
-      read();
+    /* ---- the scroll: the spine stores p; the loop does the rest ---- */
+    var entry = { start: startY, end: endY, update: function (q) { p = q; } };
+    if (window.spkSpine) window.spkSpine.add(entry);
+    else {
+      var read = function () { p = e0 > s0 ? clamp((window.scrollY - s0) / (e0 - s0)) : 0; };
+      window.addEventListener("scroll", read, { passive: true });
+      window.addEventListener("resize", function () { setTimeout(read, 80); }, { passive: true });
+      setTimeout(read, 0);
     }
 
     setMode();
-    /* the spine is set up further down this file: register once it exists */
-    setTimeout(register, 0);
 
     var rsT = 0;
     window.addEventListener("resize", function () {
       clearTimeout(rsT);
       rsT = setTimeout(function () {
         if (setMode()) return;
-        layout(); update(lastP);
+        layout();
         if (window.spkSpine) window.spkSpine.measure();
       }, 60);
     }, { passive: true });
@@ -624,15 +562,20 @@ var UI = (function () {
       if (q.addEventListener) q.addEventListener("change", setMode);
       else if (q.addListener) q.addListener(setMode);
     });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); update(lastP); });
-    window.addEventListener("load", function () { layout(); update(lastP); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    window.addEventListener("load", function () { layout(); if (window.spkSpine) window.spkSpine.measure(); });
 
     /* exposed for verification: the first instance */
     if (!window.__thread) window.__thread = {
       mode: function () { return mode; },
       current: function () { return cur; },
+      u: function () { return lastU; },
       yAt: yAt,
-      stops: function () { return stopX.map(function (x, k) { return { x: x, y: stopY[k] }; }); },
+      yAtU: yAtU,
+      star: function (k) {
+        return { x: W / 2 + (spots[k].x - cam.cx) * W * cam.z, y: H / 2 + (spots[k].y - cam.cy) * H * cam.z };
+      },
+      nodes: function () { return sky0 ? sky0.probe() : []; },
       N: N
     };
   }
@@ -1132,20 +1075,38 @@ var UI = (function () {
      Touch: a tap (or a finger held and dragged) pulls the nodes within reach
      into a cluster around the finger (they gather to about 34px from it and
      no closer) and the cluster follows the finger; after a tap it holds for
-     2.5s, then the ghost takes over again and the nodes drift apart. */
-  [].slice.call(document.querySelectorAll(".bleed__canvas")).forEach(function (canvas) {
-    if (!canvas.getContext) return;
-    var host = canvas.closest(".bleed");
-    if (!host) return;
+     2.5s, then the ghost takes over again and the nodes drift apart.
+
+     constellation(host, canvas, opts) builds one field and returns
+     { size, setCamera(z, cx, cy), setHotspots(arr), setLive(bool), step(t),
+       draw(), destroy }. Positions are kept in 0..1 field units and
+     multiplied out at draw time. The camera is cheap: nothing is CSS-scaled,
+     the canvas transform carries the zoom and every stroke and radius is
+     divided by it, so lines stay one css-px at any zoom; nodes outside the
+     view are culled. Default opts (the bleeds): the field runs its own rAF
+     loop while on screen, re-seeds on resize, and the pointer is always
+     live. opts.fixed (the through-line): the caller drives step() and
+     draw() from its own loop, a resize keeps the field, opts.hotspots are
+     fixed stars (x, y in field units, gold, glow 0..1, reach 0..1: how far
+     the line from the previous star has been drawn, found: the star the
+     view is on), the pointer only joins after setLive(true), and only while
+     opts.gate() says so. window.spkConstellation exposes it. */
+  function constellation(host, canvas, opts) {
+    opts = opts || {};
+    var fixed = !!opts.fixed;
     var ctx = canvas.getContext("2d");
     canvas.style.pointerEvents = "none";
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var W = 0, H = 0, nodes = [], visible = true;
+    var W = 0, H = 0, nodes = [], visible = true, dead = false;
     var LINK = 160, LINK2 = LINK * LINK, REACH = 240, REACH2 = REACH * REACH, PUSH = 120, PUSH2 = PUSH * PUSH;
     /* real pointer target, drawn (trailing) position, and intensity 0.6 ghost .. 1 real */
     var real = { on: false, x: 0, y: 0 }, cur = { x: 0, y: 0 }, amp = 0.6;
     var clus = false, holdTo = 0, CL_REACH = 300, CL_REACH2 = CL_REACH * CL_REACH, CL_R = 34;
     var ghostT0 = performance.now(), ghostPhase = 0, ghostBlend = 1, leftAt = 0;
+    var cam = { z: 1, cx: 0, cy: 0, set: false };
+    var spots = opts.hotspots || [];
+    var live = !fixed, liveSince = 0, liveK = fixed ? 0 : 1, now = performance.now();
+    var X = [], Y = [], V = [], near = [];
     var halo = document.createElement("canvas");
     (function () {
       var R = 28; halo.width = halo.height = R * 2 * dpr;
@@ -1154,132 +1115,301 @@ var UI = (function () {
       g.addColorStop(0, "rgba(232,187,104,.18)"); g.addColorStop(1, "rgba(232,187,104,0)");
       h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
     })();
-    function size() {
-      var r = host.getBoundingClientRect();
-      W = r.width; H = r.height;
-      canvas.width = W * dpr; canvas.height = H * dpr;
-      canvas.style.width = W + "px"; canvas.style.height = H + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.max(26, Math.min(46, Math.round(W / 46)));
-      nodes = [];
-      for (var i = 0; i < n; i++) {
-        nodes.push({ x: Math.random() * W, y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 });
-      }
-      cur.x = W * 0.35; cur.y = H * 0.55;
+
+    function count() {
+      if (!fixed) return Math.max(26, Math.min(46, Math.round(W / 46)));
+      if (W < 768) return 30;
+      return Math.max(28, Math.min(60, Math.round(W / 40)));
     }
+    function seed() {
+      return { x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25 };
+    }
+    function size() {
+      if (fixed) { W = canvas.clientWidth; H = canvas.clientHeight; }
+      else {
+        var r = host.getBoundingClientRect();
+        W = r.width; H = r.height;
+        canvas.style.width = W + "px"; canvas.style.height = H + "px";
+      }
+      if (!W || !H) return;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      var n = count(), i;
+      if (!fixed) {
+        nodes = [];
+        for (i = 0; i < n; i++) nodes.push(seed());
+        cur.x = W * 0.35; cur.y = H * 0.55;
+      } else {
+        /* the field keeps its stars across a resize; only the count follows the width */
+        while (nodes.length < n) nodes.push(seed());
+        if (nodes.length > n) nodes.length = n;
+        if (!cur.x && !cur.y) { cur.x = W * 0.35; cur.y = H * 0.55; }
+      }
+      if (!cam.set) { cam.cx = W / 2; cam.cy = H / 2; }
+    }
+    function setCamera(z, cx, cy) { cam.z = z; cam.cx = cx; cam.cy = cy; cam.set = true; }
+    function setHotspots(arr) { spots = arr || []; }
     function ghostAt(t) {
       var k = (t - ghostT0) + ghostPhase;
       return { x: W * (0.5 + 0.32 * Math.sin(k * 0.00021)), y: H * (0.5 + 0.28 * Math.sin(k * 0.00033 + 1.3)) };
     }
     function ease(x) { return 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3); }
-    function draw(move, px, py, a) {
-      ctx.clearRect(0, 0, W, H);
-      var i, j, n = nodes.length;
-      for (i = 0; i < n; i++) {
-        var p = nodes[i];
-        if (move) {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < 0 || p.x > W) p.vx *= -1;
-          if (p.y < 0 || p.y > H) p.vy *= -1;
-          var ex = p.x - px, ey = p.y - py, e2 = ex * ex + ey * ey;
+
+    /* the nodes drift (and, with the pointer in, are pushed or gathered) */
+    function move(px, py, withPointer) {
+      for (var i = 0, n = nodes.length; i < n; i++) {
+        var p = nodes[i], x = p.x * W, y = p.y * H;
+        x += p.vx; y += p.vy;
+        if (x < 0 || x > W) p.vx *= -1;
+        if (y < 0 || y > H) p.vy *= -1;
+        if (withPointer) {
+          var ex = x - px, ey = y - py, e2 = ex * ex + ey * ey;
           if (clus) {
             /* touch: gather toward the finger, stopping at a ring of CL_R */
             if (e2 < CL_REACH2 && e2 > 1) {
               var ec = Math.sqrt(e2), f = ec > CL_R ? -Math.min(3, 0.06 * (ec - CL_R)) : 0.6;
-              p.x += ex / ec * f; p.y += ey / ec * f;
+              x += ex / ec * f; y += ey / ec * f;
             }
-          } else if (e2 < PUSH2 && e2 > 1) { var e = Math.sqrt(e2); p.x += ex / e * 0.4; p.y += ey / e * 0.4; }
+          } else if (e2 < PUSH2 && e2 > 1) { var e = Math.sqrt(e2); x += ex / e * 0.4; y += ey / e * 0.4; }
         }
+        p.x = x / W; p.y = y / H;
       }
-      ctx.lineWidth = 1;
-      for (i = 0; i < n; i++) {
-        var A = nodes[i];
-        for (j = i + 1; j < n; j++) {
-          var B = nodes[j], dx = A.x - B.x, dy = A.y - B.y, d2 = dx * dx + dy * dy;
+    }
+
+    var realSince = 0, letGo = null;
+    function step(t) {
+      now = t;
+      if (!W) return;
+      if (!live) { move(0, 0, false); return; }
+      if (fixed) liveK = ease((t - liveSince) / 700);
+      /* a tap's cluster holds, then lets go */
+      if (holdTo && t > holdTo) { holdTo = 0; if (letGo) letGo(); }
+      var g = ghostAt(t);
+      if (real.on) {
+        var h = ease((t - realSince) / 450);
+        ghostBlend = 1 - h; amp = 0.6 + 0.4 * h;
+      } else if (leftAt) {
+        var r = ease((t - leftAt - 1500) / 800);
+        ghostBlend = r; amp = 1 - 0.4 * r;
+      } else { ghostBlend = 1; amp = 0.6; }
+      var tx = real.on ? real.x : cur.x, ty = real.on ? real.y : cur.y;
+      tx = tx + (g.x - tx) * ghostBlend; ty = ty + (g.y - ty) * ghostBlend;
+      cur.x += (tx - cur.x) * 0.18; cur.y += (ty - cur.y) * 0.18;
+      move(cur.x, cur.y, true);
+    }
+
+    function draw() {
+      if (!W) return;
+      var z = cam.z, cx = cam.cx, cy = cam.cy, iz = 1 / z;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cx * z), dpr * (H / 2 - cy * z));
+      /* the view in field px, grown by one link so edge links do not pop */
+      var hw = W / 2 * iz + LINK, hh = H / 2 * iz + LINK;
+      var x0 = cx - hw, x1 = cx + hw, y0 = cy - hh, y1 = cy + hh;
+      var n = nodes.length, m = n + spots.length, i, j, k;
+      for (i = 0; i < n; i++) { X[i] = nodes[i].x * W; Y[i] = nodes[i].y * H; }
+      for (j = 0; j < spots.length; j++) { X[n + j] = spots[j].x * W; Y[n + j] = spots[j].y * H; }
+      for (i = 0; i < m; i++) V[i] = X[i] >= x0 && X[i] <= x1 && Y[i] >= y0 && Y[i] <= y1;
+
+      ctx.lineWidth = iz;
+      for (i = 0; i < m; i++) {
+        if (!V[i]) continue;
+        var ax = X[i], ay = Y[i];
+        for (j = i + 1; j < m; j++) {
+          if (!V[j]) continue;
+          var dx = ax - X[j], dy = ay - Y[j], d2 = dx * dx + dy * dy;
           if (d2 < LINK2) {
             ctx.strokeStyle = "rgba(124,77,224," + (0.5 * (1 - Math.sqrt(d2) / LINK)).toFixed(3) + ")";
-            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(X[j], Y[j]); ctx.stroke();
           }
         }
       }
-      ctx.lineWidth = 1.25;
-      for (i = 0; i < n; i++) {
-        var q = nodes[i], qx = q.x - px, qy = q.y - py, q2 = qx * qx + qy * qy, k = 0;
-        if (q2 < REACH2) {
-          k = 1 - Math.sqrt(q2) / REACH;
-          ctx.strokeStyle = "rgba(169,133,230," + (0.8 * k * a).toFixed(3) + ")";
-          ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(px, py); ctx.stroke();
+
+      /* the path between the stars: each drawn as far as the view has come */
+      if (spots.length) {
+        ctx.lineWidth = 1.25 * iz;
+        ctx.strokeStyle = "rgba(169,133,230,.85)";
+        for (k = 1; k < spots.length; k++) {
+          var rc = spots[k].reach || 0;
+          if (rc <= 0) continue;
+          var sx = X[n + k - 1], sy = Y[n + k - 1];
+          ctx.beginPath(); ctx.moveTo(sx, sy);
+          ctx.lineTo(sx + (X[n + k] - sx) * rc, sy + (Y[n + k] - sy) * rc); ctx.stroke();
         }
-        var kk = k * a;
+        /* the found star links to its five nearest nodes */
+        ctx.lineWidth = iz;
+        for (k = 0; k < spots.length; k++) {
+          var sp = spots[k];
+          if (!sp.found || !(sp.glow > 0.01)) continue;
+          var hx = X[n + k], hy = Y[n + k];
+          near.length = 0;
+          for (i = 0; i < n; i++) {
+            var qx = X[i] - hx, qy = Y[i] - hy, q2 = qx * qx + qy * qy;
+            if (near.length < 5 || q2 < near[near.length - 1].d) {
+              var at = near.length < 5 ? near.length : near.length - 1;
+              near[at] = { d: q2, i: i };
+              near.sort(function (a, b) { return a.d - b.d; });
+            }
+          }
+          ctx.strokeStyle = "rgba(169,133,230," + (0.8 * sp.glow).toFixed(3) + ")";
+          for (j = 0; j < near.length; j++) {
+            ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(X[near[j].i], Y[near[j].i]); ctx.stroke();
+          }
+        }
+      }
+
+      /* the pointer (or the ghost) links what it reaches, and the nodes */
+      var a = live ? amp * liveK : 0, px = cur.x, py = cur.y;
+      ctx.lineWidth = 1.25 * iz;
+      for (i = 0; i < n; i++) {
+        if (!V[i]) continue;
+        var kx = X[i], ky = Y[i], kk = 0;
+        if (a > 0) {
+          var ux = kx - px, uy = ky - py, u2 = ux * ux + uy * uy;
+          if (u2 < REACH2) {
+            kk = (1 - Math.sqrt(u2) / REACH) * a;
+            ctx.strokeStyle = "rgba(169,133,230," + (0.8 * kk).toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(px, py); ctx.stroke();
+          }
+        }
         ctx.fillStyle = "rgba(225,212,248," + (0.85 + 0.15 * kk).toFixed(3) + ")";
-        ctx.beginPath(); ctx.arc(q.x, q.y, 2 + 1.5 * kk, 0, 6.2832); ctx.fill();
+        ctx.beginPath(); ctx.arc(kx, ky, (2 + 1.5 * kk) * iz, 0, 6.2832); ctx.fill();
       }
-      ctx.globalAlpha = a;
-      ctx.drawImage(halo, px - 28, py - 28, 56, 56);
-      ctx.fillStyle = "#E8BB68";
-      ctx.beginPath(); ctx.arc(px, py, 3.5, 0, 6.2832); ctx.fill();
-      ctx.globalAlpha = 1;
+
+      /* the stars: halo, the ring while lit, the core (pillars gold) */
+      for (k = 0; k < spots.length; k++) {
+        if (!V[n + k]) continue;
+        var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
+        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 260);
+        /* the halo breathes while the star calls, and is bigger when lit */
+        var hs = (1 + 0.5 * g + 0.45 * cl * beat) * 28;
+        ctx.globalAlpha = Math.min(1, (0.2 + 0.8 * g) * (1 + 0.4 * cl * beat));
+        ctx.drawImage(halo, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
+        ctx.globalAlpha = 1;
+        /* calling: two sonar rings expanding out of the star and fading */
+        if (cl > 0.01) {
+          ctx.lineWidth = 1.4 * iz;
+          for (var q = 0; q < 2; q++) {
+            var ph = (now / 1300 + q * 0.5) % 1;
+            ctx.strokeStyle = (s.gold ? "rgba(232,187,104," : "rgba(225,212,248,") + (0.75 * cl * (1 - ph)).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(x, y, (6 + 30 * ph) * iz, 0, 6.2832); ctx.stroke();
+          }
+        }
+        ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
+        ctx.fillStyle = s.gold ? "#E8BB68" : "#E1D4F8";
+        ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4.5 : 3.5) + 1.2 * cl * beat) * iz, 0, 6.2832); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      if (a > 0) {
+        ctx.globalAlpha = a;
+        ctx.drawImage(halo, px - 28 * iz, py - 28 * iz, 56 * iz, 56 * iz);
+        ctx.fillStyle = "#E8BB68";
+        ctx.beginPath(); ctx.arc(px, py, 3.5 * iz, 0, 6.2832); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
     }
-    var realSince = 0, letGo = null;
+
+    /* ---- the pointer ---- */
+    var touch = false;
+    function gate() { return !opts.gate || opts.gate(); }
+    function setReal(e) {
+      var r = (fixed ? canvas : host).getBoundingClientRect();
+      /* screen → field, through the camera */
+      real.x = cam.cx + (e.clientX - r.left - W / 2) / cam.z;
+      real.y = cam.cy + (e.clientY - r.top - H / 2) / cam.z;
+      if (!real.on) { real.on = true; realSince = performance.now(); leftAt = 0; }
+    }
+    function release() {
+      /* a cluster lets go: its nodes drift back out, each on its own heading */
+      if (clus) nodes.forEach(function (p) {
+        var ex = p.x * W - real.x, ey = p.y * H - real.y, e = Math.sqrt(ex * ex + ey * ey);
+        if (e < CL_R * 3 && e > 0.5) { var v = 0.18 + Math.random() * 0.22; p.vx = ex / e * v; p.vy = ey / e * v; }
+      });
+      clus = false; holdTo = 0;
+      if (!real.on) return;
+      real.on = false; leftAt = performance.now();
+      /* the ghost resumes from where the pointer left */
+      ghostT0 = leftAt + 1500;
+      ghostPhase = 0;
+      cur.x = real.x; cur.y = real.y;
+    }
+    letGo = release;
+    function setLive(on) {
+      on = !!on;
+      if (on === live) return;
+      live = on;
+      if (on) { liveSince = performance.now(); liveK = 0; ghostT0 = liveSince; ghostPhase = 0; leftAt = 0; cur.x = W * 0.35; cur.y = H * 0.55; }
+      else { touch = false; release(); real.on = false; leftAt = 0; }
+    }
+    var onDown = function (e) {
+      if (!live || !gate()) return;
+      if (e.pointerType !== "mouse") { touch = true; holdTo = 0; clus = true; setReal(e); }
+    };
+    var onMove = function (e) {
+      if (!live || !gate()) return;
+      if (e.pointerType === "mouse") setReal(e);
+      else if (touch) setReal(e);
+    };
+    /* the finger lifts: the cluster stays where it was for 2.5s */
+    var onUp = function (e) { if (e.pointerType !== "mouse") { touch = false; holdTo = performance.now() + 2500; } };
+    var onCancel = function () { touch = false; release(); };
+    var onLeave = function (e) { if (e.pointerType === "mouse") release(); };
+    var reduceNow = !fixed && reduce;
+    if (!reduceNow) {
+      host.addEventListener("pointerdown", onDown, { passive: true });
+      host.addEventListener("pointermove", onMove, { passive: true });
+      host.addEventListener("pointerup", onUp, { passive: true });
+      host.addEventListener("pointercancel", onCancel, { passive: true });
+      host.addEventListener("pointerleave", onLeave, { passive: true });
+    }
+
+    /* ---- the bleeds: their own loop ---- */
+    var resT = 0, io = null, rafId = 0;
+    function onResize() { clearTimeout(resT); resT = setTimeout(size, 200); }
     function loop(t) {
-      if (visible && !document.hidden) {
-        /* a tap's cluster holds, then lets go */
-        if (holdTo && t > holdTo) { holdTo = 0; if (letGo) letGo(); }
-        var g = ghostAt(t);
-        if (real.on) {
-          var h = ease((t - realSince) / 450);
-          ghostBlend = 1 - h; amp = 0.6 + 0.4 * h;
-        } else if (leftAt) {
-          var r = ease((t - leftAt - 1500) / 800);
-          ghostBlend = r; amp = 1 - 0.4 * r;
-        } else { ghostBlend = 1; amp = 0.6; }
-        var tx = real.on ? real.x : cur.x, ty = real.on ? real.y : cur.y;
-        tx = tx + (g.x - tx) * ghostBlend; ty = ty + (g.y - ty) * ghostBlend;
-        cur.x += (tx - cur.x) * 0.18; cur.y += (ty - cur.y) * 0.18;
-        draw(true, cur.x, cur.y, amp);
-      }
-      requestAnimationFrame(loop);
+      if (dead) return;
+      if (visible && !document.hidden) { step(t); draw(); }
+      rafId = requestAnimationFrame(loop);
     }
     size();
-    if (reduce) { draw(false, W * 0.35, H * 0.55, 1); }
-    else {
-      var touch = false;
-      function setReal(e) {
-        var r = host.getBoundingClientRect();
-        real.x = e.clientX - r.left; real.y = e.clientY - r.top;
-        if (!real.on) { real.on = true; realSince = performance.now(); leftAt = 0; }
+    if (!fixed) {
+      if (reduceNow) { amp = 1; cur.x = W * 0.35; cur.y = H * 0.55; draw(); }
+      else {
+        window.addEventListener("resize", onResize);
+        if ("IntersectionObserver" in window) {
+          io = new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.05 });
+          io.observe(host);
+        }
+        rafId = requestAnimationFrame(loop);
       }
-      function release() {
-        /* a cluster lets go: its nodes drift back out, each on its own heading */
-        if (clus) nodes.forEach(function (p) {
-          var ex = p.x - real.x, ey = p.y - real.y, e = Math.sqrt(ex * ex + ey * ey);
-          if (e < CL_R * 3 && e > 0.5) { var v = 0.18 + Math.random() * 0.22; p.vx = ex / e * v; p.vy = ey / e * v; }
-        });
-        clus = false; holdTo = 0;
-        if (!real.on) return;
-        real.on = false; leftAt = performance.now();
-        /* the ghost resumes from where the pointer left */
-        ghostT0 = leftAt + 1500;
-        ghostPhase = 0;
-        cur.x = real.x; cur.y = real.y;
-      }
-      letGo = release;
-      host.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { touch = true; holdTo = 0; clus = true; setReal(e); } }, { passive: true });
-      host.addEventListener("pointermove", function (e) {
-        if (e.pointerType === "mouse") setReal(e);
-        else if (touch) setReal(e);
-      }, { passive: true });
-      /* the finger lifts: the cluster stays where it was for 2.5s */
-      host.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { touch = false; holdTo = performance.now() + 2500; } }, { passive: true });
-      host.addEventListener("pointercancel", function () { touch = false; release(); }, { passive: true });
-      host.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") release(); }, { passive: true });
-      var resT; window.addEventListener("resize", function () { clearTimeout(resT); resT = setTimeout(size, 200); });
-      if ("IntersectionObserver" in window) {
-        new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0.05 }).observe(host);
-      }
-      requestAnimationFrame(loop);
     }
+
+    function destroy() {
+      dead = true;
+      if (rafId) cancelAnimationFrame(rafId);
+      if (io) io.disconnect();
+      window.removeEventListener("resize", onResize);
+      host.removeEventListener("pointerdown", onDown);
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerup", onUp);
+      host.removeEventListener("pointercancel", onCancel);
+      host.removeEventListener("pointerleave", onLeave);
+    }
+
+    return { size: size, setCamera: setCamera, setHotspots: setHotspots, setLive: setLive,
+             step: step, draw: draw, destroy: destroy,
+             /* for verification: the nodes in field px */
+             probe: function () { return nodes.map(function (q) { return { x: q.x * W, y: q.y * H }; }); } };
+  }
+  window.spkConstellation = constellation;
+
+  [].slice.call(document.querySelectorAll(".bleed__canvas")).forEach(function (canvas) {
+    if (!canvas.getContext) return;
+    var host = canvas.closest(".bleed");
+    if (!host) return;
+    constellation(host, canvas);
   });
 })();
 
@@ -4903,7 +5033,16 @@ var UI = (function () {
     ticking = false;
     var vh = window.innerHeight, a = START * vh, span = (START - END) * vh;
     for (var k = 0; k < live.length; k++) {
-      var h = live[k], t = h.getBoundingClientRect().top;
+      var h = live[k];
+      /* a heading whose section drives its own fill (the through-line's
+         statement, pinned) hands over its progress */
+      var fa = h.__fillAt ? h.__fillAt() : null;
+      if (fa !== null && fa !== undefined) {
+        var pf = fa.toFixed(3);
+        if (h.__fp !== pf) { h.style.setProperty("--fp", pf); h.__fp = pf; }
+        continue;
+      }
+      var t = h.getBoundingClientRect().top;
       /* inside a hero held still (phones, module 13) a line does not move:
          it fills as if it scrolled with the page */
       var hs = h.__hero;

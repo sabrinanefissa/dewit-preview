@@ -1,26 +1,30 @@
-  <!-- The through-line: "the wire". A pinned stage, one horizontal line
-       edge to edge with a stop per idea; the dot rides the line on the
-       scroll and the current idea's still hangs above it like a card on a
-       wire, its words beside it. One idea on screen at a time. The stops
-       and their labels under the wire are the tablist. Phones (< 768px):
-       the same pin, the still full-width at the top, the wire low. Reduced
-       motion, Save-Data and no script (.is-static): the ideas stack, each
-       with its still and words, under the wire drawn full. -->
-  {%- set beat = block | motion('beat', 80) %}
-  {%- set beatPhone = block | motion('beatPhone', 90) %}
+  <!-- The through-line: "the constellation". A pinned stage over a live
+       star field. Each idea is a star: the view travels to it, the star
+       lights, the view closes in and the idea's card (still + words)
+       opens out of the star; then the view pulls back and finds the next
+       one. After the last idea the field settles, the statement fills in
+       over it and the constellation becomes live (the pointer, or a
+       finger, joins it). One picture on screen at a time, phones too.
+       Reduced motion, Save-Data and no script (.is-static): the ideas
+       stack, each with its still and words, then the statement over one
+       still frame of the field. -->
+  {%- set beat = block | motion('beat', 120) %}
+  {%- set beatPhone = block | motion('beatPhone', 130) %}
+  {%- set tail = block | motion('tail', 100) %}
   {%- set bid = block.id or 'thread' %}
-  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--grade:{{ block | motion('grade', 0.6) }}">
+  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-tail="{{ tail }}" data-zoom="{{ block | motion('zoom', 2.4) }}" data-zoom-phone="{{ block | motion('zoomPhone', 2.0) }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--tail:{{ tail }};--grade:{{ block | motion('grade', 0.6) }}">
     <div class="thread__track">
       <div class="thread__stage">
+        <canvas class="thread__sky" aria-hidden="true"></canvas>
         <p class="thread__eyebrow">{{ block.eyebrow | inline() }}</p>
 
         <div class="stations">
 {% for s in block.stations %}
-          <article class="station{% if s.pillar %} is-pillar{% endif %}" role="tabpanel" id="{{ bid }}-panel-{{ loop.index }}" aria-labelledby="{{ bid }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}">
+          <article class="station{% if s.pillar %} is-pillar{% endif %}" id="{{ bid }}-panel-{{ loop.index }}" style="--i:{{ loop.index0 }}">
             <figure class="still">
               {%- set pp = s.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 767px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
               {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-                   sizes="{{ s.image.sizes or '(max-width: 767px) 100vw, 640px' }}" alt="{{ s.image.alt | inline() }}" loading="{{ 'eager' if loop.first else 'lazy' }}" decoding="async">{% if pp %}</picture>{% endif %}
+                   sizes="{{ s.image.sizes or '(max-width: 767px) 100vw, 560px' }}" alt="{{ s.image.alt | inline() }}" loading="{{ 'eager' if loop.first else 'lazy' }}" decoding="async">{% if pp %}</picture>{% endif %}
               <i class="still__gold" aria-hidden="true"></i>
             </figure>
             <div class="body">
@@ -36,22 +40,20 @@
           </article>
 {% endfor %}
         </div>
+        {%- if block.statement %}
 
-        <div class="thread__wire">
-          <svg class="thread__svg" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <defs><filter id="{{ bid }}-glow" x="-5%" y="-200%" width="110%" height="500%"><feGaussianBlur stdDeviation="3"></feGaussianBlur></filter></defs>
-            <path class="guide" d="M0 20 L1000 20"></path>
-            <path class="glow" d="M0 20 L1000 20" filter="url(#{{ bid }}-glow)"></path>
-            <path class="drawn" d="M0 20 L1000 20"></path>
-          </svg>
-          <div class="thread__tabs" role="tablist" aria-label="{{ block.ariaLabel | inline() }}">
+        <div class="thread__end">
+          <h2 class="fill thread__statement"{{ block.statement | fillAttrs }}>{{ block.statement | fillWords }}</h2>
+        </div>
+        {%- endif %}
+
+        <div class="thread__jump">
+          <ul aria-label="{{ block.ariaLabel | inline() }}">
           {%- for s in block.stations %}
-            <button type="button" class="thread__tab{% if s.pillar %} is-pillar{% endif %}{% if loop.first %} is-on{% endif %}" role="tab" id="{{ bid }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}"
-                    aria-controls="{{ bid }}-panel-{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}"><i class="thread__stop" aria-hidden="true"></i><span class="thread__tip" aria-hidden="true">{{ s.label | inline() }}</span><span class="thread__tname">{{ s.label | inline() }}</span></button>
+            <li><button type="button" data-i="{{ loop.index0 }}" aria-pressed="false" aria-controls="{{ bid }}-panel-{{ loop.index }}">{{ loop.index | pad2 }} {{ s.label | inline() }}</button></li>
           {%- endfor %}
-          </div>
-          <div class="pulse" aria-hidden="true"></div>
-          <span class="thread__grip" aria-hidden="true"></span>
+          </ul>
+          <p class="sr-only" aria-live="polite"></p>
         </div>
       </div>
     </div>
