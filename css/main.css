@@ -2117,6 +2117,7 @@ html.no-js .spk-said__candle { display:none; }
   .spk-said.is-wheel .spk-said__nextA { padding-top: 0;
     transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
     opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
+  .spk-said.is-wheel .spk-said__win--b { top:40%; }
   .spk-said.is-wheel .spk-said__nextB { min-height:0;
     transform: translateY(calc((1 - var(--nb, 0)) * 16px));
     opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }

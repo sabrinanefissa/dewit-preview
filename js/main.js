@@ -3914,16 +3914,17 @@ var UI = (function () {
          (0.35-0.62) until their wax covers it (A is behind the canvas); it
          fades out under them (0.55-0.68); then B rolls up into its own
          window in front of the wax (0.6-0.78) */
-      /* desktop: A (high, fully on screen) while the three rise into their
-         row under it; then A fades out rising (0.40-0.50) and B fades in
-         rising in the same place, in front (0.48-0.60) */
+      /* desktop: A (high, fully on screen, behind the canvas) while the
+         three rise into their row (0.1-0.4) and lift (0.35-0.62) so their
+         wax passes over it; A fades under them (0.58-0.68); B comes up in
+         front of the wax, lower (0.6-0.74) */
       put(nextA, "na", "--na", phone ? smooth(clamp(g / 0.06)) : smooth(clamp(g / 0.1)));
       put(nextA, "rollA", "--roll", 0);
       put(nextB, "rollB", "--roll", 0);
       /* A out rising, then B in rising, in the same place; nothing clipped */
-      var nao = phone ? smooth(clamp((g - 0.38) / 0.10)) : smooth(clamp((g - 0.40) / 0.10));
+      var nao = phone ? smooth(clamp((g - 0.38) / 0.10)) : smooth(clamp((g - 0.58) / 0.1));
       put(nextA, "nao", "--nao", nao);
-      put(nextB, "nb", "--nb", phone ? smooth(clamp((g - 0.44) / 0.12)) : smooth(clamp((g - 0.48) / 0.12)));
+      put(nextB, "nb", "--nb", phone ? smooth(clamp((g - 0.44) / 0.12)) : smooth(clamp((g - 0.6) / 0.14)));
       if (phone) {
         /* the lit picture between A and the flame follows A (the CSS reads
            these on the section) */
@@ -4074,7 +4075,9 @@ var UI = (function () {
       /* the three rise from their rim poses to the row over g 0.1-0.4,
          then the row lifts 0.26 H over g 0.35-0.62, over "Three talks." */
       var r = smooth(clamp((g - 0.1) / 0.3));
-      var lift = 0;
+      /* desktop: the row then lifts 0.2 H (flames to ~13%, never off the
+         top) so their wax passes over line A, behind it */
+      var lift = phone ? 0 : 0.2 * H * smooth(clamp((g - 0.35) / 0.27));
       /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
          x2, linear with an ease-in over the first 8% of its p only, about
          the point PIV hC up its axis, which itself travels up to PIV_Y H on
