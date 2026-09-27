@@ -2835,7 +2835,7 @@ body { --fill-stagger: 0.12; }
 .pinskip.is-on:hover, .pinskip.is-on:focus-visible, .pinskip.is-on.is-intent { opacity:1; }
 .pinskip.is-intent { background: rgba(20,10,28,.55); }
 .pinskip:focus-visible { outline:2px solid var(--violet-300); outline-offset:2px; }
-.pinskip__arrow { width:22px; height:22px; flex:0 0 auto; fill:none; stroke: currentColor; stroke-width:1.2;
+.pinskip__arrow { width:40px; height:22px; flex:0 0 auto; fill:none; stroke: currentColor; stroke-width:1.2;
   stroke-linecap:round; stroke-linejoin:round; }
 .pinskip__label { display:inline-block; max-width:0; overflow:hidden; white-space:nowrap; opacity:0;
   font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color: var(--tx-inv);

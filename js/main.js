@@ -724,6 +724,7 @@ var UI = (function () {
         return { x: W / 2 + (spots[k].x - cam.cx) * W * cam.z, y: H / 2 + (spots[k].y - cam.cy) * H * cam.z };
       },
       nodes: function () { return sky0 ? sky0.probe() : []; },
+      bonds: function () { return sky0 ? sky0.bonds() : 0; },
       N: N
     };
   }
@@ -1299,7 +1300,7 @@ var UI = (function () {
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       var n = count(), i;
       if (!fixed) {
-        nodes = [];
+        nodes = []; bonds = [];
         for (i = 0; i < n; i++) nodes.push(seed());
         cur.x = W * 0.35; cur.y = H * 0.55;
       } else {
@@ -1320,9 +1321,30 @@ var UI = (function () {
     function eOutC(x) { return 1 - Math.pow(1 - x, 2); }
 
     /* the nodes drift (and, with the pointer in, are pushed or gathered) */
+    /* touch (phones): a tap calls a few of the nearest stars to the finger
+       (pulled: tx, ty, until pullTo); a drag that starts on a star joins
+       the stars it passes (bonds: a, b, rest length L), and joined stars
+       keep their shape and drift as one */
+    var bonds = [], chain = null, drag = null, now2 = 0;
+    function bondsHold() {
+      for (var b = 0; b < bonds.length; b++) {
+        var bd = bonds[b], A = nodes[bd.a], B = nodes[bd.b];
+        if (!A || !B) continue;
+        var dx = (B.x - A.x) * W, dy = (B.y - A.y) * H, d = Math.sqrt(dx * dx + dy * dy) || 1, k = (d - bd.L) / d * 0.25;
+        A.x += dx * k / W; A.y += dy * k / H; B.x -= dx * k / W; B.y -= dy * k / H;
+        var vx = (A.vx + B.vx) / 2, vy = (A.vy + B.vy) / 2;
+        A.vx += (vx - A.vx) * 0.2; A.vy += (vy - A.vy) * 0.2; B.vx += (vx - B.vx) * 0.2; B.vy += (vy - B.vy) * 0.2;
+      }
+    }
     function move(px, py, withPointer) {
+      now2 = performance.now();
       for (var i = 0, n = nodes.length; i < n; i++) {
         var p = nodes[i], x = p.x * W, y = p.y * H;
+        if (p.pullTo && now2 < p.pullTo) {
+          x += (p.tx - x) * 0.06; y += (p.ty - y) * 0.06;
+          p.x = x / W; p.y = y / H;
+          continue;
+        } else if (p.pullTo) p.pullTo = 0;
         x += p.vx; y += p.vy;
         if (x < 0 || x > W) p.vx *= -1;
         if (y < 0 || y > H) p.vy *= -1;
@@ -1338,6 +1360,7 @@ var UI = (function () {
         }
         p.x = x / W; p.y = y / H;
       }
+      if (bonds.length) bondsHold();
     }
 
     var realSince = 0, letGo = null;
@@ -1387,6 +1410,22 @@ var UI = (function () {
             ctx.strokeStyle = "rgba(124,77,224," + ((fixed ? 0.3 : 0.5) * (1 - Math.sqrt(d2) / LINK)).toFixed(3) + ")";
             ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(X[j], Y[j]); ctx.stroke();
           }
+        }
+      }
+
+      /* the stars joined by a finger, and the line still being drawn */
+      if (bonds.length || (chain && chain.length)) {
+        ctx.lineWidth = 1.3 * iz;
+        ctx.strokeStyle = "rgba(244,222,180,.8)";
+        for (k = 0; k < bonds.length; k++) {
+          var ba = bonds[k].a, bb = bonds[k].b;
+          if (ba >= n || bb >= n) continue;
+          ctx.beginPath(); ctx.moveTo(X[ba], Y[ba]); ctx.lineTo(X[bb], Y[bb]); ctx.stroke();
+        }
+        if (chain && chain.length && drag) {
+          var la = chain[chain.length - 1];
+          ctx.strokeStyle = "rgba(244,222,180,.5)";
+          ctx.beginPath(); ctx.moveTo(X[la], Y[la]); ctx.lineTo(drag.x, drag.y); ctx.stroke();
         }
       }
 
@@ -1472,18 +1511,67 @@ var UI = (function () {
       if (on) { liveSince = performance.now(); liveK = 0; ghostT0 = liveSince; ghostPhase = 0; leftAt = 0; cur.x = W * 0.35; cur.y = H * 0.55; }
       else { touch = false; release(); real.on = false; leftAt = 0; }
     }
+    function fieldAt(e) {
+      var r = (fixed ? canvas : host).getBoundingClientRect();
+      return { x: cam.cx + (e.clientX - r.left - W / 2) / cam.z, y: cam.cy + (e.clientY - r.top - H / 2) / cam.z };
+    }
+    function nearest(pt, within) {
+      var best = -1, bd = within * within;
+      for (var i = 0; i < nodes.length; i++) {
+        var dx = nodes[i].x * W - pt.x, dy = nodes[i].y * H - pt.y, d2 = dx * dx + dy * dy;
+        if (d2 < bd) { bd = d2; best = i; }
+      }
+      return best;
+    }
+    function joinTo(k) {
+      var last = chain[chain.length - 1];
+      if (k === last) return;
+      for (var b = 0; b < bonds.length; b++) if ((bonds[b].a === last && bonds[b].b === k) || (bonds[b].a === k && bonds[b].b === last)) { chain.push(k); return; }
+      var dx = (nodes[k].x - nodes[last].x) * W, dy = (nodes[k].y - nodes[last].y) * H;
+      bonds.push({ a: last, b: k, L: Math.sqrt(dx * dx + dy * dy) });
+      if (bonds.length > 60) bonds.shift();
+      chain.push(k);
+    }
+    /* a tap: the four nearest stars (within reach) drift over to the finger
+       and settle around it, then go back to drifting */
+    function callNear(pt) {
+      var list = [];
+      for (var i = 0; i < nodes.length; i++) {
+        var dx = nodes[i].x * W - pt.x, dy = nodes[i].y * H - pt.y, d2 = dx * dx + dy * dy;
+        if (d2 < 260 * 260) list.push({ i: i, d: d2 });
+      }
+      list.sort(function (a, b) { return a.d - b.d; });
+      list.slice(0, 4).forEach(function (o, q) {
+        var p = nodes[o.i], a = q * 1.5708 + Math.random() * 0.8, r = 26 + Math.random() * 30;
+        p.tx = pt.x + Math.cos(a) * r; p.ty = pt.y + Math.sin(a) * r; p.pullTo = performance.now() + 3000;
+      });
+    }
+    var tStart = null;
     var onDown = function (e) {
       if (!live || !gate()) return;
-      if (e.pointerType !== "mouse") { touch = true; holdTo = 0; clus = true; setReal(e); }
+      if (e.pointerType === "mouse") return;
+      var pt = fieldAt(e), k = nearest(pt, 34 / cam.z);
+      tStart = { x: e.clientX, y: e.clientY, pt: pt };
+      if (k >= 0) { chain = [k]; drag = pt; }
+      else { chain = null; drag = null; }
     };
     var onMove = function (e) {
       if (!live || !gate()) return;
-      if (e.pointerType === "mouse") setReal(e);
-      else if (touch) setReal(e);
+      if (e.pointerType === "mouse") { setReal(e); return; }
+      if (!chain) return;
+      drag = fieldAt(e);
+      var k = nearest(drag, 30 / cam.z);
+      if (k >= 0) joinTo(k);
     };
-    /* the finger lifts: the cluster stays where it was for 2.5s */
-    var onUp = function (e) { if (e.pointerType !== "mouse") { touch = false; holdTo = performance.now() + 2500; } };
-    var onCancel = function () { touch = false; release(); };
+    var onUp = function (e) {
+      if (e.pointerType === "mouse") return;
+      var moved = tStart ? Math.abs(e.clientX - tStart.x) + Math.abs(e.clientY - tStart.y) : 99;
+      if (live && gate() && moved < 12 && (!chain || chain.length < 2)) callNear(tStart.pt);
+      chain = null; drag = null; tStart = null;
+    };
+    var onCancel = function () { chain = null; drag = null; tStart = null; release(); };
+    /* while a finger draws from a star, the page does not scroll under it */
+    var onTouchMove = function (e) { if (chain && live) e.preventDefault(); };
     var onLeave = function (e) { if (e.pointerType === "mouse") release(); };
     var reduceNow = !fixed && reduce;
     if (!reduceNow) {
@@ -1492,6 +1580,7 @@ var UI = (function () {
       host.addEventListener("pointerup", onUp, { passive: true });
       host.addEventListener("pointercancel", onCancel, { passive: true });
       host.addEventListener("pointerleave", onLeave, { passive: true });
+      host.addEventListener("touchmove", onTouchMove, { passive: false });
     }
 
     /* ---- the bleeds: their own loop ---- */
@@ -1525,12 +1614,14 @@ var UI = (function () {
       host.removeEventListener("pointerup", onUp);
       host.removeEventListener("pointercancel", onCancel);
       host.removeEventListener("pointerleave", onLeave);
+      host.removeEventListener("touchmove", onTouchMove);
     }
 
     return { size: size, setCamera: setCamera, setHotspots: setHotspots, setLive: setLive,
              step: step, draw: draw, destroy: destroy,
              /* for verification: the nodes in field px */
-             probe: function () { return nodes.map(function (q) { return { x: q.x * W, y: q.y * H }; }); } };
+             probe: function () { return nodes.map(function (q) { return { x: q.x * W, y: q.y * H }; }); },
+             bonds: function () { return bonds.length; } };
   }
   window.spkConstellation = constellation;
 
@@ -5326,7 +5417,7 @@ var UI = (function () {
   btn.className = "pinskip";
   btn.setAttribute("aria-label", (window.SITE_UI && window.SITE_UI.skip) || "Skip this section");
   btn.innerHTML = '<span class="pinskip__label" aria-hidden="true">Skip now</span>' +
-    '<svg class="pinskip__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg>';
+    '<svg class="pinskip__arrow" viewBox="0 0 44 24" aria-hidden="true"><path d="M3 12h37M34 6l6 6-6 6"/></svg>';
   btn.hidden = true;
   document.body.appendChild(btn);
 
