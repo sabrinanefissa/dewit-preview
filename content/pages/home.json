@@ -272,7 +272,7 @@
       "type": "out",
       "id": "idea",
       "anchor": false,
-      "enabled": true,
+      "enabled": false,
       "label": "Relationships are the operating system.",
       "image": {
         "src": "assets/img/keynote-1280.webp",
@@ -306,7 +306,7 @@
       "type": "bleed",
       "id": "idea",
       "anchor": false,
-      "enabled": false,
+      "enabled": true,
       "constellation": true,
       "image": {
         "src": "assets/img/keynote-1280.webp",

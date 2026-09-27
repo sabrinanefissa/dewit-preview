@@ -907,7 +907,11 @@ var UI = (function () {
   /* --- Constellation ---
      The pointer is a gold node that joins the network. At rest (and on touch,
      unless a finger is down) a ghost pointer wanders and links nodes, so the
-     behaviour is shown before anyone touches it. One per .bleed__canvas. */
+     behaviour is shown before anyone touches it. One per .bleed__canvas.
+     Touch: a tap (or a finger held and dragged) pulls the nodes within reach
+     into a cluster around the finger (they gather to about 34px from it and
+     no closer) and the cluster follows the finger; after a tap it holds for
+     2.5s, then the ghost takes over again and the nodes drift apart. */
   [].slice.call(document.querySelectorAll(".bleed__canvas")).forEach(function (canvas) {
     if (!canvas.getContext) return;
     var host = canvas.closest(".bleed");
@@ -919,6 +923,7 @@ var UI = (function () {
     var LINK = 160, LINK2 = LINK * LINK, REACH = 240, REACH2 = REACH * REACH, PUSH = 120, PUSH2 = PUSH * PUSH;
     /* real pointer target, drawn (trailing) position, and intensity 0.6 ghost .. 1 real */
     var real = { on: false, x: 0, y: 0 }, cur = { x: 0, y: 0 }, amp = 0.6;
+    var clus = false, holdTo = 0, CL_REACH = 300, CL_REACH2 = CL_REACH * CL_REACH, CL_R = 34;
     var ghostT0 = performance.now(), ghostPhase = 0, ghostBlend = 1, leftAt = 0;
     var halo = document.createElement("canvas");
     (function () {
@@ -934,7 +939,7 @@ var UI = (function () {
       canvas.width = W * dpr; canvas.height = H * dpr;
       canvas.style.width = W + "px"; canvas.style.height = H + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.max(18, Math.min(46, Math.round(W / 46)));
+      var n = Math.max(26, Math.min(46, Math.round(W / 46)));
       nodes = [];
       for (var i = 0; i < n; i++) {
         nodes.push({ x: Math.random() * W, y: Math.random() * H,
@@ -957,7 +962,13 @@ var UI = (function () {
           if (p.x < 0 || p.x > W) p.vx *= -1;
           if (p.y < 0 || p.y > H) p.vy *= -1;
           var ex = p.x - px, ey = p.y - py, e2 = ex * ex + ey * ey;
-          if (e2 < PUSH2 && e2 > 1) { var e = Math.sqrt(e2); p.x += ex / e * 0.4; p.y += ey / e * 0.4; }
+          if (clus) {
+            /* touch: gather toward the finger, stopping at a ring of CL_R */
+            if (e2 < CL_REACH2 && e2 > 1) {
+              var ec = Math.sqrt(e2), f = ec > CL_R ? -Math.min(3, 0.06 * (ec - CL_R)) : 0.6;
+              p.x += ex / ec * f; p.y += ey / ec * f;
+            }
+          } else if (e2 < PUSH2 && e2 > 1) { var e = Math.sqrt(e2); p.x += ex / e * 0.4; p.y += ey / e * 0.4; }
         }
       }
       ctx.lineWidth = 1;
@@ -989,9 +1000,11 @@ var UI = (function () {
       ctx.beginPath(); ctx.arc(px, py, 3.5, 0, 6.2832); ctx.fill();
       ctx.globalAlpha = 1;
     }
-    var realSince = 0;
+    var realSince = 0, letGo = null;
     function loop(t) {
       if (visible && !document.hidden) {
+        /* a tap's cluster holds, then lets go */
+        if (holdTo && t > holdTo) { holdTo = 0; if (letGo) letGo(); }
         var g = ghostAt(t);
         if (real.on) {
           var h = ease((t - realSince) / 450);
@@ -1017,6 +1030,12 @@ var UI = (function () {
         if (!real.on) { real.on = true; realSince = performance.now(); leftAt = 0; }
       }
       function release() {
+        /* a cluster lets go: its nodes drift back out, each on its own heading */
+        if (clus) nodes.forEach(function (p) {
+          var ex = p.x - real.x, ey = p.y - real.y, e = Math.sqrt(ex * ex + ey * ey);
+          if (e < CL_R * 3 && e > 0.5) { var v = 0.18 + Math.random() * 0.22; p.vx = ex / e * v; p.vy = ey / e * v; }
+        });
+        clus = false; holdTo = 0;
         if (!real.on) return;
         real.on = false; leftAt = performance.now();
         /* the ghost resumes from where the pointer left */
@@ -1024,12 +1043,14 @@ var UI = (function () {
         ghostPhase = 0;
         cur.x = real.x; cur.y = real.y;
       }
-      host.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { touch = true; setReal(e); } }, { passive: true });
+      letGo = release;
+      host.addEventListener("pointerdown", function (e) { if (e.pointerType !== "mouse") { touch = true; holdTo = 0; clus = true; setReal(e); } }, { passive: true });
       host.addEventListener("pointermove", function (e) {
         if (e.pointerType === "mouse") setReal(e);
         else if (touch) setReal(e);
       }, { passive: true });
-      host.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { touch = false; release(); } }, { passive: true });
+      /* the finger lifts: the cluster stays where it was for 2.5s */
+      host.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") { touch = false; holdTo = performance.now() + 2500; } }, { passive: true });
       host.addEventListener("pointercancel", function () { touch = false; release(); }, { passive: true });
       host.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") release(); }, { passive: true });
       var resT; window.addEventListener("resize", function () { clearTimeout(resT); resT = setTimeout(size, 200); });
