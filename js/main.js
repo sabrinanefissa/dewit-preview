@@ -5175,7 +5175,7 @@ var UI = (function () {
 /* ===== 14. Skip: a thin arrow out of every long pinned section =====
    While a long pinned section holds the screen (its sticky stage pinned,
    its track at least 1.8 screens of scroll), a thin arrow sits in the
-   bottom-right corner; a press takes the page to the end of that pin.
+   bottom-right corner; a press takes the page to the next section.
    The words "Skip now" slide out beside the arrow only while the visitor
    shows they want out, and fold away after 3s without another sign:
      - scrolling fast (over 2.5 screens a second for 250ms)
@@ -5288,9 +5288,33 @@ var UI = (function () {
     my = e.clientY; mt = now;
   }, { passive: true });
 
+  /* where a press lands: the top of the NEXT section (the first visible
+     section after this one), so the next section fills the screen. Where
+     that next section is itself a pinned stage with its own opening (the
+     talks rising under the candle wheel on desktop), land on its heading:
+     72% of its head beat in. Never before the end of the current pin
+     when the next section starts after it. */
+  function target(tr) {
+    var sec = tr.closest("section"), nx = sec && sec.nextElementSibling;
+    while (nx && (nx.tagName !== "SECTION" || !nx.offsetHeight)) nx = nx.nextElementSibling;
+    var end = pageTop(tr) + tr.offsetHeight - vh() + 2;
+    if (!nx) return end;
+    var y = pageTop(nx);
+    /* a section that scrolls normally lands just under the fixed nav, so
+       its heading is not hidden behind it (a pinned one fills the screen
+       from the top) */
+    var stk = nx.querySelector(".thread__stage, .spk-said__stage, .spk-keys__stage, .spk-chap__stage, .spk-formats__stage, .tstrip__stage, .steps__sticky");
+    var nav = document.querySelector(".nav, #nav");
+    if (!(stk && getComputedStyle(stk).position === "sticky") && nav) y -= nav.offsetHeight;
+    if (nx.classList.contains("spk-keys") && nx.getAttribute("data-spk-keys-mode") === "pin") {
+      var head = parseFloat(nx.getAttribute("data-head")) || 240;
+      y += 0.72 * head * vh() / 100;
+    }
+    return Math.max(y, Math.min(end, y));
+  }
   btn.addEventListener("click", function () {
     if (!cur) return;
-    var y = pageTop(cur) + cur.offsetHeight - vh() + 2;
+    var y = target(cur);
     jumping = 1;
     btn.classList.remove("is-intent");
     var done = function () { jumping = 0; };
