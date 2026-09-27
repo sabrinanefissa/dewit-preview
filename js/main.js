@@ -1935,7 +1935,7 @@ var UI = (function () {
 
     /* ---- the stage: one spine entry ---- */
     function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
-    var HEAD  = num("data-head", 90);             /* svh: the heading alone */
+    var HEAD  = num("data-head", 240);            /* svh: the stage picture and the heading alone */
     var PANEL = num("data-panel", 80);            /* svh: one talk */
     var U = HEAD + N * PANEL + 50;                /* svh of scroll across the pin (380 for three) */
     /* the candle wheel this stage rises over: the section right before it */
@@ -1956,14 +1956,18 @@ var UI = (function () {
       /* the heading waits until the wheel's candles have faded (u 40-70),
          then rises over 70%-90% of the head (63-81 for a 90svh head) and
          holds to its end; it leaves over the first half of talk 01 */
-      var hd = u < HEAD ? smooth(clamp((u - 0.7 * HEAD) / (0.2 * HEAD)))
-                        : 1 - smooth(clamp((u - HEAD) / (0.5 * PANEL)));
+      /* for a 240svh head: the wheel's velvet fades up into the stage
+         picture over 0-173, slowly at first (eased, then squared: the
+         picture shows through from about 60), the candles over 19-79; the
+         heading rises over 149-178, holds, and is gone over 216-240, before talk 01's
+         picture comes in at HEAD: the heading is only ever on this picture */
+      var hd = smooth(clamp((u - 0.62 * HEAD) / (0.12 * HEAD))) * (1 - smooth(clamp((u - 0.9 * HEAD) / (0.1 * HEAD))));
       var on = u >= HEAD;
       /* talk k (k >= 1) wipes in over the first 40% of its own phase */
       wi[0] = 1; wi[N] = 0;
       for (k = 1; k < N; k++) wi[k] = clamp(clamp((u - HEAD - k * PANEL) / PANEL) / 0.4);
       var wheel = !!said && said.classList.contains("is-wheel");
-      var rv = wheel ? clamp(u / 60) : 1;
+      var rv = wheel ? Math.pow(smooth(clamp(u / (0.72 * HEAD))), 1.8) : 1;
       /* the ground is always up: the wheel stays in front (z 3) and its
          velvet fades out over it instead */
       put(ground, "reveal", "--reveal", 1);
@@ -1972,7 +1976,7 @@ var UI = (function () {
       /* ...and then its candles fade out as they slide (u 40-70) */
       if (wheel) {
         put(said, "rootReveal", "--spk-keys-reveal", rv);
-        put(said, "rootGone", "--spk-keys-gone", clamp((u - 40) / 30));
+        put(said, "rootGone", "--spk-keys-gone", smooth(clamp((u - 0.08 * HEAD) / (0.25 * HEAD))));
       } else if (last.rootReveal) {
         if (said) { said.style.removeProperty("--spk-keys-reveal"); said.style.removeProperty("--spk-keys-gone"); }
         last.rootReveal = ""; last.rootGone = "";
@@ -2939,15 +2943,19 @@ var UI = (function () {
      60-540   six beats of 80svh. Beat k: the line arrives over the first
               20%, the wheel turns 40 degrees (eased) over the last 45%
               while the line leaves; the bridge (06) arrives on beat 5
-     540-620  the sixth candle lit, the bridge holds
-     620-720  the ending (g 0-1): "Three talks." up behind the candle
-              (0-0.2); the top candle and its two neighbours rise out of
-              the ring into a row of three upright lit candles (0.2-0.75),
-              the rest fade (0-0.3); A rolls up and out, B up and in
-     700-780  the push: a camera scale x2.4 (phones x3.2) about the point
-              between the left and the middle candle (the velvet follows,
-              x1.12)
-     680-780  the stage is held (on every screen); where the talks section
+     (desktop, data-grow 160, below as uT)
+     500-660  the ending (g 0-1), half a beat after the bridge: "Three
+              talks." up high, above the resting candle (0-0.1); the top
+              candle and its two neighbours rise out of the ring into a
+              row of three upright lit candles (0.1-0.4), the rest fade
+              (0-0.3); the row lifts 0.26 H (0.35-0.62) so the wax covers
+              A (behind the canvas), which fades under it (0.55-0.68); B
+              rolls up into its own window in front (0.6-0.78)
+     628-720  the push: a camera scale x2.4 about the point between the
+              left and the middle candle (the velvet follows, x1.12)
+     720-820  held while the talks' stage picture fades up slowly through
+              the velvet (module 2, the talks' first 173svh)
+     720-820  the stage is held (on every screen); where the talks section
               is pinned it rises under it: the velvet fades, the talks show in the
               gap, the candles stay in front (z 3, no pointer events) and
               scroll away, fading out over the talks' u 40-70
@@ -2989,7 +2997,8 @@ var UI = (function () {
     function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
     var INTRO = num("data-intro", 60);          /* svh of scroll across the intro */
     var BEAT = num("data-beat", 80);            /* svh of scroll per beat */
-    var GROW_D = num("data-grow", 100);         /* svh of scroll across the ending (desktop) */
+    var GROW_D = num("data-grow", 160);         /* svh of scroll across the ending (desktop) */
+    var FADE_D = 100;                           /* desktop: svh the stage holds after the push while the talks' picture fades up through the velvet */
     var GROW_P = num("data-grow-phone", 480);   /* the same on phones: the long grow */
     /* set by build() for the screen: desktop B0 = (N + 1) beat (560) and
        U = 780; phones B0 = (N - 0.6) beat (432: no hold beat, the ending
@@ -3119,8 +3128,10 @@ var UI = (function () {
         if (loaded450) { imgs = [[], []]; loadSet(0); if (loaded900) loadSet(1); }
       }
       GROW = phone ? GROW_P : GROW_D;
-      B0 = phone ? (N - 0.6) * BEAT : (N + 1) * BEAT;
-      U = INTRO + B0 + GROW + (phone ? 100 : 60);
+      /* desktop: the ending starts half a beat after the bridge's (no hold
+         beat): "Three talks." comes up 24svh after line 06 is in */
+      B0 = phone ? (N - 0.6) * BEAT : (N - 0.5) * BEAT;
+      U = INTRO + B0 + GROW + (phone ? 100 : 60 + FADE_D);
       hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(520, H * 0.44));
       Rw = W * (phone ? 0.44 : 0.40);
       cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
@@ -3200,7 +3211,7 @@ var UI = (function () {
            can cross it */
         if (j < LAST) { if (beat === j) on = Math.min(arrive, 1 - smooth(clamp(tTurn / 0.3))); }
         else if (beat === LAST) on = arrive;
-        else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.06 : 0.2)));
+        else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.06 : 0.1)));
         put(lines[j], "l" + j, "--on", on);
         if (limgs[j]) put(limgs[j], "li" + j, "--on", on);
       }
@@ -3214,7 +3225,7 @@ var UI = (function () {
          rise on (g > 0.2), through the end. A filler is lit only as one of
          the three. */
       var now = performance.now();
-      var rise = g > 0.2;
+      var rise = g > (phone ? 0.2 : 0.12);
       for (var i = 0; i < NP; i++) {
         var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST) && (phone || tI > 0.5)) ? 1 : 0;
         if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
@@ -3228,11 +3239,15 @@ var UI = (function () {
          held to g 0.38 (about 150svh) while the candle rises behind it; no
          shared window there (A mid, B low), so a crossfade instead of the
          roll: A out rising over g 0.38-0.48, B in rising over 0.44-0.56 */
-      put(nextA, "na", "--na", smooth(clamp(g / (phone ? 0.06 : 0.2))));
-      /* one roll through one window: A up and out, B up and in */
-      var roll = phone ? 0 : smooth(clamp((g - 0.2) / 0.3));
-      put(nextA, "rollA", "--roll", roll);
-      put(nextB, "rollB", "--roll", roll);
+      /* desktop: A comes up high, above the resting candle (g 0-0.1), and
+         stays while the three rise into their row (0.1-0.4) and then lift
+         (0.35-0.62) until their wax covers it (A is behind the canvas); it
+         fades out under them (0.55-0.68); then B rolls up into its own
+         window in front of the wax (0.6-0.78) */
+      put(nextA, "na", "--na", phone ? smooth(clamp(g / 0.06))
+                                      : smooth(clamp(g / 0.1)) * (1 - smooth(clamp((g - 0.55) / 0.13))));
+      put(nextA, "rollA", "--roll", 0);
+      put(nextB, "rollB", "--roll", phone ? 0 : smooth(clamp((g - 0.6) / 0.18)));
       if (phone) {
         var nao = smooth(clamp((g - 0.38) / 0.10));
         put(nextA, "nao", "--nao", nao);
@@ -3383,8 +3398,10 @@ var UI = (function () {
       var cxW = W * cxF;
       /* phones: over the first 30svh of the grow (g 0-0.0625 of 480) */
       var others = 1 - clamp(g / (phone ? 30 / GROW : 0.3));
-      /* the three rise from their rim poses to the row over g 0.2-0.75 */
-      var r = smooth(clamp((g - 0.2) / 0.55));
+      /* the three rise from their rim poses to the row over g 0.1-0.4,
+         then the row lifts 0.26 H over g 0.35-0.62, over "Three talks." */
+      var r = smooth(clamp((g - 0.1) / 0.3));
+      var lift = phone ? 0 : 0.26 * H * smooth(clamp((g - 0.35) / 0.27));
       /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
          x2, linear with an ease-in over the first 8% of its p only, about
          the point PIV hC up its axis, which itself travels up to PIV_Y H on
@@ -3431,7 +3448,7 @@ var UI = (function () {
           poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
         } else {
           toRow(x, y, rot, jR, r);
-          x = PZ.x; y = PZ.y; rot = PZ.rot; sc = PZ.s;
+          x = PZ.x; y = PZ.y - lift; rot = PZ.rot; sc = PZ.s;
           a += (1 - a) * r;
           poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
         }

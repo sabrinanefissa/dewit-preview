@@ -46,6 +46,8 @@ const PORTRAITS = [
   'out-aisle',               //   (and the speaking walk-out)
   'room-offsite',
   'keynote',                 // home out ("idea") and the bleed
+  'pos-honest',              // speaking chap: the takeaways (positive stills; Trust is out-aisle)
+  'pos-curiosity', 'pos-shared', 'pos-confidence',
 ];
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

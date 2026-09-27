@@ -1415,7 +1415,7 @@ html.no-js .spk-voice { display:none; }
    --------------------------------------------------------------------- */
 .spk-keys { position:relative; background: transparent; color: var(--tx-inv); }
 /* under the candle wheel's held stage (a pinned wheel is z 3, see A.) */
-.spk-keys { margin-top: -60svh; z-index: 2; }
+.spk-keys { margin-top: -160svh; z-index: 2; }
 /* only over a pinned wheel: no script, reduced motion, Save-Data and
    phones (where this section is not pinned) have none */
 html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { margin-top:0; }
@@ -1933,7 +1933,7 @@ html.no-js .spk-said__candle { display:none; }
    lines: --beats), a 100svh ending and 60svh over the talks section as it
    rises: 780svh for six lines (--intro, --beats, --beat, --grow: the
    section's inline style). */
-.spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) + 1) * var(--beat, 80) + var(--grow, 100) + 60) * 1svh); }
+.spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.5) * var(--beat, 80) + var(--grow, 160) + 160) * 1svh); }
 .spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
 .spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
   width:100%; height:100%; pointer-events:none; }
@@ -1952,7 +1952,9 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__stage { pointer-events:none; }
 .spk-said.is-wheel .spk-said__velvet,
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
-.spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
+/* the candles fade (--spk-keys-gone) well before the velvet has gone
+   (--spk-keys-reveal), so the talks' picture comes up slowly through it */
+.spk-said.is-wheel .spk-said__wheel { opacity: calc(1 - var(--spk-keys-gone, 0)); }
 /* phones: no pinned talks take the wheel over, so it hands off by itself
    (module 7): the candle's bottom always fades into the velvet (in the
    canvas, no CSS mask, a still band); the grow is over 250svh before
@@ -1992,7 +1994,9 @@ html.no-js .spk-said__candle { display:none; }
   transform: translateX(-50%); width: calc(100% - 2 * var(--gutter));
   font-size: clamp(5.5rem, 12vw, 11rem); height: 2em;
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
-.spk-said.is-wheel .spk-said__win--a { z-index:1; }
+/* A alone, high: one row from 6% down, above the resting candle's flame,
+   so the lifting row of three covers it */
+.spk-said.is-wheel .spk-said__win--a { z-index:1; top:6%; height:1.2em; }
 /* the key word of each ending line in the italic face */
 .spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
@@ -2003,7 +2007,7 @@ html.no-js .spk-said__candle { display:none; }
   font-size: 1em; font-weight:340; line-height: 1.0; letter-spacing: -0.035em;
   text-align:center; text-wrap: balance; }
 /* A sits on the window's lower row (a one-line padding above it) */
-.spk-said.is-wheel .spk-said__nextA { padding-top: 1em;
+.spk-said.is-wheel .spk-said__nextA { padding-top: 0.1em;
   transform: translateY(calc((1 - var(--na, 0)) * 16px + var(--roll, 0) * -100%));
   opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
 .spk-said.is-wheel .spk-said__nextB { max-width: 13ch;
@@ -2143,7 +2147,7 @@ html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
   background: var(--violet-300);
   box-shadow: 0 0 18px 6px rgba(169,133,230,.55), 0 0 48px 16px rgba(169,133,230,.18); }
 /* the .spk-keys__tab typography; .62 is the contrast floor, keep it */
-.spk-chap__tab { position:absolute; left:0; top: calc(var(--i) * 50%); transform: translateY(-50%);
+.spk-chap__tab { position:absolute; left:0; top: calc(var(--i) / max(1, var(--chapters, 3) - 1) * 100%); transform: translateY(-50%);
   display:flex; align-items:center; gap:.9rem; padding:.3rem .5rem .3rem 0; white-space:nowrap;
   font-family: var(--f-display); font-size: var(--step-1); font-weight:360;
   letter-spacing:-0.02em; line-height:1.06;
@@ -2171,6 +2175,13 @@ html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
   display:grid; min-height:1em; }
 .spk-chap__chapter[data-spot="ul"] { left: clamp(4rem, 8vw, 7rem); top: 27svh; text-align:left; }
 .spk-chap__chapter[data-spot="lr"] { right: clamp(1rem, 4vw, 3rem); bottom: 14svh; text-align:right; }
+/* centred on the still (spot "c"): the word, then its line, in the same
+   place, over a soft shadow */
+html:not(.no-js) .spk-chap:not(.is-static):not(.is-phone) .spk-chap__chapter[data-spot="c"] {
+  left:50%; top:50%; transform: translate(-50%, -50%); width: min(26ch, 100%); text-align:center; }
+.spk-chap__chapter[data-spot="c"] .spk-chap__word,
+.spk-chap__chapter[data-spot="c"] .spk-chap__text { align-self:center; text-wrap: balance;
+  text-shadow: 0 2px 28px rgba(0,0,0,.6), 0 0 60px rgba(20,10,28,.45); }
 .spk-chap__chapter:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
 /* phones only */
 .spk-chap__frame { display:none; }

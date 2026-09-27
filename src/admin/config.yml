@@ -610,7 +610,7 @@ collections:
                     fields:
                       - { label: "Intro length (svh)", name: intro, widget: number, required: false, hint: "The first candle rising into the wheel before the first line. Default: 60" }
                       - { label: "Scroll per beat (svh)", name: beat, widget: number, required: false, hint: "How much scroll turns the wheel one candle. Default: 80" }
-                      - { label: "Ending length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on the three candles rising and the push between them. Default: 100" }
+                      - { label: "Ending length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on "Three talks.", the three candles rising over it, the second line and the push between them. Default: 160" }
                       - { label: "Ending length on phones (svh)", name: growPhone, widget: number, required: false, hint: "Ending length on phones. Default: 480" }
 
           # ----------------------------------------------------------- keys
@@ -678,7 +678,7 @@ collections:
                     widget: object
                     required: false
                     fields:
-                      - { label: "Heading-alone stage length (svh)", name: head, widget: number, required: false, hint: "Default: 90" }
+                      - { label: "Heading-alone stage length (svh)", name: head, widget: number, required: false, hint: "The stage picture fading up and its heading, before the first talk. Default: 240" }
                       - { label: "Scroll per talk panel (svh)", name: panel, widget: number, required: false, hint: "Default: 80" }
 
           # ----------------------------------------------------------- chap
@@ -701,7 +701,7 @@ collections:
                   - { label: Word (the tab), name: word, widget: string }
                   - { label: Text, name: text, widget: text, hint: "Allows one *emphasis* word (styled as the chapter's key word)." }
                   - { label: Tone, name: tone, widget: select, options: [violet, bone] }
-                  - { label: "Spot (where the type sits)", name: spot, widget: select, options: [ul, lr] }
+                  - { label: "Spot (where the type sits)", name: spot, widget: select, options: [c, ul, lr], hint: "c: centred on the picture. ul: upper left. lr: lower right." }
                   - *placement
                   - label: Still image
                     name: still

@@ -204,7 +204,7 @@
           "word": "Think",
           "text": "You find yourself thinking of past conversations, this time from a different *perspective*",
           "tone": "violet",
-          "spot": "ul",
+          "spot": "c",
           "still": {
             "src": "/assets/img/feeling lonely at work.png",
             "sizes": "100vw"
@@ -214,7 +214,7 @@
           "word": "Feel",
           "text": "How we feel becomes the *patterns* we carry, shaping how we show up in every room",
           "tone": "bone",
-          "spot": "lr",
+          "spot": "c",
           "still": {
             "src": "assets/img/chap-feel-1664.webp",
             "sizes": "100vw"
@@ -224,9 +224,59 @@
           "word": "Act",
           "text": "What moved you starts *changing* what you do",
           "tone": "violet",
-          "spot": "lr",
+          "spot": "c",
           "still": {
             "src": "/assets/img/ACT.png",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Trust",
+          "text": "You walk out *trusting* the people beside you a little more",
+          "tone": "bone",
+          "spot": "c",
+          "still": {
+            "src": "assets/img/out-aisle-1664.webp",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Honest conversation",
+          "text": "The conversation you kept putting off finally becomes an *honest* one",
+          "tone": "violet",
+          "spot": "c",
+          "still": {
+            "src": "assets/img/pos-honest.jpg",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Curiosity",
+          "text": "Instead of judging the person across the table, you get *curious* about them",
+          "tone": "bone",
+          "spot": "c",
+          "still": {
+            "src": "assets/img/pos-curiosity.jpg",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Shared responsibility",
+          "text": "The weight stops sitting on one person. It becomes *shared*",
+          "tone": "violet",
+          "spot": "c",
+          "still": {
+            "src": "assets/img/pos-shared.jpg",
+            "sizes": "100vw"
+          }
+        },
+        {
+          "word": "Confidence",
+          "text": "You walk back into your work with a quieter kind of *confidence*",
+          "tone": "bone",
+          "spot": "c",
+          "still": {
+            "src": "assets/img/pos-confidence.jpg",
             "sizes": "100vw"
           }
         }
@@ -235,7 +285,7 @@
     {
       "type": "out",
       "id": "walkout",
-      "enabled": true,
+      "enabled": false,
       "heading": "What the room walks out with.",
       "settings": null,
       "image": {

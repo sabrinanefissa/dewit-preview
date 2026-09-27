@@ -24,7 +24,7 @@
        Phones: no pin, a horizontal snap strip of the three talks.
        Reduced motion and no script: the three talks stacked.
        ============================================================== -->
-  {%- set head = block | motion('head', 90) %}{% set panel = block | motion('panel', 80) %}
+  {%- set head = block | motion('head', 240) %}{% set panel = block | motion('panel', 80) %}
   <section class="spk-keys"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-head="{{ head }}" data-panel="{{ panel }}" style="--panels:{{ block.talks.length }};--head-svh:{{ head }};--panel-svh:{{ panel }}">
     <div class="spk-keys__track">
       <div class="spk-keys__stage">
