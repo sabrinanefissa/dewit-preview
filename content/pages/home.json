@@ -55,6 +55,7 @@
       "enabled": true,
       "ariaLabel": "What the work is about",
       "eyebrow": "The through-line",
+      "statement": "Relationships are the *operating system*.",
       "stations": [
         {
           "pillar": true,
@@ -114,8 +115,11 @@
       ],
       "settings": {
         "motion": {
-          "beat": 80,
-          "beatPhone": 90,
+          "beat": 120,
+          "beatPhone": 130,
+          "zoom": 2.4,
+          "zoomPhone": 2.0,
+          "tail": 100,
           "dolly": 1.04,
           "grade": 0.6
         }
@@ -310,7 +314,7 @@
       "type": "bleed",
       "id": "idea",
       "anchor": false,
-      "enabled": true,
+      "enabled": false,
       "constellation": true,
       "image": {
         "src": "assets/img/keynote-1280.webp",
