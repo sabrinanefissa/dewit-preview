@@ -1955,21 +1955,25 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
 /* phones: no pinned talks take the wheel over, so it hands off by itself
    (module 7): the candle's bottom always fades into the velvet (in the
-   canvas, no CSS mask), and over the track's last 100svh the stage is held
-   while the talks reel's first card (plain plum and its heading, stacked
-   ABOVE the stage: keys z 4 over said z 3) slides up over it; then the
-   stage scrolls away under the reel. The track has no hold beat, a long
+   canvas, no CSS mask, a still band); the grow is over 250svh before
+   the track ends and the talks reel's first card (plain plum and its
+   heading, stacked ABOVE the stage: keys z 4 over said z 3) scrolls up
+   over the still candle; the stage is held for the track's last 100svh,
+   then scrolls away under the reel. The track has no hold beat, a long
    grow (--grow-phone) and the hold's 100svh: 1072svh for six lines. */
 @media (max-width: 768px) {
   .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 100) * 1svh); }
   .spk-keys.is-reel { z-index:4; }
+  /* the reel pulled up 150svh: its first card enters as the grow ends
+     (U - 250) and scrolls up over the still candle */
+  .spk-said.is-wheel + .spk-keys.is-reel { margin-top: -150svh; }
   .spk-keys.is-reel .spk-keys__ground > .pic,
   .spk-keys.is-reel .spk-keys__rest { display:none; }
   /* card 0: plain plum, its top fading in (clear -> plum-2 over its first
-     42%) so it rises over the candle's faded bottom with no edge; the
+     18%) so it rises over the candle's faded bottom with no edge; the
      heading at 30% of the card, on screen when the card is ~70% up */
   .spk-keys.is-reel .spk-keys__head { place-items: start center; padding-top: 30svh;
-    background: linear-gradient(to bottom, rgba(18,10,28,0) 0%, rgba(18,10,28,.6) 22%, var(--plum-2) 42%); }
+    background: linear-gradient(to bottom, rgba(18,10,28,0) 0%, var(--plum-2) 18%); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
@@ -2019,7 +2023,7 @@ html.no-js .spk-said__candle { display:none; }
      it) and B low (its two-row window from 66% down, in front, pinned to
      the end: it leaves with the stage): no shared window, so no roll. A
      comes up (--na, g 0-0.06), stays to g 0.38, and leaves rising 16px
-     (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 100 -> U - 60
+     (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 250 -> U - 215
      (--spk-said-bout) */
   .spk-said.is-wheel .spk-said__win--a { top:33%; }
   .spk-said.is-wheel .spk-said__win--b { top:66%; }
