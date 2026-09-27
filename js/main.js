@@ -2949,7 +2949,8 @@ var UI = (function () {
               scroll away, fading out over the talks' u 40-70
               (--spk-keys-gone, from module 2); on phones (no pinned talks)
               the stage's bottom dissolves over the track's last 120svh
-              (--gone-h, a mask, no fade) and it scrolls away drawn
+              (erased in the canvas, the velvet and B faded) and is
+              invisible by the end of the track
    Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
    crossfaded as it lights (600ms; dark at once, 80ms). Only the current
    candle is lit in the beats, the three from the rise on; a lit flame
@@ -2999,12 +3000,15 @@ var UI = (function () {
     function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
     function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
-    /* the phone grow's curve over g 0.06-1 (p = (g - 0.06) / 0.94): linear,
-       with a quadratic ease-in over the first 8% of p (same slope at the
-       join, so no kink), 0 -> 1 */
-    var S_END = 2.2, ANCHOR_Y = 0.76;           /* phones: the grow's end scale; the anchor's end, of H */
-    function growP(gg) {
-      var q = clamp((gg - 0.06) / 0.94), a = 0.08;
+    /* the phone grow's curve: p runs from g 0.06 (u = B0 + 0.06 GROW) to
+       the END of the track (uT = U, through the dissolve: no plateau);
+       linear, with a quadratic ease-in over the first 8% of p (same slope
+       at the join, so no kink), 0 -> 1 */
+    var S_END = 3.2;                            /* phones: the grow's end scale (at U) */
+    var PIV = 0.40;                             /* phones: the grow's fixed point, of hC up the axis (in the holder) */
+    function growP() {
+      var u0 = B0 + 0.06 * GROW;
+      var q = clamp((u - u0) / (GROW + 60 - 0.06 * GROW)), a = 0.08;
       return (q < a ? q * q / (2 * a) : q - a / 2) / (1 - a / 2);
     }
 
@@ -3205,7 +3209,7 @@ var UI = (function () {
 
       /* the ending's DOM half, in order: line A up behind the resting
          candle (g 0-0.2); the roll as the three start to rise (0.2-0.5) */
-      /* phones: A up over g 0-0.06 (in front), the roll over 0.06-0.20 */
+      /* phones: A up over g 0-0.06 (behind the canvas, as on desktop), the roll over 0.06-0.20 */
       put(nextA, "na", "--na", smooth(clamp(g / (phone ? 0.06 : 0.2))));
       /* one roll through one window: A up and out, B up and in */
       var roll = phone ? smooth(clamp((g - 0.06) / 0.14)) : smooth(clamp((g - 0.2) / 0.3));
@@ -3218,24 +3222,22 @@ var UI = (function () {
          100svh before the track does (680 of 780), and the ending (the
          row, the push) plays in those last 100svh. On desktop the pinned
          talks section rises under it there; on phones (the talks a reel,
-         not pinned) the reel's first card scrolls up under it through its
-         dissolving bottom (--gone-h below), so it is held there too */
+         not pinned) the reel's first card scrolls up under it while the
+         wheel dissolves (below), so it is held there too */
       var HOLD = U - 100;
       var hold = uT > HOLD
         ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
       /* phones: no pinned talks to hand to (--spk-keys-gone is never
-         written there). The exit, the track's last 120svh: the stage's
-         bottom dissolves (--gone-h, the mask's transparent band, 0 -> 80%
-         of the stage; a mask only, no opacity fade) and the reel's first
-         card rises into view through it (from U - 100, where the stage's
-         sticky run ends). After U the stage scrolls away still drawn: the
-         loop stops only once its bottom has left the screen (tick) */
-      if (phone) {
-        var gh = (80 * clamp((uT - (U - 120)) / 120)).toFixed(2) + "%";
-        if (last.goneH !== gh) { last.goneH = gh; sec.style.setProperty("--gone-h", gh); }
-        if (last.goneT !== "0%") { last.goneT = "0%"; sec.style.setProperty("--gone-t", "0%"); }
-      }
+         written there). The exit, the track's last 120svh: the canvas is
+         erased from the bottom up (draw(), no CSS mask: a mask on a
+         full-screen canvas repaints every frame in Safari), the velvet and
+         the veil fade out (--spk-said-out 0 -> 1) and B over the last
+         40svh (--spk-said-bout), while the reel's first card rises into
+         view under it (from U - 100, where the stage's sticky run ends).
+         At U nothing of the stage is visible, so its unpin cannot show */
+      put(sec, "out", "--spk-said-out", phone ? clamp((uT - (U - 120)) / 120) : 0);
+      put(sec, "bout", "--spk-said-bout", phone ? clamp((uT - (U - 40)) / 40) : 0);
       gone = false;
       wake();
     }
@@ -3353,11 +3355,12 @@ var UI = (function () {
       var others = 1 - clamp(g / (phone ? 30 / GROW : 0.3));
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
-      /* phones: the top candle grows instead (g 0.06-1), x1 -> x2.2,
-         linear with an ease-in over the first 8% of its p only, about the
-         point 0.55 hC up its axis, which drifts to (W/2, 0.76 H) on the
-         same curve: the holder ends in the lower third, the wax above */
-      var dg = phone ? growP(g) : 0, S = 1 + (S_END - 1) * dg;
+      /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
+         x3.2, linear with an ease-in over the first 8% of its p only,
+         about a fixed point PIV hC up its axis (no drift): the candle grows
+         up through the frame, the flame passes behind the pinned line and
+         off the top, the holder rises to the middle of the screen */
+      var dg = phone ? growP() : 0, S = 1 + (S_END - 1) * dg;
       /* the camera: k about P, multiplied into every candle's transform */
       var k = 1 + KP * push;
       var gr = 0.55 * hC, fyL = -FL * hC;
@@ -3391,7 +3394,7 @@ var UI = (function () {
         if (jR === 9) a *= others;
         else if (phone) {
           grow = true;
-          Fx = x + 0.55 * hC * Math.sin(rot); Fy = y - 0.55 * hC * Math.cos(rot);
+          Fx = x + PIV * hC * Math.sin(rot); Fy = y - PIV * hC * Math.cos(rot);
           sc = S;
           poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
         } else {
@@ -3404,7 +3407,7 @@ var UI = (function () {
         if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
-        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (ANCHOR_Y * H - Fy) * dg + S * (y - Fy); }
+        if (grow) { ex = Fx + S * (x - Fx); ey = Fy + S * (y - Fy); }
         ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
         var big = hC * dpr * m > 470 ? 1 : 0;
         var Li = L[i];
@@ -3426,6 +3429,23 @@ var UI = (function () {
         if (Li > 0.001) frame(FACE, big, a * Li);
       }
       ctx.globalAlpha = 1;
+      /* phones, the exit (uT U - 120 -> U): erase the drawn wheel (candle
+         and glow) from the bottom up. The clear edge y = H (1 - d) rises
+         with d 0 -> 1.35 over a 0.35 H soft band, so at U it has passed
+         the top and the canvas is empty */
+      if (phone) {
+        var d = 1.6 * clamp((uT - (U - 120)) / 120);
+        if (d > 0) {
+          var y0 = H * (1 - d), eg = ctx.createLinearGradient(0, y0, 0, y0 + 0.6 * H);
+          eg.addColorStop(0, "rgba(0,0,0,0)");
+          eg.addColorStop(1, "rgba(0,0,0,1)");
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.fillStyle = eg;
+          ctx.fillRect(0, 0, W, H);
+          ctx.globalCompositeOperation = "source-over";
+        }
+      }
     }
 
     /* ---- the loop: only while the stage is on screen and the tab shows ----
@@ -3437,24 +3457,6 @@ var UI = (function () {
     function tick(now) {
       raf = 0;
       if (entry.disabled || !onScreen || document.hidden || gone) return;
-      /* phones, past the track: the stage scrolls away; once its bottom is
-         above the screen there is nothing to draw */
-      if (phone && uT >= U) {
-        var sb = stage.getBoundingClientRect().bottom;
-        if (sb < 0) { gone = true; return; }
-        /* the spine has stopped at U: finish the dissolve as the stage
-           leaves, 80% -> 100% while its bottom goes from H to 0.6 H, so no
-           candle is left over the reel's first card (never below 80%) */
-        var fx = clamp((H - sb) / (0.4 * H));
-        var gx = (80 + 20 * fx).toFixed(2) + "%";
-        if (last.goneH !== gx) { last.goneH = gx; sec.style.setProperty("--gone-h", gx); }
-        /* at --gone-h 100% the mask alone would still leave the stage's top
-           40% (all that is on screen by then) at 60-0% alpha: its
-           transparent end rises with it too, 100% -> 40% of the stage, so
-           nothing of the candle is left at 0.6 H */
-        var tx = (60 * fx).toFixed(2) + "%";
-        if (last.goneT !== tx) { last.goneT = tx; sec.style.setProperty("--gone-t", tx); }
-      }
       var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
       draw(now);
       if (prof) {
@@ -3464,9 +3466,13 @@ var UI = (function () {
         var fl = [];
         for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
         window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + KP * push).toFixed(3),
-          S: phone ? +(1 + (S_END - 1) * growP(g)).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
+          S: phone ? +(1 + (S_END - 1) * growP()).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
+      /* phones, at or past the end of the track: that draw erased the
+         whole canvas (the dissolve), nothing more to draw until the
+         scroll comes back (update() clears the flag) */
+      if (phone && uT >= U) { gone = true; return; }
       raf = requestAnimationFrame(tick);
     }
     function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden && !gone) raf = requestAnimationFrame(tick); }
