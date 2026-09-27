@@ -2169,17 +2169,23 @@ html.no-js .spk-said__candle { display:none; }
      candle passes over it), B pinned in front of it (z 4) */
   .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
 }
-/* Desktop: each line's picture, lit by the flame: a wide window between
-   the line (11-20%) and the flame (56% at rest), its edges feathered into
-   the velvet and its bottom brightest, where the flame is; behind the
-   canvas, following its line (--on) */
+/* Desktop: each line's picture, lit by the flame: a wide window from
+   behind the line (on one row at 11%) down behind the candle, its edges
+   feathered into the velvet; behind the canvas, following its line (--on).
+   The line itself stays on one row over it, with a soft shadow. */
 @media (min-width: 769px) {
   .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
-  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:20%; width: 94vw; height: 40svh;
-    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 45%;
-    -webkit-mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
-            mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
+  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:4%; width: 100vw; height: 76svh;
+    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 42%;
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 52%, #000 0%, rgba(0,0,0,.85) 40%, transparent 76%);
+            mask-image: radial-gradient(ellipse 50% 50% at 50% 52%, #000 0%, rgba(0,0,0,.85) 40%, transparent 76%);
     filter: brightness(1.05) saturate(1.05) sepia(.12); opacity: calc(var(--on, 0) * .95); }
+  .spk-said.is-wheel .spk-said__lines .spk-said__line:not(.spk-said__bridge) { max-width:none; white-space:nowrap;
+    font-size: min(var(--step-2), 2.3vw); }
+  .spk-said.is-wheel .spk-said__lines .spk-said__bridge { max-width:none; white-space:nowrap; font-size: min(var(--step-0), 1.55vw); }
+  .spk-said.is-wheel .spk-said__line { text-shadow: 0 1px 18px rgba(18,8,26,.85), 0 0 4px rgba(18,8,26,.6); }
+  .spk-said.is-wheel .spk-said__lines { grid-template-columns: 100%; }
+  .spk-said.is-wheel .spk-said__line { justify-self:center; width:max-content; }
 }
 .spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
 .spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
