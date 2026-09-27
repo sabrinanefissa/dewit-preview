@@ -5428,7 +5428,8 @@ var UI = (function () {
   btn.className = "pinskip";
   btn.setAttribute("aria-label", (window.SITE_UI && window.SITE_UI.skip) || "Skip this section");
   btn.innerHTML = '<span class="pinskip__label" aria-hidden="true">Skip</span>' +
-    '<svg class="pinskip__arrow" viewBox="0 0 110 24" aria-hidden="true"><path class="pinskip__long" d="M3 12h103M100 6l6 6-6 6"/><path class="pinskip__short" d="M47 12h59M100 6l6 6-6 6"/></svg>';
+    '<svg class="pinskip__arrow pinskip__arrow--long" viewBox="0 0 110 24" aria-hidden="true"><path d="M3 12h103M100 6l6 6-6 6"/></svg>' +
+    '<svg class="pinskip__arrow pinskip__arrow--short" viewBox="0 0 64 24" aria-hidden="true"><path d="M3 12h57M54 6l6 6-6 6"/></svg>';
   btn.hidden = true;
   document.body.appendChild(btn);
 
