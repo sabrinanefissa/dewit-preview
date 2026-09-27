@@ -312,6 +312,94 @@ var UI = (function () {
     sunCv.className = "thread__sun"; sunCv.setAttribute("aria-hidden", "true");
     sky.parentNode.insertBefore(sunCv, sky.nextSibling);
     var sunCtx = sunCv.getContext("2d"), sunDpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* the deep sky, under the constellation: the night photo, drifting
+       nebulae and three depths of stars, each depth moving with the camera
+       by its own share (far barely, near most), so flying in feels like
+       going through the sky, not over a picture */
+    var bgEl = document.createElement("div");
+    bgEl.className = "thread__bg"; bgEl.setAttribute("aria-hidden", "true");
+    var deepCv = document.createElement("canvas");
+    deepCv.className = "thread__deep"; deepCv.setAttribute("aria-hidden", "true");
+    sky.parentNode.insertBefore(bgEl, sky);
+    sky.parentNode.insertBefore(deepCv, sky);
+    var deepCtx = deepCv.getContext("2d");
+    var deep = [], clouds = [], glint = null;
+    (function () {
+      var sd = 11;
+      function rnd() { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }
+      var LAY = [[1500, 0.1, 0.55, 0.7], [420, 0.3, 0.75, 1.1], [110, 0.55, 0.9, 1.6], [34, 0.8, 1, 2.2]];
+      LAY.forEach(function (L) {
+        for (var q = 0; q < L[0]; q++) {
+          var hue = rnd(), col = hue < 0.62 ? "255,250,242" : hue < 0.84 ? "246,226,186" : "214,200,255";
+          deep.push({ x: -0.4 + 1.8 * rnd(), y: -0.4 + 1.8 * rnd(), d: L[1], a: L[2] * (0.35 + 0.65 * rnd()),
+            r: L[3] * (0.45 + 0.8 * rnd() * rnd()), c: col, tw: 0.4 + 1.2 * rnd(), ph: rnd() * 6.2832, big: L[1] > 0.5 && rnd() < 0.6 });
+        }
+      });
+      /* a band of the galaxy: dense faint dust across the sky, lower left to upper right */
+      [[2200, 0.14]].forEach(function (L) {
+        for (var q = 0; q < L[0]; q++) {
+          var tt = -0.3 + 1.6 * rnd(), off = (rnd() + rnd() + rnd() - 1.5) * 0.16;
+          deep.push({ x: tt + off * 0.5, y: 1.05 - 0.9 * tt + off, d: L[1], a: 0.2 + 0.45 * rnd(),
+            r: 0.45 + 0.5 * rnd() * rnd(), c: rnd() < 0.7 ? "255,248,236" : "226,210,255", tw: 0.3 + rnd(), ph: rnd() * 6.2832, big: false });
+        }
+      });
+      var CL = [["130,76,214", 0.42], ["180,96,196", 0.3], ["76,64,180", 0.34], ["214,166,120", 0.16], ["150,86,220", 0.3], ["96,54,160", 0.3], ["240,200,160", 0.12], ["120,90,230", 0.28]];
+      for (var bq = 0; bq < 5; bq++) {
+        var bt = 0.05 + 0.9 * bq / 4;
+        clouds.push({ x: bt, y: 1.05 - 0.9 * bt, r: 0.28, c: bq % 2 ? "200,170,240" : "240,214,190", a: 0.16, sx: 0.4, sy: 0.4, ph: bq });
+      }
+      CL.forEach(function (c) {
+        clouds.push({ x: -0.1 + 1.2 * rnd(), y: -0.1 + 1.2 * rnd(), r: 0.35 + 0.35 * rnd(), c: c[0], a: c[1],
+          sx: 0.3 + 0.7 * rnd(), sy: 0.3 + 0.7 * rnd(), ph: rnd() * 6.2832 });
+      });
+      glint = document.createElement("canvas"); glint.width = glint.height = 64;
+      var h = glint.getContext("2d"), gg = h.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gg.addColorStop(0, "rgba(255,250,240,1)"); gg.addColorStop(0.15, "rgba(255,244,222,.5)");
+      gg.addColorStop(0.45, "rgba(236,214,176,.12)"); gg.addColorStop(1, "rgba(236,214,176,0)");
+      h.fillStyle = gg; h.fillRect(0, 0, 64, 64);
+    })();
+    function drawDeep(z, cx, cy, t) {
+      if (!W) return;
+      var c = deepCtx, k, lz, ox, oy;
+      c.setTransform(sunDpr, 0, 0, sunDpr, 0, 0);
+      c.clearRect(0, 0, W, H);
+      /* the photo underneath follows at the farthest share */
+      lz = Math.pow(z, 0.08);
+      bgEl.style.transform = "translate(" + ((0.5 - cx) * W * 0.06).toFixed(1) + "px," + ((0.5 - cy) * H * 0.06).toFixed(1) + "px) scale(" + lz.toFixed(4) + ")";
+      /* nebulae: big soft colour, breathing and drifting slowly */
+      c.globalCompositeOperation = "lighter";
+      lz = Math.pow(z, 0.22);
+      for (k = 0; k < clouds.length; k++) {
+        var cl = clouds[k];
+        var nx = cl.x + 0.03 * Math.sin(t / 21000 * cl.sx + cl.ph), ny = cl.y + 0.03 * Math.cos(t / 26000 * cl.sy + cl.ph);
+        var X = W / 2 + (nx - (0.5 + (cx - 0.5) * 0.22)) * W * lz, Y = H / 2 + (ny - (0.5 + (cy - 0.5) * 0.22)) * H * lz;
+        var R = cl.r * Math.max(W, H) * lz, A = cl.a * (0.85 + 0.15 * Math.sin(t / 9000 + cl.ph));
+        var g = c.createRadialGradient(X, Y, 0, X, Y, R);
+        g.addColorStop(0, "rgba(" + cl.c + "," + (0.5 * A).toFixed(3) + ")");
+        g.addColorStop(0.5, "rgba(" + cl.c + "," + (0.18 * A).toFixed(3) + ")");
+        g.addColorStop(1, "rgba(" + cl.c + ",0)");
+        c.fillStyle = g; c.fillRect(Math.max(0, X - R), Math.max(0, Y - R), Math.min(W, X + R) - Math.max(0, X - R), Math.min(H, Y + R) - Math.max(0, Y - R));
+      }
+      /* the stars: each depth zooms by its own share and twinkles softly */
+      for (k = 0; k < deep.length; k++) {
+        var st = deep[k];
+        lz = Math.pow(z, st.d);
+        ox = 0.5 + (cx - 0.5) * st.d; oy = 0.5 + (cy - 0.5) * st.d;
+        var sx = W / 2 + (st.x - ox) * W * lz, sy = H / 2 + (st.y - oy) * H * lz;
+        if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+        var tw = 0.65 + 0.35 * Math.sin(t / 1000 * st.tw + st.ph);
+        var al = st.a * tw, rr = st.r * Math.min(2.2, Math.pow(lz, 0.35));
+        if (st.big) {
+          c.globalAlpha = al * 0.8;
+          var gs = rr * 7;
+          c.drawImage(glint, sx - gs, sy - gs, gs * 2, gs * 2);
+          c.globalAlpha = 1;
+        }
+        c.fillStyle = "rgba(" + st.c + "," + al.toFixed(3) + ")";
+        c.beginPath(); c.arc(sx, sy, rr, 0, 6.2832); c.fill();
+      }
+      c.globalCompositeOperation = "source-over";
+    }
     var gateLive = function () { return live; };
 
     /* ---- geometry, measured on layout only ---- */
@@ -351,6 +439,7 @@ var UI = (function () {
       W = stage.clientWidth; H = stage.clientHeight;
       sky0.size();
       sunCv.width = Math.round(W * sunDpr); sunCv.height = Math.round(H * sunDpr);
+      deepCv.width = Math.round(W * sunDpr); deepCv.height = Math.round(H * sunDpr);
       for (var k = 0; k < N; k++) fitLabel(k);
       if (mode === "static") paintStatic();
     }
@@ -458,7 +547,8 @@ var UI = (function () {
       }
       cam.z = z; cam.cx = cx; cam.cy = cy;
 
-      /* the field */
+      /* the deep sky, then the field */
+      drawDeep(z, cx, cy, t);
       sky0.setCamera(z, cx * W, cy * H);
       sky0.setHotspots(spots);
       sky0.setLive(ending);
@@ -512,6 +602,7 @@ var UI = (function () {
       sky0.setCamera(1, W / 2, H / 2);
       sky0.setHotspots(spots);
       sky0.setLive(false);
+      drawDeep(1, 0.5, 0.5, 0);
       sky0.draw();
     }
 
@@ -1190,8 +1281,8 @@ var UI = (function () {
 
     function count() {
       if (!fixed) return Math.max(26, Math.min(46, Math.round(W / 46)));
-      if (W < 768) return 30;
-      return Math.max(28, Math.min(60, Math.round(W / 40)));
+      if (W < 768) return 44;
+      return Math.max(40, Math.min(90, Math.round(W / 22)));
     }
     function seed() {
       return { x: Math.random(), y: Math.random(),
@@ -1293,41 +1384,8 @@ var UI = (function () {
           if (!V[j]) continue;
           var dx = ax - X[j], dy = ay - Y[j], d2 = dx * dx + dy * dy;
           if (d2 < LINK2) {
-            ctx.strokeStyle = "rgba(124,77,224," + (0.5 * (1 - Math.sqrt(d2) / LINK)).toFixed(3) + ")";
+            ctx.strokeStyle = "rgba(124,77,224," + ((fixed ? 0.3 : 0.5) * (1 - Math.sqrt(d2) / LINK)).toFixed(3) + ")";
             ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(X[j], Y[j]); ctx.stroke();
-          }
-        }
-      }
-
-      /* the path between the stars: each drawn as far as the view has come */
-      if (spots.length) {
-        ctx.lineWidth = 1.25 * iz;
-        ctx.strokeStyle = "rgba(236,204,142,.8)";
-        for (k = 1; k < spots.length; k++) {
-          var rc = spots[k].reach || 0;
-          if (rc <= 0) continue;
-          var sx = X[n + k - 1], sy = Y[n + k - 1];
-          ctx.beginPath(); ctx.moveTo(sx, sy);
-          ctx.lineTo(sx + (X[n + k] - sx) * rc, sy + (Y[n + k] - sy) * rc); ctx.stroke();
-        }
-        /* the found star links to its five nearest nodes */
-        ctx.lineWidth = iz;
-        for (k = 0; k < spots.length; k++) {
-          var sp = spots[k];
-          if (!sp.found || !(sp.glow > 0.01)) continue;
-          var hx = X[n + k], hy = Y[n + k];
-          near.length = 0;
-          for (i = 0; i < n; i++) {
-            var qx = X[i] - hx, qy = Y[i] - hy, q2 = qx * qx + qy * qy;
-            if (near.length < 5 || q2 < near[near.length - 1].d) {
-              var at = near.length < 5 ? near.length : near.length - 1;
-              near[at] = { d: q2, i: i };
-              near.sort(function (a, b) { return a.d - b.d; });
-            }
-          }
-          ctx.strokeStyle = "rgba(236,204,142," + (0.7 * sp.glow).toFixed(3) + ")";
-          for (j = 0; j < near.length; j++) {
-            ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(X[near[j].i], Y[near[j].i]); ctx.stroke();
           }
         }
       }

@@ -240,12 +240,16 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .thread { position:relative; background: var(--plum); color: var(--tx-inv); }
 .thread__track { position:relative; height: calc(var(--stations, 5) * var(--beat, 120) * 1svh + var(--tail, 100) * 1svh); }
 .thread.is-phone .thread__track { height: calc(var(--stations, 5) * var(--beat-phone, 130) * 1svh + var(--tail, 100) * 1svh); }
-.thread__stage { position:sticky; top:0; height:100svh; overflow:hidden;
+.thread__stage { position:sticky; top:0; height:100svh; overflow:hidden; background: #06040c; }
+/* the night sky behind the stars (a layer the camera drifts, the tall
+   version on phones held upright), then the deep sky canvas over it */
+.thread__bg { position:absolute; inset:-6%; z-index:0; pointer-events:none; will-change: transform;
   background: #06040c url("../assets/img/star-sky.jpg") center / cover no-repeat; }
-/* the night sky behind the stars: the tall version on phones held upright */
 @media (max-width: 768px) and (orientation: portrait) {
-  .thread__stage { background-image: url("../assets/img/star-sky-portrait.jpg"); }
+  .thread__bg { background-image: url("../assets/img/star-sky-portrait.jpg"); }
 }
+.thread__deep { position:absolute; inset:0; z-index:1; display:block; width:100%; height:100%; pointer-events:none; }
+.thread.is-static .thread__bg, html.no-js .thread__bg { inset:0; }
 .thread__sky { position:absolute; inset:0; z-index:1; display:block; width:100%; height:100%; pointer-events:none; }
 /* live (after the last idea): a sideways drag leads the cluster; an upward or
    downward one still scrolls the page on */
