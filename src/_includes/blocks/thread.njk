@@ -1,39 +1,58 @@
-  <!-- The through-line -->
-  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-cursor="{{ block | motion('cursor', 0.62) }}">
-    <div class="thread__bg" aria-hidden="true">
-    {%- for src in block.bg %}
-      <img src="{{ src | root(r) }}" alt="" loading="lazy" decoding="async">
-    {%- endfor %}
-    </div>
-    <div class="thread__veil" aria-hidden="true"></div>
-    <div class="thread__glow" aria-hidden="true"></div>
+  <!-- The through-line: "the wire". A pinned stage, one horizontal line
+       edge to edge with a stop per idea; the dot rides the line on the
+       scroll and the current idea's still hangs above it like a card on a
+       wire, its words beside it. One idea on screen at a time. The stops
+       and their labels under the wire are the tablist. Phones (< 768px):
+       the same pin, the still full-width at the top, the wire low. Reduced
+       motion, Save-Data and no script (.is-static): the ideas stack, each
+       with its still and words, under the wire drawn full. -->
+  {%- set beat = block | motion('beat', 80) %}
+  {%- set beatPhone = block | motion('beatPhone', 90) %}
+  {%- set bid = block.id or 'thread' %}
+  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--grade:{{ block | motion('grade', 0.6) }}">
+    <div class="thread__track">
+      <div class="thread__stage">
+        <p class="thread__eyebrow">{{ block.eyebrow | inline() }}</p>
 
-    <svg class="thread__svg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <path class="guide" d=""></path>
-      <path class="drawn" d=""></path>
-    </svg>
-    <div class="pulse" aria-hidden="true"></div>
-    <div class="rail" aria-hidden="true"><i></i><b></b></div>
-
-    <div class="thread__inner">
-      <p class="eyebrow">{{ block.eyebrow | inline() }}</p>
-
-      <div class="stations">
+        <div class="stations">
 {% for s in block.stations %}
-        <article class="station {{ 'is-odd' if loop.index % 2 else 'is-even' }}{% if s.pillar %} is-pillar{% endif %}">
-          <figure class="still">
-            <img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
-            {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-                 sizes="{{ s.image.sizes or '100vw' }}" alt="{{ s.image.alt | inline() }}" loading="eager" decoding="async">
-          </figure>
-          <div class="knot"><span class="dot"></span></div>
-          <div class="body">
-            <p class="idx"><span>{{ loop.index | pad2 }}</span></p>
-            <h2 class="label"><span>{{ s.label | inline() }}</span></h2>
-            <p class="gloss">{{ s.gloss | inline() }}</p>
-          </div>
-        </article>
+          <article class="station{% if s.pillar %} is-pillar{% endif %}" role="tabpanel" id="{{ bid }}-panel-{{ loop.index }}" aria-labelledby="{{ bid }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}">
+            <figure class="still">
+              {%- set pp = s.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 767px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
+              {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+                   sizes="{{ s.image.sizes or '(max-width: 767px) 100vw, 640px' }}" alt="{{ s.image.alt | inline() }}" loading="{{ 'eager' if loop.first else 'lazy' }}" decoding="async">{% if pp %}</picture>{% endif %}
+              <i class="still__gold" aria-hidden="true"></i>
+            </figure>
+            <div class="body">
+              <p class="idx"><span>{{ loop.index | pad2 }}</span></p>
+              {%- if s.pillar and s.kicker %}
+              <p class="kicker"><span>{{ s.kicker | inline() }}</span></p>
+              {%- endif %}
+              {%- set parts = s.label.split(s.key) if (s.key and s.label.indexOf(s.key) > -1) else [s.label] %}
+              {%- set lab %}{{ parts[0] | inline() }}{% if parts.length > 1 %}<em class="thread__key">{{ s.key | inline() }}</em>{{ parts.slice(1).join(s.key) | inline() }}{% endif %}{% endset %}
+              <h2 class="label"><span>{% if s.href %}<a href="{{ s.href | root(r) }}">{{ lab | safe }}</a>{% else %}{{ lab | safe }}{% endif %}</span></h2>
+              <p class="gloss">{{ s.gloss | inline() }}</p>
+            </div>
+          </article>
 {% endfor %}
+        </div>
+
+        <div class="thread__wire">
+          <svg class="thread__svg" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <defs><filter id="{{ bid }}-glow" x="-5%" y="-200%" width="110%" height="500%"><feGaussianBlur stdDeviation="3"></feGaussianBlur></filter></defs>
+            <path class="guide" d="M0 20 L1000 20"></path>
+            <path class="glow" d="M0 20 L1000 20" filter="url(#{{ bid }}-glow)"></path>
+            <path class="drawn" d="M0 20 L1000 20"></path>
+          </svg>
+          <div class="thread__tabs" role="tablist" aria-label="{{ block.ariaLabel | inline() }}">
+          {%- for s in block.stations %}
+            <button type="button" class="thread__tab{% if s.pillar %} is-pillar{% endif %}{% if loop.first %} is-on{% endif %}" role="tab" id="{{ bid }}-tab-{{ loop.index }}" style="--i:{{ loop.index0 }}"
+                    aria-controls="{{ bid }}-panel-{{ loop.index }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}"><i class="thread__stop" aria-hidden="true"></i><span class="thread__tip" aria-hidden="true">{{ s.label | inline() }}</span><span class="thread__tname">{{ s.label | inline() }}</span></button>
+          {%- endfor %}
+          </div>
+          <div class="pulse" aria-hidden="true"></div>
+          <span class="thread__grip" aria-hidden="true"></span>
+        </div>
       </div>
     </div>
   </section>

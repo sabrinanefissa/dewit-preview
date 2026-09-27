@@ -55,29 +55,24 @@
       "enabled": true,
       "ariaLabel": "What the work is about",
       "eyebrow": "The through-line",
-      "bg": [
-        "assets/img/line-greet-860.webp",
-        "assets/img/line-room-860.webp",
-        "assets/img/line-stage-860.webp",
-        "assets/img/line-handshake-860.webp",
-        "assets/img/friction-507.webp"
-      ],
       "stations": [
         {
           "pillar": true,
           "image": {
             "src": "assets/img/line-greet-1280.webp",
-            "sizes": "(max-width: 720px) 100vw, 520px",
+            "sizes": "(max-width: 767px) 100vw, 640px",
             "alt": "Stephen greeting attendees before a talk"
           },
           "label": "Human Connection",
-          "gloss": "What every result in your organization actually runs on."
+          "gloss": "What every result in your organization actually runs on.",
+          "kicker": "Pillar",
+          "key": "Connection"
         },
         {
           "pillar": false,
           "image": {
             "src": "assets/img/line-room-1280.webp",
-            "sizes": "(max-width: 720px) 100vw, 520px",
+            "sizes": "(max-width: 767px) 100vw, 640px",
             "alt": "Stephen facing the audience from the stage"
           },
           "label": "Relational Intelligence",
@@ -87,17 +82,19 @@
           "pillar": true,
           "image": {
             "src": "assets/img/line-stage-1280.webp",
-            "sizes": "(max-width: 720px) 100vw, 520px",
+            "sizes": "(max-width: 767px) 100vw, 640px",
             "alt": "Stephen alone on a dark stage"
           },
           "label": "Lead Human",
-          "gloss": "The signature keynote."
+          "gloss": "The signature keynote.",
+          "kicker": "Signature keynote",
+          "key": "Human"
         },
         {
           "pillar": false,
           "image": {
             "src": "assets/img/line-handshake-1280.webp",
-            "sizes": "(max-width: 720px) 100vw, 520px",
+            "sizes": "(max-width: 767px) 100vw, 640px",
             "alt": "A workshop table mid-conversation"
           },
           "label": "Build Trust",
@@ -108,14 +105,21 @@
           "image": {
             "src": "assets/img/friction-507.webp",
             "width": 507,
-            "sizes": "(max-width: 720px) 100vw, 520px",
+            "sizes": "(max-width: 767px) 100vw, 640px",
             "alt": "Stephen listening at the edge of a room"
           },
           "label": "Reduce Friction",
           "gloss": "Clear what quietly slows a team down."
         }
       ],
-      "settings": {}
+      "settings": {
+        "motion": {
+          "beat": 80,
+          "beatPhone": 90,
+          "dolly": 1.04,
+          "grade": 0.6
+        }
+      }
     },
     {
       "type": "patterns",
