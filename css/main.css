@@ -1836,19 +1836,16 @@ html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-
 .spk-formats__room { position:relative; flex: 0 0 70vw; aspect-ratio: 16 / 9;
   max-height: 56svh; overflow:hidden; border-radius: 2px; }
 .spk-formats__room img { width:100%; height:100%; object-fit:cover; display:block; }
-.spk-formats__room span { position:absolute; left: clamp(1rem, 2.5vw, 2rem);
-  bottom: clamp(1rem, 2.5vw, 2rem); font-family: var(--f-display); font-weight:360;
+.spk-formats__room span { position:absolute; left: clamp(1rem, 2.5vw, 2rem); right: clamp(1rem, 2.5vw, 2rem);
+  bottom: clamp(1rem, 2.5vw, 2rem); text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.6); font-family: var(--f-display); font-weight:360;
   font-size: var(--step-1); letter-spacing:-0.02em; color: var(--tx-inv); }
 @media (max-width: 640px) {
   .spk-formats__line { font-size: var(--step-1); max-width:24ch; }
 }
+/* phones: pinned and slid by the scroll as on desktop, with taller cards */
 @media (max-width: 768px) {
-  .spk-formats__track { height:auto; }
-  .spk-formats__stage { position:static; height:auto; overflow:visible;
-    padding-block: clamp(4rem,10vw,6rem); }
-  .spk-formats__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory;
-    width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
-  .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
+  .spk-formats__strip { padding-inline: 8vw; gap: 1rem; }
+  .spk-formats__room { flex: 0 0 80vw; aspect-ratio: 4 / 5; max-height: 56svh; }
 }
 @media (prefers-reduced-motion: reduce) {
   .spk-formats__track { height:auto; }
@@ -1858,6 +1855,64 @@ html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-
     width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
   .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
 }
+/* The home talks as a strip (.tstrip, keynotes layout "strip"): the rooms
+   strip's pin and slide (module 9.B), one card per talk. The card is its
+   picture under a dark foot, and over it the number and tag, the title,
+   its line and the CTA; the accent colours the number and a hairline. */
+.tstrip { position:relative; background: var(--plum-2); color: var(--tx-inv); }
+.tstrip__track { height: calc(100svh + var(--spk-strip, 0px)); }
+.tstrip__stage { position:sticky; top:0; height:100svh; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center; }
+.tstrip__h { width: var(--wrap); margin: 0 auto clamp(1.6rem, 4vh, 2.6rem);
+  text-align:center; font-size: var(--step-3); text-wrap: balance; }
+.tstrip__strip { display:flex; gap: 2vw; padding-inline: 15vw; margin:0; list-style:none;
+  width:max-content; transform: translateX(calc(-1 * var(--spk-x, 0px))); will-change: transform; }
+.tstrip__card { position:relative; flex: 0 0 70vw; aspect-ratio: 16 / 9; max-height: 60svh;
+  overflow:hidden; border-radius: 2px; }
+.tstrip__link { position:absolute; inset:0; display:block; color:inherit; text-decoration:none; }
+.tstrip__link img { width:100%; height:100%; object-fit:cover; display:block;
+  transition: transform .9s var(--ease-out); }
+.tstrip__link::after { content:""; position:absolute; inset:0; pointer-events:none;
+  background: linear-gradient(to top, rgba(14,8,22,.88) 0%, rgba(14,8,22,.45) 38%, rgba(14,8,22,0) 65%); }
+.tstrip__link:hover img, .tstrip__link:focus-visible img { transform: scale(1.04); }
+.tstrip__link:focus-visible { outline:2px solid var(--violet-300); outline-offset:-4px; }
+.tstrip__cap { position:absolute; left: clamp(1.2rem, 3vw, 2.6rem); right: clamp(1.2rem, 3vw, 2.6rem);
+  bottom: clamp(1.2rem, 3vw, 2.4rem); z-index:1; display:flex; flex-direction:column; gap:.55rem;
+  max-width: 44ch; }
+.tstrip__no { display:flex; align-items:center; gap:.9rem; font-family: var(--f-body, inherit);
+  font-size: .78rem; letter-spacing:.18em; text-transform:uppercase; color: var(--_acc, var(--violet-300)); }
+.tstrip__tag { padding-left:.9rem; border-left:1px solid currentColor; color: var(--tx-inv-soft); }
+.tstrip__title { font-family: var(--f-display); font-weight:360; font-size: var(--step-3);
+  line-height:1.02; letter-spacing:-0.025em; }
+.tstrip__title .tm { font-size:.38em; vertical-align:super; color: var(--tx-inv-faint); }
+.tstrip__sub { font-size: var(--step-0); line-height:1.45; color: var(--tx-inv-soft); }
+.tstrip__sub strong, .tstrip__sub b { color: var(--tx-inv); font-weight:500; }
+.tstrip__cta { display:inline-flex; align-items:center; gap:.5rem; margin-top:.3rem;
+  font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color: var(--tx-inv); }
+.tstrip__cta .arrow { width:18px; height:18px; transition: transform .3s var(--ease-out); }
+.tstrip__link:hover .tstrip__cta .arrow { transform: translateX(4px); }
+@media (max-width: 768px) {
+  .tstrip__h { font-size: var(--step-2); }
+  .tstrip__strip { padding-inline: 8vw; gap: 1rem; }
+  .tstrip__card { flex: 0 0 82vw; aspect-ratio: 4 / 5; max-height: 64svh; }
+  .tstrip__title { font-size: var(--step-2); }
+  .tstrip__sub { font-size: .92rem; }
+}
+/* reduced motion and no script: a native snap strip, no pin */
+@media (prefers-reduced-motion: reduce) {
+  .tstrip__track { height:auto; }
+  .tstrip__stage { position:static; height:auto; overflow:visible; padding-block: clamp(4rem,10vw,6rem); }
+  .tstrip__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory; width:auto;
+    padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
+  .tstrip__card { scroll-snap-align:center; }
+}
+html.no-js .tstrip__track { height:auto; }
+html.no-js .tstrip__stage { position:static; height:auto; overflow:visible; padding-block: clamp(4rem,10vw,6rem); }
+html.no-js .tstrip__strip { transform:none; overflow-x:auto; scroll-snap-type:x mandatory; width:auto;
+  padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
+html.no-js .tstrip__card { scroll-snap-align:center; }
+.tstrip__strip::-webkit-scrollbar { display:none; }
+
 /* no script, no scrub: the same native strip */
 html.no-js .spk-formats__track { height:auto; }
 html.no-js .spk-formats__stage { position:static; height:auto; overflow:visible;

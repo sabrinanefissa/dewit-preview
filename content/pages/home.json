@@ -512,7 +512,8 @@
           }
         }
       ],
-      "settings": {}
+      "settings": {},
+      "layout": "strip"
     },
     {
       "type": "care",

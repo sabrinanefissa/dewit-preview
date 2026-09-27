@@ -1,3 +1,31 @@
+{%- if block.layout == "strip" %}
+  <!-- Keynotes as a strip (layout "strip"): the heading, then one card per
+       talk in a row the scroll moves sideways while the stage is pinned
+       (js module 9.B, as the speaking page's rooms; on phones too). Each
+       card is a link: its picture, number, tag, title, line and CTA. -->
+  <section class="tstrip"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="tstrip__track">
+      <div class="tstrip__stage">
+        <h2 class="tstrip__h h-md fill" id="{{ block.id }}-h"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
+        <ul class="tstrip__strip">
+        {%- for k in block.cards %}
+          <li class="tstrip__card" style="--_acc:var(--{{ k.accent }})">
+            <a class="tstrip__link" href="{{ k.href | root(r) }}">
+              <img src="{{ k.image.src | root(r) }}" {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="(max-width: 768px) 84vw, 70vw" alt="" loading="lazy" decoding="async">
+              <span class="tstrip__cap">
+                <span class="tstrip__no">{{ loop.index | pad2 }}{% if k.tag %}<span class="tstrip__tag">{{ k.tag | inline() }}</span>{% endif %}</span>
+                <span class="tstrip__title">{% if k.titleHtml %}{{ k.titleHtml | safe }}{% else %}{{ k.title | inline() }}{% endif %}</span>
+                <span class="tstrip__sub">{{ k.sub | inline() }}</span>
+                <span class="tstrip__cta">{{ block.ctaLabel | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              </span>
+            </a>
+          </li>
+        {%- endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+{%- else %}
   <!-- Keynotes -->
   <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
     <div class="keynotes-head reveal">
@@ -33,3 +61,4 @@
          section, its src swapped to the hovered talk's image -->
     <img class="keynotes__float" src="{{ block.cards[0].image.src | root(r) }}" alt="" aria-hidden="true" decoding="async" loading="lazy" hidden>
   </section>
+{%- endif %}

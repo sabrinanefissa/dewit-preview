@@ -4218,9 +4218,10 @@ var UI = (function () {
    Three spine entries' worth of work and no scroll listener of its own.
    A. The hero's picture moves down at half the scroll speed while the
       section leaves (--spk-hero-par on .spk-hero .media).
-   B. Desktop: the rooms strip. The section's track is one screen plus the
-      strip's travel (--spk-strip); while the stage is pinned the strip
-      slides by --spk-x. Phones: a native snap strip, --spk-strip 0px.
+   B. The rooms strip (and the home talks strip, .tstrip): the section's
+      track is one screen plus the strip's travel (--spk-strip); while the
+      stage is pinned the strip slides by --spk-x. On every screen width;
+      reduced motion: a native snap strip, --spk-strip 0px.
    C. The close: main carries a bottom margin the height of the fixed
       footer (--spk-foot-h), so the page lifts off it.
    Reduced motion: no parallax, no scrub, a normal footer.
@@ -4260,16 +4261,16 @@ var UI = (function () {
     });
   });
 
-  /* ---- B. the rooms strip, one per .spk-formats ---- */
-  var strips = [].slice.call(document.querySelectorAll(".spk-formats")).map(function (sec) {
-    return { sec: sec, strip: sec.querySelector(".spk-formats__strip"), scroll: -1, entry: null };
+  /* ---- B. the rooms strip, one per .spk-formats (and per .tstrip) ---- */
+  var strips = [].slice.call(document.querySelectorAll(".spk-formats, .tstrip")).map(function (sec) {
+    return { sec: sec, strip: sec.querySelector(".spk-formats__strip, .tstrip__strip"), scroll: -1, entry: null };
   });
   function stripMeasure() {
     var changed = false;
     strips.forEach(function (st) {
       var sec = st.sec, strip = st.strip;
       if (!strip) return;
-      var want = (!reduce && desk.matches) ? Math.max(0, strip.scrollWidth - window.innerWidth) : 0;
+      var want = !reduce ? Math.max(0, strip.scrollWidth - window.innerWidth) : 0;
       if (want === st.scroll) return;
       st.scroll = want;
       changed = true;

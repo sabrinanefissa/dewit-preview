@@ -385,6 +385,7 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
               - { label: Card CTA label, name: ctaLabel, widget: string, default: Explore }
+              - { label: Layout, name: layout, widget: select, options: [strip, list], default: strip, required: false, hint: "strip: picture cards in a row the scroll slides sideways (like the speaking page's rooms). list: numbered rows with a hover picture." }
               - label: Cards
                 name: cards
                 widget: list
