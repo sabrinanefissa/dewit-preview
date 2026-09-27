@@ -2981,6 +2981,7 @@ var UI = (function () {
     var head    = sec.querySelector(".spk-said__h");
     var live    = sec.querySelector("[aria-live]");
     var lines   = [].slice.call(sec.querySelectorAll(".spk-said__line"));
+    var limgs   = [].slice.call(sec.querySelectorAll(".spk-said__lineimg"));   /* one lit picture per line (phones) */
     var N = lines.length;
     if (!track || !stage || !linesEl || !head || N < 1) return;
     if (live) live.textContent = "";
@@ -3201,6 +3202,7 @@ var UI = (function () {
         else if (beat === LAST) on = arrive;
         else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.06 : 0.2)));
         put(lines[j], "l" + j, "--on", on);
+        if (limgs[j]) put(limgs[j], "li" + j, "--on", on);
       }
       put(head, "h", "--on", beat === 0 ? 1 - smooth(clamp(s / 0.2)) : 0);
       var bridge = beat >= LAST;

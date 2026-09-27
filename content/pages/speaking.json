@@ -100,7 +100,27 @@
       "glowImage": {
         "src": "assets/img/mobile/round-tables-portrait.jpg",
         "sizes": "100vw"
-      }
+      },
+      "lineImages": [
+        {
+          "src": "assets/img/mobile/aisle-applause-portrait.jpg"
+        },
+        {
+          "src": "assets/img/mobile/boardroom-skyline-portrait.jpg"
+        },
+        {
+          "src": "assets/img/mobile/round-tables-portrait.jpg"
+        },
+        {
+          "src": "assets/img/mobile/stage-connection-portrait.jpg"
+        },
+        {
+          "src": "assets/img/mobile/couple-apart-portrait.jpg"
+        },
+        {
+          "src": "assets/img/mobile/couple-talking-portrait.jpg"
+        }
+      ]
     },
     {
       "type": "keys",

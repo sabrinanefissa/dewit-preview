@@ -589,6 +589,13 @@ collections:
                 name: lines
                 widget: list
                 field: { label: Line, name: line, widget: text }
+              - label: "Pictures the candle lights, one per line (phones: between the line and the flame)"
+                name: lineImages
+                widget: list
+                required: false
+                hint: "Same order as the lines. Edges fade to nothing; only the middle shows, lit by the flame."
+                fields:
+                  - { label: Image, name: src, widget: image, required: false }
               - { label: "Position on the image (lines)", name: linesPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - label: Settings
                 name: settings

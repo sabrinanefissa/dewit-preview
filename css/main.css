@@ -1903,7 +1903,7 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 .spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(26,16,38,.42); }
 .spk-said__wheel,
-.spk-said__nextA, .spk-said__nextB, .spk-said__glowimg { display:none; }
+.spk-said__nextA, .spk-said__nextB, .spk-said__glowimg, .spk-said__lineimgs { display:none; }
 .spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
 .spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
@@ -2027,6 +2027,15 @@ html.no-js .spk-said__candle { display:none; }
      (--spk-said-bout) */
   .spk-said.is-wheel .spk-said__win--a { top:11%; font-size: clamp(3.2rem, 14vw, 4.6rem); height: 1.4em; }
   .spk-said.is-wheel .spk-said__nextA { padding-top: 0; }
+  /* one lit picture per line: between the line (which ends near 30%) and
+     the flame (46% at rest), behind the canvas, feathered on every edge;
+     each follows its line's --on (written by the script on the image) */
+  .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
+  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:27%; width: 94vw; height: 26svh;
+    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover;
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
+            mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
+    filter: brightness(1.05) saturate(1.05); opacity: calc(var(--on, 0) * .95); }
   /* the picture the candle lights: sits between "Three talks." and the
      flame, behind the canvas, its edges feathered to nothing so only the
      middle reads, lit; it comes and goes with line A (--na / --nao) */
