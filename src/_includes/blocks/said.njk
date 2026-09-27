@@ -28,14 +28,14 @@
        Phones: no hold beat and a long grow instead of the row: the
        ending starts 16svh after the bridge is fully in (432), "Three
        talks." and B come up in front of the one candle, which grows over
-       data-grow-phone svh (200), then the stage's bottom dissolves into
-       the talks reel over the last 60svh: 752svh.
+       data-grow-phone svh (480, x1 -> x2.2), and the stage's bottom
+       dissolves into the talks reel over the last 120svh: 1032svh.
        The six lines are real text in reading order at all times; the
        wheel is a decorative canvas. Reduced motion, Save-Data and no
        script: no pin, the six lines stacked (with script, each under a
        lit candle) on the velvet.
        ============================================================== -->
-  {%- set intro = block | motion('intro', 60) %}{% set beat = block | motion('beat', 80) %}{% set grow = block | motion('grow', 100) %}{% set growPhone = block | motion('growPhone', 200) %}
+  {%- set intro = block | motion('intro', 60) %}{% set beat = block | motion('beat', 80) %}{% set grow = block | motion('grow', 100) %}{% set growPhone = block | motion('growPhone', 480) %}
   <section class="spk-said"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}" data-intro="{{ intro }}" data-beat="{{ beat }}" data-grow="{{ grow }}" data-grow-phone="{{ growPhone }}" style="--intro:{{ intro }};--beats:{{ block.lines.length }};--beat:{{ beat }};--grow:{{ grow }};--grow-phone:{{ growPhone }}">
     <div class="spk-said__track">
       <div class="spk-said__stage">

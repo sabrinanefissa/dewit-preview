@@ -1640,6 +1640,12 @@ html[data-spk-cc="off"] .spk-keys__cap { display:none; }
   .spk-keys.is-reel .spk-keys__panel::after { opacity: var(--cap, 0); }
   .spk-keys.is-reel .spk-keys__panel.is-off { pointer-events:auto; }
   .spk-keys.is-reel .spk-keys__index[hidden] { display:none; }
+  /* card 0's top band of plain ground (plum-2, #120A1C, no rgb token):
+     the candle wheel's dissolving bottom hands over candle -> plum ->
+     heading, not candle -> photo. Over the photo, under the heading (z -1
+     inside the heading layer's own stacking context, z 2) */
+  .spk-keys.is-reel .spk-keys__head::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background: linear-gradient(to bottom, var(--plum-2) 0%, rgba(18,10,28,.85) 30%, transparent 75%); }
 }
 .spk-keys__dots { position:fixed; right: 12px; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:6;
   display:flex; flex-direction:column; align-items:center;
@@ -1954,16 +1960,16 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
 /* phones: no pinned talks take the wheel over, so it hands off by itself
-   over its track's last 60svh (module 7): the held stage's bottom
-   dissolves (--gone-h, 0 -> 70%) while the talks reel's first card rises
-   under it, and it fades out over the last 20svh (--spk-said-gone). The
-   track has no hold beat and a long grow (--grow-phone): 752svh for six
-   lines. */
+   over its track's last 120svh (module 7): the stage's bottom dissolves
+   (--gone-h, 0 -> 80%; a mask only, no fade) while the talks reel's first
+   card rises under it, then the stage scrolls away while the dissolve
+   finishes (--gone-h -> 100%, the transparent end --gone-t 0 -> 60%). The track has no hold
+   beat and a long grow (--grow-phone): 1032svh for six lines. */
 @media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 200) + 60) * 1svh); }
-  .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-said-gone, 0));
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent 100%); }
+  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 60) * 1svh); }
+  .spk-said.is-wheel .spk-said__stage {
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent calc(100% - var(--gone-t, 0%)));
+    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--gone-h, 0%)), transparent calc(100% - var(--gone-t, 0%))); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical

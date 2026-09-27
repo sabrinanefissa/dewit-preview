@@ -2948,8 +2948,8 @@ var UI = (function () {
               gap, the candles stay in front (z 3, no pointer events) and
               scroll away, fading out over the talks' u 40-70
               (--spk-keys-gone, from module 2); on phones (no pinned talks)
-              the stage fades itself out over the track's last 40svh
-              (--spk-said-gone)
+              the stage's bottom dissolves over the track's last 120svh
+              (--gone-h, a mask, no fade) and it scrolls away drawn
    Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
    crossfaded as it lights (600ms; dark at once, 80ms). Only the current
    candle is lit in the beats, the three from the rise on; a lit flame
@@ -2984,10 +2984,10 @@ var UI = (function () {
     var INTRO = num("data-intro", 60);          /* svh of scroll across the intro */
     var BEAT = num("data-beat", 80);            /* svh of scroll per beat */
     var GROW_D = num("data-grow", 100);         /* svh of scroll across the ending (desktop) */
-    var GROW_P = num("data-grow-phone", 200);   /* the same on phones: the long grow */
+    var GROW_P = num("data-grow-phone", 480);   /* the same on phones: the long grow */
     /* set by build() for the screen: desktop B0 = (N + 1) beat (560) and
        U = 780; phones B0 = (N - 0.6) beat (432: no hold beat, the ending
-       starts 16svh after the bridge is fully in) and U = 752 */
+       starts 16svh after the bridge is fully in) and U = 1032 */
     var GROW = GROW_D, B0 = (N + 1) * BEAT, U = INTRO + B0 + GROW + 60;
     var LAST = N - 1;                           /* the bridge's beat, and the top candle from it on */
 
@@ -2999,10 +2999,12 @@ var UI = (function () {
     function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
     function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
 
-    /* the phone grow's curve over g 0.12-1: linear, with a quadratic
-       ease-in over its first 5% (same slope at the join), 0 -> 1 */
+    /* the phone grow's curve over g 0.06-1 (p = (g - 0.06) / 0.94): linear,
+       with a quadratic ease-in over the first 8% of p (same slope at the
+       join, so no kink), 0 -> 1 */
+    var S_END = 2.2, ANCHOR_Y = 0.76;           /* phones: the grow's end scale; the anchor's end, of H */
     function growP(gg) {
-      var q = clamp((gg - 0.12) / 0.88), a = 0.05;
+      var q = clamp((gg - 0.06) / 0.94), a = 0.08;
       return (q < a ? q * q / (2 * a) : q - a / 2) / (1 - a / 2);
     }
 
@@ -3180,7 +3182,7 @@ var UI = (function () {
            can cross it */
         if (j < LAST) { if (beat === j) on = Math.min(arrive, 1 - smooth(clamp(tTurn / 0.3))); }
         else if (beat === LAST) on = arrive;
-        else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.12 : 0.2)));
+        else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.06 : 0.2)));
         put(lines[j], "l" + j, "--on", on);
       }
       put(head, "h", "--on", beat === 0 ? 1 - smooth(clamp(s / 0.2)) : 0);
@@ -3203,10 +3205,10 @@ var UI = (function () {
 
       /* the ending's DOM half, in order: line A up behind the resting
          candle (g 0-0.2); the roll as the three start to rise (0.2-0.5) */
-      /* phones: A up over g 0-0.12 (in front), the roll over 0.12-0.40 */
-      put(nextA, "na", "--na", smooth(clamp(g / (phone ? 0.12 : 0.2))));
+      /* phones: A up over g 0-0.06 (in front), the roll over 0.06-0.20 */
+      put(nextA, "na", "--na", smooth(clamp(g / (phone ? 0.06 : 0.2))));
       /* one roll through one window: A up and out, B up and in */
-      var roll = phone ? smooth(clamp((g - 0.12) / 0.28)) : smooth(clamp((g - 0.2) / 0.3));
+      var roll = phone ? smooth(clamp((g - 0.06) / 0.14)) : smooth(clamp((g - 0.2) / 0.3));
       put(nextA, "rollA", "--roll", roll);
       put(nextB, "rollB", "--roll", roll);
       /* the velvet follows the camera (the CSS scales it by 1 + 0.12 --push) */
@@ -3216,24 +3218,25 @@ var UI = (function () {
          100svh before the track does (680 of 780), and the ending (the
          row, the push) plays in those last 100svh. On desktop the pinned
          talks section rises under it there; on phones (the talks a reel,
-         not pinned) the reel's first card scrolls up under it while it
-         fades (--spk-said-gone below), so it is held there too */
+         not pinned) the reel's first card scrolls up under it through its
+         dissolving bottom (--gone-h below), so it is held there too */
       var HOLD = U - 100;
       var hold = uT > HOLD
         ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
       /* phones: no pinned talks to hand to (--spk-keys-gone is never
-         written there). The hand-off, the track's last 60svh: the held
-         stage's bottom dissolves (--gone-h, the mask's transparent band,
-         0 -> 70% of the stage) so the reel's first card rises into view
-         through it, and the stage fades out over the last 20svh only */
+         written there). The exit, the track's last 120svh: the stage's
+         bottom dissolves (--gone-h, the mask's transparent band, 0 -> 80%
+         of the stage; a mask only, no opacity fade) and the reel's first
+         card rises into view through it (from U - 100, where the stage's
+         sticky run ends). After U the stage scrolls away still drawn: the
+         loop stops only once its bottom has left the screen (tick) */
       if (phone) {
-        var gh = (70 * clamp((uT - (U - 60)) / 60)).toFixed(2) + "%";
+        var gh = (80 * clamp((uT - (U - 120)) / 120)).toFixed(2) + "%";
         if (last.goneH !== gh) { last.goneH = gh; sec.style.setProperty("--gone-h", gh); }
+        if (last.goneT !== "0%") { last.goneT = "0%"; sec.style.setProperty("--gone-t", "0%"); }
       }
-      put(sec, "phoneGone", "--spk-said-gone", phone ? clamp((uT - (U - 20)) / 20) : 0);
-      /* faded out and held over the reel's first card: nothing to draw */
-      gone = phone && uT >= U;
+      gone = false;
       wake();
     }
 
@@ -3346,14 +3349,15 @@ var UI = (function () {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
       var cxW = W * cxF;
-      var others = 1 - clamp(g / (phone ? 0.15 : 0.3));
+      /* phones: over the first 30svh of the grow (g 0-0.0625 of 480) */
+      var others = 1 - clamp(g / (phone ? 30 / GROW : 0.3));
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
-      /* phones: the top candle grows instead (g 0.12-1), x1 -> x4.5,
-         linear with an ease-in over its first 5% only, about the point
-         0.55 hC up its axis, which drifts to (W/2, 0.62 H) on the same
-         curve: the camera rides down the candle */
-      var dg = phone ? growP(g) : 0, S = 1 + 3.5 * dg;
+      /* phones: the top candle grows instead (g 0.06-1), x1 -> x2.2,
+         linear with an ease-in over the first 8% of its p only, about the
+         point 0.55 hC up its axis, which drifts to (W/2, 0.76 H) on the
+         same curve: the holder ends in the lower third, the wax above */
+      var dg = phone ? growP(g) : 0, S = 1 + (S_END - 1) * dg;
       /* the camera: k about P, multiplied into every candle's transform */
       var k = 1 + KP * push;
       var gr = 0.55 * hC, fyL = -FL * hC;
@@ -3400,7 +3404,7 @@ var UI = (function () {
         if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
-        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (0.62 * H - Fy) * dg + S * (y - Fy); }
+        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (ANCHOR_Y * H - Fy) * dg + S * (y - Fy); }
         ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
         var big = hC * dpr * m > 470 ? 1 : 0;
         var Li = L[i];
@@ -3433,6 +3437,24 @@ var UI = (function () {
     function tick(now) {
       raf = 0;
       if (entry.disabled || !onScreen || document.hidden || gone) return;
+      /* phones, past the track: the stage scrolls away; once its bottom is
+         above the screen there is nothing to draw */
+      if (phone && uT >= U) {
+        var sb = stage.getBoundingClientRect().bottom;
+        if (sb < 0) { gone = true; return; }
+        /* the spine has stopped at U: finish the dissolve as the stage
+           leaves, 80% -> 100% while its bottom goes from H to 0.6 H, so no
+           candle is left over the reel's first card (never below 80%) */
+        var fx = clamp((H - sb) / (0.4 * H));
+        var gx = (80 + 20 * fx).toFixed(2) + "%";
+        if (last.goneH !== gx) { last.goneH = gx; sec.style.setProperty("--gone-h", gx); }
+        /* at --gone-h 100% the mask alone would still leave the stage's top
+           40% (all that is on screen by then) at 60-0% alpha: its
+           transparent end rises with it too, 100% -> 40% of the stage, so
+           nothing of the candle is left at 0.6 H */
+        var tx = (60 * fx).toFixed(2) + "%";
+        if (last.goneT !== tx) { last.goneT = tx; sec.style.setProperty("--gone-t", tx); }
+      }
       var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
       draw(now);
       if (prof) {
@@ -3442,7 +3464,7 @@ var UI = (function () {
         var fl = [];
         for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
         window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + KP * push).toFixed(3),
-          S: phone ? +(1 + 3.5 * growP(g)).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
+          S: phone ? +(1 + (S_END - 1) * growP(g)).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
       raf = requestAnimationFrame(tick);
@@ -3468,7 +3490,7 @@ var UI = (function () {
       }, { rootMargin: "100% 0px" }).observe(sec);
       new IntersectionObserver(function (e) {
         onScreen = e[0].isIntersecting && e[0].intersectionRatio >= 0.05;
-        if (onScreen) wake();
+        if (onScreen) { gone = false; wake(); }
       }, { threshold: [0, 0.05] }).observe(stage);
     } else { loadAll(); onScreen = true; wake(); }
 
