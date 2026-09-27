@@ -1311,8 +1311,12 @@ var UI = (function () {
 
   var lenis = null;
   if (window.Lenis && !still) {
+    /* touch too (syncTouch): the finger's scroll eases like the wheel's
+       and keeps its inertia after the lift (Lenis 1.3.26: syncTouchLerp;
+       the inertia's shape is touchInertiaExponent, left at its 1.7) */
     lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, smoothWheel: true,
-                               syncTouch: false, autoRaf: false, anchors: true });
+                               syncTouch: true, syncTouchLerp: 0.085,
+                               autoRaf: false, anchors: true });
     window.spkLenis = lenis;
   }
 
@@ -3004,8 +3008,9 @@ var UI = (function () {
        the END of the track (uT = U, through the dissolve: no plateau);
        linear, with a quadratic ease-in over the first 8% of p (same slope
        at the join, so no kink), 0 -> 1 */
-    var S_END = 3.2;                            /* phones: the grow's end scale (at U) */
+    var S_END = 2.0;                            /* phones: the grow's end scale (at U) */
     var PIV = 0.40;                             /* phones: the grow's fixed point, of hC up the axis (in the holder) */
+    var PIV_Y = 0.62;                           /* phones: where that point ends on screen (of H, at U): it rises from its rest spot (0.76 H) */
     function growP() {
       var u0 = B0 + 0.06 * GROW;
       var q = clamp((u - u0) / (GROW + 60 - 0.06 * GROW)), a = 0.08;
@@ -3356,10 +3361,12 @@ var UI = (function () {
       /* the three rise from their rim poses to the row over g 0.2-0.75 */
       var r = smooth(clamp((g - 0.2) / 0.55));
       /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
-         x3.2, linear with an ease-in over the first 8% of its p only,
-         about a fixed point PIV hC up its axis (no drift): the candle grows
-         up through the frame, the flame passes behind the pinned line and
-         off the top, the holder rises to the middle of the screen */
+         x2, linear with an ease-in over the first 8% of its p only, about
+         the point PIV hC up its axis, which itself travels up to PIV_Y H on
+         the same curve: less zoom, more travel. The candle rises through
+         the frame without stopping, the flame passes behind the pinned
+         line and reaches the top at the end, the holder rises to the
+         middle of the screen */
       var dg = phone ? growP() : 0, S = 1 + (S_END - 1) * dg;
       /* the camera: k about P, multiplied into every candle's transform */
       var k = 1 + KP * push;
@@ -3407,7 +3414,7 @@ var UI = (function () {
         if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
         var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
         var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
-        if (grow) { ex = Fx + S * (x - Fx); ey = Fy + S * (y - Fy); }
+        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (PIV_Y * H - Fy) * dg + S * (y - Fy); }
         ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
         var big = hC * dpr * m > 470 ? 1 : 0;
         var Li = L[i];
@@ -3415,11 +3422,12 @@ var UI = (function () {
         flX[i] = ex + m * sn * FL * hC; flY[i] = ey - m * c * FL * hC; flR[i] = 0.22 * hC * m;
         var dx = mx - flX[i], dy = my - flY[i];
         hover(i, now, litTo[i] === 1 && dx * dx + dy * dy < flR[i] * flR[i]);
-        if (Li > 0.001) {
-          var hv = hov[i], gR = gr * (1 + 0.3 * hv);
-          /* the growing candle's glow grows with it, but never past 1.25x
-             its resting size on screen (it would wash the text) */
-          if (grow && m > 1.25) gR *= 1.25 / m;
+        var hv = hov[i], gR = gr * (1 + 0.3 * hv);
+        /* the growing candle's glow grows with it, but never past 1.25x
+           its resting size on screen (it would wash the text) */
+        if (grow && m > 1.25) gR *= 1.25 / m;
+        /* the ending: no glow pass once the whole glow is above the screen */
+        if (Li > 0.001 && !(grow && g > 0.06 && flY[i] + gR * m < 0)) {
           ctx.globalCompositeOperation = "lighter";
           ctx.globalAlpha = Math.min(1, (0.24 + 0.05 * Math.sin(now / 900 + i) + 0.03 * Math.sin(now / 310 + 2 * i)) * Li * a * (1 + 0.9 * hv));
           ctx.drawImage(glow, -gR, fyL - gR, 2 * gR, 2 * gR);
@@ -3440,10 +3448,16 @@ var UI = (function () {
           eg.addColorStop(0, "rgba(0,0,0,0)");
           eg.addColorStop(1, "rgba(0,0,0,1)");
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          ctx.globalCompositeOperation = "destination-out";
-          ctx.fillStyle = eg;
-          ctx.fillRect(0, 0, W, H);
-          ctx.globalCompositeOperation = "source-over";
+          /* only where it acts: the soft band (y0 to y0 + 0.6 H) through
+             the gradient, everything under it cleared outright */
+          var yb = Math.max(0, y0), ye = Math.min(H, y0 + 0.6 * H);
+          if (ye > yb) {
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillStyle = eg;
+            ctx.fillRect(0, yb, W, ye - yb);
+            ctx.globalCompositeOperation = "source-over";
+          }
+          if (ye < H) ctx.clearRect(0, Math.max(0, ye), W, H - Math.max(0, ye));
         }
       }
     }
