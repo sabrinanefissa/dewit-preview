@@ -398,7 +398,7 @@ var UI = (function () {
           if (r2 > D * 1.2) continue;
           var al = sa * (1 - rel) * (1 - rel) * 0.9;
           if (al < 0.02) continue;
-          c.strokeStyle = "rgba(226,214,255," + al.toFixed(3) + ")";
+          c.strokeStyle = "rgba(250,236,204," + al.toFixed(3) + ")";
           c.lineWidth = d.w * (0.6 + 1.6 * (1 - rel));
           c.beginPath(); c.moveTo(hx + ca * r2, hy + sn * r2); c.lineTo(hx + ca * r1, hy + sn * r1); c.stroke();
         }
@@ -406,10 +406,10 @@ var UI = (function () {
       /* the star itself: a dot that becomes a sun, then fills the screen */
       if (sunA > 0.01 && f > 0.001) {
         var R = 26 + D * 1.35 * Math.pow(f, 2.2);
-        var tint = gold ? "255,214,150" : "214,190,255", deep = gold ? "232,160,70" : "140,96,230";
+        var tint = gold ? "240,206,140" : "246,224,178", deep = gold ? "201,146,56" : "214,168,88";
         g = c.createRadialGradient(hx, hy, 0, hx, hy, R);
         g.addColorStop(0, "rgba(255,255,255," + sunA + ")");
-        g.addColorStop(0.07, "rgba(255,250,255," + (0.95 * sunA) + ")");
+        g.addColorStop(0.07, "rgba(255,250,236," + (0.95 * sunA) + ")");
         g.addColorStop(0.2, "rgba(" + tint + "," + (0.6 * sunA) + ")");
         g.addColorStop(0.5, "rgba(" + deep + "," + (0.22 * sunA) + ")");
         g.addColorStop(1, "rgba(" + deep + ",0)");
@@ -420,7 +420,7 @@ var UI = (function () {
         for (k = 0; k < 8; k++) {
           var an = rot + k * 0.7854 + (k % 2 ? 0.2 : 0), rr = rl * (k % 2 ? 0.6 : 1);
           var lg = c.createLinearGradient(hx, hy, hx + Math.cos(an) * rr, hy + Math.sin(an) * rr);
-          lg.addColorStop(0, "rgba(255,248,255," + (0.5 * sunA) + ")");
+          lg.addColorStop(0, "rgba(255,246,226," + (0.5 * sunA) + ")");
           lg.addColorStop(1, "rgba(" + tint + ",0)");
           c.strokeStyle = lg; c.lineWidth = Math.max(1.5, R * 0.035) * (k % 2 ? 0.6 : 1);
           c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx + Math.cos(an) * rr, hy + Math.sin(an) * rr); c.stroke();
@@ -430,8 +430,8 @@ var UI = (function () {
       /* inside the star: its light fills the screen */
       if (flood > 0.001) {
         g = c.createRadialGradient(hx, hy, 0, hx, hy, D * 1.2);
-        g.addColorStop(0, "rgba(255,252,255," + flood + ")");
-        g.addColorStop(1, "rgba(" + (gold ? "244,214,170" : "206,184,250") + "," + flood + ")");
+        g.addColorStop(0, "rgba(255,250,238," + flood + ")");
+        g.addColorStop(1, "rgba(" + (gold ? "238,208,150" : "244,222,178") + "," + flood + ")");
         c.fillStyle = g; c.fillRect(0, 0, W, H);
       }
     }
@@ -1220,8 +1220,9 @@ var UI = (function () {
       h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
       return b;
     }
-    var bloomL = bloomOf("250,246,255", "200,176,255", "124,77,224");
-    var bloomG = bloomOf("255,248,232", "255,214,150", "232,160,70");
+    /* golden champagne, all of them; the pillars a touch deeper */
+    var bloomL = bloomOf("255,250,238", "246,224,178", "214,168,88");
+    var bloomG = bloomOf("255,246,226", "240,206,140", "201,146,56");
 
     function count() {
       if (!fixed) return Math.max(26, Math.min(46, Math.round(W / 46)));
@@ -1337,7 +1338,7 @@ var UI = (function () {
       /* the path between the stars: each drawn as far as the view has come */
       if (spots.length) {
         ctx.lineWidth = 1.25 * iz;
-        ctx.strokeStyle = "rgba(169,133,230,.85)";
+        ctx.strokeStyle = "rgba(236,204,142,.8)";
         for (k = 1; k < spots.length; k++) {
           var rc = spots[k].reach || 0;
           if (rc <= 0) continue;
@@ -1360,7 +1361,7 @@ var UI = (function () {
               near.sort(function (a, b) { return a.d - b.d; });
             }
           }
-          ctx.strokeStyle = "rgba(169,133,230," + (0.8 * sp.glow).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(236,204,142," + (0.7 * sp.glow).toFixed(3) + ")";
           for (j = 0; j < near.length; j++) {
             ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(X[near[j].i], Y[near[j].i]); ctx.stroke();
           }
@@ -1406,13 +1407,13 @@ var UI = (function () {
           for (var q = 0; q < 3; q++) {
             var ph = (now / 1600 + q / 3) % 1;
             ctx.lineWidth = (2.2 - 1.4 * ph) * iz;
-            ctx.strokeStyle = (s.gold ? "rgba(255,214,150," : "rgba(214,190,255,") + (0.8 * cl * (1 - ph) * (1 - ph)).toFixed(3) + ")";
+            ctx.strokeStyle = (s.gold ? "rgba(240,206,140," : "rgba(246,224,178,") + (0.8 * cl * (1 - ph) * (1 - ph)).toFixed(3) + ")";
             ctx.beginPath(); ctx.arc(x, y, (8 + 70 * eOutC(ph)) * iz, 0, 6.2832); ctx.stroke();
           }
         }
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
-        ctx.fillStyle = s.gold ? "#E8BB68" : "#E1D4F8";
+        ctx.fillStyle = s.gold ? "#F3D08A" : "#FBEBC8";
         ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4.5 : 3.5) + 1.2 * cl * beat) * iz, 0, 6.2832); ctx.fill();
         ctx.globalAlpha = 1;
       }
