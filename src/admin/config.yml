@@ -161,8 +161,8 @@ collections:
                     fields:
                       - { label: "Scroll per idea (desktop, % of screen height)", name: beat, widget: number, required: false, hint: "How much scrolling each idea holds the screen. Default: 120" }
                       - { label: "Scroll per idea (phones, % of screen height)", name: beatPhone, widget: number, required: false, hint: "The same on phones. Default: 130" }
-                      - { label: "Zoom on each star (desktop)", name: zoom, widget: number, value_type: float, required: false, hint: "How far the view closes in on each star. Default: 2.4" }
-                      - { label: "Zoom on each star (phones)", name: zoomPhone, widget: number, value_type: float, required: false, hint: "The same on phones. Default: 2.0" }
+                      - { label: "Zoom on each star (desktop)", name: zoom, widget: number, value_type: float, required: false, hint: "How far the camera flies into each star before its photo opens. Default: 14" }
+                      - { label: "Zoom on each star (phones)", name: zoomPhone, widget: number, value_type: float, required: false, hint: "The same on phones. Default: 14" }
                       - { label: "Scroll after the last idea (% of screen height)", name: tail, widget: number, required: false, hint: "How long the statement and the live star field hold the screen before the page moves on. Default: 100" }
                       - { label: "Push-in while an idea holds", name: dolly, widget: number, value_type: float, required: false, hint: "How much further the view closes in while an idea holds (1.04 = 4%). Default: 1.04" }
                       - { label: "Plum grade on the pictures (0–1)", name: grade, widget: number, value_type: float, min: 0, max: 1, required: false, hint: "How strongly the pictures are tinted toward plum (0 = none). Default: 0.6" }

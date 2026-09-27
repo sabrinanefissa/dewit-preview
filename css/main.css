@@ -251,59 +251,55 @@ html.no-js .loader, .loader[hidden] { display:none; }
    downward one still scrolls the page on */
 .thread__stage.is-live { touch-action: pan-y; }
 
-.thread__eyebrow { position:absolute; z-index:3; left:4vw; top:5.5rem; margin:0;
+.thread__eyebrow { position:absolute; z-index:5; left:4vw; top:5.5rem; margin:0;
   font-family: var(--f-text); font-weight:500; font-size: var(--step--1);
   letter-spacing:.2em; text-transform:uppercase; color: rgba(245,240,231,.62); }
 
-/* Stations: one on screen at a time (.is-on), opening out of its star --- */
-.thread .stations { position:absolute; inset:0; z-index:2; pointer-events:none; }
-.station { position:absolute; inset:0; visibility:hidden; pointer-events:none;
-  clip-path: circle(calc(var(--reveal, 0) * 120%) at var(--hx, 50%) var(--hy, 50%));
-  opacity: min(1, calc(var(--reveal, 0) * 2));
-  transform: scale(calc(.92 + .08 * var(--reveal, 0)));
-  transform-origin: var(--hx, 50%) var(--hy, 50%);
-  will-change: clip-path, transform; }
+/* Stations: one on screen at a time (.is-on). The camera flies into the
+   star; the photo opens full screen out of its centre (--hx/--hy, --reveal),
+   under the star's light (canvas .thread__sun, z 3), and the words fade in
+   centred over it (--txt). No stacking context on .stations/.station, so
+   the light can sit between the photo and the words. -------------------- */
+.thread .stations { position:absolute; inset:0; pointer-events:none; }
+.thread__sun { position:absolute; inset:0; z-index:3; display:block; width:100%; height:100%; pointer-events:none; }
+.station { position:absolute; inset:0; visibility:hidden; pointer-events:none; }
 .station.is-on { visibility:visible; }
 .station.is-on .body a { pointer-events:auto; }
 
-/* The still: a framed 5:4 card on the side away from its star, graded */
-.station .still { position:absolute; margin:0; top:50%; left:52vw; width: min(30vw, 460px); aspect-ratio: 5 / 4;
-  transform: translateY(-50%);
-  border:2px solid rgba(245,240,231,.10); border-radius:4px; overflow:hidden; isolation:isolate;
-  background: var(--plum-2); }
-.station.is-pillar .still { width: min(38vw, 560px); }
-.station.is-flip .still { left:auto; right:52vw; }
-.station .still img { display:block; width:100%; height:100%; }
-.station .still img { object-fit:cover; filter: contrast(1.06) saturate(.78) brightness(.92); }
+/* The photo: the whole screen, graded */
+.station .still { position:absolute; inset:0; z-index:2; margin:0; overflow:hidden; isolation:isolate; background: var(--plum-2);
+  clip-path: circle(calc(var(--reveal, 0) * 75vmax) at var(--hx, 50%) var(--hy, 50%));
+  will-change: clip-path; }
+.station .still .pic, .station .still img { display:block; width:100%; height:100%; }
+.station .still img { object-fit:cover; filter: contrast(1.06) saturate(.82) brightness(.9);
+  transform: scale(var(--dolly, 1)); transform-origin: var(--hx, 50%) var(--hy, 50%); will-change: transform; }
 /* the grade: a plum colour layer (settings.motion.grade → --grade), a warm
-   soft-light bloom up top, and a plum darkening toward the bottom */
+   soft-light bloom up top, and a shade behind the words */
 .station .still::before { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(45,22,66,.35); mix-blend-mode: color; opacity: var(--grade, .6); }
 .still__gold { position:absolute; inset:0; z-index:2; pointer-events:none;
   background: radial-gradient(60% 50% at 30% 20%, rgba(212,175,55,.18), transparent);
   mix-blend-mode: soft-light; }
 .station .still::after { content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
-  background: linear-gradient(180deg, rgba(26,16,38,.10), rgba(26,16,38,.55)); }
+  background: radial-gradient(70% 55% at 50% 50%, rgba(18,10,28,.62), rgba(18,10,28,.25) 70%, rgba(18,10,28,.4)); }
 
-/* The words: on the star's side, vertically centred ------------------- */
-.station .body { position:absolute; top:50%; left:10vw; width:36vw; transform: translateY(-50%); text-align:right;
-  text-shadow: 0 1px 16px rgba(26,16,38,.9), 0 0 4px rgba(26,16,38,.7); }
-.station.is-flip .body { left:54vw; text-align:left; }
+/* The words: centred on the photo */
+.station .body { position:absolute; z-index:4; top:50%; left:50%; width: min(88vw, 980px);
+  transform: translate(-50%, calc(-50% + (1 - var(--txt, 0)) * 18px)); opacity: var(--txt, 0); text-align:center;
+  text-shadow: 0 1px 18px rgba(18,10,28,.9), 0 0 4px rgba(18,10,28,.7); }
 .station .idx { margin:0 0 .9rem; }
 .station .idx span { display:block; font-size: var(--step--1); font-weight:500; letter-spacing:.2em; color: var(--violet-300); }
 .station .kicker { margin:0 0 .7rem; }
 .station .kicker span { display:block; font-size: var(--step--1); font-weight:600; letter-spacing:.2em;
   text-transform:uppercase; color: var(--gold); }
 .station .label { margin:0; font-family: var(--f-display); font-weight:340;
-  font-size: var(--fs, var(--step-4)); line-height:1; letter-spacing:-0.03em; color: var(--tx-inv); }
-.station.is-pillar .label { font-size: var(--fs, var(--step-5)); }
+  font-size: var(--fs, var(--step-5)); line-height:1; letter-spacing:-0.03em; color: var(--tx-inv); text-wrap:balance; }
 .station .label span { display:block; padding-bottom:.08em; }
 .station .label a { color:inherit; }
 .station .label a:hover { color: var(--violet-300); }
 .thread__key { font-style:italic; font-weight:340; color: var(--violet-300); }
-.station .gloss { margin:1rem 0 0 auto; max-width:30ch; text-wrap:balance; font-size: var(--step-1);
-  line-height:1.35; color: rgba(244,236,222,.85); }
-.station.is-flip .gloss { margin-left:0; }
+.station .gloss { margin:1.1rem auto 0; max-width:34ch; text-wrap:balance; font-size: var(--step-1);
+  line-height:1.35; color: rgba(244,236,222,.9); }
 
 /* The ending: the statement over the settled field -------------------- */
 .thread__end { position:absolute; inset:0; z-index:2; display:grid; place-items:center; pointer-events:none;
@@ -326,20 +322,12 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
 
-/* Phones (.is-phone, < 768px): the still across the top, the words under */
+/* Phones (.is-phone, < 768px): the same flight, the tall crop, the words centred */
 .thread.is-phone .thread__eyebrow { left: var(--gutter); top:4.75rem; text-shadow: 0 1px 12px rgba(0,0,0,.6); }
-.thread.is-phone .station .still { left:0; right:auto; top:0; width:100%; height:46svh; aspect-ratio:auto;
-  transform:none; border:0; border-radius:0;
-  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
-          mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
 .thread.is-phone .station .still img { object-position: 50% 30%; }
-.thread.is-phone .station .body { left:5vw; right:5vw; width:auto; top:50svh; transform:none; text-align:left; }
-.thread.is-phone .station .idx { margin-bottom:.6rem; }
-.thread.is-phone .station .kicker { margin-bottom:.5rem; }
+.thread.is-phone .station .body { width: calc(100vw - 2 * var(--gutter)); }
 .thread.is-phone .station .label { font-size: var(--fs, var(--step-4)); }
-.thread.is-phone .station.is-pillar .label { font-size: var(--fs, var(--step-5)); }
-.thread.is-phone .station .gloss { margin:.9rem 0 0; max-width:none; font-size: var(--step-0); line-height:1.4;
-  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+.thread.is-phone .station .gloss { margin-top:.9rem; font-size: var(--step-0); line-height:1.4; }
 
 /* Stacked: reduced motion, Save-Data (.is-static) and no script ------ */
 .thread.is-static .thread__track, html.no-js .thread__track { height:auto; }
@@ -348,17 +336,20 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .thread.is-static .thread__eyebrow, html.no-js .thread__eyebrow { order:-1; position:static; width: var(--wrap);
   margin:0 auto clamp(2rem, 5vw, 3.5rem); }
 .thread.is-static .thread__jump, html.no-js .thread__jump { display:none; }
+.thread.is-static .thread__sun, html.no-js .thread__sun { display:none; }
 .thread.is-static .stations, html.no-js .thread .stations { position:static; width: var(--wrap); margin-inline:auto;
   display:grid; gap: clamp(3rem, 8vw, 6rem); }
 .thread.is-static .station, html.no-js .station { position:relative; inset:auto; visibility:visible; pointer-events:auto;
   clip-path:none; opacity:1; transform:none; will-change:auto;
   display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap:1.5rem 24px; align-items:end; }
-.thread.is-static .station .still, html.no-js .station .still { position:relative; left:auto; right:auto; top:auto; grid-row:1;
+.thread.is-static .station .still, html.no-js .station .still { position:relative; inset:auto; clip-path:none; will-change:auto; grid-row:1;
   grid-column: 1 / 6; width:auto; height:auto; aspect-ratio: 5 / 4; transform:none;
   -webkit-mask-image:none; mask-image:none; border:2px solid rgba(245,240,231,.10); border-radius:4px; }
 .thread.is-static .station.is-pillar .still, html.no-js .station.is-pillar .still { grid-column: 1 / 7; }
 .thread.is-static .station .body, html.no-js .station .body { position:static; grid-row:1; grid-column: 7 / 13;
-  width:auto; transform:none; text-align:left; }
+  width:auto; transform:none; opacity:1; text-align:left; }
+.thread.is-static .station .still img, html.no-js .station .still img { transform:none; }
+.thread.is-static .station .label, html.no-js .station .label { font-size: var(--fs, var(--step-4)); }
 .thread.is-static .station .gloss, html.no-js .station .gloss { margin-left:0; display:block; -webkit-line-clamp:unset; }
 .thread.is-static .station:nth-child(even) .still, html.no-js .station:nth-child(even) .still { grid-column: 8 / 13; }
 .thread.is-static .station:nth-child(even) .body, html.no-js .station:nth-child(even) .body { grid-column: 1 / 8; text-align:right; }

@@ -115,10 +115,10 @@
       ],
       "settings": {
         "motion": {
-          "beat": 120,
-          "beatPhone": 130,
-          "zoom": 2.4,
-          "zoomPhone": 2.0,
+          "beat": 150,
+          "beatPhone": 150,
+          "zoom": 14,
+          "zoomPhone": 14,
           "tail": 100,
           "dolly": 1.04,
           "grade": 0.6

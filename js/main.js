@@ -284,9 +284,9 @@ var UI = (function () {
     if (!track || !stage || !sky || !sky.getContext || !stations.length || !window.spkConstellation) return;
 
     var N = stations.length;
-    var ZD = parseFloat(sec.getAttribute("data-zoom")) || 2.4;
-    var ZP = parseFloat(sec.getAttribute("data-zoom-phone")) || 2.0;
-    var DOLLY = parseFloat(sec.getAttribute("data-dolly")) || 1.04;   /* the hold's slow push-in */
+    /* how far the camera flies into a star (the field's zoom at the bottom of the dive) */
+    var ZFD = parseFloat(sec.getAttribute("data-zoom")) || 14;
+    var ZFP = parseFloat(sec.getAttribute("data-zoom-phone")) || 14;
     var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
     var phone = window.matchMedia("(max-width: 767px)");
     var saveData = !!(navigator.connection && navigator.connection.saveData);
@@ -306,6 +306,12 @@ var UI = (function () {
 
     var mode = null, W = 0, H = 0, p = 0, live = false;
     var sky0 = null;
+    /* the flight layer: the streaks, the star become a sun, its light; over
+       the photo, under the words */
+    var sunCv = document.createElement("canvas");
+    sunCv.className = "thread__sun"; sunCv.setAttribute("aria-hidden", "true");
+    sky.parentNode.insertBefore(sunCv, sky.nextSibling);
+    var sunCtx = sunCv.getContext("2d"), sunDpr = Math.min(window.devicePixelRatio || 1, 2);
     var gateLive = function () { return live; };
 
     /* ---- geometry, measured on layout only ---- */
@@ -344,6 +350,7 @@ var UI = (function () {
       if (!sky0) return;
       W = stage.clientWidth; H = stage.clientHeight;
       sky0.size();
+      sunCv.width = Math.round(W * sunDpr); sunCv.height = Math.round(H * sunDpr);
       for (var k = 0; k < N; k++) fitLabel(k);
       if (mode === "static") paintStatic();
     }
@@ -355,58 +362,137 @@ var UI = (function () {
       var old = c[name];
       if (old !== undefined && Math.abs(old - v) <= 0.002) return;
       c[name] = v;
-      el.style.setProperty(name, name === "--reveal" || name === "--end" ? v.toFixed(4) : v.toFixed(1) + "px");
+      el.style.setProperty(name, name === "--reveal" || name === "--end" || name === "--txt" || name === "--dolly" ? v.toFixed(4) : v.toFixed(1) + "px");
     }
     var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0, DIM = 0.22;
+    /* the camera glides after the scroll: uS chases u (time constant GLIDE),
+       so a wheel notch or a flick is one continuous flight, never a jump */
+    var uS = -1, lastT = 0, lastF = 0, vel = 0, GLIDE = 0.16;
+
+    /* the flight's star streaks: fixed points in a tunnel, each an angle,
+       a distance off the axis and a depth; the dive moves the eye down the
+       tunnel (by f), so the streaks are a function of the scroll and run
+       backwards on the way out */
+    var dust = [];
+    (function () {
+      var sd = 7;
+      function rnd() { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }
+      for (var q = 0; q < 170; q++) dust.push({ a: rnd() * 6.2832, r: 0.07 + 0.93 * Math.sqrt(rnd()), z: rnd(), w: 0.6 + rnd() });
+    })();
+
+    function drawFlight(hx, hy, f, sunA, flood, gold, t) {
+      var c = sunCtx, D = Math.sqrt(W * W + H * H) / 2, k, g;
+      c.setTransform(sunDpr, 0, 0, sunDpr, 0, 0);
+      c.clearRect(0, 0, W, H);
+      if (f <= 0.001 && flood <= 0.001) return;
+      c.globalCompositeOperation = "lighter";
+      /* the streaks: the other stars rushing past as the camera flies in */
+      var sa = Math.min(1, vel * 2.2) * (1 - flood) * Math.min(1, f * 6);
+      if (sa > 0.01) {
+        var travel = f * 3, len = Math.min(0.35, 0.04 + vel * 0.25), base = Math.min(W, H) * 0.3;
+        c.lineCap = "round";
+        for (k = 0; k < dust.length; k++) {
+          var d = dust[k], rel = d.z - travel; rel = rel - Math.floor(rel); rel = 0.03 + rel * 0.97;
+          var ca = Math.cos(d.a), sn = Math.sin(d.a);
+          var r1 = d.r * base / rel, r2 = d.r * base / (rel + len);
+          if (r2 > D * 1.2) continue;
+          var al = sa * (1 - rel) * (1 - rel) * 0.9;
+          if (al < 0.02) continue;
+          c.strokeStyle = "rgba(226,214,255," + al.toFixed(3) + ")";
+          c.lineWidth = d.w * (0.6 + 1.6 * (1 - rel));
+          c.beginPath(); c.moveTo(hx + ca * r2, hy + sn * r2); c.lineTo(hx + ca * r1, hy + sn * r1); c.stroke();
+        }
+      }
+      /* the star itself: a dot that becomes a sun, then fills the screen */
+      if (sunA > 0.01 && f > 0.001) {
+        var R = 26 + D * 1.35 * Math.pow(f, 2.2);
+        var tint = gold ? "255,214,150" : "214,190,255", deep = gold ? "232,160,70" : "140,96,230";
+        g = c.createRadialGradient(hx, hy, 0, hx, hy, R);
+        g.addColorStop(0, "rgba(255,255,255," + sunA + ")");
+        g.addColorStop(0.07, "rgba(255,250,255," + (0.95 * sunA) + ")");
+        g.addColorStop(0.2, "rgba(" + tint + "," + (0.6 * sunA) + ")");
+        g.addColorStop(0.5, "rgba(" + deep + "," + (0.22 * sunA) + ")");
+        g.addColorStop(1, "rgba(" + deep + ",0)");
+        c.fillStyle = g; c.beginPath(); c.arc(hx, hy, R, 0, 6.2832); c.fill();
+        /* its rays, turning slowly */
+        var rl = R * 1.4, rot = t / 9000;
+        c.lineCap = "round";
+        for (k = 0; k < 8; k++) {
+          var an = rot + k * 0.7854 + (k % 2 ? 0.2 : 0), rr = rl * (k % 2 ? 0.6 : 1);
+          var lg = c.createLinearGradient(hx, hy, hx + Math.cos(an) * rr, hy + Math.sin(an) * rr);
+          lg.addColorStop(0, "rgba(255,248,255," + (0.5 * sunA) + ")");
+          lg.addColorStop(1, "rgba(" + tint + ",0)");
+          c.strokeStyle = lg; c.lineWidth = Math.max(1.5, R * 0.035) * (k % 2 ? 0.6 : 1);
+          c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx + Math.cos(an) * rr, hy + Math.sin(an) * rr); c.stroke();
+        }
+      }
+      c.globalCompositeOperation = "source-over";
+      /* inside the star: its light fills the screen */
+      if (flood > 0.001) {
+        g = c.createRadialGradient(hx, hy, 0, hx, hy, D * 1.2);
+        g.addColorStop(0, "rgba(255,252,255," + flood + ")");
+        g.addColorStop(1, "rgba(" + (gold ? "244,214,170" : "206,184,250") + "," + flood + ")");
+        c.fillStyle = g; c.fillRect(0, 0, W, H);
+      }
+    }
 
     function render(t) {
-      var u = clamp(p) * (N + 1);
+      var target = clamp(p) * (N + 1);
+      var dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 0.016; lastT = t;
+      if (uS < 0 || Math.abs(target - uS) > 2.5) uS = target;
+      else uS += (target - uS) * (1 - Math.exp(-dt / GLIDE));
+      if (Math.abs(target - uS) < 0.0004) uS = target;
+      var u = uS;
       lastU = u;
       var ending = u >= N;
       var i = Math.min(N - 1, Math.floor(u));
       var s = ending ? 1 : u - i;
-      var Z = mode === "phone" ? ZP : ZD;
-      var cx, cy, z = 1, rev = 0, k;
+      var cx, cy, z = 1, f = 0, rev = 0, txt = 0, sunA = 0, flood = 0, dolly = 1, k;
 
-      /* the stars' states: the NEXT star calls (bright and pulsing) from
-         the moment the one before starts to zoom out, through the travel
-         to it; it stops pulsing (steady, bright) as the camera closes in
-         and holds; as the camera pulls away it dims, and the one after
-         starts calling. Stars already visited stay dim; at the ending
-         they all settle softly lit. */
+      /* the stars' states: the NEXT star calls (bright, breathing, sending
+         out rings) from the moment the camera starts to pull out of the one
+         before, through the travel to it; it burns steady as the camera
+         dives in; as the camera pulls away it dims and the one after
+         starts calling. Visited stars stay dim; at the ending they all
+         settle softly lit. */
       for (k = 0; k < N; k++) {
         var sp = spots[k], g = 0, r = 0, call = 0;
         if (ending) { g = 0.6; r = 1; }
         else if (k < i) { g = DIM; r = 1; }
         else if (k === i) {
-          r = s < 0.15 ? eIO(s / 0.15) : 1;
-          if (s < 0.15) { g = 1; call = 1; }                             /* calling while the camera travels to it */
-          else if (s < 0.8) { g = 1; call = 1 - smooth((s - 0.15) / 0.06); }  /* steady once it closes in */
-          else { g = 1 - (1 - DIM) * eIO((s - 0.8) / 0.2); }            /* dims as it is left */
-          if (i === 0 && s < 0.15) r = 0;
-        } else if (k === i + 1 && s >= 0.8) {
-          g = eIO((s - 0.8) / 0.2); call = g;                           /* the next one starts calling */
+          r = s < 0.12 ? eIO(s / 0.12) : 1;
+          if (s < 0.12) { g = 1; call = 1; }
+          else if (s < 0.82) { g = 1; call = 1 - smooth((s - 0.12) / 0.08); }
+          else { g = 1 - (1 - DIM) * eIO((s - 0.82) / 0.18); }
+          if (i === 0 && s < 0.12) r = 0;
+        } else if (k === i + 1 && s >= 0.82) {
+          g = eIO((s - 0.82) / 0.18); call = g;
         }
         sp.glow = g; sp.call = call; sp.reach = k === 0 ? 0 : r; sp.found = !ending && k === i;
       }
 
       if (!ending) {
         var h = spots[i];
-        if (s < 0.15) {
-          var fx = i ? spots[i - 1].x : 0.5, fy = i ? spots[i - 1].y : 0.5, tt = eIO(s / 0.15);
+        if (s < 0.12) {
+          var fx = i ? spots[i - 1].x : 0.5, fy = i ? spots[i - 1].y : 0.5, tt = eIO(s / 0.12);
           cx = fx + (h.x - fx) * tt; cy = fy + (h.y - fy) * tt;
-        } else {
-          cx = h.x; cy = h.y;
-          if (s < 0.35) z = 1 + (Z - 1) * eOut((s - 0.15) / 0.2);
-          else if (s < 0.8) z = Z * (1 + (DOLLY - 1) * (s - 0.35) / 0.45);
-          else z = Z * DOLLY + (1 - Z * DOLLY) * eIn((s - 0.8) / 0.2);
-        }
-        rev = s < 0.18 ? 0 : s < 0.4 ? smooth((s - 0.18) / 0.22) : s < 0.8 ? 1 : s < 0.92 ? 1 - smooth((s - 0.8) / 0.12) : 0;
+        } else { cx = h.x; cy = h.y; }
+        /* the dive: .12–.46 in (accelerating into the star), .80–1 out */
+        f = s < 0.8 ? eIO((s - 0.12) / 0.34) : 1 - eIO((s - 0.8) / 0.2);
+        z = Math.pow(mode === "phone" ? ZFP : ZFD, f);
+        /* the photo opens out of the light, holds, and sinks back into it */
+        rev = s < 0.38 ? 0 : s < 0.52 ? eOut((s - 0.38) / 0.14) : s < 0.74 ? 1 : s < 0.86 ? 1 - eIn((s - 0.74) / 0.12) : 0;
+        dolly = s < 0.74 ? 1.1 - 0.1 * eOut((s - 0.38) / 0.36) : 1 + 0.06 * smooth((s - 0.74) / 0.12);
+        txt = smooth((s - 0.5) / 0.07) * (1 - smooth((s - 0.7) / 0.06));
+        sunA = s < 0.6 ? 1 - smooth((s - 0.44) / 0.12) : smooth((s - 0.7) / 0.08);
+        flood = s < 0.6 ? smooth((f - 0.6) / 0.4) * (1 - smooth((s - 0.44) / 0.12))
+                        : smooth((s - 0.7) / 0.08) * (1 - smooth((s - 0.84) / 0.1));
       } else {
         var e = u - N, last = spots[N - 1], b = eIO(e / 0.3);
         cx = last.x + (0.5 - last.x) * b; cy = last.y + (0.5 - last.y) * b;
       }
       cam.z = z; cam.cx = cx; cam.cy = cy;
+      vel += ((dt > 0 ? Math.abs(f - lastF) / dt : 0) - vel) * 0.25; lastF = f;
 
       /* the field */
       sky0.setCamera(z, cx * W, cy * H);
@@ -415,16 +501,21 @@ var UI = (function () {
       sky0.step(t);
       sky0.draw();
 
-      /* the card: one station, opening out of its star */
+      /* the flight into the star, and its light */
+      var hx = W / 2 + (spots[i].x - cx) * W * z, hy = H / 2 + (spots[i].y - cy) * H * z;
+      drawFlight(hx, hy, ending ? 0 : f, sunA, ending ? 0 : flood, spots[i].gold, t);
+
+      /* the photo: full screen, opening out of the star's centre */
       for (k = 0; k < N; k++) {
         var on = !ending && k === i && rev > 0;
         if (stations[k].classList.contains("is-on") !== on) stations[k].classList.toggle("is-on", on);
       }
       if (!ending && rev > 0) {
-        var hx = W / 2 + (spots[i].x - cx) * W * z, hy = H / 2 + (spots[i].y - cy) * H * z;
         setVar(stations[i], cache[i], "--hx", hx);
         setVar(stations[i], cache[i], "--hy", hy);
         setVar(stations[i], cache[i], "--reveal", rev);
+        setVar(stations[i], cache[i], "--txt", txt);
+        setVar(stations[i], cache[i], "--dolly", dolly);
       }
 
       /* the ending */
@@ -512,12 +603,14 @@ var UI = (function () {
     /* ---- modes ---- */
     function reset() {
       stations.forEach(function (st, k) {
-        ["--hx", "--hy", "--reveal", "--fs"].forEach(function (n) { st.style.removeProperty(n); });
+        ["--hx", "--hy", "--reveal", "--txt", "--dolly", "--fs"].forEach(function (n) { st.style.removeProperty(n); });
         st.classList.remove("is-on");
         cache[k] = {};
       });
       if (endEl) endEl.style.removeProperty("--end");
       endCache = {};
+      sunCtx.setTransform(1, 0, 0, 1, 0, 0); sunCtx.clearRect(0, 0, sunCv.width, sunCv.height);
+      uS = -1;
       stage.classList.remove("is-live");
       live = false; cur = -2;
     }
@@ -1115,6 +1208,20 @@ var UI = (function () {
       g.addColorStop(0, "rgba(232,187,104,.18)"); g.addColorStop(1, "rgba(232,187,104,0)");
       h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
     })();
+    /* the hotspots' bloom: a bright core in a wide soft light (lilac; gold for pillars) */
+    function bloomOf(core, mid, edge) {
+      var b = document.createElement("canvas"), R = 64;
+      b.width = b.height = R * 2 * dpr;
+      var h = b.getContext("2d"); h.scale(dpr, dpr);
+      var g = h.createRadialGradient(R, R, 0, R, R, R);
+      g.addColorStop(0, "rgba(" + core + ",1)"); g.addColorStop(0.08, "rgba(" + core + ",.85)");
+      g.addColorStop(0.22, "rgba(" + mid + ",.45)"); g.addColorStop(0.5, "rgba(" + edge + ",.14)");
+      g.addColorStop(1, "rgba(" + edge + ",0)");
+      h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
+      return b;
+    }
+    var bloomL = bloomOf("250,246,255", "200,176,255", "124,77,224");
+    var bloomG = bloomOf("255,248,232", "255,214,150", "232,160,70");
 
     function count() {
       if (!fixed) return Math.max(26, Math.min(46, Math.round(W / 46)));
@@ -1154,6 +1261,7 @@ var UI = (function () {
       return { x: W * (0.5 + 0.32 * Math.sin(k * 0.00021)), y: H * (0.5 + 0.28 * Math.sin(k * 0.00033 + 1.3)) };
     }
     function ease(x) { return 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3); }
+    function eOutC(x) { return 1 - Math.pow(1 - x, 2); }
 
     /* the nodes drift (and, with the pointer in, are pushed or gathered) */
     function move(px, py, withPointer) {
@@ -1281,21 +1389,28 @@ var UI = (function () {
       for (k = 0; k < spots.length; k++) {
         if (!V[n + k]) continue;
         var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
-        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 260);
-        /* the halo breathes while the star calls, and is bigger when lit */
-        var hs = (1 + 0.5 * g + 0.45 * cl * beat) * 28;
-        ctx.globalAlpha = Math.min(1, (0.2 + 0.8 * g) * (1 + 0.4 * cl * beat));
-        ctx.drawImage(halo, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
+        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 380);
+        /* the glow: a wide bloom, added light; it breathes while the star calls */
+        var hs = (16 + 30 * g + 34 * cl * beat);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = Math.min(1, 0.18 + 0.82 * g);
+        ctx.drawImage(s.gold ? bloomG : bloomL, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
+        if (g > 0.5) {
+          var hw2 = hs * 2.6;
+          ctx.globalAlpha = 0.35 * (g - 0.5) * 2 * (1 + 0.6 * cl * beat);
+          ctx.drawImage(s.gold ? bloomG : bloomL, x - hw2 * iz, y - hw2 * iz, 2 * hw2 * iz, 2 * hw2 * iz);
+        }
         ctx.globalAlpha = 1;
-        /* calling: two sonar rings expanding out of the star and fading */
+        /* calling: rings of light going out of the star and fading */
         if (cl > 0.01) {
-          ctx.lineWidth = 1.4 * iz;
-          for (var q = 0; q < 2; q++) {
-            var ph = (now / 1300 + q * 0.5) % 1;
-            ctx.strokeStyle = (s.gold ? "rgba(232,187,104," : "rgba(225,212,248,") + (0.75 * cl * (1 - ph)).toFixed(3) + ")";
-            ctx.beginPath(); ctx.arc(x, y, (6 + 30 * ph) * iz, 0, 6.2832); ctx.stroke();
+          for (var q = 0; q < 3; q++) {
+            var ph = (now / 1600 + q / 3) % 1;
+            ctx.lineWidth = (2.2 - 1.4 * ph) * iz;
+            ctx.strokeStyle = (s.gold ? "rgba(255,214,150," : "rgba(214,190,255,") + (0.8 * cl * (1 - ph) * (1 - ph)).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(x, y, (8 + 70 * eOutC(ph)) * iz, 0, 6.2832); ctx.stroke();
           }
         }
+        ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
         ctx.fillStyle = s.gold ? "#E8BB68" : "#E1D4F8";
         ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4.5 : 3.5) + 1.2 * cl * beat) * iz, 0, 6.2832); ctx.fill();
