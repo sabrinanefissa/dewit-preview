@@ -3622,15 +3622,31 @@ var UI = (function () {
 
     var wordsEl = chapters.map(function (c) { return c.querySelector(".spk-chap__word"); });
     var linesEl = chapters.map(function (c) { return c.querySelector(".spk-chap__text"); });
-    /* the six beat elements, in beat order after the heading */
+    /* turn mode (a chapter with a second line and picture, .spk-chap__text--turn
+       and a still with data-turn): the chapter's word is its title and stays
+       on top across both its beats; beat 1 + 2i is its first line over its
+       first still, beat 2 + 2i the turn line over the turn still (the
+       stills crossfade as the lines change) */
+    var turnsEl = chapters.map(function (c) { return c.querySelector(".spk-chap__text--turn"); });
+    var TURN = turnsEl.some(function (t) { return !!t; });
+    if (TURN) sec.classList.add("spk-chap--turn");
+    /* the beat elements, in beat order after the heading */
     var beatEls = [];
-    chapters.forEach(function (c, i) { beatEls.push(wordsEl[i], linesEl[i]); });
+    chapters.forEach(function (c, i) {
+      if (TURN) beatEls.push(linesEl[i], turnsEl[i]);
+      else beatEls.push(wordsEl[i], linesEl[i]);
+    });
     function elOf(b) { return b === 0 ? heading : beatEls[b - 1]; }
-    function stillOf(i) {
+    /* chapter i's still; t: its turn still (falls back to the first) */
+    function stillOf(i, t) {
+      var first = null;
       for (var k = 0; k < stills.length; k++) {
-        if (+stills[k].getAttribute("data-chapter") === i) return stills[k];
+        if (+stills[k].getAttribute("data-chapter") !== i) continue;
+        var isT = stills[k].hasAttribute("data-turn");
+        if (!!t === isT) return stills[k];
+        if (!isT && !first) first = stills[k];
       }
-      return null;
+      return first;
     }
 
     function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
@@ -3645,8 +3661,10 @@ var UI = (function () {
     }
     function words(i) {
       var w = wordsEl[i], l = linesEl[i];
+      var t = turnsEl[i];
       return (w ? w.textContent.trim() : "") + ". " +
-             (l ? l.textContent.replace(/\s+/g, " ").trim() : "");
+             (l ? l.textContent.replace(/\s+/g, " ").trim() : "") +
+             (t ? " " + t.textContent.replace(/\s+/g, " ").trim() : "");
     }
 
     /* The tablist as authored, kept so a mode that strips it (phone, static)
@@ -3684,7 +3702,7 @@ var UI = (function () {
     function clearState() {
       tabs.forEach(function (t) { t.classList.remove("is-on", "is-lit"); });
       chapters.forEach(function (c) { c.classList.remove("is-live", "is-lit"); });
-      beatEls.forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving", "is-struck"); });
+      beatEls.concat(wordsEl, turnsEl).forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving", "is-struck"); });
       heading.classList.remove("is-gone");
       stills.forEach(function (st, k) {
         st.classList.toggle("is-on", k === 0);
@@ -3750,7 +3768,7 @@ var UI = (function () {
     }
 
     /* ---- pinned ---- */
-    var curBeat = -1, curIdx = -1, shown = null;
+    var curBeat = -1, curIdx = -1, shown = null, curStill = null, curWord = null, wordT = 0;
     var arriveT = 0, leaveTs = [], offTs = [];
 
     /* the beat on screen leaves, then the target arrives; a call mid-fade
@@ -3808,8 +3826,8 @@ var UI = (function () {
 
     /* the incoming still goes on top and fades in over the outgoing one,
        which keeps its light for the length of the crossfade */
-    function setChapter(idx, first) {
-      var inc = stillOf(idx);
+    function fadeTo(inc, first) {
+      curStill = inc;
       stills.forEach(function (st, k) {
         if (st === inc) {
           clearTimeout(offTs[k]); offTs[k] = 0;
@@ -3823,6 +3841,9 @@ var UI = (function () {
         if (!st.classList.contains("is-on") || offTs[k]) return;
         offTs[k] = setTimeout(function () { offTs[k] = 0; st.classList.remove("is-on"); }, CROSS);
       });
+    }
+    function setChapter(idx, first) {
+      if (!TURN) fadeTo(stillOf(idx), first);
       chapters.forEach(function (c, n) { c.classList.toggle("is-live", n === idx); });
       tabs.forEach(function (t, n) {
         t.setAttribute("aria-selected", n === idx ? "true" : "false");
@@ -3842,12 +3863,27 @@ var UI = (function () {
       var idx = beat === 0 ? 0 : Math.floor((beat - 1) / 2);
       var isLine = beat > 0 && (beat - 1) % 2 === 1;
 
-      if (idx !== curIdx) setChapter(idx, curIdx === -1);
+      var firstCh = curIdx === -1;
+      if (idx !== curIdx) setChapter(idx, firstCh);
+      if (TURN) {
+        /* the still follows the line: the first, then the turn */
+        var want = stillOf(idx, isLine);
+        if (want !== curStill) fadeTo(want, firstCh);
+        /* the title: the chapter's word, on top across both its beats */
+        var w = beat === 0 ? null : wordsEl[idx];
+        if (w !== curWord) {
+          clearTimeout(wordT); wordT = 0;
+          if (curWord) leave(curWord);
+          curWord = w;
+          if (w) wordT = setTimeout(function () { wordT = 0; w.classList.remove("is-leaving"); w.classList.add("is-in"); }, ARRIVE);
+        }
+      }
       if (beat !== curBeat) goTo(beat);
 
-      /* the push-in runs across the chapter's two beats */
-      var c = beat === 0 ? 0 : ((beat - 1) % 2 + s) / 2;
-      var st = stillOf(idx);
+      /* the push-in runs across the chapter's two beats (turn mode: each
+         still across its own beat) */
+      var c = beat === 0 ? 0 : (TURN ? s : ((beat - 1) % 2 + s) / 2);
+      var st = TURN ? curStill : stillOf(idx);
       if (st) st.style.setProperty("--dolly", (1 + (DOLLY - 1) * c).toFixed(4));
 
       /* the dot rests on its chapter's stop and travels at the end of a line */
@@ -3890,7 +3926,7 @@ var UI = (function () {
 
     function startPin() {
       clearState();
-      curIdx = -1;
+      curIdx = -1; curStill = null; curWord = null;
       /* beat 0: the heading visible and nothing else */
       curBeat = 0; shown = heading;
       tabs.forEach(function (t, i) {
@@ -3908,8 +3944,9 @@ var UI = (function () {
         t.removeEventListener("focus", focusFns[i]);
         t.removeEventListener("keydown", keyFns[i]);
       });
-      clearTimeout(arriveT); clearTimeout(sayT);
-      arriveT = sayT = 0;
+      clearTimeout(arriveT); clearTimeout(sayT); clearTimeout(wordT);
+      arriveT = sayT = wordT = 0;
+      curStill = null; curWord = null;
       leaveTs.forEach(function (t) { clearTimeout(t); });
       offTs.forEach(function (t) { clearTimeout(t); });
       leaveTs = []; offTs = [];
@@ -3953,7 +3990,7 @@ var UI = (function () {
     }
     /* a dot lands on its chapter arrived: the quote held (strike) or the
        word and its line held */
-    function dotGo(i) { jump(yAt(i, STRIKE ? 0.5 : 0.7)); }
+    function dotGo(i) { jump(yAt(i, STRIKE ? 0.5 : (TURN ? 0.4 : 0.7))); }
 
     function buildDots() {
       dotsEl = document.createElement("div");
@@ -4037,6 +4074,29 @@ var UI = (function () {
           phPut(st, "d" + k, "--dolly", 1 + (DOLLY - 1) * clamp(s));
         }
         var out = smooth(clamp((s - 0.9) / 0.1));
+        /* turn mode: the title in over 12-25%, the first line 25-38% and
+           out over 47-55%, the turn still crossfades in over 50-65% and its
+           line comes in over 57-70%; all leave together at 90-100% */
+        if (TURN) {
+          var ts = stillOf(k, true);
+          if (ts && ts !== st) {
+            phPut(ts, "to" + k, "--o", smooth(clamp((s - 0.5) / 0.15)));
+            phPut(ts, "td" + k, "--dolly", 1 + (DOLLY - 1) * clamp((s - 0.5) / 0.5));
+          }
+          if (wordsEl[k]) {
+            phPut(wordsEl[k], "wi" + k, "--in", smooth(clamp((s - 0.12) / 0.13)));
+            phPut(wordsEl[k], "wo" + k, "--out", out);
+          }
+          if (linesEl[k]) {
+            phPut(linesEl[k], "li" + k, "--in", smooth(clamp((s - 0.25) / 0.13)));
+            phPut(linesEl[k], "lo" + k, "--out", turnsEl[k] ? smooth(clamp((s - 0.47) / 0.08)) : out);
+          }
+          if (turnsEl[k]) {
+            phPut(turnsEl[k], "ti" + k, "--in", smooth(clamp((s - 0.57) / 0.13)));
+            phPut(turnsEl[k], "tl" + k, "--out", out);
+          }
+          continue;
+        }
         if (wordsEl[k]) {
           phPut(wordsEl[k], "wi" + k, "--in", smooth(clamp((s - 0.25) / 0.2)));
           phPut(wordsEl[k], "wo" + k, "--out", out);
@@ -4093,7 +4153,7 @@ var UI = (function () {
       sec.style.removeProperty("--beat-phone");
       heading.style.removeProperty("--hout");
       stills.forEach(function (st) { st.style.removeProperty("--o"); });
-      beatEls.forEach(function (e) {
+      beatEls.concat(wordsEl, turnsEl).forEach(function (e) {
         if (!e) return;
         e.style.removeProperty("--in"); e.style.removeProperty("--out");
       });

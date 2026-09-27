@@ -208,6 +208,13 @@
           "still": {
             "src": "/assets/img/feeling lonely at work.png",
             "sizes": "100vw"
+          },
+          "turn": {
+            "text": "Instead of judging the person across the table, you get *curious* about them",
+            "still": {
+              "src": "assets/img/pos-curiosity.jpg",
+              "sizes": "100vw"
+            }
           }
         },
         {
@@ -218,66 +225,30 @@
           "still": {
             "src": "assets/img/chap-feel-1664.webp",
             "sizes": "100vw"
+          },
+          "turn": {
+            "text": "The honest conversation finally happens, and the weight stops sitting on one person. It becomes *shared*",
+            "still": {
+              "src": "assets/img/pos-honest.jpg",
+              "sizes": "100vw"
+            }
           }
         },
         {
-          "word": "Act",
+          "word": "Trust",
           "text": "What moved you starts *changing* what you do",
           "tone": "violet",
           "spot": "c",
           "still": {
             "src": "/assets/img/ACT.png",
             "sizes": "100vw"
-          }
-        },
-        {
-          "word": "Trust",
-          "text": "You walk out *trusting* the people beside you a little more",
-          "tone": "bone",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/out-aisle-1664.webp",
-            "sizes": "100vw"
-          }
-        },
-        {
-          "word": "Honest conversation",
-          "text": "The conversation you kept putting off finally becomes an *honest* one",
-          "tone": "violet",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/pos-honest.jpg",
-            "sizes": "100vw"
-          }
-        },
-        {
-          "word": "Curiosity",
-          "text": "Instead of judging the person across the table, you get *curious* about them",
-          "tone": "bone",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/pos-curiosity.jpg",
-            "sizes": "100vw"
-          }
-        },
-        {
-          "word": "Shared responsibility",
-          "text": "The weight stops sitting on one person. It becomes *shared*",
-          "tone": "violet",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/pos-shared.jpg",
-            "sizes": "100vw"
-          }
-        },
-        {
-          "word": "Confidence",
-          "text": "You walk back into your work with a quieter kind of *confidence*",
-          "tone": "bone",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/pos-confidence.jpg",
-            "sizes": "100vw"
+          },
+          "turn": {
+            "text": "You walk back into your work with a quieter *confidence*, trusting the people beside you",
+            "still": {
+              "src": "assets/img/pos-confidence.jpg",
+              "sizes": "100vw"
+            }
           }
         }
       ]

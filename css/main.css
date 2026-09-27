@@ -2186,6 +2186,18 @@ html:not(.no-js) .spk-chap:not(.is-static):not(.is-phone) .spk-chap__chapter[dat
 /* phones only */
 .spk-chap__frame { display:none; }
 
+/* Turn mode (.spk-chap--turn, set by the script when a chapter has a
+   second line and picture): the word is the chapter's title, in its own
+   row on top, and stays across both beats; the first line and the turn
+   line share the row under it and take turns, while the picture under
+   them crossfades from the first still to the turn still. Everything
+   centred. Stacked modes (reduced motion, no script) show both lines. */
+html:not(.no-js) .spk-chap--turn:not(.is-static):not(.is-phone) .spk-chap__chapter {
+  justify-items:center; row-gap: clamp(1rem, 3.2vh, 2.2rem); }
+html:not(.no-js) .spk-chap--turn:not(.is-static):not(.is-phone) .spk-chap__word { grid-area:1/1; }
+html:not(.no-js) .spk-chap--turn:not(.is-static):not(.is-phone) .spk-chap__text { grid-area:2/1; }
+.spk-chap--turn .spk-chap__word { letter-spacing: .01em; }
+
 /* One fade recipe for every beat element: hidden at rest, in, leaving. */
 .spk-chap__word, .spk-chap__text { grid-area:1/1; opacity:0; transform: translateY(12px);
   filter: blur(8px); visibility:hidden;
@@ -2279,6 +2291,10 @@ html.no-js .spk-chap__text { position:static; margin-top: clamp(.9rem, 2vh, 1.4r
 .spk-chap.is-phone .spk-chap__text { margin-top: clamp(.9rem, 2.4vh, 1.4rem); max-width: 22ch;
   font-size: var(--step-1); }
 .spk-chap.is-phone .spk-chap__chapter:focus-visible { outline-offset:-6px; }
+/* turn mode on phones: the title on top, the two lines in one cell under it */
+.spk-chap--turn.is-phone .spk-chap__chapter { display:grid; align-content:center; justify-items:center; }
+.spk-chap--turn.is-phone .spk-chap__word { grid-area:1/1; }
+.spk-chap--turn.is-phone .spk-chap__text { grid-area:2/1; }
 /* the dots: one per chapter, the current one long; each is a 44px target */
 .spk-chap__dots { position:absolute; left:0; right:0; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:4;
   display:flex; justify-content:center; gap:0; }

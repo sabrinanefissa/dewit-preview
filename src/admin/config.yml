@@ -702,6 +702,21 @@ collections:
                   - { label: Text, name: text, widget: text, hint: "Allows one *emphasis* word (styled as the chapter's key word)." }
                   - { label: Tone, name: tone, widget: select, options: [violet, bone] }
                   - { label: "Spot (where the type sits)", name: spot, widget: select, options: [c, ul, lr], hint: "c: centred on the picture. ul: upper left. lr: lower right." }
+                  - label: "The turn (optional): a second line and picture"
+                    name: turn
+                    widget: object
+                    required: false
+                    collapsed: true
+                    hint: "The word stays on top; the text changes to this line and the picture changes to this one as you scroll."
+                    fields:
+                      - { label: Text, name: text, widget: text, required: false, hint: "Allows one *emphasis* word." }
+                      - label: Picture
+                        name: still
+                        widget: object
+                        required: false
+                        fields:
+                          - { label: Image, name: src, widget: image, required: false }
+                          - { label: Sizes attribute, name: sizes, widget: string, default: 100vw, required: false }
                   - *placement
                   - label: Still image
                     name: still
