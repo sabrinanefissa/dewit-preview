@@ -35,11 +35,6 @@
               <div class="spk-plan__body"><p>{{ o.text | inline() }}</p></div>
             </details>
           {%- endfor %}
-          </div>
-        </div>
-
-        <div class="spk-plan__block reveal">
-          <div class="spk-plan__acc">
             <details class="spk-plan__item">
               <summary><span class="spk-plan__sum">{{ block.tailoringLabel | inline() }}</span><span class="spk-plan__pm" aria-hidden="true"></span></summary>
               <div class="spk-plan__body"><p>{{ block.tailoring | inline() }}</p></div>
