@@ -357,7 +357,7 @@ var UI = (function () {
       c[name] = v;
       el.style.setProperty(name, name === "--reveal" || name === "--end" ? v.toFixed(4) : v.toFixed(1) + "px");
     }
-    var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0;
+    var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0, DIM = 0.22;
 
     function render(t) {
       var u = clamp(p) * (N + 1);
@@ -368,15 +368,26 @@ var UI = (function () {
       var Z = mode === "phone" ? ZP : ZD;
       var cx, cy, z = 1, rev = 0, k;
 
+      /* the stars' states: the NEXT star calls (bright and pulsing) from
+         the moment the one before starts to zoom out, through the travel
+         to it; it stops pulsing (steady, bright) as the camera closes in
+         and holds; as the camera pulls away it dims, and the one after
+         starts calling. Stars already visited stay dim; at the ending
+         they all settle softly lit. */
       for (k = 0; k < N; k++) {
-        var sp = spots[k], g = 0, r = 0;
-        if (ending || k < i) { g = 0.6; r = 1; }
+        var sp = spots[k], g = 0, r = 0, call = 0;
+        if (ending) { g = 0.6; r = 1; }
+        else if (k < i) { g = DIM; r = 1; }
         else if (k === i) {
-          if (s < 0.15) { g = eIO(s / 0.15); r = g; }
-          else if (s < 0.8) { g = 1; r = 1; }
-          else { g = 1 - 0.4 * eIO((s - 0.8) / 0.2); r = 1; }
+          r = s < 0.15 ? eIO(s / 0.15) : 1;
+          if (s < 0.15) { g = 1; call = 1; }                             /* calling while the camera travels to it */
+          else if (s < 0.8) { g = 1; call = 1 - smooth((s - 0.15) / 0.06); }  /* steady once it closes in */
+          else { g = 1 - (1 - DIM) * eIO((s - 0.8) / 0.2); }            /* dims as it is left */
+          if (i === 0 && s < 0.15) r = 0;
+        } else if (k === i + 1 && s >= 0.8) {
+          g = eIO((s - 0.8) / 0.2); call = g;                           /* the next one starts calling */
         }
-        sp.glow = g; sp.reach = k === 0 ? 0 : r; sp.found = !ending && k === i;
+        sp.glow = g; sp.call = call; sp.reach = k === 0 ? 0 : r; sp.found = !ending && k === i;
       }
 
       if (!ending) {
@@ -1270,16 +1281,25 @@ var UI = (function () {
       for (k = 0; k < spots.length; k++) {
         if (!V[n + k]) continue;
         var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
-        ctx.globalAlpha = 0.25 + 0.75 * g;
-        ctx.drawImage(halo, x - 28 * iz, y - 28 * iz, 56 * iz, 56 * iz);
+        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 260);
+        /* the halo breathes while the star calls, and is bigger when lit */
+        var hs = (1 + 0.5 * g + 0.45 * cl * beat) * 28;
+        ctx.globalAlpha = Math.min(1, (0.2 + 0.8 * g) * (1 + 0.4 * cl * beat));
+        ctx.drawImage(halo, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
         ctx.globalAlpha = 1;
-        if (g > 0.5) {
-          ctx.lineWidth = iz;
-          ctx.strokeStyle = (s.gold ? "rgba(232,187,104," : "rgba(225,212,248,") + (0.35 * g).toFixed(3) + ")";
-          ctx.beginPath(); ctx.arc(x, y, (10 + 8 * Math.sin(now / 600)) * iz, 0, 6.2832); ctx.stroke();
+        /* calling: two sonar rings expanding out of the star and fading */
+        if (cl > 0.01) {
+          ctx.lineWidth = 1.4 * iz;
+          for (var q = 0; q < 2; q++) {
+            var ph = (now / 1300 + q * 0.5) % 1;
+            ctx.strokeStyle = (s.gold ? "rgba(232,187,104," : "rgba(225,212,248,") + (0.75 * cl * (1 - ph)).toFixed(3) + ")";
+            ctx.beginPath(); ctx.arc(x, y, (6 + 30 * ph) * iz, 0, 6.2832); ctx.stroke();
+          }
         }
+        ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
         ctx.fillStyle = s.gold ? "#E8BB68" : "#E1D4F8";
-        ctx.beginPath(); ctx.arc(x, y, (s.gold ? 4.5 : 3.5) * iz, 0, 6.2832); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4.5 : 3.5) + 1.2 * cl * beat) * iz, 0, 6.2832); ctx.fill();
+        ctx.globalAlpha = 1;
       }
 
       if (a > 0) {
