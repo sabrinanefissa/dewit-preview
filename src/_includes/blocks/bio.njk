@@ -12,7 +12,7 @@
     <div class="spk-bio__grid">
       <div class="spk-bio__left">
         <div class="media media--plum spk-bio__portrait">
-          <img class="spk-lights" src="{{ block.portrait.src | root(r) }}"
+          <img class="spk-bio__img" src="{{ block.portrait.src | root(r) }}"
                {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
                sizes="{{ block.portrait.sizes or '100vw' }}" alt="{{ block.portrait.alt | inline() }}" loading="lazy" decoding="async">
         </div>
@@ -24,28 +24,37 @@
 
         <h2 class="spk-plan__h reveal fill" id="{{ block.id }}-h"{{ block.plannersHeading | fillAttrs }}>{{ block.plannersHeading | fillWords }}</h2>
 
+        {#- every point is a dropdown (a native <details>): the three talks under
+            their label, then Tailoring and On the day #}
         <div class="spk-plan__block reveal">
           <h3 class="spk-plan__label">{{ block.outcomesLabel | inline() }}</h3>
-          <dl class="spk-plan__outs">
+          <div class="spk-plan__acc">
           {%- for o in block.outcomes %}
-            <dt>{% if o.titleHtml %}{{ o.titleHtml | safe }}{% else %}{{ o.title | inline() }}{% endif %}</dt>
-            <dd>{{ o.text | inline() }}</dd>
+            <details class="spk-plan__item">
+              <summary><span class="spk-plan__sum">{% if o.titleHtml %}{{ o.titleHtml | safe }}{% else %}{{ o.title | inline() }}{% endif %}</span><span class="spk-plan__pm" aria-hidden="true"></span></summary>
+              <div class="spk-plan__body"><p>{{ o.text | inline() }}</p></div>
+            </details>
           {%- endfor %}
-          </dl>
+          </div>
         </div>
 
         <div class="spk-plan__block reveal">
-          <h3 class="spk-plan__label">{{ block.tailoringLabel | inline() }}</h3>
-          <p class="spk-plan__copy">{{ block.tailoring | inline() }}</p>
-        </div>
-
-        <div class="spk-plan__block reveal">
-          <h3 class="spk-plan__label">{{ block.onDayLabel | inline() }}</h3>
-          <ul class="spk-plan__list">
-          {%- for item in block.onDay %}
-            <li>{{ item | inline() }}</li>
-          {%- endfor %}
-          </ul>
+          <div class="spk-plan__acc">
+            <details class="spk-plan__item">
+              <summary><span class="spk-plan__sum">{{ block.tailoringLabel | inline() }}</span><span class="spk-plan__pm" aria-hidden="true"></span></summary>
+              <div class="spk-plan__body"><p>{{ block.tailoring | inline() }}</p></div>
+            </details>
+            <details class="spk-plan__item">
+              <summary><span class="spk-plan__sum">{{ block.onDayLabel | inline() }}</span><span class="spk-plan__pm" aria-hidden="true"></span></summary>
+              <div class="spk-plan__body">
+                <ul class="spk-plan__list">
+                {%- for item in block.onDay %}
+                  <li>{{ item | inline() }}</li>
+                {%- endfor %}
+                </ul>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
     </div>

@@ -1470,7 +1470,14 @@ html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { m
   font-size: var(--step-0); line-height:1.3; letter-spacing:-0.01em; color: var(--violet-100);
   text-shadow: 0 2px 24px rgba(0,0,0,.55); }
 
-/* The heading, alone over the full-bleed ground. */
+/* The automatic start: a thin lilac ring drawn around the play button over
+   4s (--load 0 -> 1, written by module 2); the talk plays when it closes. */
+.spk-keys .spk-keys__hear .play__ring svg.spk-keys__load { position:absolute; inset:-6px; width:calc(100% + 12px); height:calc(100% + 12px);
+  margin:0; fill:none; transform: rotate(-90deg); pointer-events:none; overflow:visible; }
+.spk-keys__load circle { fill:none; stroke: #D6C6FF; stroke-width:2.6; stroke-linecap:round;
+  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--load, 0));
+  opacity: calc(min(1, var(--load, 0) * 20)); filter: drop-shadow(0 0 5px rgba(214,198,255,.75)); }
+/* the heading, alone over the full-bleed ground. */
 .spk-keys__head { position:absolute; inset:0; z-index:4; display:grid; place-items:center;
   text-align:center; pointer-events:none; padding-inline: var(--gutter);
   opacity: var(--head, 0);
@@ -1820,7 +1827,9 @@ html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-
    --------------------------------------------------------------------- */
 .spk-formats { position:relative; background:transparent; color: var(--tx-inv);
   padding:0; overflow:visible; }
-.spk-formats__track { height: calc(100svh + var(--spk-strip, 0px)); }
+/* + a 30svh hold on the last room, centred, before the pin lets go (also
+   absorbs a phone's toolbar changing the viewport height) */
+.spk-formats__track { height: calc(130svh + var(--spk-strip, 0px)); }
 .spk-formats__stage { position:sticky; top:0; height:100svh; overflow:hidden;
   display:flex; flex-direction:column; justify-content:center; }
 .spk-formats__line { width: var(--wrap); margin: 0 auto; text-align:center;
@@ -1855,12 +1864,21 @@ html.no-js .spk-out__list, html.no-js .spk-chap + .spk-out .spk-out__list, .spk-
     width:auto; padding-inline: 8vw; gap: 1rem; scrollbar-width:none; }
   .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-height:none; }
 }
+/* The formats sentence on its own: a solid plum section, the line large
+   and centred */
+.spk-avail { position:relative; z-index:1; background: var(--plum); color: var(--tx-inv);
+  min-height: 70svh; display:grid; place-items:center; padding: clamp(5rem, 12vh, 9rem) var(--gutter); }
+.spk-avail__line { margin:0; text-align:center; font-family: var(--f-display); font-weight:340;
+  font-size: var(--step-4); line-height:1.08; letter-spacing:-0.025em; max-width: 22ch; text-wrap: balance; }
+.spk-avail__line em { color: var(--violet-300); }
+@media (max-width: 768px) { .spk-avail { min-height: 60svh; } .spk-avail__line { font-size: var(--step-3); } }
+
 /* The home talks as a strip (.tstrip, keynotes layout "strip"): the rooms
    strip's pin and slide (module 9.B), one card per talk. The card is its
    picture under a dark foot, and over it the number and tag, the title,
    its line and the CTA; the accent colours the number and a hairline. */
 .tstrip { position:relative; background: var(--plum-2); color: var(--tx-inv); }
-.tstrip__track { height: calc(100svh + var(--spk-strip, 0px)); }
+.tstrip__track { height: calc(130svh + var(--spk-strip, 0px)); }
 .tstrip__stage { position:sticky; top:0; height:100svh; overflow:hidden;
   display:flex; flex-direction:column; justify-content:center; }
 .tstrip__h { width: var(--wrap); margin: 0 auto clamp(1.6rem, 4vh, 2.6rem);
@@ -2029,8 +2047,11 @@ html.no-js .spk-said__candle { display:none; }
   /* card 0: plain plum, its top fading in (clear -> plum-2 over its first
      18%) so it rises over the candle's faded bottom with no edge; the
      heading at 30% of the card, on screen when the card is ~70% up */
-  .spk-keys.is-reel .spk-keys__head { place-items: start center; padding-top: 30svh;
-    background: linear-gradient(to bottom, rgba(18,10,28,0) 0%, var(--plum-2) 18%); }
+  /* card 0 is short (48svh) and solid near-black, its top edge fading in
+     over the first 22% so it rises over the candle's faded bottom with no
+     edge; the heading sits in the solid part */
+  .spk-keys.is-reel .spk-keys__head { height: 48svh; place-items: center; padding-top: 10svh;
+    background: linear-gradient(to bottom, rgba(6,4,9,0) 0%, #060409 22%); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
@@ -2047,11 +2068,11 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said__win { display:none; }
 .spk-said.is-wheel .spk-said__win { display:block; position:absolute; left:50%; top:30%;
   transform: translateX(-50%); width: calc(100% - 2 * var(--gutter));
-  font-size: clamp(5.5rem, 12vw, 11rem); height: 2em;
+  font-size: clamp(3.4rem, 6.6vw, 7.4rem); height: 2.08em;
   overflow:hidden; clip-path: inset(0); pointer-events:none; }
 /* A alone, high: one row from 6% down, above the resting candle's flame,
    so the lifting row of three covers it */
-.spk-said.is-wheel .spk-said__win--a { z-index:1; top:6%; height:1.2em; }
+.spk-said.is-wheel .spk-said__win--a { z-index:1; top:6%; height:2.2em; }
 /* the key word of each ending line in the italic face */
 .spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
 .spk-said.is-wheel .spk-said__win--b { z-index:4; }
@@ -2065,7 +2086,9 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__nextA { padding-top: 0.1em;
   transform: translateY(calc((1 - var(--na, 0)) * 16px + var(--roll, 0) * -100%));
   opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
-.spk-said.is-wheel .spk-said__nextB { max-width: 13ch;
+.spk-said.is-wheel .spk-said__nextA { max-width: 15ch; }
+.spk-said.is-wheel .spk-said__nextB { text-shadow: 0 2px 28px rgba(0,0,0,.7), 0 0 60px rgba(20,10,28,.6); }
+.spk-said.is-wheel .spk-said__nextB { max-width: 15ch; min-height: 2.08em;
   transform: translateY(calc((1 - var(--roll, 0)) * 100%));
   opacity: calc(1 - min(1, var(--spk-keys-reveal, 0) * 2.5)); }
 /* Phones: smaller type in the same two-row window, high on the screen
@@ -2075,8 +2098,8 @@ html.no-js .spk-said__candle { display:none; }
    the window, so before the roll it waits wholly below it; A keeps its
    one-row padding. */
 @media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.4rem, 10.5vw, 3.6rem); line-height: 1.0; height: 2.4em; }
-  .spk-said.is-wheel .spk-said__nextB { max-width: 13ch; min-height: 2.4em;
+  .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.1rem, 9vw, 3.2rem); line-height: 1.0; height: 3.2em; }
+  .spk-said.is-wheel .spk-said__nextB { max-width: 12ch; min-height: 3.2em;
     text-shadow: 0 2px 20px rgba(0,0,0,.6); }
   /* A (top 33%, behind the canvas: the growing candle rises up behind
      it) and B low (its two-row window from 66% down, in front, pinned to
@@ -2084,8 +2107,8 @@ html.no-js .spk-said__candle { display:none; }
      comes up (--na, g 0-0.06), stays to g 0.38, and leaves rising 16px
      (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 250 -> U - 215
      (--spk-said-bout) */
-  .spk-said.is-wheel .spk-said__win--a { top:11%; font-size: clamp(3.2rem, 14vw, 4.6rem); height: 1.4em; }
-  .spk-said.is-wheel .spk-said__nextA { padding-top: 0; }
+  .spk-said.is-wheel .spk-said__win--a { top:10%; font-size: clamp(2.2rem, 9.4vw, 3.4rem); height: 3.2em; }
+  .spk-said.is-wheel .spk-said__nextA { padding-top: 0; max-width: 12ch; }
   /* one lit picture per line: between the line (which ends near 30%) and
      the flame (46% at rest), behind the canvas, feathered on every edge;
      each follows its line's --on (written by the script on the image) */
@@ -2098,8 +2121,8 @@ html.no-js .spk-said__candle { display:none; }
   /* the picture the candle lights: sits between "Three talks." and the
      flame, behind the canvas, its edges feathered to nothing so only the
      middle reads, lit; it comes and goes with line A (--na / --nao) */
-  .spk-said.is-wheel .spk-said__glowimg { display:block; position:absolute; left:50%; top:19%; z-index:1;
-    width: 94vw; height: 30svh; transform: translateX(-50%); object-fit: cover; pointer-events:none;
+  .spk-said.is-wheel .spk-said__glowimg { display:block; position:absolute; left:50%; top:25%; z-index:1;
+    width: 94vw; height: 26svh; transform: translateX(-50%); object-fit: cover; pointer-events:none;
     -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
             mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
     filter: brightness(1.05) saturate(1.05);
@@ -2443,6 +2466,11 @@ html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba
   -webkit-mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%);
           mask-image: radial-gradient(closest-side, #000 54%, rgba(0,0,0,.55) 82%, rgba(0,0,0,0) 100%); }
 .spk-bio__portrait img { width:100%; height:100%; object-fit:cover; object-position: 50% 18%; }
+/* the photo as it is: no grade, no lights, no soft-edge mask, no plum
+   overlay; a plain photo with slightly rounded corners */
+.spk-bio .media .spk-bio__img { filter:none; object-position: 55% 30%; }
+.spk-bio .spk-bio__portrait { -webkit-mask-image:none; mask-image:none; border-radius: 4px; overflow:hidden; }
+.spk-bio .spk-bio__portrait.media--plum::after { display:none; }
 .spk-bio .media .spk-lights { --lights-dur: 1.3s;
   filter: brightness(.26) saturate(.45) contrast(1.04); }
 .spk-bio .media .spk-lights.is-lit { filter: brightness(.74) saturate(.78) contrast(1.06); }
@@ -2470,6 +2498,33 @@ html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba
 .spk-plan__outs dd { margin: .35rem 0 0; padding-bottom: clamp(.85rem, 1.8vh, 1.15rem);
   font-size: var(--step--1); line-height:1.6; color: var(--tx-inv-soft); }
 .spk-plan__outs dd + dt { border-top: 1px solid rgba(169,133,230,.30); }
+/* For planners: every point a dropdown (native <details>). A hairline
+   between rows, the title in the display face, a plus that turns into a
+   minus; the body opens with a height transition where the browser can
+   animate to auto (elsewhere it opens at once). */
+.spk-plan__acc { margin-top: 1rem; border-top: 1px solid rgba(169,133,230,.30); }
+.spk-plan__item { border-bottom: 1px solid rgba(169,133,230,.30); interpolate-size: allow-keywords; }
+.spk-plan__item summary { list-style:none; cursor:pointer; display:flex; align-items:center;
+  justify-content:space-between; gap:1rem; padding-block: clamp(1rem, 2vh, 1.3rem);
+  font-family: var(--f-display); font-weight:360; font-size: var(--step-1); line-height:1.2;
+  letter-spacing:-0.015em; color: var(--tx-inv); }
+.spk-plan__item summary::-webkit-details-marker { display:none; }
+.spk-plan__item summary:hover .spk-plan__sum { color: var(--violet-300); }
+.spk-plan__item summary:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; border-radius:2px; }
+.spk-plan__sum { transition: color .25s var(--ease-out); }
+.spk-plan__sum .tm { font-size:.45em; vertical-align:super; color: var(--tx-inv-faint); }
+.spk-plan__pm { position:relative; flex:0 0 auto; width:14px; height:14px; }
+.spk-plan__pm::before, .spk-plan__pm::after { content:""; position:absolute; left:0; right:0; top:50%;
+  height:1.5px; margin-top:-.75px; background: var(--violet-300); transition: transform .3s var(--ease-out); }
+.spk-plan__pm::after { transform: rotate(90deg); }
+.spk-plan__item[open] .spk-plan__pm::after { transform: rotate(0deg); }
+.spk-plan__item::details-content { block-size:0; overflow:hidden;
+  transition: block-size .4s var(--ease-out), content-visibility .4s allow-discrete; }
+.spk-plan__item[open]::details-content { block-size:auto; }
+.spk-plan__body { padding-bottom: clamp(1rem, 2vh, 1.3rem); }
+.spk-plan__body p { margin:0; font-size: var(--step-0); line-height:1.6; color: var(--tx-inv-soft); }
+.spk-plan__body .spk-plan__list { margin-top:0; }
+@media (prefers-reduced-motion: reduce) { .spk-plan__item::details-content { transition:none; } }
 @media (max-width: 900px) {
   .spk-bio__grid { grid-template-columns: 1fr; }
   .spk-bio__left { position:static; display:flex; justify-content:center;

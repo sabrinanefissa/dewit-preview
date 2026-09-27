@@ -1815,7 +1815,7 @@ var UI = (function () {
       var i = playing;
       if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
       playing = -1;
-      sec.classList.remove("is-playing");
+      sec.classList.remove("is-playing", "is-muted");
       clearTimeout(idleT);
       if (playWrap) playWrap.removeAttribute("data-accent");
       if (pauseBtn) {
@@ -1832,8 +1832,9 @@ var UI = (function () {
       }
       if (i >= 0) { clearCap(); syncHear(i); if (atEnd) say("Clip finished"); }
     }
-    function playClip(i) {
+    function playClip(i, auto) {
       if (!vid || !segs[i]) return;
+      sec.classList.remove("is-muted");
       claim();                        /* stops the hero reel */
       ensureSrc();
       var s = segs[i];
@@ -1851,7 +1852,18 @@ var UI = (function () {
       }
       syncHear(i);
       var p = vid.play();
-      if (p && p.catch) p.catch(function () { stopClip(false); });
+      if (p && p.catch) p.catch(function () {
+        /* an automatic start the browser will not allow with sound (no
+           click on the page yet): play muted, and the talk's own button
+           becomes "Tap for sound" */
+        if (!auto || playing !== i) { stopClip(false); return; }
+        vid.muted = true;
+        sec.classList.add("is-muted");
+        var l = hears[i] && hears[i].querySelector(".spk-keys__hearlabel");
+        if (l) l.textContent = UI.tapSound || "Tap for sound";
+        var p2 = vid.play();
+        if (p2 && p2.catch) p2.catch(function () { stopClip(false); });
+      });
       if (!watchRaf) watchRaf = requestAnimationFrame(watch);
       var name = tabs[i] ? (tabs[i].querySelector(".spk-keys__name") || {}).textContent : "";
       say("Playing " + (name || "clip") + " with sound");
@@ -1867,6 +1879,13 @@ var UI = (function () {
 
     hears.forEach(function (b, i) {
       b.addEventListener("click", function () {
+        autoDone[i] = true;
+        /* playing muted after an automatic start: this tap turns the sound on */
+        if (playing === i && vid && vid.muted) {
+          vid.muted = false; sec.classList.remove("is-muted"); syncHear(i);
+          var pp = vid.play(); if (pp && pp.catch) pp.catch(function () {});
+          return;
+        }
         if (playing === i) { stopClip(false); say(UI.paused || "Paused"); return; }
         if (playing >= 0) stopClip(false);
         playClip(i);
@@ -1907,6 +1926,60 @@ var UI = (function () {
     if (vid) {
       vid.addEventListener("ended", function () { if (playing >= 0) stopClip(true); });
       vid.addEventListener("pause", function () { if (playing >= 0) syncHear(playing); });
+    }
+
+    /* ---- the automatic start ----
+       When a talk has settled on screen (its caption fully in, --cap >= .95,
+       and it is the live one), a thin lilac ring draws around its play
+       button over AUTO ms (4s); when it closes, the talk plays. Leaving the
+       talk, or playing anything, resets the ring. A talk that was played,
+       paused or finished does not start again until the visitor has left
+       it and come back. Never under reduced motion. The ring is added by
+       the script (an SVG in each play ring), so no-script pages have none. */
+    var AUTO = 4000, autoK = -1, autoT0 = 0, autoRaf = 0, autoOn = false;
+    var autoDone = panels.map(function () { return false; });
+    var loads = hears.map(function (b) {
+      var ring = b.querySelector(".play__ring");
+      if (!ring) return null;
+      var sv = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      sv.setAttribute("class", "spk-keys__load"); sv.setAttribute("viewBox", "0 0 64 64"); sv.setAttribute("aria-hidden", "true");
+      var c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      c.setAttribute("cx", "32"); c.setAttribute("cy", "32"); c.setAttribute("r", "31"); c.setAttribute("pathLength", "1");
+      sv.appendChild(c); ring.appendChild(sv);
+      return b;
+    });
+    function setLoad(k, v) { if (loads[k]) loads[k].style.setProperty("--load", v.toFixed(4)); }
+    function candidate() {
+      if (playing >= 0 || document.hidden || !onStageAuto) return -1;
+      var k = cur, pnl = panels[k];
+      if (!pnl || autoDone[k]) return -1;
+      return parseFloat(pnl.style.getPropertyValue("--cap")) >= 0.95 ? k : -1;
+    }
+    function autoTick(now) {
+      autoRaf = 0;
+      if (!autoOn) return;
+      var k = candidate();
+      if (k !== autoK) {
+        if (autoK >= 0) setLoad(autoK, 0);
+        /* a talk left: it may start again when the visitor comes back */
+        panels.forEach(function (p, i) { if (i !== k && i !== playing) autoDone[i] = false; });
+        autoK = k; autoT0 = now;
+      }
+      if (k >= 0) {
+        var v = Math.min(1, (now - autoT0) / AUTO);
+        setLoad(k, v);
+        if (v >= 1) { setLoad(k, 0); autoDone[k] = true; autoK = -1; playClip(k, true); }
+      }
+      autoRaf = requestAnimationFrame(autoTick);
+    }
+    var onStageAuto = false;
+    if (!reduce && "IntersectionObserver" in window) {
+      autoOn = true;
+      new IntersectionObserver(function (e) {
+        onStageAuto = e[0].isIntersecting;
+        if (onStageAuto && !autoRaf) autoRaf = requestAnimationFrame(autoTick);
+        if (!onStageAuto && autoRaf) { cancelAnimationFrame(autoRaf); autoRaf = 0; if (autoK >= 0) setLoad(autoK, 0); autoK = -1; }
+      }, { threshold: 0 }).observe(stage);
     }
 
     /* Reduced motion: no pin, no grow, no wipe. All the talks are present

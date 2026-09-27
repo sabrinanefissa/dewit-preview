@@ -87,8 +87,8 @@
         "sizes": "100vw"
       },
       "macro": "assets/img/wax-macro-1440.webp",
-      "windowA": "Three *talks*.",
-      "windowB": "for *people*, teams and organizations.",
+      "windowA": "You don’t need more *resilience*.",
+      "windowB": "You need a *clearer way* through.",
       "lines": [
         "You can be surrounded by colleagues and still on your own.",
         "You’re doing the job well and struggling quietly underneath it.",
@@ -126,7 +126,7 @@
       "type": "keys",
       "id": "keynotes",
       "enabled": true,
-      "heading": "Three videos of Stephen speaking",
+      "heading": "Watch Stephen say what goes unsaid.",
       "settings": null,
       "video": {
         "src1080": "assets/video/reel-1080.mp4",
@@ -304,7 +304,7 @@
       "settings": null,
       "ariaLabel": "Formats and rooms",
       "anchor": false,
-      "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*, for teams, conferences, associations and healthcare organizations.",
+      "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*.",
       "sizes": "70vw",
       "rooms": [
         {
@@ -351,9 +351,9 @@
       "enabled": true,
       "settings": null,
       "portrait": {
-        "src": "/assets/img/card-fear-home-1120.webp",
+        "src": "assets/img/contact-1280.webp",
         "sizes": "(max-width: 900px) 240px, 38vw",
-        "alt": "Portrait of Dr. Stephen de Wit"
+        "alt": "Dr. Stephen de Wit in a plum jacket, smiling, seated outside a café"
       },
       "link": {
         "label": "Meet Stephen",
