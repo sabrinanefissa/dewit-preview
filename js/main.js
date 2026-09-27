@@ -3800,7 +3800,9 @@ var UI = (function () {
       U = INTRO + B0 + GROW + (phone ? 100 : 60 + FADE_D);
       hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(600, H * 0.50));
       Rw = W * (phone ? 0.44 : 0.40);
-      cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
+      /* the rim's top point at 96% of H (desktop: 103%, the candles sit
+         low, the foot's rim just under the screen's edge) */
+      cyW = H * (phone ? 0.96 : 1.03) + Rw;
       svh = track.offsetHeight / U;
       for (var f = 0; f < NF; f++) {
         var un = f === UNLIT;

@@ -2170,12 +2170,12 @@ html.no-js .spk-said__candle { display:none; }
   .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
 }
 /* Desktop: each line's picture, lit by the flame: a wide window between
-   the line (11-20%) and the flame (49% at rest), its edges feathered into
+   the line (11-20%) and the flame (56% at rest), its edges feathered into
    the velvet and its bottom brightest, where the flame is; behind the
    canvas, following its line (--on) */
 @media (min-width: 769px) {
   .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
-  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:21%; width: min(64vw, 76svh); height: 30svh;
+  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:22%; width: min(70vw, 84svh); height: 36svh;
     transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 45%;
     -webkit-mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
             mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
