@@ -415,7 +415,7 @@ var UI = (function () {
       var cx, cy, z = 1, f = 0, rev = 0, txt = 0, sunA = 0, flood = 0, dolly = 1, k;
 
       /* the stars' states: the NEXT star calls (bright, breathing, sending
-         out rings) from the moment the camera starts to pull out of the one
+         swelling and softening) from the moment the camera starts to pull out of the one
          before, through the travel to it; it burns steady as the camera
          dives in; as the camera pulls away it dims and the one after
          starts calling. Visited stars stay dim; at the ending they all
@@ -1354,31 +1354,22 @@ var UI = (function () {
       for (k = 0; k < spots.length; k++) {
         if (!V[n + k]) continue;
         var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
-        var cl = s.call || 0, beat = 0.5 + 0.5 * Math.sin(now / 900);
+        var cl = s.call || 0, beat = 0.5 - 0.5 * Math.cos(now / 800);
         /* the glow: a wide bloom, added light; it breathes while the star calls */
-        var hs = (16 + 26 * g + 18 * cl * beat);
+        var hs = (16 + 26 * g + 30 * cl * beat);
         ctx.globalCompositeOperation = "lighter";
         ctx.globalAlpha = Math.min(1, 0.18 + 0.82 * g);
         ctx.drawImage(s.gold ? bloomG : bloomL, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
         if (g > 0.5) {
           var hw2 = hs * 2.6;
-          ctx.globalAlpha = 0.35 * (g - 0.5) * 2 * (1 + 0.6 * cl * beat);
+          ctx.globalAlpha = 0.3 * (g - 0.5) * 2 * (1 + 0.5 * cl * beat);
           ctx.drawImage(s.gold ? bloomG : bloomL, x - hw2 * iz, y - hw2 * iz, 2 * hw2 * iz, 2 * hw2 * iz);
         }
         ctx.globalAlpha = 1;
-        /* calling: one slow, faint ring of light drifting out and fading */
-        if (cl > 0.01) {
-          for (var q = 0; q < 2; q++) {
-            var ph = (now / 3200 + q / 2) % 1;
-            ctx.lineWidth = 1 * iz;
-            ctx.strokeStyle = (s.gold ? "rgba(240,210,150," : "rgba(244,224,184,") + (0.35 * cl * Math.sin(ph * 3.1416)).toFixed(3) + ")";
-            ctx.beginPath(); ctx.arc(x, y, (10 + 46 * eOutC(ph)) * iz, 0, 6.2832); ctx.stroke();
-          }
-        }
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
         ctx.fillStyle = s.gold ? "#F3D08A" : "#FBEBC8";
-        ctx.beginPath(); ctx.arc(x, y, ((s.gold ? 4 : 3.2) + 0.6 * cl * beat) * iz, 0, 6.2832); ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, (s.gold ? 4 : 3.2) * iz, 0, 6.2832); ctx.fill();
         ctx.globalAlpha = 1;
       }
 
