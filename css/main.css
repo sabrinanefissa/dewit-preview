@@ -2175,7 +2175,7 @@ html.no-js .spk-said__candle { display:none; }
    canvas, following its line (--on) */
 @media (min-width: 769px) {
   .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
-  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:22%; width: min(70vw, 84svh); height: 36svh;
+  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:20%; width: 94vw; height: 40svh;
     transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 45%;
     -webkit-mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
             mask-image: radial-gradient(ellipse 50% 58% at 50% 62%, #000 0%, rgba(0,0,0,.85) 38%, transparent 74%);
