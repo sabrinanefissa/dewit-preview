@@ -3232,8 +3232,13 @@ var UI = (function () {
       put(nextA, "rollA", "--roll", roll);
       put(nextB, "rollB", "--roll", roll);
       if (phone) {
-        put(nextA, "nao", "--nao", smooth(clamp((g - 0.38) / 0.10)));
+        var nao = smooth(clamp((g - 0.38) / 0.10));
+        put(nextA, "nao", "--nao", nao);
         put(nextB, "nb", "--nb", smooth(clamp((g - 0.44) / 0.12)));
+        /* the lit picture between A and the flame follows A (the CSS reads
+           these on the section) */
+        put(sec, "gna", "--glow-na", smooth(clamp(g / 0.06)));
+        put(sec, "gnao", "--glow-nao", nao);
       }
       /* the velvet follows the camera (the CSS scales it by 1 + 0.12 --push) */
       put(sec, "push", "--push", push);

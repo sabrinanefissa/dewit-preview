@@ -1903,7 +1903,7 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 .spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
   background: rgba(26,16,38,.42); }
 .spk-said__wheel,
-.spk-said__nextA, .spk-said__nextB { display:none; }
+.spk-said__nextA, .spk-said__nextB, .spk-said__glowimg { display:none; }
 .spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
   text-align:center; }
 .spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
@@ -2025,7 +2025,17 @@ html.no-js .spk-said__candle { display:none; }
      comes up (--na, g 0-0.06), stays to g 0.38, and leaves rising 16px
      (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 250 -> U - 215
      (--spk-said-bout) */
-  .spk-said.is-wheel .spk-said__win--a { top:33%; }
+  .spk-said.is-wheel .spk-said__win--a { top:11%; font-size: clamp(3.2rem, 14vw, 4.6rem); height: 1.4em; }
+  .spk-said.is-wheel .spk-said__nextA { padding-top: 0; }
+  /* the picture the candle lights: sits between "Three talks." and the
+     flame, behind the canvas, its edges feathered to nothing so only the
+     middle reads, lit; it comes and goes with line A (--na / --nao) */
+  .spk-said.is-wheel .spk-said__glowimg { display:block; position:absolute; left:50%; top:19%; z-index:1;
+    width: 94vw; height: 30svh; transform: translateX(-50%); object-fit: cover; pointer-events:none;
+    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
+            mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
+    filter: brightness(1.05) saturate(1.05);
+    opacity: calc(var(--glow-na, 0) * (1 - var(--glow-nao, 0)) * .95); }
   .spk-said.is-wheel .spk-said__win--b { top:66%; }
   .spk-said.is-wheel .spk-said__nextA {
     transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));

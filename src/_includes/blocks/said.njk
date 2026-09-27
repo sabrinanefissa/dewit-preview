@@ -45,6 +45,10 @@
         <div class="spk-said__veil" aria-hidden="true"></div>
         {%- set pw = placeStyle(block.windowPlacement) | trim %}
         {% if pw | length %}<div class="place place--win-a" style="{{ pw }}"><div class="place__inner">{% endif %}<div class="spk-said__win spk-said__win--a" aria-hidden="true"><p class="spk-said__nextA">{{ block.windowA | inline('spk-said__cur') }}</p></div>{% if pw | length %}</div></div>{% endif %}
+        {%- if block.glowImage and block.glowImage.src %}
+        <!-- the picture the candle lights: between "Three talks." and the flame, feathered to nothing on every edge -->
+        <img class="spk-said__glowimg" src="{{ block.glowImage.src | root(r) }}" {%- set ssg = block.glowImage.src | srcset(r) %}{% if ssg %} srcset="{{ ssg }}"{% endif %} sizes="{{ block.glowImage.sizes or '100vw' }}" alt="" loading="lazy" decoding="async" aria-hidden="true">
+        {%- endif %}
         <canvas class="spk-said__wheel" aria-hidden="true" data-frames="{{ 'assets/img/' | root(r) }}"></canvas>
         {% if pw | length %}<div class="place place--win-b" style="{{ pw }}"><div class="place__inner">{% endif %}<div class="spk-said__win spk-said__win--b" aria-hidden="true"><p class="spk-said__nextB">{{ block.windowB | inline('spk-said__cur') }}</p></div>{% if pw | length %}</div></div>{% endif %}
         <div class="spk-said__inner">

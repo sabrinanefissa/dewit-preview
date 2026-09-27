@@ -574,6 +574,14 @@ collections:
                   - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
               - { label: "Window A (rolls up first, behind the candle)", name: windowA, widget: string, hint: "Allows one *emphasis* word." }
               - { label: "Window B (rolls up after, in front of the candle)", name: windowB, widget: string, hint: "Allows one *emphasis* word." }
+              - label: "Picture the candle lights (phones: between 'Three talks.' and the flame)"
+                name: glowImage
+                widget: object
+                required: false
+                collapsed: true
+                fields:
+                  - { label: Image, name: src, widget: image, required: false, hint: "Its edges fade to nothing; only the middle shows, as if lit by the flame." }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false, default: 100vw }
               - { label: "Position on the image (windows A and B)", name: windowPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
               - { label: Heading, name: heading, widget: string }
               - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }

@@ -96,7 +96,11 @@
         "There’s a conversation you keep moving to next week.",
         "Small unsaid tensions add up until everyone is tired.",
         "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ]
+      ],
+      "glowImage": {
+        "src": "assets/img/mobile/round-tables-portrait.jpg",
+        "sizes": "100vw"
+      }
     },
     {
       "type": "keys",
