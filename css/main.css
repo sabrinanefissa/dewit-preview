@@ -1645,7 +1645,7 @@ html[data-spk-cc="off"] .spk-keys__cap { display:none; }
      heading, not candle -> photo. Over the photo, under the heading (z -1
      inside the heading layer's own stacking context, z 2) */
   .spk-keys.is-reel .spk-keys__head::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-    background: linear-gradient(to bottom, var(--plum-2) 0%, rgba(18,10,28,.85) 30%, transparent 75%); }
+    background: linear-gradient(to bottom, rgba(18,10,28,.55) 0%, transparent 22%); }
 }
 .spk-keys__dots { position:fixed; right: 12px; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:6;
   display:flex; flex-direction:column; align-items:center;
@@ -1959,17 +1959,16 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__velvet,
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
-/* phones: no pinned talks take the wheel over, so it hands off by itself
-   over its track's last 120svh (module 7): the canvas erases itself from
-   the bottom up (no CSS mask), the velvet and the veil fade out
-   (--spk-said-out) and B over the last 40svh (--spk-said-bout), while the
-   talks reel's first card rises under it; at the end of the track nothing
-   of the stage is visible. The track has no hold beat and a long grow
-   (--grow-phone): 1032svh for six lines. */
+/* phones: no pinned talks take the wheel over, so it ends by itself
+   (module 7) and is over by the end of its sticky run: over its last
+   50svh the canvas erases itself from the bottom up into the velvet (no
+   CSS mask) and B fades over the last 25svh (--spk-said-bout); the velvet
+   stays. Then the stage unpins (no hold) and scrolls away like any
+   section, the talks reel right under it. The track has no hold beat, a
+   long grow (--grow-phone) and the stage's own 100svh: 1072svh for six
+   lines. */
 @media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 60) * 1svh); }
-  .spk-said.is-wheel .spk-said__velvet,
-  .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-said-out, 0)); }
+  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 100) * 1svh); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
@@ -2015,8 +2014,18 @@ html.no-js .spk-said__candle { display:none; }
   .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.4rem, 10.5vw, 3.6rem); line-height: 1.0; height: 2.4em; }
   .spk-said.is-wheel .spk-said__nextB { max-width: 13ch; min-height: 2.4em;
     text-shadow: 0 2px 20px rgba(0,0,0,.6); }
-  /* the exit: B fades over the track's last 40svh (--spk-said-bout) */
-  .spk-said.is-wheel .spk-said__nextB { opacity: calc(1 - var(--spk-said-bout, 0)); }
+  /* B low (its two-row window from 42% down, over the wax, in front) and
+     A high (top 9%, behind the canvas): no shared window, so no roll. A
+     comes up (--na) and leaves rising 16px (--nao, g 0.06-0.14); B comes
+     in rising 16px (--nb, g 0.08-0.20) and fades over the track's last
+     25svh (--spk-said-bout) */
+  .spk-said.is-wheel .spk-said__win--b { top:42%; }
+  .spk-said.is-wheel .spk-said__nextA {
+    transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
+    opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
+  .spk-said.is-wheel .spk-said__nextB {
+    transform: translateY(calc((1 - var(--nb, 0)) * 16px));
+    opacity: calc(var(--nb, 0) * (1 - var(--spk-said-bout, 0))); }
   /* the layering as on desktop: A behind the canvas (z 1; the growing
      candle passes over it), B pinned in front of it (z 4) */
   .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
@@ -2514,6 +2523,7 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
 .spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
   transform:none; text-align:inherit; justify-items: var(--place-j); }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:9%; --pda:center; --pdj:center; }
+.spk-said.is-wheel .place--win-b { --pdy-m:42%; }   /* phones: B low, over the wax */
 .spk-said.is-wheel .place--win-a { z-index:1; }
 .spk-said.is-wheel .place--win-b { z-index:4; }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;
