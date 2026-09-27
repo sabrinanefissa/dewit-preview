@@ -5032,3 +5032,137 @@ var UI = (function () {
   if (phone.addEventListener) phone.addEventListener("change", reset);
   else if (phone.addListener) phone.addListener(reset);
 })();
+
+/* ===== 14. Skip: a thin arrow out of every long pinned section =====
+   While a long pinned section holds the screen (its sticky stage pinned,
+   its track at least 1.8 screens of scroll), a thin arrow sits in the
+   bottom-right corner; a press takes the page to the end of that pin.
+   The words "Skip now" slide out beside the arrow only while the visitor
+   shows they want out, and fold away after 3s without another sign:
+     - scrolling fast (over 2.5 screens a second for 250ms)
+     - three quick flicks (wheel bursts or fast swipes) within 1.5s
+     - two presses on empty parts of the section within 2s
+     - Space, Page Down or End
+     - a jump of more than a screen in one frame (the scrollbar dragged)
+     - on a mouse, a quick move up to the top edge (heading for the menu)
+   Hidden while a talk plays. Nothing under reduced motion (no pins). */
+(function () {
+  "use strict";
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var SEL = ".thread__track, .spk-said__track, .spk-keys__track, .spk-chap__track, .spk-formats__track, .tstrip__track, .steps__track";
+  var tracks = [].slice.call(document.querySelectorAll(SEL));
+  if (!tracks.length) return;
+
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "pinskip";
+  btn.setAttribute("aria-label", (window.SITE_UI && window.SITE_UI.skip) || "Skip this section");
+  btn.innerHTML = '<span class="pinskip__label" aria-hidden="true">Skip now</span>' +
+    '<svg class="pinskip__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15M6 13l6 6 6-6"/></svg>';
+  btn.hidden = true;
+  document.body.appendChild(btn);
+
+  var cur = null, raf = 0, lastY = window.pageYOffset, lastT = 0, fastSince = 0, jumping = 0;
+  var intentT = 0, flicks = [], taps = [], wheelLast = 0;
+
+  function vh() { return window.innerHeight || 1; }
+  function pageTop(el) { return el.getBoundingClientRect().top + window.pageYOffset; }
+  function pinned(tr) {
+    var st = tr.firstElementChild;
+    if (!st || getComputedStyle(st).position !== "sticky") return false;
+    if (st.offsetHeight > vh() * 1.25 || tr.offsetHeight < vh() * 1.8) return false;
+    var r = tr.getBoundingClientRect();
+    return r.top <= 1 && r.bottom > vh() + 40;
+  }
+  function playing(tr) { var s = tr.closest("section"); return !!s && s.classList.contains("is-playing"); }
+  function find() {
+    for (var i = 0; i < tracks.length; i++) if (pinned(tracks[i]) && !playing(tracks[i])) return tracks[i];
+    return null;
+  }
+  function intent() {
+    if (!cur) return;
+    btn.classList.add("is-intent");
+    clearTimeout(intentT);
+    intentT = setTimeout(function () { btn.classList.remove("is-intent"); }, 3000);
+  }
+  function show(tr) {
+    if (tr === cur) return;
+    cur = tr;
+    if (tr) { btn.hidden = false; void btn.offsetWidth; btn.classList.add("is-on"); }
+    else { btn.classList.remove("is-on", "is-intent"); setTimeout(function () { if (!cur) btn.hidden = true; }, 300); }
+  }
+  function tick(now) {
+    raf = 0;
+    var y = window.pageYOffset, dt = now - (lastT || now), dy = Math.abs(y - lastY);
+    if (!jumping) {
+      if (dy > vh() * 1.1) intent();                                   /* scrollbar drag / big jump */
+      var v = dt > 0 ? dy / dt : 0;                                    /* px per ms */
+      if (v > vh() * 2.5 / 1000) { if (!fastSince) fastSince = now; else if (now - fastSince > 250) intent(); }
+      else fastSince = 0;
+    }
+    lastY = y; lastT = now;
+    show(find());
+  }
+  function onScroll() { if (!raf) raf = requestAnimationFrame(tick); }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll, { passive: true });
+
+  function flick(now) {
+    flicks.push(now);
+    while (flicks.length && now - flicks[0] > 1500) flicks.shift();
+    if (flicks.length >= 3) intent();
+  }
+  window.addEventListener("wheel", function (e) {
+    if (!cur) return;
+    var now = performance.now();
+    if (now - wheelLast > 140 && Math.abs(e.deltaY) > 4) flick(now);   /* a new burst */
+    wheelLast = now;
+  }, { passive: true });
+  var ts = null;
+  window.addEventListener("touchstart", function (e) {
+    var t = e.touches[0]; ts = t ? { y: t.clientY, x: t.clientX, t: performance.now() } : null;
+  }, { passive: true });
+  window.addEventListener("touchend", function (e) {
+    if (!cur || !ts) return;
+    var t = e.changedTouches[0], now = performance.now();
+    if (t && Math.abs(t.clientY - ts.y) > 60 && now - ts.t < 260) flick(now);
+    ts = null;
+  }, { passive: true });
+  document.addEventListener("pointerdown", function (e) {
+    if (!cur || e.target === btn || btn.contains(e.target)) return;
+    var sec = cur.closest("section");
+    if (!sec || !sec.contains(e.target)) return;
+    if (e.target.closest && e.target.closest("a, button, input, select, textarea, summary, label, [role=tab], [tabindex], canvas")) return;
+    var now = performance.now();
+    taps.push(now);
+    while (taps.length && now - taps[0] > 2000) taps.shift();
+    if (taps.length >= 2) intent();
+  }, { passive: true });
+  document.addEventListener("keydown", function (e) {
+    if (!cur) return;
+    if (e.key === " " || e.key === "PageDown" || e.key === "End") intent();
+  });
+  var my = -1, mt = 0;
+  document.addEventListener("mousemove", function (e) {
+    var now = performance.now();
+    if (cur && my >= 0 && e.clientY < 70 && my - e.clientY > 40 && now - mt < 120) intent();
+    my = e.clientY; mt = now;
+  }, { passive: true });
+
+  btn.addEventListener("click", function () {
+    if (!cur) return;
+    var y = pageTop(cur) + cur.offsetHeight - vh() + 2;
+    jumping = 1;
+    btn.classList.remove("is-intent");
+    var done = function () { jumping = 0; };
+    if (window.spkLenis && window.spkLenis.scrollTo) {
+      window.spkLenis.scrollTo(y, { duration: 1.1, onComplete: done });
+      setTimeout(done, 1600);
+    } else {
+      window.scrollTo({ top: y, behavior: "smooth" });
+      setTimeout(done, 1400);
+    }
+  });
+
+  onScroll();
+})();
