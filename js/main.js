@@ -5407,7 +5407,7 @@ var UI = (function () {
    While a long pinned section holds the screen (its sticky stage pinned,
    its track at least 1.8 screens of scroll), a thin arrow sits in the
    bottom-right corner; a press takes the page to the next section.
-   The words "Skip now" slide out beside the arrow only while the visitor
+   The word "Skip" comes up over the arrow only while the visitor
    shows they want out, and fold away after 3s without another sign:
      - scrolling fast (over 2.5 screens a second for 250ms)
      - three quick flicks (wheel bursts or fast swipes) within 1.5s
@@ -5427,8 +5427,8 @@ var UI = (function () {
   btn.type = "button";
   btn.className = "pinskip";
   btn.setAttribute("aria-label", (window.SITE_UI && window.SITE_UI.skip) || "Skip this section");
-  btn.innerHTML = '<span class="pinskip__label" aria-hidden="true">Skip now</span>' +
-    '<svg class="pinskip__arrow" viewBox="0 0 44 24" aria-hidden="true"><path d="M3 12h37M34 6l6 6-6 6"/></svg>';
+  btn.innerHTML = '<span class="pinskip__label" aria-hidden="true">Skip</span>' +
+    '<svg class="pinskip__arrow" viewBox="0 0 110 24" aria-hidden="true"><path class="pinskip__long" d="M3 12h103M100 6l6 6-6 6"/><path class="pinskip__short" d="M47 12h59M100 6l6 6-6 6"/></svg>';
   btn.hidden = true;
   document.body.appendChild(btn);
 
@@ -5453,7 +5453,7 @@ var UI = (function () {
     if (!cur) return;
     btn.classList.add("is-intent");
     clearTimeout(intentT);
-    intentT = setTimeout(function () { btn.classList.remove("is-intent"); }, 3000);
+    intentT = setTimeout(function () { btn.classList.remove("is-intent"); }, 4000);
   }
   function show(tr) {
     if (tr === cur) return;
@@ -5465,9 +5465,11 @@ var UI = (function () {
     raf = 0;
     var y = window.pageYOffset, dt = now - (lastT || now), dy = Math.abs(y - lastY);
     if (!jumping) {
-      if (dy > vh() * 1.1) intent();                                   /* scrollbar drag / big jump */
+      /* the earliest signs: a jump of half a screen, or scrolling faster
+         than about one screen a second for a moment */
+      if (dy > vh() * 0.5) intent();                                   /* scrollbar drag / big jump */
       var v = dt > 0 ? dy / dt : 0;                                    /* px per ms */
-      if (v > vh() * 2.5 / 1000) { if (!fastSince) fastSince = now; else if (now - fastSince > 250) intent(); }
+      if (v > vh() * 1.1 / 1000) { if (!fastSince) fastSince = now; else if (now - fastSince > 60) intent(); }
       else fastSince = 0;
     }
     lastY = y; lastT = now;
@@ -5480,11 +5482,12 @@ var UI = (function () {
   function flick(now) {
     flicks.push(now);
     while (flicks.length && now - flicks[0] > 1500) flicks.shift();
-    if (flicks.length >= 3) intent();
+    if (flicks.length >= 2) intent();
   }
   window.addEventListener("wheel", function (e) {
     if (!cur) return;
     var now = performance.now();
+    if (Math.abs(e.deltaY) > 90) intent();                             /* one hard spin */
     if (now - wheelLast > 140 && Math.abs(e.deltaY) > 4) flick(now);   /* a new burst */
     wheelLast = now;
   }, { passive: true });
@@ -5495,18 +5498,15 @@ var UI = (function () {
   window.addEventListener("touchend", function (e) {
     if (!cur || !ts) return;
     var t = e.changedTouches[0], now = performance.now();
-    if (t && Math.abs(t.clientY - ts.y) > 60 && now - ts.t < 260) flick(now);
+    if (t && Math.abs(t.clientY - ts.y) > 50 && now - ts.t < 300) intent();   /* one quick swipe */
     ts = null;
   }, { passive: true });
   document.addEventListener("pointerdown", function (e) {
     if (!cur || e.target === btn || btn.contains(e.target)) return;
     var sec = cur.closest("section");
     if (!sec || !sec.contains(e.target)) return;
-    if (e.target.closest && e.target.closest("a, button, input, select, textarea, summary, label, [role=tab], [tabindex], canvas")) return;
-    var now = performance.now();
-    taps.push(now);
-    while (taps.length && now - taps[0] > 2000) taps.shift();
-    if (taps.length >= 2) intent();
+    if (e.target.closest && e.target.closest("a, button, input, select, textarea, summary, label, [role=tab], [tabindex]")) return;
+    intent();                                                          /* one tap or click on the picture */
   }, { passive: true });
   document.addEventListener("keydown", function (e) {
     if (!cur) return;
