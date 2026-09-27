@@ -414,7 +414,7 @@ var UI = (function () {
       var s = ending ? 1 : u - i;
       var cx, cy, z = 1, f = 0, rev = 0, txt = 0, sunA = 0, flood = 0, dolly = 1, k;
 
-      /* the stars' states: the NEXT star calls (bright, breathing, sending
+      /* the stars' states: the NEXT star calls (bright, its light slowly
          swelling and softening) from the moment the camera starts to pull out of the one
          before, through the travel to it; it burns steady as the camera
          dives in; as the camera pulls away it dims and the one after
