@@ -240,7 +240,7 @@
           "tone": "violet",
           "spot": "c",
           "still": {
-            "src": "/assets/img/ACT.png",
+            "src": "assets/img/act-terrace.jpg",
             "sizes": "100vw"
           },
           "turn": {
