@@ -2993,9 +2993,10 @@ var UI = (function () {
     /* set by build() for the screen: desktop B0 = (N + 1) beat (560) and
        U = 780; phones B0 = (N - 0.6) beat (432: no hold beat, the ending
        starts 16svh after the bridge is fully in), the ending ends at
-       E = INTRO + B0 + GROW (972), where the stage unpins, and the track
-       runs 100svh on while it scrolls away: U = E + 100 = 1072 */
-    var GROW = GROW_D, B0 = (N + 1) * BEAT, U = INTRO + B0 + GROW + 60, E = U;
+       INTRO + B0 + GROW (972) the hold starts: the stage is held for the
+       track's last 100svh while the reel's first card slides up over it,
+       U = 1072 (the grow runs on to U) */
+    var GROW = GROW_D, B0 = (N + 1) * BEAT, U = INTRO + B0 + GROW + 60;
     var LAST = N - 1;                           /* the bridge's beat, and the top candle from it on */
 
     var base = (cv && cv.getAttribute("data-frames")) || "../assets/img/";
@@ -3010,12 +3011,12 @@ var UI = (function () {
        the END of the track (uT = U, through the dissolve: no plateau);
        linear, with a quadratic ease-in over the first 8% of p (same slope
        at the join, so no kink), 0 -> 1 */
-    var S_END = 2.0;                            /* phones: the grow's end scale (at U) */
+    var S_END = 3.0;                            /* phones: the grow's end scale (at U) */
     var PIV = 0.40;                             /* phones: the grow's fixed point, of hC up the axis (in the holder) */
-    var PIV_Y = 0.70;                           /* phones: where that point ends on screen (of H, at E): it rises from its rest spot (0.76 H) */
+    var PIV_Y = 0.62;                           /* phones: where that point ends on screen (of H, at U): it rises from its rest spot (0.76 H) */
     function growP() {
       var u0 = B0 + 0.06 * GROW;
-      var q = clamp((u - u0) / (0.94 * GROW)), a = 0.08;     /* p = (g - 0.06) / 0.94: 1 at E */
+      var q = clamp((u - u0) / (0.94 * GROW + 100)), a = 0.08;  /* 1 at U: on through the hold */
       return (q < a ? q * q / (2 * a) : q - a / 2) / (1 - a / 2);
     }
 
@@ -3119,7 +3120,6 @@ var UI = (function () {
       GROW = phone ? GROW_P : GROW_D;
       B0 = phone ? (N - 0.6) * BEAT : (N + 1) * BEAT;
       U = INTRO + B0 + GROW + (phone ? 100 : 60);
-      E = phone ? U - 100 : U;
       hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(520, H * 0.44));
       Rw = W * (phone ? 0.44 : 0.40);
       cyW = H * 0.96 + Rw;                       /* the rim's top point at 96% of H */
@@ -3162,7 +3162,8 @@ var UI = (function () {
       last[key] = s;
       el.style.setProperty(name, s);
     }
-    var lastBridge = null, lastHold = "", gone = false, clearedE = false;
+    var lastBridge = null, lastHold = "", gone = false;
+    var keysEl = document.querySelector(".spk-keys");            /* phones: the reel's first card follows the track */
 
     function update(p) {
       if (entry.disabled) return;
@@ -3217,17 +3218,18 @@ var UI = (function () {
 
       /* the ending's DOM half, in order: line A up behind the resting
          candle (g 0-0.2); the roll as the three start to rise (0.2-0.5) */
-      /* phones: A up over g 0-0.06 (behind the canvas, as on desktop); no
-         shared window there (A high, B low), so a crossfade instead of the
-         roll: A out rising over g 0.06-0.14, B in rising over 0.08-0.20 */
+      /* phones: A up over g 0-0.06 (behind the canvas, as on desktop),
+         held to g 0.38 (about 150svh) while the candle rises behind it; no
+         shared window there (A mid, B low), so a crossfade instead of the
+         roll: A out rising over g 0.38-0.48, B in rising over 0.44-0.56 */
       put(nextA, "na", "--na", smooth(clamp(g / (phone ? 0.06 : 0.2))));
       /* one roll through one window: A up and out, B up and in */
       var roll = phone ? 0 : smooth(clamp((g - 0.2) / 0.3));
       put(nextA, "rollA", "--roll", roll);
       put(nextB, "rollB", "--roll", roll);
       if (phone) {
-        put(nextA, "nao", "--nao", smooth(clamp((g - 0.06) / 0.08)));
-        put(nextB, "nb", "--nb", smooth(clamp((g - 0.08) / 0.12)));
+        put(nextA, "nao", "--nao", smooth(clamp((g - 0.38) / 0.10)));
+        put(nextB, "nb", "--nb", smooth(clamp((g - 0.44) / 0.12)));
       }
       /* the velvet follows the camera (the CSS scales it by 1 + 0.12 --push) */
       put(sec, "push", "--push", push);
@@ -3236,23 +3238,21 @@ var UI = (function () {
          100svh before the track does (680 of 780), and the ending (the
          row, the push) plays in those last 100svh. On desktop the pinned
          talks section rises under it there; on phones (the talks a reel,
-         not pinned) there is no hold: the ending is over by the end of the
-         sticky run (E = U - 100) and the stage scrolls away like any
-         section, the reel's first card right under it */
+         not pinned) it is held as well while the reel's first card (plain
+         plum and its heading, stacked above the stage) slides up over the
+         candle's faded bottom (U - 100 -> U); then it scrolls away under
+         the reel */
       var HOLD = U - 100;
-      var hold = !phone && uT > HOLD
+      var hold = uT > HOLD
         ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
       if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
       /* phones: no pinned talks to hand to (--spk-keys-gone is never
-         written there). The exit, the ending's last 50svh (E - 50 -> E):
-         the canvas is erased from the bottom up into the velvet (draw(),
-         no CSS mask: a mask on a full-screen canvas repaints every frame
-         in Safari), B fades over E - 25 -> E (--spk-said-bout); the
-         velvet stays, and from E the stage scrolls away */
-      put(sec, "bout", "--spk-said-bout", phone ? clamp((uT - (E - 25)) / 25) : 0);
-      /* past E the canvas is empty: once it has been drawn so, no loop */
-      if (!(phone && uT >= E)) clearedE = false;
-      gone = phone && uT >= E && clearedE;
+         written there): the candle's bottom always fades into the velvet
+         (draw()), B stays, and the reel covers the stage by U */
+      /* phones: B leaves (linear) over U - 100 -> U - 60, before the
+         reel's first card brings its heading up to B's box */
+      put(sec, "bout", "--spk-said-bout", phone ? clamp((uT - (U - 100)) / 40) : 0);
+      gone = false;
       wake();
     }
 
@@ -3446,28 +3446,20 @@ var UI = (function () {
         if (Li > 0.001) frame(FACE, big, a * Li);
       }
       ctx.globalAlpha = 1;
-      /* phones, the exit (uT E - 50 -> E): erase the drawn wheel (candle
-         and glow) from the bottom up. The clear edge y = H (1 - d) rises
-         with d 0 -> 1.6 over a 0.6 H soft band, so at U it has passed
-         the top and the canvas is empty */
-      if (phone) {
-        var d = 1.6 * clamp((uT - (E - 50)) / 50);
-        if (d > 0) {
-          var y0 = H * (1 - d), eg = ctx.createLinearGradient(0, y0, 0, y0 + 0.6 * H);
-          eg.addColorStop(0, "rgba(0,0,0,0)");
-          eg.addColorStop(1, "rgba(0,0,0,1)");
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-          /* only where it acts: the soft band (y0 to y0 + 0.6 H) through
-             the gradient, everything under it cleared outright */
-          var yb = Math.max(0, y0), ye = Math.min(H, y0 + 0.6 * H);
-          if (ye > yb) {
-            ctx.globalCompositeOperation = "destination-out";
-            ctx.fillStyle = eg;
-            ctx.fillRect(0, yb, W, ye - yb);
-            ctx.globalCompositeOperation = "source-over";
-          }
-          if (ye < H) ctx.clearRect(0, Math.max(0, ye), W, H - Math.max(0, ye));
-        }
+      /* phones, the whole ending (g > 0.06): the candle's bottom fades
+         into the velvet, every frame: erased (destination-out, no CSS
+         mask) from clear at 0.72 H to fully at H, only over that band.
+         Its strength eases in over g 0.06-0.14 so the foot does not pop */
+      if (phone && g > 0.06) {
+        var fk = smooth(clamp((g - 0.06) / 0.08));
+        var eg = ctx.createLinearGradient(0, 0.72 * H, 0, H);
+        eg.addColorStop(0, "rgba(0,0,0,0)");
+        eg.addColorStop(1, "rgba(0,0,0," + fk.toFixed(3) + ")");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.fillStyle = eg;
+        ctx.fillRect(0, 0.72 * H, W, 0.28 * H);
+        ctx.globalCompositeOperation = "source-over";
       }
     }
 
@@ -3492,10 +3484,11 @@ var UI = (function () {
           S: phone ? +(1 + (S_END - 1) * growP()).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
           three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
       }
-      /* phones, at or past the ending's end (E): that draw erased the
-         whole canvas (the dissolve), nothing more to draw until the
-         scroll comes back before E (update() clears the flag) */
-      if (phone && uT >= E) { gone = clearedE = true; return; }
+      /* phones, past the end of the track: the reel's first card (its
+         top 42% see-through) scrolls up over the held stage; once its
+         opaque part covers the screen (card top <= -0.42 H) nothing more
+         to draw until the scroll comes back (update() clears the flag) */
+      if (phone && uT >= U && keysEl && keysEl.getBoundingClientRect().top <= -0.42 * H) { gone = true; return; }
       raf = requestAnimationFrame(tick);
     }
     function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden && !gone) raf = requestAnimationFrame(tick); }

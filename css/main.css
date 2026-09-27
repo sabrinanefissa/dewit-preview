@@ -1640,12 +1640,6 @@ html[data-spk-cc="off"] .spk-keys__cap { display:none; }
   .spk-keys.is-reel .spk-keys__panel::after { opacity: var(--cap, 0); }
   .spk-keys.is-reel .spk-keys__panel.is-off { pointer-events:auto; }
   .spk-keys.is-reel .spk-keys__index[hidden] { display:none; }
-  /* card 0's top band of plain ground (plum-2, #120A1C, no rgb token):
-     the candle wheel's dissolving bottom hands over candle -> plum ->
-     heading, not candle -> photo. Over the photo, under the heading (z -1
-     inside the heading layer's own stacking context, z 2) */
-  .spk-keys.is-reel .spk-keys__head::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-    background: linear-gradient(to bottom, rgba(18,10,28,.55) 0%, transparent 22%); }
 }
 .spk-keys__dots { position:fixed; right: 12px; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:6;
   display:flex; flex-direction:column; align-items:center;
@@ -1959,16 +1953,23 @@ html.no-js .spk-said__candle { display:none; }
 .spk-said.is-wheel .spk-said__velvet,
 .spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
 .spk-said.is-wheel .spk-said__stage { opacity: calc(1 - var(--spk-keys-gone, 0)); }
-/* phones: no pinned talks take the wheel over, so it ends by itself
-   (module 7) and is over by the end of its sticky run: over its last
-   50svh the canvas erases itself from the bottom up into the velvet (no
-   CSS mask) and B fades over the last 25svh (--spk-said-bout); the velvet
-   stays. Then the stage unpins (no hold) and scrolls away like any
-   section, the talks reel right under it. The track has no hold beat, a
-   long grow (--grow-phone) and the stage's own 100svh: 1072svh for six
-   lines. */
+/* phones: no pinned talks take the wheel over, so it hands off by itself
+   (module 7): the candle's bottom always fades into the velvet (in the
+   canvas, no CSS mask), and over the track's last 100svh the stage is held
+   while the talks reel's first card (plain plum and its heading, stacked
+   ABOVE the stage: keys z 4 over said z 3) slides up over it; then the
+   stage scrolls away under the reel. The track has no hold beat, a long
+   grow (--grow-phone) and the hold's 100svh: 1072svh for six lines. */
 @media (max-width: 768px) {
   .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 100) * 1svh); }
+  .spk-keys.is-reel { z-index:4; }
+  .spk-keys.is-reel .spk-keys__ground > .pic,
+  .spk-keys.is-reel .spk-keys__rest { display:none; }
+  /* card 0: plain plum, its top fading in (clear -> plum-2 over its first
+     42%) so it rises over the candle's faded bottom with no edge; the
+     heading at 30% of the card, on screen when the card is ~70% up */
+  .spk-keys.is-reel .spk-keys__head { place-items: start center; padding-top: 30svh;
+    background: linear-gradient(to bottom, rgba(18,10,28,0) 0%, rgba(18,10,28,.6) 22%, var(--plum-2) 42%); }
 }
 /* The ending's two lines (visual only; the real heading is in the talks
    section), one roll through one window. Two windows with identical
@@ -2014,12 +2015,14 @@ html.no-js .spk-said__candle { display:none; }
   .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.4rem, 10.5vw, 3.6rem); line-height: 1.0; height: 2.4em; }
   .spk-said.is-wheel .spk-said__nextB { max-width: 13ch; min-height: 2.4em;
     text-shadow: 0 2px 20px rgba(0,0,0,.6); }
-  /* B low (its two-row window from 42% down, over the wax, in front) and
-     A high (top 9%, behind the canvas): no shared window, so no roll. A
-     comes up (--na) and leaves rising 16px (--nao, g 0.06-0.14); B comes
-     in rising 16px (--nb, g 0.08-0.20) and fades over the track's last
-     25svh (--spk-said-bout) */
-  .spk-said.is-wheel .spk-said__win--b { top:42%; }
+  /* A (top 33%, behind the canvas: the growing candle rises up behind
+     it) and B low (its two-row window from 66% down, in front, pinned to
+     the end: it leaves with the stage): no shared window, so no roll. A
+     comes up (--na, g 0-0.06), stays to g 0.38, and leaves rising 16px
+     (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 100 -> U - 60
+     (--spk-said-bout) */
+  .spk-said.is-wheel .spk-said__win--a { top:33%; }
+  .spk-said.is-wheel .spk-said__win--b { top:66%; }
   .spk-said.is-wheel .spk-said__nextA {
     transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
     opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
@@ -2523,7 +2526,8 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
 .spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
   transform:none; text-align:inherit; justify-items: var(--place-j); }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:9%; --pda:center; --pdj:center; }
-.spk-said.is-wheel .place--win-b { --pdy-m:42%; }   /* phones: B low, over the wax */
+.spk-said.is-wheel .place--win-a { --pdy-m:33%; }   /* phones: A where the flame rises behind it */
+.spk-said.is-wheel .place--win-b { --pdy-m:66%; }   /* phones: B low */
 .spk-said.is-wheel .place--win-a { z-index:1; }
 .spk-said.is-wheel .place--win-b { z-index:4; }
 .spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;
