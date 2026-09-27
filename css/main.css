@@ -1617,12 +1617,12 @@ html[data-spk-cc="off"] .spk-keys__cap { display:none; }
    the heading centred on it (the scroll-fill), then one card per talk, its
    caption centred exactly as on the pin. The ground and the panel box let
    go of their boxes (display: contents) so the stage's grid holds the
-   cards. Each card snaps to the top, but only while the viewport's top is
-   between the first card's top and the last card's: the script puts
-   .spk-snap on <html> for that long. A card's
+   cards. No scroll snapping: a mandatory snap on the root made iOS Safari
+   yank the page to the first card while the candle wheel's held stage
+   was still playing its ending over it (the script still marks
+   html.spk-snap while the cards are in view; nothing reads it). A card's
    caption rises in on arrival (--cap 0 → 1, written by the script over
    --cap-ms); the dots (1 + N, bottom right, vertical) replace the index. */
-html.spk-snap { scroll-snap-type: y mandatory; }
 @media (max-width: 768px) {
   .spk-keys.is-reel { padding-block:0; }
   .spk-keys.is-reel .spk-keys__stage { display:grid; grid-template-columns: 100%; }
