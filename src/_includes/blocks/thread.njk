@@ -1,60 +1,39 @@
-  <!-- The through-line: "the constellation". A pinned stage over a live
-       star field. Each idea is a star: the view travels to it, the star
-       lights, the view closes in and the idea's card (still + words)
-       opens out of the star; then the view pulls back and finds the next
-       one. After the last idea the field settles, the statement fills in
-       over it and the constellation becomes live (the pointer, or a
-       finger, joins it). One picture on screen at a time, phones too.
-       Reduced motion, Save-Data and no script (.is-static): the ideas
-       stack, each with its still and words, then the statement over one
-       still frame of the field. -->
-  {%- set beat = block | motion('beat', 120) %}
-  {%- set beatPhone = block | motion('beatPhone', 130) %}
-  {%- set tail = block | motion('tail', 100) %}
-  {%- set bid = block.id or 'thread' %}
-  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-beat="{{ beat }}" data-beat-phone="{{ beatPhone }}" data-tail="{{ tail }}" data-zoom="{{ block | motion('zoom', 7) }}" data-zoom-phone="{{ block | motion('zoomPhone', 7) }}" data-dolly="{{ block | motion('dolly', 1.04) }}" style="--stations:{{ block.stations.length }};--beat:{{ beat }};--beat-phone:{{ beatPhone }};--tail:{{ tail }};--grade:{{ block | motion('grade', 0.6) }}">
-    <div class="thread__track">
-      <div class="thread__stage">
-        <canvas class="thread__sky" aria-hidden="true"></canvas>
-        <p class="thread__eyebrow">{{ block.eyebrow | inline() }}</p>
+  <!-- The through-line -->
+  <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-cursor="{{ block | motion('cursor', 0.62) }}">
+    <div class="thread__bg" aria-hidden="true">
+    {%- for src in block.bg %}
+      <img src="{{ src | root(r) }}" alt="" loading="lazy" decoding="async">
+    {%- endfor %}
+    </div>
+    <div class="thread__veil" aria-hidden="true"></div>
+    <div class="thread__glow" aria-hidden="true"></div>
 
-        <div class="stations">
+    <svg class="thread__svg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="guide" d=""></path>
+      <path class="drawn" d=""></path>
+    </svg>
+    <div class="pulse" aria-hidden="true"></div>
+    <div class="rail" aria-hidden="true"><i></i><b></b></div>
+
+    <div class="thread__inner">
+      <p class="eyebrow">{{ block.eyebrow | inline() }}</p>
+
+      <div class="stations">
 {% for s in block.stations %}
-          <article class="station{% if s.pillar %} is-pillar{% endif %}" id="{{ bid }}-panel-{{ loop.index }}" style="--i:{{ loop.index0 }}">
-            <figure class="still">
-              {%- set pp = s.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 767px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
-              {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-                   sizes="100vw" alt="{{ s.image.alt | inline() }}" loading="{{ 'eager' if loop.first else 'lazy' }}" decoding="async">{% if pp %}</picture>{% endif %}
-              <i class="still__gold" aria-hidden="true"></i>
-            </figure>
-            <div class="body">
-              <p class="idx"><span>{{ loop.index | pad2 }}</span></p>
-              {%- if s.pillar and s.kicker %}
-              <p class="kicker"><span>{{ s.kicker | inline() }}</span></p>
-              {%- endif %}
-              {%- set parts = s.label.split(s.key) if (s.key and s.label.indexOf(s.key) > -1) else [s.label] %}
-              {%- set lab %}{{ parts[0] | inline() }}{% if parts.length > 1 %}<em class="thread__key">{{ s.key | inline() }}</em>{{ parts.slice(1).join(s.key) | inline() }}{% endif %}{% endset %}
-              <h2 class="label"><span>{% if s.href %}<a href="{{ s.href | root(r) }}">{{ lab | safe }}</a>{% else %}{{ lab | safe }}{% endif %}</span></h2>
-              <p class="gloss">{{ s.gloss | inline() }}</p>
-            </div>
-          </article>
+        <article class="station {{ 'is-odd' if loop.index % 2 else 'is-even' }}{% if s.pillar %} is-pillar{% endif %}">
+          <figure class="still">
+            <img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
+            {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+                 sizes="{{ s.image.sizes or '100vw' }}" alt="{{ s.image.alt | inline() }}" loading="eager" decoding="async">
+          </figure>
+          <div class="knot"><span class="dot"></span></div>
+          <div class="body">
+            <p class="idx"><span>{{ loop.index | pad2 }}</span></p>
+            <h2 class="label"><span>{{ s.label | inline() }}</span></h2>
+            <p class="gloss">{{ s.gloss | inline() }}</p>
+          </div>
+        </article>
 {% endfor %}
-        </div>
-        {%- if block.statement %}
-
-        <div class="thread__end">
-          <h2 class="fill thread__statement"{{ block.statement | fillAttrs }}>{{ block.statement | fillWords }}</h2>
-        </div>
-        {%- endif %}
-
-        <div class="thread__jump">
-          <ul aria-label="{{ block.ariaLabel | inline() }}">
-          {%- for s in block.stations %}
-            <li><button type="button" data-i="{{ loop.index0 }}" aria-pressed="false" aria-controls="{{ bid }}-panel-{{ loop.index }}">{{ loop.index | pad2 }} {{ s.label | inline() }}</button></li>
-          {%- endfor %}
-          </ul>
-          <p class="sr-only" aria-live="polite"></p>
-        </div>
       </div>
     </div>
   </section>

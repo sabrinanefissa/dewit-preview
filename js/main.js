@@ -227,551 +227,192 @@ var UI = (function () {
   var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
 })();
 
-/* ===== The through-line: "the constellation" =====
-   A pinned stage (.thread__track > .thread__stage, sticky) over a star
-   field: canvas.thread__sky, drawn by the shared constellation
-   (window.spkConstellation, "--- Constellation ---" further down) with
-   one fixed star per idea. The section registers ONE entry with the spine
-   (module 0; a scroll listener when the page has none) and that entry only
-   stores p; everything else happens in one rAF loop that runs only while
-   the section is on screen and the page is visible.
-     u = p * (N + 1); station i = min(N - 1, floor(u)), s = u - i:
-       .00–.15 travel: the view slides from star i-1 (the first: the field's
-               centre) to star i at zoom 1, star i lights (glow 0 → 1) and
-               the line from star i-1 is drawn up to the view
-       .15–.35 zoom in on star i (1 → Z)
-       .35–.80 hold (Z → Z * 1.04, data-dolly); the card is fully open
-       .80–1   zoom out (→ 1); the star stays lit at .6
-     The card (.station.is-on) opens out of the star: --hx/--hy (the star
-     on screen) and --reveal (0 → 1 over s .18–.40, 1 → 0 over .80–.92),
-     written only when they move. The reveal windows never overlap, so
-     there is never more than one picture on screen.
-     u ≥ N, the ending: the view returns to the field's centre, the stars
-     settle at .6, the ghost pointer starts; the statement fades in over
-     .3–.6 (its scroll-fill, module 12, is driven from u); from N + .3 the
-     stage is .is-live and the field takes the pointer (desktop: the gold
-     node; touch: tap to cluster, drag to lead, 2.5s hold).
-   A click or tap within 28px of a star (or its hidden button) scrolls to
-   that station's s = .55. Three modes, rebuilt when a media query flips:
-   "pin", "phone" (< 768px) and "static" (reduced motion and Save-Data:
-   the stations stack and the field is one still frame behind the
-   statement; html.no-js gets the stack from the CSS).
-   window.__threadCost: the loop's own work per frame, the last 240 (ms). */
+/* ===== The through-line: one dot, carried by the scroll =====
+   One instance per section.thread; every part is found inside it. */
 (function () {
   "use strict";
-  /* the stars, in field units: pillars are gold */
-  var SPOTS = [[0.22, 0.34], [0.66, 0.26], [0.50, 0.58], [0.26, 0.74], [0.74, 0.70]];
-  var run = function () { [].slice.call(document.querySelectorAll("section.thread")).forEach(thread); };
-  /* the constellation is defined further down this file */
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run);
-  else setTimeout(run, 0);
 
-  function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
-  function eIO(x) { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
-  function eOut(x) { x = clamp(x); return 1 - Math.pow(1 - x, 3); }
-  function eIn(x) { x = clamp(x); return x * x * x; }
-  function smooth(x) { x = clamp(x); return x * x * (3 - 2 * x); }
+  var settle = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  [].slice.call(document.querySelectorAll("section.thread")).forEach(thread);
 
   function thread(sec) {
-    var track    = sec.querySelector(".thread__track");
-    var stage    = sec.querySelector(".thread__stage");
-    var sky      = sec.querySelector(".thread__sky");
-    var endEl    = sec.querySelector(".thread__end");
-    var statement = sec.querySelector(".thread__statement");
+    var inner    = sec.querySelector(".thread__inner");
+    var svg      = sec.querySelector(".thread__svg");
+    var guide    = sec.querySelector(".thread__svg .guide");
+    var drawn    = sec.querySelector(".thread__svg .drawn");
+    var pulse    = sec.querySelector(".pulse");
+    var rail     = sec.querySelector(".rail");
+    var railFill = rail && rail.querySelector("b");
     var stations = [].slice.call(sec.querySelectorAll(".station"));
-    var buttons  = [].slice.call(sec.querySelectorAll(".thread__jump button"));
-    var liveMsg  = sec.querySelector(".thread__jump [aria-live]");
-    if (!track || !stage || !sky || !sky.getContext || !stations.length || !window.spkConstellation) return;
+    var dots     = stations.map(function (s) { return s.querySelector(".dot"); });
+    var stills   = stations.map(function (s) { return s.querySelector(".still"); });
+    var bgs      = [].slice.call(sec.querySelectorAll(".thread__bg img"));
+    if (!svg || !guide || !drawn) return;
 
-    var N = stations.length;
-    /* how far the camera flies into a star (the field's zoom at the bottom of the dive) */
-    var ZFD = parseFloat(sec.getAttribute("data-zoom")) || 7;
-    var ZFP = parseFloat(sec.getAttribute("data-zoom-phone")) || 7;
-    var rmq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    var phone = window.matchMedia("(max-width: 767px)");
-    var saveData = !!(navigator.connection && navigator.connection.saveData);
-    var labels = stations.map(function (s) { return s.querySelector(".label"); });
-    var names = labels.map(function (l) { return l ? l.textContent.replace(/\s+/g, " ").trim() : ""; });
+    var mq = window.matchMedia("(max-width: 720px)");
+    /* the dot rides this fraction of the viewport (the section's data-cursor) */
+    var CURSOR = parseFloat(sec.getAttribute("data-cursor")) || 0.62;
+    var len = 0, ticking = false, active = -1;
 
-    /* one star per station; past five, the rest fall on a golden-angle spiral */
-    var spots = stations.map(function (st, k) {
-      var q = SPOTS[k];
-      if (!q) {
-        var a = k * 2.39996, r = 0.18 + 0.1 * ((k * 0.618) % 1);
-        q = [0.5 + r * Math.cos(a), 0.5 + r * 0.9 * Math.sin(a)];
-      }
-      st.classList.toggle("is-flip", q[0] >= 0.5);     /* the still goes to the side away from its star */
-      return { x: q[0], y: q[1], gold: st.classList.contains("is-pillar"), glow: 0, reach: 0, found: false };
-    });
+    /* ---- build the path through the measured dot centres ---------- */
+    function build() {
+      var r = sec.getBoundingClientRect();
+      var w = Math.round(r.width), h = Math.round(r.height);
+      if (!w || !h) return;
+      svg.setAttribute("viewBox", "0 0 " + w + " " + h);
 
-    var mode = null, W = 0, H = 0, p = 0, live = false;
-    var sky0 = null;
-    /* the flight layer: the streaks, the star become a sun, its light; over
-       the photo, under the words */
-    var sunCv = document.createElement("canvas");
-    sunCv.className = "thread__sun"; sunCv.setAttribute("aria-hidden", "true");
-    sky.parentNode.insertBefore(sunCv, sky.nextSibling);
-    var sunCtx = sunCv.getContext("2d"), sunDpr = Math.min(window.devicePixelRatio || 1, 2);
-    /* the deep sky, under the constellation: the night photo, drifting
-       nebulae and three depths of stars, each depth moving with the camera
-       by its own share (far barely, near most), so flying in feels like
-       going through the sky, not over a picture */
-    var bgEl = document.createElement("div");
-    bgEl.className = "thread__bg"; bgEl.setAttribute("aria-hidden", "true");
-    var deepCv = document.createElement("canvas");
-    deepCv.className = "thread__deep"; deepCv.setAttribute("aria-hidden", "true");
-    sky.parentNode.insertBefore(bgEl, sky);
-    sky.parentNode.insertBefore(deepCv, sky);
-    var deepCtx = deepCv.getContext("2d");
-    var deep = [], clouds = [], glint = null, shoot = { on: false, next: 0 };
-    (function () {
-      var sd = 11;
-      function rnd() { sd = (sd * 16807) % 2147483647; return (sd - 1) / 2147483646; }
-      var LAY = [[1500, 0.1, 0.55, 0.7], [420, 0.3, 0.75, 1.1], [110, 0.55, 0.9, 1.6], [34, 0.8, 1, 2.2]];
-      LAY.forEach(function (L) {
-        for (var q = 0; q < L[0]; q++) {
-          var hue = rnd(), col = hue < 0.62 ? "255,250,242" : hue < 0.84 ? "246,226,186" : "214,200,255";
-          deep.push({ x: -0.4 + 1.8 * rnd(), y: -0.4 + 1.8 * rnd(), d: L[1], a: L[2] * (0.35 + 0.65 * rnd()),
-            r: L[3] * (0.45 + 0.8 * rnd() * rnd()), c: col, tw: 0.4 + 1.2 * rnd(), ph: rnd() * 6.2832, big: L[1] > 0.5 && rnd() < 0.6 });
-        }
+      /* the line enters at the top of the wrap and leaves at the bottom of the
+         section, so it reads as continuing from the hero card and into what follows */
+      var ir = inner.getBoundingClientRect();
+      var cx = ir.left - r.left + ir.width / 2;
+      var pts = dots.map(function (d) {
+        var b = d.getBoundingClientRect();
+        return { x: b.left - r.left + b.width / 2, y: b.top - r.top + b.height / 2 };
       });
-      /* a band of the galaxy: dense faint dust across the sky, lower left to upper right */
-      [[2200, 0.14]].forEach(function (L) {
-        for (var q = 0; q < L[0]; q++) {
-          var tt = -0.3 + 1.6 * rnd(), off = (rnd() + rnd() + rnd() - 1.5) * 0.16;
-          deep.push({ x: tt + off * 0.5, y: 1.05 - 0.9 * tt + off, d: L[1], a: 0.2 + 0.45 * rnd(),
-            r: 0.45 + 0.5 * rnd() * rnd(), c: rnd() < 0.7 ? "255,248,236" : "226,210,255", tw: 0.3 + rnd(), ph: rnd() * 6.2832, big: false });
-        }
-      });
-      var CL = [["130,76,214", 0.42], ["180,96,196", 0.3], ["76,64,180", 0.34], ["214,166,120", 0.16], ["150,86,220", 0.3], ["96,54,160", 0.3], ["240,200,160", 0.12], ["120,90,230", 0.28]];
-      for (var bq = 0; bq < 5; bq++) {
-        var bt = 0.05 + 0.9 * bq / 4;
-        clouds.push({ x: bt, y: 1.05 - 0.9 * bt, r: 0.28, c: bq % 2 ? "200,170,240" : "240,214,190", a: 0.16, sx: 0.4, sy: 0.4, ph: bq });
+      pts.unshift({ x: cx, y: 0 });
+      pts.push({ x: cx, y: h });
+
+      var d = "M " + pts[0].x.toFixed(2) + " " + pts[0].y.toFixed(2);
+      for (var i = 1; i < pts.length; i++) {
+        var a = pts[i - 1], b = pts[i], dy = (b.y - a.y) * 0.5;
+        d += " C " + a.x.toFixed(2) + " " + (a.y + dy).toFixed(2) +
+             " " + b.x.toFixed(2) + " " + (b.y - dy).toFixed(2) +
+             " " + b.x.toFixed(2) + " " + b.y.toFixed(2);
       }
-      CL.forEach(function (c) {
-        clouds.push({ x: -0.1 + 1.2 * rnd(), y: -0.1 + 1.2 * rnd(), r: 0.35 + 0.35 * rnd(), c: c[0], a: c[1],
-          sx: 0.3 + 0.7 * rnd(), sy: 0.3 + 0.7 * rnd(), ph: rnd() * 6.2832 });
-      });
-      glint = document.createElement("canvas"); glint.width = glint.height = 64;
-      var h = glint.getContext("2d"), gg = h.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gg.addColorStop(0, "rgba(255,250,240,1)"); gg.addColorStop(0.15, "rgba(255,244,222,.5)");
-      gg.addColorStop(0.45, "rgba(236,214,176,.12)"); gg.addColorStop(1, "rgba(236,214,176,0)");
-      h.fillStyle = gg; h.fillRect(0, 0, 64, 64);
-    })();
-    function drawDeep(z, cx, cy, t) {
-      if (!W) return;
-      var c = deepCtx, k, lz, ox, oy;
-      c.setTransform(sunDpr, 0, 0, sunDpr, 0, 0);
-      c.clearRect(0, 0, W, H);
-      /* the photo underneath follows at the farthest share */
-      lz = Math.pow(z, 0.08);
-      bgEl.style.transform = "translate(" + ((0.5 - cx) * W * 0.06).toFixed(1) + "px," + ((0.5 - cy) * H * 0.06).toFixed(1) + "px) scale(" + lz.toFixed(4) + ")";
-      /* nebulae: big soft colour, breathing and drifting slowly */
-      c.globalCompositeOperation = "lighter";
-      lz = Math.pow(z, 0.22);
-      for (k = 0; k < clouds.length; k++) {
-        var cl = clouds[k];
-        var nx = cl.x + 0.03 * Math.sin(t / 21000 * cl.sx + cl.ph), ny = cl.y + 0.03 * Math.cos(t / 26000 * cl.sy + cl.ph);
-        var X = W / 2 + (nx - (0.5 + (cx - 0.5) * 0.22)) * W * lz, Y = H / 2 + (ny - (0.5 + (cy - 0.5) * 0.22)) * H * lz;
-        var R = cl.r * Math.max(W, H) * lz, A = cl.a * (0.85 + 0.15 * Math.sin(t / 9000 + cl.ph));
-        var g = c.createRadialGradient(X, Y, 0, X, Y, R);
-        g.addColorStop(0, "rgba(" + cl.c + "," + (0.5 * A).toFixed(3) + ")");
-        g.addColorStop(0.5, "rgba(" + cl.c + "," + (0.18 * A).toFixed(3) + ")");
-        g.addColorStop(1, "rgba(" + cl.c + ",0)");
-        c.fillStyle = g; c.fillRect(Math.max(0, X - R), Math.max(0, Y - R), Math.min(W, X + R) - Math.max(0, X - R), Math.min(H, Y + R) - Math.max(0, Y - R));
+      guide.setAttribute("d", d);
+      drawn.setAttribute("d", d);
+      len = drawn.getTotalLength();
+      drawn.style.strokeDasharray = len.toFixed(2);
+      apply();
+    }
+
+    /* ---- the path's control points are vertical, so its y only ever
+            increases: a binary search finds the length that sits at y ---- */
+    function lengthAtY(yT) {
+      var lo = 0, hi = len, mid;
+      for (var i = 0; i < 22; i++) {
+        mid = (lo + hi) / 2;
+        if (drawn.getPointAtLength(mid).y < yT) lo = mid; else hi = mid;
       }
-      /* the stars: each depth zooms by its own share and twinkles softly */
-      for (k = 0; k < deep.length; k++) {
-        var st = deep[k];
-        lz = Math.pow(z, st.d);
-        ox = 0.5 + (cx - 0.5) * st.d; oy = 0.5 + (cy - 0.5) * st.d;
-        var sx = W / 2 + (st.x - ox) * W * lz, sy = H / 2 + (st.y - oy) * H * lz;
-        if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
-        var tw = 0.65 + 0.35 * Math.sin(t / 1000 * st.tw + st.ph);
-        var al = st.a * tw, rr = st.r * Math.min(2.2, Math.pow(lz, 0.35));
-        if (st.big) {
-          c.globalAlpha = al * 0.8;
-          var gs = rr * 7;
-          c.drawImage(glint, sx - gs, sy - gs, gs * 2, gs * 2);
-          c.globalAlpha = 1;
-        }
-        c.fillStyle = "rgba(" + st.c + "," + al.toFixed(3) + ")";
-        c.beginPath(); c.arc(sx, sy, rr, 0, 6.2832); c.fill();
+      return (lo + hi) / 2;
+    }
+
+    /* ---- one station carries the ground, the passed ones stay lit -- */
+    function setActive(i) {
+      if (i === active) return;
+      active = i;
+      for (var k = 0; k < stations.length; k++) {
+        stations[k].classList.toggle("is-active", k === i);
       }
-      /* now and then a distant shooting star: small, faint, quick, high
-         in the sky, never over the words' middle */
-      if (t) {
-        if (!shoot.next) shoot.next = t + 2500 + Math.random() * 4000;
-        if (!shoot.on && t > shoot.next) {
-          shoot.on = true; shoot.t0 = t; shoot.dur = 700 + Math.random() * 500;
-          shoot.x = W * (0.1 + 0.8 * Math.random()); shoot.y = H * (0.06 + 0.3 * Math.random());
-          shoot.a = (Math.random() < 0.5 ? 1 : -1) * (0.35 + 0.4 * Math.random()); shoot.len = Math.min(W, H) * (0.18 + 0.14 * Math.random());
-        }
-        if (shoot.on) {
-          var q = (t - shoot.t0) / shoot.dur;
-          if (q >= 1) { shoot.on = false; shoot.next = t + 3500 + Math.random() * 6500; }
-          else {
-            var dir = shoot.a > 0 ? 1 : -1, ang = Math.abs(shoot.a);
-            var hx = shoot.x + dir * Math.cos(ang) * shoot.len * q, hy = shoot.y + Math.sin(ang) * shoot.len * q;
-            var tl = shoot.len * 0.45 * Math.sin(Math.PI * Math.min(1, q * 1.3));
-            var tx = hx - dir * Math.cos(ang) * tl, ty = hy - Math.sin(ang) * tl;
-            var fa = Math.min(1, Math.sin(Math.PI * q) * 1.1);
-            var sg = c.createLinearGradient(tx, ty, hx, hy);
-            sg.addColorStop(0, "rgba(255,244,224,0)"); sg.addColorStop(1, "rgba(255,248,236," + fa.toFixed(3) + ")");
-            c.strokeStyle = sg; c.lineWidth = 1.6; c.lineCap = "round";
-            c.beginPath(); c.moveTo(tx, ty); c.lineTo(hx, hy); c.stroke();
-            c.globalAlpha = fa; c.drawImage(glint, hx - 5, hy - 5, 10, 10); c.globalAlpha = 1;
-          }
+      for (var j = 0; j < bgs.length; j++) {
+        bgs[j].classList.toggle("is-on", j === i);
+      }
+    }
+
+    function light(yT, top) {
+      var last = -1;
+      for (var i = 0; i < stations.length; i++) {
+        var b = dots[i].getBoundingClientRect();
+        if (b.top + b.height / 2 - top <= yT) {
+          stations[i].classList.add("is-lit");
+          last = i;
         }
       }
-      c.globalCompositeOperation = "source-over";
-    }
-    var gateLive = function () { return live; };
-
-    /* ---- geometry, measured on layout only ---- */
-    var s0 = 0, e0 = 0;
-    function startY() { return track.getBoundingClientRect().top + window.scrollY; }
-    function endY() { return startY() + track.offsetHeight - window.innerHeight; }
-    function measure() { s0 = startY(); e0 = endY(); }
-    function yAtU(u) { return s0 + (e0 - s0) * clamp(u / (N + 1)); }
-    function yAt(k, s) { return yAtU(k + s); }
-    function go(y) {
-      y = Math.max(0, Math.round(y));
-      if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y);
-      else window.scrollTo({ top: y, behavior: "smooth" });
+      setActive(last < 0 ? 0 : last);
     }
 
-    /* the label keeps its step (step-4, pillars step-5) unless its longest
-       word would overflow its column, or (phones) it would run past two lines */
-    function fitLabel(k) {
-      var lab = labels[k];
-      if (!lab) return;
-      stations[k].style.removeProperty("--fs");
-      if (mode === "static") return;
-      var f = parseFloat(window.getComputedStyle(lab).fontSize) || 48, n = 0;
-      var over = function () {
-        if (lab.scrollWidth > lab.clientWidth + 1) return true;
-        return mode === "phone" && lab.offsetHeight > f * 2.35;
-      };
-      while (over() && f > 18 && n++ < 30) {
-        f = Math.floor(f * 0.94);
-        stations[k].style.setProperty("--fs", f + "px");
+    function parallax() {
+      if (settle) return;
+      var vh = window.innerHeight;
+      for (var i = 0; i < stills.length; i++) {
+        var b = stills[i].getBoundingClientRect();
+        var t = (b.top + b.height / 2) / vh;                 /* 0 top, 1 bottom */
+        var y = Math.max(-10, Math.min(10, (0.5 - t) * 20));
+        stills[i].style.transform = "translate3d(0," + y.toFixed(1) + "px,0)";
       }
     }
 
-    function layout() {
-      measure();
-      if (!sky0) return;
-      W = stage.clientWidth; H = stage.clientHeight;
-      sky0.size();
-      sunCv.width = Math.round(W * sunDpr); sunCv.height = Math.round(H * sunDpr);
-      deepCv.width = Math.round(W * sunDpr); deepCv.height = Math.round(H * sunDpr);
-      for (var k = 0; k < N; k++) fitLabel(k);
-      if (mode === "static") paintStatic();
-    }
+    /* ---- the dot sits on the cursor line, the line is drawn to it -- */
+    function apply() {
+      var r = sec.getBoundingClientRect();
+      var h = r.height;
+      if (!h) return;
 
-    /* ---- the frame ---- */
-    var cache = stations.map(function () { return {}; });
-    var endCache = {};
-    function setVar(el, c, name, v) {
-      var old = c[name];
-      if (old !== undefined && Math.abs(old - v) <= 0.002) return;
-      c[name] = v;
-      el.style.setProperty(name, name === "--reveal" || name === "--end" || name === "--txt" || name === "--dolly" ? v.toFixed(4) : v.toFixed(1) + "px");
-    }
-    var cur = -2, cam = { z: 1, cx: 0.5, cy: 0.5 }, lastU = 0, DIM = 0.22, hovK = -1;
-    /* the camera glides after the scroll: uS chases u (time constant GLIDE),
-       so a wheel notch or a flick is one continuous flight, never a jump */
-    var uS = -1, lastT = 0, lastF = 0, vel = 0, GLIDE = 0.28;
-
-    /* the flight: no spikes, no flash. The star swells into a soft
-       champagne light, like breathing in; inside it the light is a warm
-       haze that never goes past a gentle wash, and the photo surfaces out
-       of it with a feathered edge */
-    function drawFlight(hx, hy, f, sunA, flood, gold, t) {
-      var c = sunCtx, D = Math.sqrt(W * W + H * H) / 2, g;
-      c.setTransform(sunDpr, 0, 0, sunDpr, 0, 0);
-      c.clearRect(0, 0, W, H);
-      if (f <= 0.001 && flood <= 0.001) return;
-      var tint = gold ? "240,210,150" : "244,222,180", deep = gold ? "196,150,80" : "206,170,110";
-      if (sunA > 0.01 && f > 0.001) {
-        var breath = 1 + 0.04 * Math.sin(t / 1400);
-        var R = (24 + D * 0.9 * Math.pow(f, 1.8)) * breath, a = sunA * (0.55 - 0.2 * f);
-        c.globalCompositeOperation = "lighter";
-        g = c.createRadialGradient(hx, hy, 0, hx, hy, R);
-        g.addColorStop(0, "rgba(255,246,228," + a.toFixed(3) + ")");
-        g.addColorStop(0.12, "rgba(" + tint + "," + (0.7 * a).toFixed(3) + ")");
-        g.addColorStop(0.4, "rgba(" + deep + "," + (0.25 * a).toFixed(3) + ")");
-        g.addColorStop(1, "rgba(" + deep + ",0)");
-        c.fillStyle = g; c.beginPath(); c.arc(hx, hy, R, 0, 6.2832); c.fill();
-        c.globalCompositeOperation = "source-over";
-      }
-      if (flood > 0.001) {
-        var fa = 0.3 * flood;
-        g = c.createRadialGradient(hx, hy, 0, hx, hy, D * 1.1);
-        g.addColorStop(0, "rgba(" + tint + "," + fa.toFixed(3) + ")");
-        g.addColorStop(0.6, "rgba(" + deep + "," + (0.45 * fa).toFixed(3) + ")");
-        g.addColorStop(1, "rgba(" + deep + ",0)");
-        c.fillStyle = g; c.fillRect(0, 0, W, H);
-      }
-    }
-
-    function render(t) {
-      var target = clamp(p) * (N + 1);
-      var dt = lastT ? Math.min(0.1, (t - lastT) / 1000) : 0.016; lastT = t;
-      if (uS < 0 || Math.abs(target - uS) > 2.5) uS = target;
-      else uS += (target - uS) * (1 - Math.exp(-dt / GLIDE));
-      if (Math.abs(target - uS) < 0.0004) uS = target;
-      var u = uS;
-      lastU = u;
-      var ending = u >= N;
-      var i = Math.min(N - 1, Math.floor(u));
-      var s = ending ? 1 : u - i;
-      var cx, cy, z = 1, f = 0, rev = 0, txt = 0, sunA = 0, flood = 0, dolly = 1, k;
-
-      /* the stars' states: the NEXT star calls (bright, its light slowly
-         swelling and softening) from the moment the camera starts to pull out of the one
-         before, through the travel to it; it burns steady as the camera
-         dives in; as the camera pulls away it dims and the one after
-         starts calling. Visited stars stay dim; at the ending they all
-         settle softly lit. */
-      for (k = 0; k < N; k++) {
-        var sp = spots[k], g = 0, r = 0, call = 0;
-        if (ending) { g = 0.6; r = 1; }
-        else if (k < i) { g = DIM; r = 1; }
-        else if (k === i) {
-          r = s < 0.12 ? eIO(s / 0.12) : 1;
-          if (s < 0.12) { g = 1; call = 1; }
-          else if (s < 0.82) { g = 1; call = 1 - smooth((s - 0.12) / 0.08); }
-          else { g = 1 - (1 - DIM) * eIO((s - 0.82) / 0.18); }
-          if (i === 0 && s < 0.12) r = 0;
-        } else if (k === i + 1 && s >= 0.82) {
-          g = eIO((s - 0.82) / 0.18); call = g;
+      if (settle) {
+        if (len) drawn.style.strokeDashoffset = "0";
+        if (railFill) railFill.style.height = "100%";
+        for (var i = 0; i < stations.length; i++) {
+          stations[i].classList.add("is-lit");
         }
-        /* the pointer over a star (desktop): it brightens */
-        sp.hov = (sp.hov || 0) + ((k === hovK ? 1 : 0) - (sp.hov || 0)) * 0.18;
-        if (sp.hov < 0.002) sp.hov = 0;
-        sp.glow = Math.max(g, 0.55 + 0.45 * sp.hov); if (sp.hov < 0.002) sp.glow = g;
-        sp.call = call; sp.reach = k === 0 ? 0 : r; sp.found = !ending && k === i;
+        setActive(0);
+        if (pulse) pulse.style.opacity = "0";
+        sec.style.setProperty("--px", "50%");
+        sec.style.setProperty("--py", (h / 2).toFixed(1) + "px");
+        return;
       }
 
-      if (!ending) {
-        var h = spots[i];
-        if (s < 0.12) {
-          var fx = i ? spots[i - 1].x : 0.5, fy = i ? spots[i - 1].y : 0.5, tt = eIO(s / 0.12);
-          cx = fx + (h.x - fx) * tt; cy = fy + (h.y - fy) * tt;
-        } else { cx = h.x; cy = h.y; }
-        /* the dive: .12–.46 in (accelerating into the star), .80–1 out */
-        f = s < 0.8 ? smooth((s - 0.12) / 0.36) : 1 - smooth((s - 0.8) / 0.2);
-        z = Math.pow(mode === "phone" ? ZFP : ZFD, f);
-        /* the photo opens out of the light, holds, and sinks back into it */
-        rev = s < 0.34 ? 0 : s < 0.54 ? smooth((s - 0.34) / 0.2) : s < 0.74 ? 1 : s < 0.88 ? 1 - smooth((s - 0.74) / 0.14) : 0;
-        dolly = s < 0.74 ? 1.05 - 0.05 * smooth((s - 0.34) / 0.4) : 1 + 0.03 * smooth((s - 0.74) / 0.14);
-        txt = smooth((s - 0.48) / 0.1) * (1 - smooth((s - 0.7) / 0.08));
-        sunA = s < 0.6 ? 1 - smooth((s - 0.4) / 0.16) : smooth((s - 0.72) / 0.12);
-        flood = s < 0.6 ? smooth((f - 0.5) / 0.5) * (1 - smooth((s - 0.42) / 0.16))
-                        : smooth((s - 0.72) / 0.1) * (1 - smooth((s - 0.84) / 0.14));
+      var raw = window.innerHeight * CURSOR - r.top;   /* cursor, section relative */
+      var yT  = Math.min(h, Math.max(0, raw));
+      var px, py;
+
+      if (mq.matches) {
+        var rr = rail ? rail.getBoundingClientRect() : null;
+        px = rr ? rr.left - r.left + rr.width / 2 : r.width / 2;
+        py = yT;
+        if (railFill) railFill.style.height = yT.toFixed(2) + "px";
       } else {
-        var e = u - N, last = spots[N - 1], b = eIO(e / 0.3);
-        cx = last.x + (0.5 - last.x) * b; cy = last.y + (0.5 - last.y) * b;
-      }
-      cam.z = z; cam.cx = cx; cam.cy = cy;
-
-      /* the deep sky, then the field */
-      drawDeep(z, cx, cy, t);
-      sky0.setCamera(z, cx * W, cy * H);
-      sky0.setHotspots(spots);
-      sky0.setLive(ending);
-      sky0.step(t);
-      sky0.draw();
-
-      /* the flight into the star, and its light */
-      var hx = W / 2 + (spots[i].x - cx) * W * z, hy = H / 2 + (spots[i].y - cy) * H * z;
-      drawFlight(hx, hy, ending ? 0 : f, sunA, ending ? 0 : flood, spots[i].gold, t);
-
-      /* the photo: full screen, opening out of the star's centre */
-      for (k = 0; k < N; k++) {
-        var on = !ending && k === i && rev > 0;
-        if (stations[k].classList.contains("is-on") !== on) stations[k].classList.toggle("is-on", on);
-      }
-      if (!ending && rev > 0) {
-        setVar(stations[i], cache[i], "--hx", hx);
-        setVar(stations[i], cache[i], "--hy", hy);
-        setVar(stations[i], cache[i], "--reveal", rev);
-        setVar(stations[i], cache[i], "--txt", txt);
-        setVar(stations[i], cache[i], "--dolly", dolly);
+        var s = len ? lengthAtY(yT) : 0;
+        if (len) drawn.style.strokeDashoffset = (len - s).toFixed(2);
+        var p = len ? drawn.getPointAtLength(s) : { x: r.width / 2, y: yT };
+        px = p.x; py = p.y;
       }
 
-      /* the ending */
-      if (endEl) setVar(endEl, endCache, "--end", ending ? clamp((u - N - 0.3) / 0.3) : 0);
-      var isLive = u >= N + 0.3;
-      if (isLive !== live) { live = isLive; stage.classList.toggle("is-live", live); }
+      if (pulse) {
+        pulse.style.transform = "translate3d(" + px.toFixed(2) + "px," + py.toFixed(2) + "px,0)";
+        pulse.style.opacity = (raw > 0 && raw < h) ? "1" : "0";
+      }
+      sec.style.setProperty("--px", px.toFixed(2) + "px");
+      sec.style.setProperty("--py", py.toFixed(2) + "px");
 
-      var c = ending ? -1 : i;
-      if (c !== cur) { cur = c; announce(c); }
+      light(yT, r.top);
     }
 
-    /* the station now on screen: the hidden buttons and the live region */
-    var sayT = 0, said = -1;
-    function announce(c) {
-      buttons.forEach(function (bt, k) { bt.setAttribute("aria-pressed", k === c ? "true" : "false"); });
-      clearTimeout(sayT);
-      if (c < 0 || !liveMsg) return;
-      sayT = setTimeout(function () {
-        if (c === said) return;
-        said = c;
-        liveMsg.textContent = "Idea " + (c + 1) + " of " + N + ": " + names[c];
-      }, 300);
-    }
-
-    /* the static frame: every star lit, the path drawn, no loop */
-    function paintStatic() {
-      if (!sky0) return;
-      spots.forEach(function (sp, k) { sp.glow = 0.6; sp.reach = k ? 1 : 0; sp.found = false; });
-      W = sky.clientWidth; H = sky.clientHeight;
-      sky0.setCamera(1, W / 2, H / 2);
-      sky0.setHotspots(spots);
-      sky0.setLive(false);
-      drawDeep(1, 0.5, 0.5, 0);
-      sky0.draw();
-    }
-
-    /* ---- the loop: only while on screen and the page is visible ---- */
-    var onScreen = false, raf = 0, cost = window.__threadCost = [];
-    function frame(t) {
-      raf = 0;
-      if (!running()) return;
-      var t0 = performance.now();
-      render(t);
-      cost.push(performance.now() - t0);
-      if (cost.length > 240) cost.shift();
-      raf = requestAnimationFrame(frame);
-    }
-    function running() { return onScreen && !document.hidden && (mode === "pin" || mode === "phone"); }
-    function wake() {
-      if (running()) { if (!raf) raf = requestAnimationFrame(frame); }
-      else if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    }
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (es) { onScreen = es[es.length - 1].isIntersecting; wake(); }, { threshold: 0.02 }).observe(sec);
-    } else onScreen = true;
-    document.addEventListener("visibilitychange", wake);
-
-    /* ---- interaction: a star, or its hidden button, takes you to its idea ---- */
-    buttons.forEach(function (bt) {
-      bt.addEventListener("click", function () {
-        var k = parseInt(bt.getAttribute("data-i"), 10) || 0;
-        if (mode === "static") { stations[k].scrollIntoView({ behavior: "auto", block: "start" }); return; }
-        go(yAt(k, 0.55));
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        apply(); parallax();
       });
+    }
+
+    /* ---- wiring ---------------------------------------------------- */
+    var rebuild = 0;
+    function queueBuild() {
+      clearTimeout(rebuild);
+      rebuild = setTimeout(build, 60);
+    }
+
+    build();
+    apply(); parallax();
+
+    if (!settle) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", function () { queueBuild(); onScroll(); }, { passive: true });
+      if ("ResizeObserver" in window) new ResizeObserver(queueBuild).observe(sec);
+    }
+
+    window.addEventListener("load", function () { build(); apply(); parallax(); });
+    [].slice.call(sec.querySelectorAll("img")).forEach(function (im) {
+      if (!im.complete) im.addEventListener("load", queueBuild);
     });
-    /* a star under the pointer (or a tap): the ending included, a click
-       takes you back to that star's idea. A drag that joined dots is not a
-       click. */
-    function spotAt(e, within) {
-      var r = stage.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, best = -1, bd = within * within;
-      for (var k = 0; k < N; k++) {
-        var sx = W / 2 + (spots[k].x - cam.cx) * W * cam.z, sy = H / 2 + (spots[k].y - cam.cy) * H * cam.z;
-        var d2 = (sx - x) * (sx - x) + (sy - y) * (sy - y);
-        if (d2 <= bd) { bd = d2; best = k; }
-      }
-      return best;
-    }
-    var downAt = null;
-    stage.addEventListener("pointerdown", function (e) { downAt = { x: e.clientX, y: e.clientY }; }, { passive: true });
-    stage.addEventListener("pointermove", function (e) {
-      if (e.pointerType !== "mouse" || (mode !== "pin" && mode !== "phone")) return;
-      var k = spotAt(e, 30);
-      if (k !== hovK) { hovK = k; stage.style.cursor = k >= 0 ? "pointer" : ""; }
-    }, { passive: true });
-    stage.addEventListener("pointerleave", function () { hovK = -1; stage.style.cursor = ""; }, { passive: true });
-    stage.addEventListener("click", function (e) {
-      if (mode !== "pin" && mode !== "phone") return;
-      if (e.target.closest && e.target.closest("a, button")) return;
-      if (downAt && Math.abs(e.clientX - downAt.x) + Math.abs(e.clientY - downAt.y) > 8) return;
-      var best = spotAt(e, 30);
-      if (best >= 0) go(yAt(best, 0.55));
-    });
-
-    /* the statement's scroll-fill (module 12) follows the ending, not the
-       heading's place on screen (it does not move inside the pin) */
-    if (statement) statement.__fillAt = function () {
-      if (mode !== "pin" && mode !== "phone") return null;
-      return clamp((lastU - N - 0.3) / 0.5);
-    };
-
-    /* ---- modes ---- */
-    function reset() {
-      stations.forEach(function (st, k) {
-        ["--hx", "--hy", "--reveal", "--txt", "--dolly", "--fs"].forEach(function (n) { st.style.removeProperty(n); });
-        st.classList.remove("is-on");
-        cache[k] = {};
-      });
-      if (endEl) endEl.style.removeProperty("--end");
-      endCache = {};
-      sunCtx.setTransform(1, 0, 0, 1, 0, 0); sunCtx.clearRect(0, 0, sunCv.width, sunCv.height);
-      uS = -1;
-      stage.classList.remove("is-live");
-      live = false; cur = -2;
-    }
-    function setMode() {
-      var want = (rmq.matches || saveData) ? "static" : (phone.matches ? "phone" : "pin");
-      if (want === mode) return false;
-      reset();
-      mode = want;
-      sec.classList.toggle("is-static", want === "static");
-      sec.classList.toggle("is-phone", want === "phone");
-      sec.classList.toggle("is-pin", want === "pin");
-      if (!sky0) sky0 = window.spkConstellation(stage, sky, { fixed: true, hotspots: spots, gate: gateLive });
-      layout();
-      if (window.spkSpine) window.spkSpine.measure();
-      measure();
-      wake();
-      return true;
-    }
-
-    /* ---- the scroll: the spine stores p; the loop does the rest ---- */
-    var entry = { start: startY, end: endY, update: function (q) { p = q; } };
-    if (window.spkSpine) window.spkSpine.add(entry);
-    else {
-      var read = function () { p = e0 > s0 ? clamp((window.scrollY - s0) / (e0 - s0)) : 0; };
-      window.addEventListener("scroll", read, { passive: true });
-      window.addEventListener("resize", function () { setTimeout(read, 80); }, { passive: true });
-      setTimeout(read, 0);
-    }
-
-    setMode();
-
-    var rsT = 0;
-    window.addEventListener("resize", function () {
-      clearTimeout(rsT);
-      rsT = setTimeout(function () {
-        if (setMode()) return;
-        layout();
-        if (window.spkSpine) window.spkSpine.measure();
-      }, 60);
-    }, { passive: true });
-    [phone, rmq].forEach(function (q) {
-      if (q.addEventListener) q.addEventListener("change", setMode);
-      else if (q.addListener) q.addListener(setMode);
-    });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
-    window.addEventListener("load", function () { layout(); if (window.spkSpine) window.spkSpine.measure(); });
 
     /* exposed for verification: the first instance */
     if (!window.__thread) window.__thread = {
-      mode: function () { return mode; },
-      current: function () { return cur; },
-      u: function () { return lastU; },
-      yAt: yAt,
-      yAtU: yAtU,
-      star: function (k) {
-        return { x: W / 2 + (spots[k].x - cam.cx) * W * cam.z, y: H / 2 + (spots[k].y - cam.cy) * H * cam.z };
-      },
-      nodes: function () { return sky0 ? sky0.probe() : []; },
-      bonds: function () { return sky0 ? sky0.bonds() : 0; },
-      shooting: function () { return shoot.on ? { x: shoot.x, y: shoot.y } : null; },
-      N: N
+      len: function () { return len; },
+      sAtY: lengthAtY,
+      active: function () { return active; },
+      cursor: CURSOR
     };
   }
 })();

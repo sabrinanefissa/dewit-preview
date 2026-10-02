@@ -128,24 +128,21 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Aria label, name: ariaLabel, widget: string }
               - { label: Eyebrow, name: eyebrow, widget: string }
-              - { label: Statement, name: statement, widget: string, required: false, default: "Relationships are the *operating system*.", hint: "Allows *emphasis*. Fills in over the star field after the last idea." }
+              - { label: "Background images (drifting layers)", name: bg, widget: list, field: { label: Image, name: image, widget: image } }
               - label: Stations
                 name: stations
                 widget: list
                 summary: "{{fields.label}}"
                 fields:
                   - { label: Label, name: label, widget: string }
-                  - { label: "Key word (italic)", name: key, widget: string, required: false, hint: "A word from the label to set in italic violet, e.g. Connection." }
-                  - { label: "Kicker (pillars)", name: kicker, widget: string, required: false, hint: "A small gold line above a pillar's label, e.g. Signature keynote." }
-                  - { label: "Link (optional)", name: href, widget: string, required: false, hint: "Makes the label a link, e.g. speaking/ or #keynotes." }
-                  - { label: Gloss, name: gloss, widget: string, hint: "Allows *emphasis* and **bold**. Phones show three lines at most." }
-                  - { label: "Pillar (bigger picture, gold star)", name: pillar, widget: boolean, default: false }
+                  - { label: Gloss, name: gloss, widget: string, hint: "Allows *emphasis* and **bold**." }
+                  - { label: "Pillar (larger, on the beat)", name: pillar, widget: boolean, default: false }
                   - label: Image
                     name: image
                     widget: object
                     fields:
                       - { label: Image, name: src, widget: image }
-                      - { label: Sizes attribute, name: sizes, widget: string, default: "(max-width: 767px) 100vw, 640px" }
+                      - { label: Sizes attribute, name: sizes, widget: string, default: "(max-width: 720px) 100vw, 520px" }
                       - { label: Alt text, name: alt, widget: string }
                       - { label: "Width (px, only if the source has no siblings)", name: width, widget: number, required: false }
               - label: Settings
@@ -159,13 +156,7 @@ collections:
                     widget: object
                     required: false
                     fields:
-                      - { label: "Scroll per idea (desktop, % of screen height)", name: beat, widget: number, required: false, hint: "How much scrolling each idea holds the screen. Default: 120" }
-                      - { label: "Scroll per idea (phones, % of screen height)", name: beatPhone, widget: number, required: false, hint: "The same on phones. Default: 130" }
-                      - { label: "Zoom on each star (desktop)", name: zoom, widget: number, value_type: float, required: false, hint: "How far the camera flies into each star before its photo opens. Default: 7" }
-                      - { label: "Zoom on each star (phones)", name: zoomPhone, widget: number, value_type: float, required: false, hint: "The same on phones. Default: 7" }
-                      - { label: "Scroll after the last idea (% of screen height)", name: tail, widget: number, required: false, hint: "How long the statement and the live star field hold the screen before the page moves on. Default: 100" }
-                      - { label: "Push-in while an idea holds", name: dolly, widget: number, value_type: float, required: false, hint: "How much further the view closes in while an idea holds (1.04 = 4%). Default: 1.04" }
-                      - { label: "Plum grade on the pictures (0–1)", name: grade, widget: number, value_type: float, min: 0, max: 1, required: false, hint: "How strongly the pictures are tinted toward plum (0 = none). Default: 0.6" }
+                      - { label: "Cursor drift (0–1)", name: cursor, widget: number, value_type: float, required: false, hint: "How far the pointer nudges the background. Default: 0.62" }
 
           # ------------------------------------------------------- patterns
           - name: patterns

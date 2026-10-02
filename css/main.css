@@ -225,166 +225,150 @@ html.no-js .loader, .loader[hidden] { display:none; }
 }
 
 /* =====================================================================
-   The through-line: "the constellation"
-   A pinned stage over a star field (canvas .thread__sky, drawn by the
-   script: module "The through-line" drives the shared constellation). One
-   star per idea; the view travels to it, closes in, and the idea's card
-   (.station.is-on: the still and its words) opens out of the star: the
-   script writes --hx/--hy (the star on screen, px) and --reveal (0..1) on
-   the one station on screen, and --end (0..1) on .thread__end, the
-   statement that fills in over the field after the last idea. --fs is a
-   label that had to shrink to fit. .is-phone: phones (< 768px), the still
-   full-width at the top, the words under it. .is-static (reduced motion,
-   Save-Data) and html.no-js: the ideas stacked, then the statement.
+   The through-line
    ===================================================================== */
-.thread { position:relative; background: var(--plum); color: var(--tx-inv); }
-.thread__track { position:relative; height: calc(var(--stations, 5) * var(--beat, 120) * 1svh + var(--tail, 100) * 1svh); }
-.thread.is-phone .thread__track { height: calc(var(--stations, 5) * var(--beat-phone, 130) * 1svh + var(--tail, 100) * 1svh); }
-.thread__stage { position:sticky; top:0; height:100svh; overflow:hidden; background: #06040c; }
-/* the night sky behind the stars (a layer the camera drifts, the tall
-   version on phones held upright), then the deep sky canvas over it */
-.thread__bg { position:absolute; inset:-6%; z-index:0; pointer-events:none; will-change: transform;
-  background: #06040c url("../assets/img/star-sky.jpg") center / cover no-repeat; }
-@media (max-width: 768px) and (orientation: portrait) {
-  .thread__bg { background-image: url("../assets/img/star-sky-portrait.jpg"); }
+.thread { position:relative; background: var(--plum); color: var(--tx-inv);
+  padding-top:4rem; padding-bottom: clamp(3rem, 6vw, 6rem); overflow:hidden; }
+
+/* Ambient ground: the station stills, blurred, one at a time ------ */
+.thread__bg { position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.thread__bg img { position:absolute; inset:-8%; width:116%; height:116%;
+  object-fit:cover; object-position:center;
+  filter: blur(44px) saturate(1.15) brightness(.72);
+  opacity:0; transform: scale(1.02);
+  transition: opacity 1.4s var(--ease-amb), transform 6s var(--ease-amb); }
+.thread__bg img.is-on { opacity:.62; transform: scale(1.06); }
+
+/* The seams stay solid plum, the middle lets the picture through -- */
+.thread__veil { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: linear-gradient(180deg,
+    rgba(26,16,38,.96) 0%,
+    rgba(26,16,38,.74) 14%,
+    rgba(26,16,38,.70) 50%,
+    rgba(26,16,38,.76) 86%,
+    rgba(26,16,38,.97) 100%); }
+
+/* Light that belongs to the dot, carried on --px / --py ----------- */
+.thread__glow { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background: radial-gradient(30rem circle at var(--px, 50%) var(--py, 0px),
+    rgba(169,133,230,.22), rgba(169,133,230,.06) 40%, transparent 68%); }
+
+.thread__inner { position:relative; z-index:2; width: var(--wrap); margin-inline:auto; }
+
+.thread .eyebrow { margin:0 0 2.5rem; font-family: var(--f-text); font-weight:500;
+  font-size: var(--step--1); letter-spacing:.2em; text-transform:uppercase;
+  color: rgba(245,240,231,.5); }
+
+/* The line ------------------------------------------------------- */
+.thread__svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; }
+.thread__svg .guide { fill:none; stroke: rgba(245,240,231,.14); stroke-width:1.25; }
+.thread__svg .drawn { fill:none; stroke: var(--violet-300); stroke-width:2; stroke-opacity:.95;
+  stroke-linecap:round; }
+.thread .pulse { position:absolute; top:0; left:0; width:12px; height:12px; margin:-6px 0 0 -6px;
+  border-radius:50%; background: var(--violet-300);
+  box-shadow: 0 0 18px 6px rgba(169,133,230,.55), 0 0 48px 16px rgba(169,133,230,.18);
+  opacity:0; pointer-events:none; z-index:3;
+  transition: opacity .45s var(--ease-out); will-change: transform; }
+
+/* Mobile rail (hidden on desktop) -------------------------------- */
+.thread .rail { display:none; }
+
+/* Stations ------------------------------------------------------- */
+.thread .stations { position:relative; z-index:1; }
+.station { position:relative; display:grid; grid-template-columns: repeat(12, minmax(0,1fr));
+  gap:0 24px; align-items:center; min-height: clamp(300px, 38vh, 420px); }
+
+.station .still { margin:0; grid-row:1; will-change: transform; }
+.station .still img { width:100%; max-width:520px; aspect-ratio:4/3; object-fit:cover;
+  /* No frame: the edges feather into the section and the still is graded
+     toward plum until its station is active. */
+  -webkit-mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
+          mask-image: radial-gradient(ellipse 72% 70% at 50% 50%, #000 42%, rgba(0,0,0,.55) 68%, transparent 100%);
+  filter: var(--img-filter) sepia(.22) hue-rotate(222deg) saturate(.7) brightness(.82);
+  clip-path: inset(0 0 100% 0); transform: scale(1.04);
+  transition: clip-path .9s var(--ease-out), transform 1.2s var(--ease-out), filter .5s var(--ease-out); }
+.station.is-lit .still img { clip-path: inset(0); transform:none; }
+.station.is-active .still img { filter: var(--img-filter) sepia(0) hue-rotate(0deg) saturate(1) brightness(1); }
+
+.station .knot { grid-row:1; grid-column: 6 / 8; align-self:center; z-index:2; }
+.station .dot { display:block; width:12px; height:12px; border-radius:50%;
+  background: transparent; border:1.5px solid rgba(169,133,230,.35);
+  box-shadow: 0 0 0 0 rgba(169,133,230,0);
+  transition: border-color .5s var(--ease-out), box-shadow .5s var(--ease-out); }
+.station.is-lit .dot { border-color: var(--violet-300); }
+
+.station .body { grid-row:1; }
+.station .idx { margin:0 0 .7rem; overflow:hidden; }
+.station .idx span { display:block; font-size: var(--step--1); letter-spacing:.2em;
+  color: rgba(245,240,231,.28); transform: translateY(105%);
+  transition: transform .7s var(--ease-out), color .5s var(--ease-out); }
+.station .label { margin:0; overflow:hidden; }
+.station .label span { display:block; font-family: var(--f-display); font-weight:340;
+  letter-spacing:-0.03em; line-height:1; font-size: var(--step-2); color: rgba(245,240,231,.28);
+  padding-bottom:.16em;              /* descender room inside the mask */
+  transform: translateY(105%);
+  transition: transform .7s var(--ease-out), color .5s var(--ease-out); }
+.station.is-pillar .label span { font-size: var(--step-3); }
+.station.is-lit .idx span,
+.station.is-lit .label span { transform:none; }
+.station.is-lit .idx span { color: var(--violet-300); }
+.station.is-lit .label span { color: var(--tx-inv); }
+.station .gloss { margin:.9rem 0 0; max-width:26ch; text-wrap:balance; font-size: var(--step-0);
+  color: var(--tx-inv-soft);
+  opacity:0; transform: translateY(6px);
+  transition: opacity .6s var(--ease-out) .2s, transform .6s var(--ease-out) .2s; }
+.station.is-lit .gloss { opacity:1; transform:none; }
+
+/* Odd stations: still left, dot at the seam, words right ---------- */
+.station.is-odd .still { grid-column: 1 / 6; }
+.station.is-odd .knot { justify-self: start; }
+.station.is-odd .body { grid-column: 7 / 13; text-align:left; }
+/* Even stations: mirrored ---------------------------------------- */
+.station.is-even .body { grid-column: 1 / 7; text-align:right; }
+.station.is-even .knot { justify-self: end; }
+.station.is-even .still { grid-column: 8 / 13; justify-self:end; }
+.station.is-even .still img { margin-left:auto; }
+.station.is-even .gloss { margin-left:auto; }
+
+/* Hover: colour returns, the node glows, the label takes the brand */
+.station:hover .still img { filter: var(--img-filter) sepia(0) hue-rotate(0deg) saturate(1) brightness(1); }
+.station:hover.is-lit .dot { box-shadow: 0 0 0 16px rgba(169,133,230,.14); }
+.station:hover.is-lit .label span { color: var(--violet-300); }
+
+/* Mobile --------------------------------------------------------- */
+@media (max-width: 720px) {
+  .thread__svg { display:none; }
+  /* the eyebrow clears the rail, the way the station content does */
+  .thread .eyebrow { padding-left:3rem; }
+  .thread .rail { display:block; position:absolute; z-index:1;
+    left: calc(50% - var(--wrap) / 2 + 1.5rem); top:0; bottom:0; width:1px; }
+  .thread .rail i { position:absolute; inset:0; background: rgba(245,240,231,.14); }
+  .thread .rail b { position:absolute; left:0; top:0; width:1px; height:0;
+    background: var(--violet-300); }
+
+  .station { grid-template-columns: 1fr; gap:0; min-height:0; padding-left:3rem;
+    padding-block: clamp(1.75rem, 6vw, 2.5rem); align-items:start; }
+  .station .knot { position:absolute; left:1.5rem; top: clamp(1.75rem, 6vw, 2.5rem);
+    transform: translateX(-50%); grid-column:auto; justify-self:auto; }
+  .station.is-odd .still, .station.is-even .still,
+  .station.is-odd .body, .station.is-even .body { grid-column:auto; }
+  /* the desktop places both in row 1; on one column they must stack */
+  .station .still, .station .body { grid-row:auto; }
+  .station .still { order:1; }
+  .station .body { order:2; }
+  .station.is-even .body { text-align:left; }
+  .station.is-even .still { justify-self:stretch; }
+  .station .still img { max-width:none; aspect-ratio:16/9; margin:0 0 1.1rem; }
+  .station.is-even .still img { margin-left:0; }
+  .station .label span, .station.is-pillar .label span { font-size: var(--step-2); }
+  .station.is-even .gloss { margin-left:0; }
 }
-.thread__deep { position:absolute; inset:0; z-index:1; display:block; width:100%; height:100%; pointer-events:none; }
-.thread.is-static .thread__bg, html.no-js .thread__bg { inset:0; }
-.thread__sky { position:absolute; inset:0; z-index:1; display:block; width:100%; height:100%; pointer-events:none; }
-/* live (after the last idea): a sideways drag leads the cluster; an upward or
-   downward one still scrolls the page on */
-.thread__stage.is-live { touch-action: pan-y; }
 
-.thread__eyebrow { position:absolute; z-index:5; left:4vw; top:5.5rem; margin:0;
-  font-family: var(--f-text); font-weight:500; font-size: var(--step--1);
-  letter-spacing:.2em; text-transform:uppercase; color: rgba(245,240,231,.62); }
-
-/* Stations: one on screen at a time (.is-on). The camera flies into the
-   star; the photo opens full screen out of its centre (--hx/--hy, --reveal),
-   under the star's light (canvas .thread__sun, z 3), and the words fade in
-   centred over it (--txt). No stacking context on .stations/.station, so
-   the light can sit between the photo and the words. -------------------- */
-.thread .stations { position:absolute; inset:0; pointer-events:none; }
-.thread__sun { position:absolute; inset:0; z-index:3; display:block; width:100%; height:100%; pointer-events:none; }
-.station { position:absolute; inset:0; visibility:hidden; pointer-events:none; }
-.station.is-on { visibility:visible; }
-.station.is-on .body a { pointer-events:auto; }
-
-/* The photo: the whole screen, graded */
-.station .still { position:absolute; inset:0; z-index:2; margin:0; overflow:hidden; isolation:isolate; background: var(--plum-2);
-  /* surfacing out of the light: a feathered circle, never a hard edge */
-  -webkit-mask-image: radial-gradient(circle calc(8vmax + var(--reveal, 0) * 110vmax) at var(--hx, 50%) var(--hy, 50%), #000 55%, transparent 100%);
-          mask-image: radial-gradient(circle calc(8vmax + var(--reveal, 0) * 110vmax) at var(--hx, 50%) var(--hy, 50%), #000 55%, transparent 100%);
-  opacity: var(--reveal, 0); }
-.station .still .pic, .station .still img { display:block; width:100%; height:100%; }
-.station .still img { object-fit:cover; filter: contrast(1.06) saturate(.82) brightness(.9);
-  transform: scale(var(--dolly, 1)); transform-origin: var(--hx, 50%) var(--hy, 50%); will-change: transform; }
-/* the grade: a plum colour layer (settings.motion.grade → --grade), a warm
-   soft-light bloom up top, and a shade behind the words */
-.station .still::before { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background: rgba(45,22,66,.35); mix-blend-mode: color; opacity: var(--grade, .6); }
-.still__gold { position:absolute; inset:0; z-index:2; pointer-events:none;
-  background: radial-gradient(60% 50% at 30% 20%, rgba(212,175,55,.18), transparent);
-  mix-blend-mode: soft-light; }
-.station .still::after { content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
-  background: radial-gradient(70% 55% at 50% 50%, rgba(18,10,28,.62), rgba(18,10,28,.25) 70%, rgba(18,10,28,.4)); }
-
-/* The words: centred on the photo */
-.station .body { position:absolute; z-index:4; top:50%; left:50%; width: min(88vw, 980px);
-  transform: translate(-50%, calc(-50% + (1 - var(--txt, 0)) * 18px)); opacity: var(--txt, 0); text-align:center;
-  text-shadow: 0 1px 18px rgba(18,10,28,.9), 0 0 4px rgba(18,10,28,.7); }
-.station .idx { margin:0 0 .9rem; }
-.station .idx span { display:block; font-size: var(--step--1); font-weight:500; letter-spacing:.2em; color: var(--violet-300); }
-.station .kicker { margin:0 0 .7rem; }
-.station .kicker span { display:block; font-size: var(--step--1); font-weight:600; letter-spacing:.2em;
-  text-transform:uppercase; color: var(--gold); }
-.station .label { margin:0; font-family: var(--f-display); font-weight:340;
-  font-size: var(--fs, var(--step-5)); line-height:1; letter-spacing:-0.03em; color: var(--tx-inv); text-wrap:balance; }
-.station .label span { display:block; padding-bottom:.08em; }
-.station .label a { color:inherit; }
-.station .label a:hover { color: var(--violet-300); }
-.thread__key { font-style:italic; font-weight:340; color: var(--violet-300); }
-.station .gloss { margin:1.1rem auto 0; max-width:34ch; text-wrap:balance; font-size: var(--step-1);
-  line-height:1.35; color: rgba(244,236,222,.9); }
-
-/* The ending: the statement over the settled field -------------------- */
-.thread__end { position:absolute; inset:0; z-index:2; display:grid; place-items:center; pointer-events:none;
-  opacity: var(--end, 0); }
-.thread__statement { width: min(94vw, 1100px); margin:0; text-align:center; text-wrap:balance;
-  font-size: var(--step-5); font-weight:320; line-height:.96; letter-spacing:-0.035em; color: var(--tx-inv);
-  text-shadow: 0 2px 28px rgba(26,16,38,.85); }
-.thread__statement em { color: var(--violet-300); }
-
-/* The jump list: visually hidden until it takes keyboard focus -------- */
-.thread__jump { position:absolute; z-index:4; left:4vw; right:4vw; bottom:1.5rem; }
-.thread__jump ul { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:.5rem; }
-.thread__jump:not(:focus-within) ul { position:absolute; width:1px; height:1px; overflow:hidden;
-  clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; }
-.thread__jump button { font-family: var(--f-text); font-size: var(--step--1); font-weight:500; letter-spacing:.06em;
-  color: var(--tx-inv); background: rgba(26,16,38,.88); border:1px solid rgba(245,240,231,.24);
-  border-radius:999px; padding:.55em 1em; cursor:pointer; }
-.thread__jump button[aria-pressed="true"] { border-color: var(--violet-300); color: var(--violet-300); }
-.thread__jump button:focus-visible { outline:2px solid var(--violet-300); outline-offset:2px; }
-.sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
-  clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; }
-
-/* Phones (.is-phone, < 768px): the same flight, the tall crop, the words centred */
-.thread.is-phone .thread__eyebrow { left: var(--gutter); top:4.75rem; text-shadow: 0 1px 12px rgba(0,0,0,.6); }
-.thread.is-phone .station .still img { object-position: 50% 30%; }
-.thread.is-phone .station .body { width: calc(100vw - 2 * var(--gutter)); }
-.thread.is-phone .station .label { font-size: var(--fs, var(--step-4)); }
-.thread.is-phone .station .gloss { margin-top:.9rem; font-size: var(--step-0); line-height:1.4; }
-
-/* Stacked: reduced motion, Save-Data (.is-static) and no script ------ */
-.thread.is-static .thread__track, html.no-js .thread__track { height:auto; }
-.thread.is-static .thread__stage, html.no-js .thread__stage { position:static; height:auto; overflow:visible;
-  padding: clamp(4rem, 9vw, 7rem) 0 0; display:flex; flex-direction:column; }
-.thread.is-static .thread__eyebrow, html.no-js .thread__eyebrow { order:-1; position:static; width: var(--wrap);
-  margin:0 auto clamp(2rem, 5vw, 3.5rem); }
-.thread.is-static .thread__jump, html.no-js .thread__jump { display:none; }
-.thread.is-static .thread__sun, html.no-js .thread__sun { display:none; }
-.thread.is-static .stations, html.no-js .thread .stations { position:static; width: var(--wrap); margin-inline:auto;
-  display:grid; gap: clamp(3rem, 8vw, 6rem); }
-.thread.is-static .station, html.no-js .station { position:relative; inset:auto; visibility:visible; pointer-events:auto;
-  clip-path:none; opacity:1; transform:none; will-change:auto;
-  display:grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap:1.5rem 24px; align-items:end; }
-.thread.is-static .station .still, html.no-js .station .still { position:relative; inset:auto; -webkit-mask-image:none; mask-image:none; opacity:1; grid-row:1;
-  grid-column: 1 / 6; width:auto; height:auto; aspect-ratio: 5 / 4; transform:none;
-  -webkit-mask-image:none; mask-image:none; border:2px solid rgba(245,240,231,.10); border-radius:4px; }
-.thread.is-static .station.is-pillar .still, html.no-js .station.is-pillar .still { grid-column: 1 / 7; }
-.thread.is-static .station .body, html.no-js .station .body { position:static; grid-row:1; grid-column: 7 / 13;
-  width:auto; transform:none; opacity:1; text-align:left; }
-.thread.is-static .station .still img, html.no-js .station .still img { transform:none; }
-.thread.is-static .station .label, html.no-js .station .label { font-size: var(--fs, var(--step-4)); }
-.thread.is-static .station .gloss, html.no-js .station .gloss { margin-left:0; display:block; -webkit-line-clamp:unset; }
-.thread.is-static .station:nth-child(even) .still, html.no-js .station:nth-child(even) .still { grid-column: 8 / 13; }
-.thread.is-static .station:nth-child(even) .body, html.no-js .station:nth-child(even) .body { grid-column: 1 / 8; text-align:right; }
-.thread.is-static .station:nth-child(even) .gloss, html.no-js .station:nth-child(even) .gloss { margin-left:auto; }
-.thread.is-static .station .still img, html.no-js .station .still img { position:absolute; inset:0; }
-.thread.is-static .station .label, html.no-js .station .label { font-size: var(--step-3); }
-.thread.is-static .station.is-pillar .label, html.no-js .station.is-pillar .label { font-size: min(var(--step-4), max(7vw, var(--step-3))); }
-/* the statement over one still frame of the field (no script: a dot field in CSS) */
-.thread.is-static .thread__sky { order:1; position:relative; inset:auto; width:100%; height:80svh;
-  margin-top: clamp(3rem, 8vw, 6rem); }
-html.no-js .thread__sky { display:none; }
-.thread.is-static .thread__end, html.no-js .thread__end { order:2; position:relative; inset:auto; height:80svh; opacity:1; }
-.thread.is-static .thread__end { margin-top:-80svh; }
-html.no-js .thread__end { margin-top: clamp(3rem, 8vw, 6rem);
-  background:
-    radial-gradient(circle at 22% 34%, rgba(232,187,104,.9) 0 3px, rgba(232,187,104,.18) 4px 18px, transparent 19px),
-    radial-gradient(circle at 66% 26%, rgba(225,212,248,.9) 0 2.5px, transparent 3.5px),
-    radial-gradient(circle at 50% 58%, rgba(232,187,104,.9) 0 3px, rgba(232,187,104,.18) 4px 18px, transparent 19px),
-    radial-gradient(circle at 26% 74%, rgba(225,212,248,.9) 0 2.5px, transparent 3.5px),
-    radial-gradient(circle at 74% 70%, rgba(225,212,248,.9) 0 2.5px, transparent 3.5px),
-    radial-gradient(circle, rgba(225,212,248,.45) 0 1.5px, transparent 2px) 0 0 / 46px 46px; }
-@media (max-width: 767px) {
-  .thread.is-static .station, html.no-js .station { grid-template-columns: 1fr; }
-  .thread.is-static .station .still, .thread.is-static .station.is-pillar .still,
-  .thread.is-static .station:nth-child(even) .still,
-  html.no-js .station .still, html.no-js .station.is-pillar .still, html.no-js .station:nth-child(even) .still { grid-column:1; grid-row:1; }
-  .thread.is-static .station .body, .thread.is-static .station:nth-child(even) .body,
-  html.no-js .station .body, html.no-js .station:nth-child(even) .body { grid-column:1; grid-row:2; text-align:left; }
-  .thread.is-static .station:nth-child(even) .gloss, html.no-js .station:nth-child(even) .gloss { margin-left:0; }
+/* Reduced motion: everything settled, nothing moves, no pulse */
+@media (prefers-reduced-motion: reduce) {
+  .station .still img, .station .dot, .station .idx span,
+  .station .label span, .station .gloss, .thread__bg img { transition:none; }
+  .thread .pulse { display:none; }
 }
 
 /* =====================================================================
