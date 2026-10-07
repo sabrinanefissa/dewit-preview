@@ -1,0 +1,55 @@
+Hi Stephen!
+
+It’s so good to hear from you! I was sorry to hear you weren’t feeling well last week, but I’m really glad you’re doing better now. And happy birthday!! 🥳
+
+I’m sorry for taking a few days to reply. By the time I heard back from you, I had already started building the Speaking page, so I wanted to get it a little further along before responding so I could share it with you!
+
+Your video was SO cute 😂 Thank you so much for making it!! I was absolutely not expecting a live reaction, but it made my week!! (I think I’m going to have to start requesting video reactions from everyone from now on 😂) And thank you for all the kind things you said about me and my work. It means so much to me and I’m so happy you’re loving everything so far!
+
+Also OMG, your L SQUARED comment had me dying 😂 Especially because Brent asked me to make them a homepage mockup while I was building yours! Here's the link if you want to see it: L Squared (though if anyone asks...you didn't get it from me )
+
+As for your site; what you saw before was just a rough homepage preview to give you a sense of the brand, atmosphere, and creative direction. I’ve updated it a bit since then too, bringing in more of the animation and interaction that you’ll see on the Speaking page.
+
+The Speaking page is where I’ve really been able to push the experience further. I didn’t want it to feel like a typical speaker page where someone just scrolls through topics, credentials, and booking information. I wanted it to feel more like stepping into your world, where the pacing, visuals, movement, and ideas all work together and the page itself becomes part of how the message is experienced. You can see it here: Human Connection & Relational Intelligence Speaker | Dr. Stephen de Wit it’s also linked to the homepage you already have so now the menu options for the speaking page will lead you there! 
+
+I also created some custom images based on your real ones so the site feels even more like stepping into Stephen’s world, with the imagery, mood, colour palette, and overall atmosphere all belonging to the same universe. My idea is to use a mix of those and your real photography, while removing anything that currently feels obviously AI-generated or too fake, so the site can still feel grounded in you but would give me more freedom to keep the visual world cohesive from beginning to end.
+
+That said, I know some people have strong feelings about any AI-generated imagery on their website at all, so if that’s something you’re not comfortable with, no worries, I can absolutely remove them and work only with your real images.
+
+The animations and interactive features are all custom too. I’m not starting with a premade template and adapting your brand to fit inside it, which I’ve never really liked doing. I’d rather build the experience around you. If this is supposed to feel like your world, I want the way it moves and behaves to feel as specific to your brand as the colours, imagery, and words do.
+
+I think that suits you and your work well. Your talks aren’t about giving people the same thing they’ve heard a hundred times before, so I don’t think the digital experience introducing you should feel like something they’ve seen a hundred times before either.
+
+I’m taking the same approach with mobile. I’m rebuilding the experience specifically for a phone rather than just squeezing the desktop site into a narrower screen. Some of the animations and interactions need to work differently there, and in some places I’m creating completely different moments for it, so it can have the same level of intention and immersion while still feeling natural to use. (Actually with that in mind would you happen to have any vertically shot videos, something you may have taken for social media for example?)
+
+That usability side is something I’m thinking about just as much as the creative side. An immersive website is great until someone has to endlessly scroll through an animation to reach the one thing they actually came there to find 😂
+
+So for the longer scrolling sequences, I added a “skip” option. If someone wants to experience the whole thing, they can. If they already know where they’re going, they can move past it immediately. I also have the main navigation reappear as soon as someone scrolls upward, so they can change direction without having to work their way back through the page.
+
+I want there to be two ways to experience the site at the same time: someone who wants to explore can get completely immersed in it, while someone who arrives with a specific purpose can get exactly where they need to go without the design becoming an obstacle.
+
+I will also be adding a search bar for that exact reason. If someone comes to the site already knowing what they want, they should be able to type it in and go straight there instead of trying to figure out which page or section it lives on.
+
+A lot of what you’re seeing comes directly from my own ideas, imagination and interpretation of you and your brand, so I completely understand if not every creative choice ends up being your vibe or style. Please don’t worry about offending me if something doesn’t resonate with you. I’d much rather you tell me.
+
+The candles are probably the perfect example 😂 I thought they felt sexy, moody, warm, and unexpected. Brent thought they made it look like a “church pastor’s” website lol.
+
+But to be fair, I was intentionally trying to stay away from the obvious microphone imagery because that’s exactly what you expect to see on a speaker’s website, and probably what you’d find on everyone else’s. The candles felt more interesting to me, but there was also a deeper idea behind them: lighting the path in someone’s life in a way that feels natural, human, and organic rather than artificial or disingenuous like a flashlight.
+
+That’s just one example, but it gives you the idea of how I’ve been approaching these creative choices. There’s usually a deeper thought behind them, even if the connection isn’t immediately obvious when you first see something.
+
+Of course the site has to feel like you, but I don’t think my taste, Brent’s, or anyone else’s should be the deciding factor. What matters most is how your audience experiences it, what draws them in, what stays with them, and whether they can easily find what they came for. So please tell me if anything doesn’t connect with you or feels like it should change. You genuinely won’t offend me! I just want us to make those decisions based on what works best for you and the people experiencing the site.
+
+Everything is still very much in progress, but I think the Speaking page now gives you an even better sense of how I want the whole experience to come together.
+
+And I got the testimonials too, thank you for sending those over! I’ll keep you updated as I make changes and continue building everything out.
+
+I’m still working through the full mobile adaptation, so for the best sense of the experience as it stands right now, I’d browse through the desktop version first and then take a look at mobile afterward. The mobile version will keep evolving as I translate those interactions properly rather than simply shrinking them down.
+
+Let me know what you think once you’ve had a chance to go through everything, and please let me know if you have any questions!
+
+Happy birthday again!! 🥳😊
+
+All my best,
+
+Sabrina
