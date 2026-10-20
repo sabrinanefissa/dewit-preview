@@ -1,8 +1,8 @@
 {%- if block.layout == "strip" %}
-  <!-- Keynotes as a strip (layout "strip"): the heading, then one card per
+  {# Keynotes as a strip (layout "strip"): the heading, then one card per
        talk in a row the scroll moves sideways while the stage is pinned
        (js module 9.B, as the speaking page's rooms; on phones too). Each
-       card is a link: its picture, number, tag, title, line and CTA. -->
+       card is a link: its picture, number, tag, title, line and CTA. #}
   <section class="tstrip"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
     <div class="tstrip__track">
       <div class="tstrip__stage">
@@ -26,16 +26,16 @@
     </div>
   </section>
 {%- else %}
-  <!-- Keynotes -->
+  {# Keynotes #}
   <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
     <div class="keynotes-head reveal">
       <h2 class="h-md fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
     </div>
     <div class="keynotes">
-    <!-- the panel: no box on wide fine-pointer screens (its CTA is the
+    {# the panel: no box on wide fine-pointer screens (its CTA is the
          row's third column and, stretched, the whole row's link); on
          phones a block under the title (picture, sub, CTA), a
-         disclosure on coarse pointers (js module 10.C) -->
+         disclosure on coarse pointers (js module 10.C) #}
     {%- for k in block.cards %}
       {%- set rid = block.id ~ '-row-' ~ loop.index %}
       <div class="keynote reveal" style="--_acc:var(--{{ k.accent }})">
@@ -57,8 +57,8 @@
       </div>
     {%- endfor %}
     </div>
-    <!-- the hover picture (fine pointers only, js module 10.B): one per
-         section, its src swapped to the hovered talk's image -->
+    {# the hover picture (fine pointers only, js module 10.B): one per
+         section, its src swapped to the hovered talk's image #}
     <img class="keynotes__float" src="{{ block.cards[0].image.src | root(r) }}" alt="" aria-hidden="true" decoding="async" loading="lazy" hidden>
   </section>
 {%- endif %}

@@ -26,7 +26,8 @@ revoke access, delete the token on GitHub.
 
 ## Edit a page
 
-Open **Pages** in the sidebar, then **Home** or **Speaking**. The page is a
+Open **Pages** in the sidebar, then **Home**, **Speaking**, **Keynotes**,
+**Healthcare**, **About** or **Book Stephen**. The page is a
 list of blocks (Hero, The through-line, Three talks, and so on) in the order
 they appear on the page. Open a block to expand it, change any text, image or
 setting, and the editor saves your place as you go.
@@ -129,7 +130,7 @@ only added to on top.
 **Needs a developer:**
 - A brand-new kind of block (something not already in the **Blocks** list).
 - A new animation or interaction that doesn't exist yet.
-- Changing how many candles, chapters or talks a *type* of block is allowed
+- Changing how many chapters, rooms or talks a *type* of block is allowed
   to have (the ranges noted in each block's hints, e.g. "3–9 lines") are
   soft limits the design was built and tested for — going further may still
   build, but hasn't been checked for how it looks or animates.

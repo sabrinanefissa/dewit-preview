@@ -1,0 +1,177 @@
+{
+  "slug": "healthcare",
+  "permalink": "/healthcare/",
+  "title": "Speaker for Health Care & Long-Term Care Teams | Dr. Stephen de Wit",
+  "description": "Keynotes and workshops for hospitals, long-term care, caregiving teams and healthcare associations.",
+  "canonical": "https://drdewit.com/healthcare/",
+  "og": {
+    "title": "Speaker for Health Care & Long-Term Care Teams | Dr. Stephen de Wit",
+    "description": "Keynotes and workshops for hospitals, long-term care, caregiving teams and healthcare associations.",
+    "url": "https://drdewit.com/healthcare/",
+    "image": "https://drdewit.com/assets/img/stage-seated-1440.webp"
+  },
+  "preload": {
+    "href": "assets/img/stage-seated-960.webp",
+    "sizes": "(max-width: 900px) 100vw, 50vw"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "styles": [
+    "css/healthcare.css"
+  ],
+  "scripts": [
+    "js/healthcare.js"
+  ],
+  "comments": {
+    "loader": "Loader",
+    "nav": "Nav"
+  },
+  "blocks": [
+    {
+      "type": "hc-hero",
+      "id": "top",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Care deeply, without *carrying it all*.",
+      "lead": "Keynotes and workshops for hospitals, long-term care and the teams who look after other people for a living. Stephen brings 20+ years as a therapist and researcher, including research with people living with dementia.",
+      "image": {
+        "src": "assets/img/stage-seated-960.webp",
+        "sizes": "(max-width: 900px) 100vw, 50vw",
+        "alt": "Dr. Stephen de Wit seated on stage, speaking to the room with open hands",
+        "position": "50% 30%"
+      },
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "link": {
+        "label": "What a session covers",
+        "href": "#care-talk"
+      },
+      "settings": {}
+    },
+    {
+      "type": "hc-who",
+      "id": "who",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Who this is for",
+      "items": [
+        {
+          "title": "Hospitals and health systems",
+          "text": "Physicians, nurses, allied health and the leaders who support them."
+        },
+        {
+          "title": "Long-term care",
+          "text": "Teams caring for residents and their families over months and years."
+        },
+        {
+          "title": "Caregiving teams",
+          "text": "Home and community care teams who show up for other people's hardest days."
+        },
+        {
+          "title": "Healthcare associations",
+          "text": "Conferences, annual meetings and professional development days."
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "hc-out",
+      "id": "walkout",
+      "anchor": false,
+      "enabled": true,
+      "heading": "What the room walks out with.",
+      "image": {
+        "src": "assets/img/results-920.webp",
+        "sizes": "100vw"
+      },
+      "words": [
+        { "text": "Caregiver load", "x": "28%", "y": "36%", "layer": "front" },
+        { "text": "Difficult conversations", "x": "72%", "y": "36%", "layer": "back" },
+        { "text": "Compassion and boundaries", "x": "50%", "y": "56%", "layer": "back" },
+        { "text": "Trust under pressure", "x": "31%", "y": "76%", "layer": "front" },
+        { "text": "Staying connected", "x": "75%", "y": "76%", "layer": "back" }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "hc-talk",
+      "id": "care-talk",
+      "enabled": true,
+      "editorNote": "Talk-agnostic on purpose: no talk title until Stephen confirms one. The heading names the subject; the copy and outcomes are the existing approved lines. The last carried line does not lift (leaders lift it).",
+      "title": "Compassion fatigue and caregiver load",
+      "subtitle": "",
+      "overview": [
+        "Healthcare runs on relationships: with patients, with families and with each other. When the pressure stays high for months at a time, people keep caring and start carrying more than anyone can hold. Hard conversations get put off, trust on the team thins, and good people burn out.",
+        "Drawing on 20+ years in practice as a therapist, and on research with people living with dementia, Stephen gives care teams a practical way to stay compassionate without absorbing everything that comes through the door."
+      ],
+      "formatsLabel": "Formats",
+      "formats": [
+        "Keynote",
+        "Workshop",
+        "Half-day"
+      ],
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "link": {
+        "label": "See the keynotes",
+        "href": "keynotes/"
+      },
+      "carryLabel": "What caregivers carry in",
+      "carried": [
+        "Other people's fear",
+        "The conversation nobody wants to have",
+        "Being the calm one, every time",
+        "The shift that doesn't end at the door"
+      ],
+      "kept": {
+        "line": "Staffing, pace and system pressure",
+        "note": "This one is for leaders to lift."
+      },
+      "outcomesLabel": "What they walk out with",
+      "outcomes": [
+        "Recognize caregiver load before it turns into burnout",
+        "Hold difficult conversations with patients, families and colleagues",
+        "Keep compassion and hold a boundary in the same moment",
+        "Rebuild trust on a team that is under pressure",
+        "Stay connected to the people beside them, and to why they came into care"
+      ],
+      "settings": {}
+    },
+    {
+      "type": "hc-logos",
+      "id": "clients",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Health organizations and professional bodies",
+      "logos": [
+        { "src": "assets/logos/Lakeridge-mark.png", "alt": "Lakeridge Health" },
+        { "src": "assets/logos/cahspr-logo-home-bi-1.webp", "alt": "Canadian Association for Health Services and Policy Research (CAHSPR)" },
+        { "src": "assets/logos/OSOT-mark.png", "alt": "Ontario Society of Occupational Therapists", "scale": "0.6" },
+        { "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png", "alt": "Northeastern Society of Orthodontists" },
+        { "src": "assets/logos/CAO-ACO-logo.png", "alt": "Canadian Association of Orthodontists", "scale": "0.8" },
+        { "src": "assets/logos/toronto-academy-of-dentistry-ko.png", "alt": "Toronto Academy of Dentistry" }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "close",
+      "id": "close",
+      "enabled": true,
+      "anchor": false,
+      "heading": "Bring him into your room.",
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "image": {
+        "src": "assets/img/line-room-1280.webp",
+        "sizes": "100vw"
+      },
+      "settings": null
+    }
+  ]
+}

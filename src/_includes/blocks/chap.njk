@@ -1,20 +1,18 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- What it's like in the room: the page's one pin, seven beats. The
+  {# What it's like in the room: the page's one pin, seven beats. The
        heading alone; then for each chapter its word, then its line. One
        thing on screen at a time, each arriving and leaving on the same
-       time-based fade. Three stills, one per chapter, at full brightness
-       (Think: a theatre from the first row; Feel: a couple on a sofa at
-       night; Act: gold light paths across black marble), crossfading at
-       each change of chapter and pushing in slowly across its two beats.
-       Act's still is bright at the bottom, so its type sits high. The rail
+       time-based fade. One still per chapter, at full brightness,
+       crossfading at each change of chapter and pushing in slowly across
+       its two beats. The rail
        on the left carries the homepage dot between three stops. Phones and
        reduced motion: no pin, three stacked blocks. The chapter words are
-       the accessible tablist. -->
+       the accessible tablist. #}
   {#- Phones (<= 768px, script): a pinned full-screen stage,
        data-beat-phone svh per chapter (motion.beatPhone, 100), the
        portrait still under the veil, the word and line centred, dots at
        the bottom as the tablist (built by the script; the rail is hidden). #}
-  <!-- rises over the pinned talks stage: see .spk-chap margin-top -->
+  {# rises over the pinned talks stage: see .spk-chap margin-top #}
   {%- set beat = block | motion('beat', 70) %}
   {#- strike: true (said-vs-meant pairs): the word stays when its line
        arrives, rises 0.6em, shrinks to 0.72 and a line draws through it

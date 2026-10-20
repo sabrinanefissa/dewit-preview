@@ -26,10 +26,16 @@
     "script": "js/main.js"
   },
   "person": {
+    "id": "https://drdewit.com/#person",
     "name": "Dr. Stephen de Wit",
+    "alternateName": [
+      "Stephen de Wit"
+    ],
     "jobTitle": "Human Connection & Relational Intelligence Speaker",
-    "description": "Human connection and relational intelligence speaker; therapist, sexologist and researcher with 20+ years spent in the rooms where trust, conflict and connection get real.",
+    "description": "Human connection and relational intelligence speaker; therapist and researcher with 20+ years spent in the rooms where trust, conflict and connection get real.",
     "url": "https://drdewit.com/",
+    "image": "https://drdewit.com/assets/img/headshot-formal-860.webp",
+    "affiliation": "Ontario Tech University",
     "telephone": "+1-647-483-4490",
     "knowsAbout": [
       "Human connection",
@@ -48,16 +54,7 @@
     "tel": "+16474834490",
     "email": "info@drdewit.com"
   },
-  "socials": [
-    {
-      "label": "LinkedIn",
-      "href": "https://www.linkedin.com/"
-    },
-    {
-      "label": "Instagram",
-      "href": "https://www.instagram.com/"
-    }
-  ],
+  "socials": [],
   "ui": {
     "skip": "Skip to content",
     "navLabel": "Primary",
@@ -90,24 +87,27 @@
     },
     {
       "label": "Keynotes",
-      "href": "#keynotes"
+      "href": "keynotes/",
+      "slug": "keynotes"
     },
     {
       "label": "Healthcare",
-      "href": "#healthcare"
+      "href": "healthcare/",
+      "slug": "healthcare"
     },
     {
       "label": "About",
-      "href": "#about"
-    },
-    {
-      "label": "Consultation",
-      "href": "#consultation"
+      "href": "about/",
+      "slug": "about"
     }
   ],
   "cta": {
     "label": "Book Stephen",
-    "href": "#contact"
+    "href": "book/"
+  },
+  "crumbs": {
+    "home": "Home",
+    "book": "Book Stephen"
   },
   "footer": {
     "blurb": "Human connection and relational intelligence for people, teams and organizations.",
@@ -116,32 +116,40 @@
       "heading": "Explore",
       "links": [
         {
+          "label": "For planners",
+          "href": "speaking/#planners"
+        },
+        {
           "label": "Speaking",
           "href": "speaking/",
-          "slug": "speaking",
-          "overrides": {
-            "home": "#speaking"
-          }
+          "slug": "speaking"
         },
         {
           "label": "Keynotes",
-          "href": "#keynotes"
+          "href": "keynotes/",
+          "slug": "keynotes"
         },
         {
           "label": "Healthcare",
-          "href": "#healthcare"
+          "href": "healthcare/",
+          "slug": "healthcare"
         },
         {
           "label": "About",
-          "href": "#about"
+          "href": "about/",
+          "slug": "about"
         },
         {
-          "label": "Consultation",
-          "href": "#consultation"
+          "label": "Lead Human™",
+          "href": "keynotes/#lead-human"
         },
         {
-          "label": "Meeting planners",
-          "href": "#contact"
+          "label": "Invisible Friction",
+          "href": "keynotes/#invisible-friction"
+        },
+        {
+          "label": "The Hidden Multiplier",
+          "href": "keynotes/#hidden-multiplier"
         }
       ]
     },

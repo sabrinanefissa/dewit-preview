@@ -1,4 +1,4 @@
-  <!-- Credibility ribbon: trusted by / as seen on (timed spotlight) -->
+  {# Credibility ribbon: trusted by / as seen on (timed spotlight) #}
   <section class="orgband"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-tick="{{ block | motion('tick', 2600) }}" data-tick-sm="{{ block | motion('tickSmall', 2400) }}" data-spell="{{ block | motion('spell', 4200) }}"{% if block | motion('reach', '') !== '' %} data-reach="{{ block | motion('reach', 0.35) }}"{% endif %}>
   {%- for lane in block.lanes %}
     <div class="cred__lane{% if lane.small %} cred__lane--sm{% endif %}" data-cred-lane data-speed="{{ lane.speed }}">
@@ -13,7 +13,9 @@
     </div>
   {%- endfor %}
     <div class="orgband__cta reveal">
+      {%- if block.cta.text %}
       <p>{{ block.cta.text | inline() }}</p>
+      {%- endif %}
       <a class="btn" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
     </div>
   </section>

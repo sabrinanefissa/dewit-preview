@@ -1,0 +1,20 @@
+  {# Healthcare: the opening. Plum, a teal accent, one real photo of
+       Stephen in a room. Static: no entrance, no scroll work. #}
+  <section class="hc-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="hc-hero__media media">
+      <img src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '50vw' }}" alt="{{ block.image.alt | inline() }}" fetchpriority="high" decoding="async"{% if block.image.position %} style="object-position:{{ block.image.position }}"{% endif %}>
+    </div>
+    <div class="hc-hero__copy">
+      <h1 class="hc-hero__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h1>
+      <p class="hc-hero__lead">{{ block.lead | inline() }}</p>
+      <div class="hc-hero__actions">
+        <a class="btn btn--lg" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+        {%- if block.link and block.link.label %}
+        <a class="textlink textlink--inv hc-hero__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        {%- endif %}
+      </div>
+    </div>
+  </section>

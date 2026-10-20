@@ -1,0 +1,177 @@
+/* =====================================================================
+   HEALTHCARE PAGE (/healthcare/) — loaded only on this page.
+   Teal is this page's accent and nowhere else: --teal (theme.json) for
+   marks and rules, --hc-teal-ink (a lighter teal, 9:1 on plum) for text.
+   Animations owned here: the five words lighting once (js/main.js
+   module 3, bound to .spk-out) and the lifting stack (js/healthcare.js;
+   its kept line does not move).
+   Nothing is pinned or sticky.
+   ===================================================================== */
+:root { --hc-teal-ink: #6CCFC0; --hc-teal-line: rgba(108,207,192,.32); }
+
+.hc-em { font-style: italic; color: var(--hc-teal-ink); }
+.hc-hero ::selection, .hc-who ::selection, .hc-talk ::selection, .hc-logos ::selection,
+.hc-out ::selection { background: rgba(30,143,130,.55); color: #fff; }
+
+/* ---------------------------------------------------------------- hero
+   Desktop: copy on the left on plum, the photo filling the right half to
+   the edge. Phones: the photo first (a 4:5 crop), the copy under it. */
+.hc-hero { position: relative; color: var(--tx-inv); display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 100svh; overflow: hidden; }
+.hc-hero__media { grid-column: 2; grid-row: 1; position: relative; min-height: 100%; }
+.hc-hero__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* the photo melts into the plum on its left edge, so the two halves are one room */
+.hc-hero__media::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--plum) 0%, rgba(26,16,38,.55) 14%, rgba(26,16,38,0) 42%),
+    linear-gradient(200deg, rgba(30,143,130,.16), rgba(18,10,28,.30)); }
+.hc-hero__copy { grid-column: 1; grid-row: 1; align-self: center;
+  padding: clamp(7rem, 14vh, 10rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 10vh, 7rem) calc((100vw - var(--wrap)) / 2); }
+.hc-hero__h { font-size: var(--step-4); font-weight: 330; line-height: .98; letter-spacing: -0.035em;
+  max-width: 11ch; text-wrap: balance; }
+.hc-hero__lead { margin-top: clamp(1.4rem, 3vh, 2rem); max-width: 44ch; font-size: var(--step-0);
+  line-height: 1.6; color: var(--tx-inv-soft); text-wrap: pretty; }
+.hc-hero__actions { margin-top: clamp(2rem, 4vh, 2.8rem); display: flex; flex-wrap: wrap;
+  align-items: center; gap: 1rem 2rem; }
+.hc-hero__link { min-height: 44px; }
+
+@media (max-width: 900px) {
+  .hc-hero { grid-template-columns: 1fr; min-height: 0; }
+  .hc-hero__media { grid-column: 1; grid-row: 1; aspect-ratio: 4 / 5; max-height: 78svh; width: 100%; }
+  .hc-hero__media::after { background:
+    linear-gradient(180deg, rgba(26,16,38,.45) 0%, rgba(26,16,38,0) 22%, rgba(26,16,38,0) 62%, var(--plum) 100%),
+    linear-gradient(200deg, rgba(30,143,130,.14), rgba(18,10,28,.25)); }
+  .hc-hero__copy { grid-row: 2; margin-top: -4.5rem; position: relative; z-index: 1;
+    padding: 0 var(--gutter) clamp(3.5rem, 12vw, 5rem); }
+  .hc-hero__h { font-size: clamp(2.6rem, 11vw, 3.6rem); }
+}
+
+/* ------------------------------------------------------- who it's for */
+.hc-who { color: var(--tx-inv); padding-block: var(--section-y); }
+.hc-who__grid { width: var(--wrap); margin-inline: auto; display: grid;
+  grid-template-columns: 4fr 8fr; column-gap: clamp(2rem, 6vw, 7rem); align-items: start; }
+.hc-who__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.025em; max-width: 9ch;
+  text-wrap: balance; }
+.hc-who__list { list-style: none; margin: 0; padding: 0; display: grid;
+  grid-template-columns: 1fr 1fr; column-gap: clamp(2rem, 4vw, 4rem); }
+.hc-who__item { padding-block: clamp(1.4rem, 2.6vw, 2.1rem); border-top: 1px solid var(--hc-teal-line); }
+.hc-who__name { font-size: var(--step-1); font-weight: 380; letter-spacing: -0.015em; line-height: 1.15; }
+.hc-who__text { margin-top: .6rem; font-size: var(--step--1); line-height: 1.6; color: var(--tx-inv-soft);
+  max-width: 36ch; text-wrap: pretty; }
+@media (max-width: 900px) {
+  .hc-who__grid { grid-template-columns: 1fr; }
+  .hc-who__h { max-width: none; margin-bottom: 1.6rem; }
+}
+@media (max-width: 560px) {
+  .hc-who__list { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------- what the room walks out with
+   The shared .spk-out rules (main.css) lay it out; here only the page's
+   own colour: the pool of light behind each word is teal. */
+.hc-out .spk-out__word::before {
+  background: radial-gradient(closest-side, rgba(30,143,130,.30), transparent 62%); }
+.hc-out .spk-out__h { color: var(--tx-inv); }
+
+/* ------------------------------- what a session covers (no talk named) */
+.hc-talk { color: var(--tx-inv); padding-block: var(--section-y); }
+.hc-talk__grid { width: var(--wrap); margin-inline: auto; display: grid;
+  grid-template-columns: 6fr 5fr; column-gap: clamp(2.5rem, 7vw, 8rem); align-items: start; }
+.hc-talk__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.028em; line-height: 1.02;
+  max-width: 13ch; text-wrap: balance; }
+.hc-talk__sub { margin-top: 1.1rem; font-family: var(--f-display); font-style: italic; font-weight: 360;
+  font-size: var(--step-1); line-height: 1.3; color: var(--hc-teal-ink); max-width: 30ch; text-wrap: balance; }
+.hc-talk__body { margin-top: clamp(1.8rem, 3vw, 2.4rem); max-width: 60ch; }
+.hc-talk__body p { font-size: var(--step-0); line-height: 1.65; color: var(--tx-inv-soft); text-wrap: pretty; }
+.hc-talk__body p + p { margin-top: 1.1em; }
+.hc-talk__formats { margin-top: 2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .7rem;
+  font-size: var(--step--1); color: var(--tx-inv); }
+.hc-talk__fl { color: var(--tx-inv-soft); margin-right: .4rem; }
+.hc-talk__f { font-weight: 600; letter-spacing: .02em; }
+.hc-talk__sep { color: var(--teal); }
+.hc-talk__actions { margin-top: 2.2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
+.hc-talk__actions .textlink { min-height: 44px; }
+
+/* the lifting stack */
+.hc-lift { position: relative; padding-top: .4rem; }
+.hc-lift__label { font-family: var(--f-display); font-style: italic; font-weight: 360;
+  font-size: var(--step-0); letter-spacing: -0.005em; color: var(--tx-inv-soft); }
+.hc-lift__stack { list-style: none; margin: 1rem 0 0; padding: 0; }
+.hc-lift__line { font-family: var(--f-display); font-weight: 340; font-size: var(--step-2);
+  line-height: 1.12; letter-spacing: -0.02em; color: var(--tx-inv); padding-block: .45rem; text-wrap: balance; }
+.hc-lift__keep { font-family: var(--f-display); font-weight: 340; font-size: var(--step-2);
+  line-height: 1.12; letter-spacing: -0.02em; color: var(--tx-inv); text-wrap: balance; }
+/* the line that stays: under the stack, a hairline above it and a short
+   static note under it. It never lifts, with or without motion. */
+.hc-lift__kept { margin-top: clamp(1.2rem, 2.4vw, 1.7rem); padding-top: clamp(1rem, 2vw, 1.4rem);
+  border-top: 1px solid var(--hc-teal-line); }
+.hc-lift__note { margin-top: .55rem; font-size: var(--step--1); line-height: 1.5; color: var(--hc-teal-ink); }
+.hc-lift__out { margin-top: clamp(2.2rem, 4vw, 3rem); padding-top: clamp(1.6rem, 3vw, 2.2rem);
+  border-top: 1px solid var(--hc-teal-line); }
+.hc-lift__outs { list-style: none; margin: 1rem 0 0; padding: 0; }
+.hc-lift__outs li { position: relative; padding: .7rem 0 .7rem 1.4rem; font-size: var(--step-0);
+  line-height: 1.5; color: var(--tx-inv); text-wrap: pretty; }
+.hc-lift__outs li + li { border-top: 1px solid rgba(244,236,222,.10); }
+.hc-lift__outs li::before { content: ""; position: absolute; left: 0; top: 1.32rem; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--teal); }
+
+/* Armed by js/healthcare.js only (motion allowed, script running): the
+   two lists share one grid cell, so the page height never changes. The
+   carried lines show; the outcomes wait unseen beneath (still in the page
+   for screen readers). Each line lifts once (--hc-lift ms, the codebase's
+   --ease-out): up by its own height and out of focus, top line first.
+   When the last has gone (.is-clear) the outcomes come up in the space
+   the stack held, 60ms apart (--hc-settle ms, ease-out: an entrance). */
+.hc-lift.is-armed { display: grid; }
+.hc-lift.is-armed > .hc-lift__carry, .hc-lift.is-armed > .hc-lift__out { grid-area: 1 / 1; align-self: start; }
+.hc-lift.is-armed > .hc-lift__out { margin-top: 0; padding-top: 0; border-top: 0; }
+/* the kept line sits in its own row under the shared cell, so it stays
+   put while the others lift and the outcomes come up above it */
+.hc-lift.is-armed > .hc-lift__kept { grid-area: 2 / 1; }
+.hc-lift.is-armed .hc-lift__line,
+.hc-lift.is-armed .hc-lift__carry .hc-lift__label {
+  transition: opacity var(--hc-lift, 640ms) var(--ease-out),
+              transform var(--hc-lift, 640ms) var(--ease-out),
+              filter var(--hc-lift, 640ms) var(--ease-out); }
+.hc-lift.is-armed .hc-lift__line.is-lifted {
+  opacity: 0; transform: translateY(-110%); filter: blur(6px); }
+.hc-lift.is-armed.is-clear .hc-lift__carry .hc-lift__label { opacity: 0; transform: translateY(-60%); }
+.hc-lift.is-armed .hc-lift__out .hc-lift__label,
+.hc-lift.is-armed .hc-lift__outs li { opacity: 0; transform: translateY(14px);
+  transition: opacity var(--hc-settle, 520ms) var(--ease-out), transform var(--hc-settle, 520ms) var(--ease-out);
+  transition-delay: calc(var(--k, 0) * 60ms); }
+.hc-lift.is-armed.is-clear .hc-lift__out .hc-lift__label,
+.hc-lift.is-armed.is-clear .hc-lift__outs li { opacity: 1; transform: none; }
+/* gone from the eye: out of pointer reach too */
+.hc-lift.is-clear .hc-lift__carry { pointer-events: none; }
+
+@media (max-width: 900px) {
+  .hc-talk__grid { grid-template-columns: 1fr; }
+  .hc-lift { margin-top: clamp(3rem, 12vw, 4rem); }
+  .hc-lift__line, .hc-lift__keep { font-size: clamp(1.5rem, 6.4vw, 2rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc-lift .hc-lift__line, .hc-lift .hc-lift__out, .hc-lift .hc-lift__label { transition: none !important;
+    transform: none !important; filter: none !important; opacity: 1 !important; }
+}
+
+/* ------------------------------------------------------ healthcare clients */
+.hc-logos { color: var(--tx-inv); padding-block: clamp(4rem, 8vw, 7rem); border-top: 1px solid var(--line-inv); }
+.hc-logos__inner { width: var(--wrap); margin-inline: auto; }
+.hc-logos__h { font-size: var(--step-1); font-weight: 360; letter-spacing: -0.015em; color: var(--tx-inv-soft);
+  max-width: 30ch; }
+.hc-logos__row { list-style: none; margin: clamp(2rem, 4vw, 3rem) 0 0; padding: 0; display: flex; flex-wrap: wrap;
+  align-items: center; gap: clamp(2rem, 4vw, 4.2rem) clamp(2.4rem, 5vw, 5rem); }
+/* every mark one colour: the knockouts and transparent marks become cream
+   silhouettes; a mark that IS its coloured plate is greyed instead */
+.logo-mark { display: block; height: calc(clamp(40px, 4.4vw, 64px) * var(--s, 1)); width: auto; max-width: 220px;
+  object-fit: contain; filter: brightness(0) invert(1); opacity: .8; }
+.logo-mark--plate { filter: grayscale(1) brightness(1.35) contrast(1.15); opacity: .85; }
+@media (max-width: 560px) {
+  .hc-logos__row { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem 1.5rem; justify-items: start; }
+  .logo-mark { height: calc(40px * var(--s, 1)); max-width: 100%; }
+}
+
+/* ------------------------------------------------- the close (in the footer)
+   The footer's own top padding sits under the close panel on this page. */
+main:has(> .hc-hero) + .foot { padding-top: 0; }

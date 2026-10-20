@@ -1,13 +1,14 @@
+{%- set cu = block | motion('countUp', true) %}
 {%- if block.note %}
-  <!-- {{ block.note | safe }} -->
+  {# {{ block.note | safe }} #}
 {%- endif %}
   <section class="stats{% if block.extraClass %} {{ block.extraClass }}{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | inline() }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-duration="{{ block | motion('duration', 1500) }}"{% if block | motion('stagger', '') !== '' %} data-stagger="{{ block | motion('stagger', 60) }}"{% endif %}>
   {%- if block.eyebrow %}
     <p class="eyebrow eyebrow--inv stats__eyebrow reveal">{{ block.eyebrow | inline() }}</p>
   {%- endif %}
-    <p class="stats__line reveal">
+    <p class="stats__line{% if cu !== false %} reveal{% endif %}">
     {%- for c in block.counters %}
-      <span class="stats__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | inline() }}
+      <span class="stats__n"><span{% if cu !== false %} data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | inline() }}
     {%- endfor %}
     </p>
   </section>

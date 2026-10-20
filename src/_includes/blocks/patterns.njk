@@ -1,6 +1,6 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- Same patterns: "How [Word] shows up." on one line, the word rolling, its
-       controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. -->
+  {# Same patterns: "How [Word] shows up." on one line, the word rolling, its
+       controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. #}
   <section class="patterns"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-period="{{ block | motion('period', 5000) }}">
     <div class="patterns__spot" aria-hidden="true"></div>
 
@@ -21,15 +21,15 @@
         </div>
         {% if ps | length %}</div></div>{% endif %}
 
-        <!-- Every word and both rooms, for screen readers, all the time -->
+        {# Every word and both rooms, for screen readers, all the time #}
         <dl class="patterns__sr">
         {%- for w in block.words %}
           <dt>{{ w.name | inline() }}</dt><dd>{{ block.homeLabel }}: {{ w.home | inline() }}</dd><dd>{{ block.workLabel }}: {{ w.work | inline() }}</dd>
         {%- endfor %}
         </dl>
-        <!-- Two cards, decorative (the sr-only list above carries the words).
+        {# Two cards, decorative (the sr-only list above carries the words).
              Each hides a still of Stephen that the pointer lights; the
-             photos are mapped in main.js, PHOTOS ("Replace photos here"). -->
+             photos are mapped in main.js, PHOTOS ("Replace photos here"). #}
         <div class="patterns__cards" aria-hidden="true">
         {%- for room in [["home", block.homeLabel], ["work", block.workLabel]] %}
           <div class="patterns__card patterns__room--{{ room[0] }}">

@@ -1,13 +1,14 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- ==============================================================
-       1. HERO - full-screen reel, sound on a click only. No visible hero
-       text: the reel carries its own on-screen titles, so only the three
-       controls sit over it. The h1 stays in the DOM, visually hidden.
+  {# ==============================================================
+       1. HERO - full-screen reel, sound on a click only. No text over the
+       frame: the reel carries its own on-screen titles, so only the three
+       controls sit over it. The h1 and its line sit in the band directly
+       under the reel (.spk-intro), with the reel's chapters.
        Swap the clip by editing the three data-src-* paths below and
        the poster; nothing else references the file. reel-mobile.mp4 is
        9.4 MB (<= 10 MB), so muted autoplay is allowed under 820px:
        that is what data-mobile-autoplay="true" states.
-       ============================================================== -->
+       ============================================================== #}
   <section class="hero spk-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-parallax="{{ block | motion('parallax', 0.5) }}" data-dim="{{ block | motion('dim', 0.55) }}" data-name-morph="{{ block | motion('nameMorph', 0.4) }}">
     <div class="media media--plum">
       {%- set pp = block.poster.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="hero__poster" src="{{ block.poster.src | root(r) }}"
@@ -24,14 +25,17 @@
       </video>
     </div>
 
+    {%- set band = block.line or (block.chapters and block.chapters.items and block.chapters.items.length) %}
+    {%- if not band %}
     <h1 class="spk-sr">{{ block.heading | inline() }}</h1>
+    {%- endif %}
 
-    <!-- The one primary control: it is a speaking page, so the offer is the
+    {# The one primary control: it is a speaking page, so the offer is the
          sound. One click unmutes, restarts the reel at 0:00 and plays; the
          button then fades out and comes back only when the reel ends, as
          "Replay with sound". The small controls below keep the rest; the
          play/pause control among them appears only once the reel has been
-         started. -->
+         started. #}
     {%- set ps = placeStyle(block.placement) | trim %}
     {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <button type="button" class="spk-hero__cta" data-state="start">
@@ -43,14 +47,14 @@
     </button>
     {% if ps | length %}</div></div>{% endif %}
 
-    <!-- The voice line. Decorative: it is the reel's own audio drawn as one
+    {# The voice line. Decorative: it is the reel's own audio drawn as one
          open line by an AnalyserNode. It is invisible while the reel is muted
          or paused — there is no idle line — and fades in only while sound is
          actually playing, directly above the control row. One static render
-         under reduced motion or Save-Data; absent with no script. -->
+         under reduced motion or Save-Data; absent with no script. #}
     <canvas class="spk-voice" aria-hidden="true"></canvas>
 
-    <div class="hero__actions spk-hero__controls reveal">
+    <div class="hero__actions spk-hero__controls">
         <button type="button" class="spk-ctrl" data-ctrl="play" data-state="play" aria-pressed="false" hidden>
           <span class="play__ring" aria-hidden="true">
             <svg class="spk-ic spk-ic--play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -79,3 +83,35 @@
 
     <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
   </section>
+  {%- if band %}
+  {# Under the reel: the page's h1 in plain sight with its one line, and
+       the reel's chapters. Kept off the frame so the words never fight the
+       reel's own titles. Each chapter is a button that plays the reel from
+       that second with sound (js module 1, [data-seek]); with no script the
+       list still reads as the reel's contents. Static: nothing animates. #}
+  <section class="spk-intro" aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="spk-intro__grid">
+      <div class="spk-intro__head">
+        <h1 class="spk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h1>
+        {%- if block.line %}
+        <p class="spk-intro__line">{{ block.line | inline() }}</p>
+        {%- endif %}
+      </div>
+      {%- set ch = block.chapters %}
+      {%- if ch and ch.items and ch.items.length %}
+      <div class="spk-chapters">
+        <h2 class="spk-chapters__h" id="{{ block.id }}-ch">{{ ch.heading | inline() }}</h2>
+        {%- if ch.note %}
+        <p class="spk-chapters__note">{{ ch.note | inline() }}</p>
+        {%- endif %}
+        <ol class="spk-chapters__list" aria-labelledby="{{ block.id }}-ch">
+        {%- for c in ch.items %}
+          {%- set mm = (c.time / 60) | int %}{% set ss = c.time - mm * 60 %}
+          <li><button type="button" class="spk-chapters__btn" data-seek="{{ c.time }}"><span class="spk-sr">Play from </span><time class="spk-chapters__time" datetime="PT{{ c.time }}S">{{ mm }}:{{ ss | pad2 }}</time><span class="spk-sr">: </span><span class="spk-chapters__t">{{ c.label | inline() }}</span></button></li>
+        {%- endfor %}
+        </ol>
+      </div>
+      {%- endif %}
+    </div>
+  </section>
+  {%- endif %}

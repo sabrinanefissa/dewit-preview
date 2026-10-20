@@ -1,0 +1,346 @@
+{
+  "slug": "book",
+  "permalink": "/book/",
+  "title": "Book Dr. Stephen de Wit for Your Event",
+  "description": "Book Dr. Stephen de Wit for a keynote, workshop or half-day session.",
+  "canonical": "https://drdewit.com/book/",
+  "og": {
+    "title": "Book Dr. Stephen de Wit for Your Event",
+    "description": "Book Dr. Stephen de Wit for a keynote, workshop or half-day session.",
+    "url": "https://drdewit.com/book/",
+    "image": "https://drdewit.com/assets/img/keynote-1920.webp"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "styles": [
+    "css/book.css"
+  ],
+  "scripts": [
+    "js/book.js"
+  ],
+  "comments": {
+    "loader": "Loader",
+    "nav": "Nav"
+  },
+  "blocks": [
+    {
+      "type": "bk-intro",
+      "id": "top",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Book Stephen",
+      "lead": "Tell us about your event and the people in the room. Stephen's team will come back to you about the date and the fit.",
+      "phoneLabel": "Call",
+      "emailLabel": "Email",
+      "settings": {}
+    },
+    {
+      "type": "bk-form",
+      "id": "enquiry",
+      "enabled": true,
+      "heading": "Your event",
+      "requiredNote": "Only your name and work email are required. The rest helps us reply with something useful.",
+      "requiredWord": "(required)",
+      "portrait": {
+        "src": "assets/img/headshot-grey-520.webp",
+        "alt": "Dr. Stephen de Wit, smiling"
+      },
+      "bureau": {
+        "lead": "Bureaus: write to",
+        "tail": "for an unbranded kit."
+      },
+      "steps": [
+        {
+          "heading": "The basics",
+          "count": "Step 1 of 2",
+          "next": "Continue"
+        },
+        {
+          "heading": "The details",
+          "count": "Step 2 of 2",
+          "hint": "All optional. Add what you know now.",
+          "back": "Back"
+        }
+      ],
+      "fields": [
+        {
+          "step": 1,
+          "name": "name",
+          "label": "Your name",
+          "type": "text",
+          "autocomplete": "name",
+          "required": true,
+          "errorMessage": "Enter your name so we know who to reply to."
+        },
+        {
+          "step": 1,
+          "name": "email",
+          "label": "Work email",
+          "type": "email",
+          "autocomplete": "email",
+          "inputmode": "email",
+          "spellcheck": false,
+          "required": true,
+          "errorMessage": "Enter your work email so we can reply.",
+          "invalidMessage": "Enter an email address in the form name@example.com."
+        },
+        {
+          "step": 1,
+          "name": "organization",
+          "label": "Organization",
+          "type": "text",
+          "autocomplete": "organization"
+        },
+        {
+          "step": 1,
+          "name": "date",
+          "label": "Event date or window",
+          "type": "text",
+          "autocomplete": "off",
+          "hint": "A date, or a rough window if it isn’t set yet."
+        },
+        {
+          "step": 1,
+          "name": "event_type",
+          "label": "Event type",
+          "type": "radio",
+          "options": [
+            {
+              "value": "Leadership offsite",
+              "label": "Leadership offsite"
+            },
+            {
+              "value": "Conference",
+              "label": "Conference"
+            },
+            {
+              "value": "All-hands",
+              "label": "All-hands"
+            },
+            {
+              "value": "Leader development program",
+              "label": "Leader development program"
+            },
+            {
+              "value": "Health care event",
+              "label": "Health care event"
+            },
+            {
+              "value": "Other",
+              "label": "Other"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "step": 1,
+          "name": "delivery",
+          "label": "Delivery",
+          "type": "radio",
+          "options": [
+            {
+              "value": "In person",
+              "label": "In person"
+            },
+            {
+              "value": "Virtual",
+              "label": "Virtual"
+            },
+            {
+              "value": "Hybrid",
+              "label": "Hybrid"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "talk",
+          "label": "Which talk",
+          "type": "select",
+          "prefill": "talk",
+          "default": "not-sure",
+          "options": [
+            {
+              "value": "not-sure",
+              "label": "Not sure yet"
+            },
+            {
+              "value": "lead-human",
+              "label": "Lead Human™"
+            },
+            {
+              "value": "invisible-friction",
+              "label": "Invisible Friction"
+            },
+            {
+              "value": "hidden-multiplier",
+              "label": "The Hidden Multiplier"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "location",
+          "label": "Location",
+          "type": "text",
+          "autocomplete": "off",
+          "hint": "City and venue."
+        },
+        {
+          "step": 2,
+          "name": "audience",
+          "label": "Audience",
+          "type": "text",
+          "autocomplete": "off",
+          "hint": "About how many, and who."
+        },
+        {
+          "step": 2,
+          "name": "sector",
+          "label": "Sector",
+          "type": "radio",
+          "options": [
+            {
+              "value": "corporate",
+              "label": "Corporate"
+            },
+            {
+              "value": "association",
+              "label": "Association"
+            },
+            {
+              "value": "health",
+              "label": "Health care and long-term care"
+            },
+            {
+              "value": "education",
+              "label": "Education"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ],
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "ce_credit",
+          "label": "CE credit needed?",
+          "type": "radio",
+          "options": [
+            {
+              "value": "Yes",
+              "label": "Yes"
+            },
+            {
+              "value": "No",
+              "label": "No"
+            },
+            {
+              "value": "Unsure",
+              "label": "Unsure"
+            }
+          ],
+          "hint": "For health care events.",
+          "showIf": {
+            "field": "sector",
+            "value": "health"
+          },
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "shift_repeat",
+          "label": "Repeat for shifts?",
+          "type": "radio",
+          "options": [
+            {
+              "value": "Yes",
+              "label": "Yes"
+            },
+            {
+              "value": "No",
+              "label": "No"
+            },
+            {
+              "value": "Unsure",
+              "label": "Unsure"
+            }
+          ],
+          "hint": "For health care events: the session run again so each shift can attend.",
+          "showIf": {
+            "field": "sector",
+            "value": "health"
+          },
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "bureau",
+          "label": "A bureau is involved",
+          "type": "checkbox",
+          "value": "Yes",
+          "wide": true
+        },
+        {
+          "step": 2,
+          "name": "notes",
+          "label": "Anything else",
+          "type": "textarea",
+          "rows": 5,
+          "hint": "What the audience is facing, and what you want them to leave with.",
+          "wide": true
+        }
+      ],
+      "submit": "Send enquiry",
+      "note": "Opens in your email app. Or write to",
+      "privacy": "Your details are used only to reply to your enquiry.",
+      "sentMessage": "Your email app should now be open with the enquiry filled in. If it didn't open, write to info@drdewit.com.",
+      "done": {
+        "heading": "Your enquiry",
+        "text": "Your email app should now be open with this enquiry filled in. Send it from there. If it didn’t open, use the button below or write to",
+        "edit": "Edit the enquiry",
+        "again": "Open the email again"
+      },
+      "mail": {
+        "subject": "Speaking enquiry",
+        "intro": "Hello, I'd like to ask about booking Dr. Stephen de Wit.",
+        "empty": "(not given)"
+      },
+      "settings": {}
+    },
+    {
+      "type": "bk-steps",
+      "id": "next",
+      "anchor": false,
+      "enabled": true,
+      "heading": "What happens next",
+      "steps": [
+        {
+          "title": "Reach out.",
+          "text": "Tell us the date, the room and what your people are facing."
+        },
+        {
+          "title": "A planning call.",
+          "text": "Stephen learns the culture, the pressure points and what has to be true when he walks off stage."
+        },
+        {
+          "title": "The talk is shaped to the room.",
+          "text": "Same core ideas, tuned to your industry and your people."
+        },
+        {
+          "title": "The day.",
+          "text": "Stage intro, AV list and timing are handled in advance. He arrives early."
+        },
+        {
+          "title": "Afterward.",
+          "text": "The conversation keeps going: resources for your team and a follow-up if you want it."
+        }
+      ],
+      "settings": {}
+    }
+  ]
+}

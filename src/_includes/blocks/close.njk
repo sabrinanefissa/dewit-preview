@@ -5,7 +5,7 @@
     {%- set ps = placeStyle(block.placement) | trim %}
     {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
     <div class="spk-close__inner">
-      <h2 class="spk-close__h fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
+      <h2 class="spk-close__h">{{ block.heading | inline() }}</h2>
       <a class="btn spk-close__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
     </div>
     {% if ps | length %}</div></div>{% endif %}

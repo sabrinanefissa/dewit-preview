@@ -1,0 +1,20 @@
+{%- from "place.njk" import placeStyle %}
+  {# Healthcare: what the room walks out with. The same markup as the
+       shared out block (js module 3 binds to .spk-out: the five words light
+       once, then the house lights come up on the still), with a plain
+       heading: the scroll-fill heading belongs to Home. #}
+  <section class="spk-out hc-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
+    <div class="media media--plum spk-out__media" aria-hidden="true">
+      <img class="spk-lights" src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="spk-out__inner">
+      <h2 class="spk-out__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
+      <ul class="spk-out__list">
+      {%- for w in block.words %}
+        <li class="spk-out__word spk-out__word--{{ w.layer or 'back' }}{% if w.size == 'xl' %} spk-out__word--xl{% endif %}" style="--x:{{ w.x }};--y:{{ w.y }}"><span class="spk-out__t">{{ w.text | inline() }}</span></li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

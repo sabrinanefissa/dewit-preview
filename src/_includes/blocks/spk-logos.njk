@@ -1,0 +1,14 @@
+  {# ==============================================================
+       Trusted by: a still logo wall. No drift and no spotlight (the
+       moving ribbon belongs to the homepage). Every mark gets the same
+       treatment (a cream silhouette, speaking.css); a boxed mark needs a
+       white knockout file so its lettering survives. Corporate marks first.
+       ============================================================== #}
+  <section class="spk-logos"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <h2 class="spk-logos__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
+    <ul class="spk-logos__wall">
+    {%- for logo in block.logos %}
+      <li><img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}"{% if logo.knockout %} data-knockout{% endif %}{% if logo.plate %} data-plate{% endif %} loading="lazy" decoding="async"></li>
+    {%- endfor %}
+    </ul>
+  </section>

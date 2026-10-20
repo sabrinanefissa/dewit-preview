@@ -1,4 +1,4 @@
-  <!-- The through-line -->
+  {# The through-line #}
   <section class="thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-cursor="{{ block | motion('cursor', 0.62) }}">
     <div class="thread__bg" aria-hidden="true">
     {%- for src in block.bg %}

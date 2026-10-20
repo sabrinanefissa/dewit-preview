@@ -9,7 +9,7 @@
     "image": "https://drdewit.com/assets/img/reel-poster-1280.webp"
   },
   "ground": {
-    "image": "assets/img/ground-theatre-1664.webp",
+    "image": "assets/img/step-03-1920.webp",
     "sizes": "100vw",
     "veil": true
   },
@@ -51,32 +51,6 @@
       }
     },
     {
-      "type": "said",
-      "id": "said2",
-      "enabled": true,
-      "heading": "What he talks about.",
-      "settings": {
-        "background": "",
-        "motion": {
-          "beat": 60,
-          "grow": null
-        }
-      },
-      "velvet": {
-        "src": "assets/img/velvet-1786.webp",
-        "sizes": "100vw"
-      },
-      "macro": "assets/img/wax-macro-1440.webp",
-      "windowA": "Three *talks*.",
-      "windowB": "for *people*, teams and organizations.",
-      "lines": [
-        "You can be surrounded by colleagues and still on your own.",
-        "You carry everyone else’s feelings and nobody asks about yours.",
-        "Small unsaid tensions add up until everyone is tired.",
-        "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ]
-    },
-    {
       "type": "keys",
       "id": "keynotes",
       "enabled": true,
@@ -95,7 +69,7 @@
       "hearLabel": "Hear Stephen on this",
       "pauseLabel": "Pause",
       "rest": {
-        "src": "assets/img/keys-stage-1664.webp",
+        "src": "assets/img/line-stage-1280.webp",
         "sizes": "100vw"
       },
       "talks": [
@@ -105,7 +79,7 @@
           "sub": "Relational Intelligence at Work.",
           "accent": "violet",
           "image": {
-            "src": "assets/img/keys-stage-1664.webp",
+            "src": "assets/img/line-stage-1280.webp",
             "sizes": "100vw"
           },
           "segment": {
@@ -120,7 +94,7 @@
           "sub": "Why teams break down.",
           "accent": "coral",
           "image": {
-            "src": "assets/img/out-aisle-1664.webp",
+            "src": "assets/img/line-room-1280.webp",
             "sizes": "100vw"
           },
           "segment": {
@@ -135,7 +109,7 @@
           "sub": "What relational intelligence does to retention.",
           "accent": "gold",
           "image": {
-            "src": "assets/img/room-offsite-1200.webp",
+            "src": "assets/img/step-04-1920.webp",
             "sizes": "100vw"
           },
           "segment": {
@@ -150,7 +124,7 @@
           "sub": "Relational Intelligence at Work.",
           "accent": "violet",
           "image": {
-            "src": "assets/img/keys-stage-1664.webp",
+            "src": "assets/img/line-stage-1280.webp",
             "sizes": "100vw"
           },
           "segment": {
@@ -267,28 +241,6 @@
       ]
     },
     {
-      "type": "said",
-      "id": "said",
-      "enabled": true,
-      "heading": "What he talks about.",
-      "settings": null,
-      "velvet": {
-        "src": "/assets/img/Plum Velvet Background.png",
-        "sizes": "100vw"
-      },
-      "macro": "assets/img/wax-macro-1440.webp",
-      "windowA": "Three *talks*.",
-      "windowB": "for *people*, teams and organizations.",
-      "lines": [
-        "You can be surrounded by colleagues and still on your own.",
-        "You’re doing the job well and struggling quietly underneath it.",
-        "You carry everyone else’s feelings and nobody asks about yours.",
-        "There’s a conversation you keep moving to next week.",
-        "Small unsaid tensions add up until everyone is tired.",
-        "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ]
-    },
-    {
       "type": "chap",
       "id": "room",
       "enabled": true,
@@ -302,7 +254,7 @@
           "tone": "violet",
           "spot": "ul",
           "still": {
-            "src": "assets/img/chap-think-1664.webp",
+            "src": "assets/img/keynote-1920.webp",
             "sizes": "100vw"
           },
           "placement": {
@@ -320,7 +272,7 @@
           "tone": "bone",
           "spot": "lr",
           "still": {
-            "src": "assets/img/chap-feel-1664.webp",
+            "src": "assets/img/permission-1920.webp",
             "sizes": "100vw"
           }
         }
@@ -387,37 +339,37 @@
         {
           "caption": "Executive and senior teams",
           "image": {
-            "src": "assets/img/room-association-1200.webp"
+            "src": "assets/img/keynote-1920.webp"
           }
         },
         {
           "caption": "Managers and emerging leaders",
           "image": {
-            "src": "assets/img/room-corporate-1200.webp"
+            "src": "assets/img/line-handshake-1280.webp"
           }
         },
         {
           "caption": "Teams under strain",
           "image": {
-            "src": "assets/img/room-offsite-1200.webp"
+            "src": "assets/img/step-04-1920.webp"
           }
         },
         {
           "caption": "Associations and membership bodies",
           "image": {
-            "src": "assets/img/room-conference-1200.webp"
+            "src": "assets/img/step-01-1920.webp"
           }
         },
         {
           "caption": "People, culture and L&D teams",
           "image": {
-            "src": "assets/img/room-gala-1200.webp"
+            "src": "assets/img/line-greet-1280.webp"
           }
         },
         {
           "caption": "Healthcare and long-term care",
           "image": {
-            "src": "assets/img/room-healthcare-1200.webp"
+            "src": "assets/img/results-920.webp"
           }
         }
       ]
@@ -436,7 +388,7 @@
         "label": "Meet Stephen",
         "href": "#about"
       },
-      "line": "Twenty years as a therapist, sexologist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
+      "line": "Twenty years as a therapist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
       "plannersHeading": "For planners.",
       "outcomesLabel": "What each talk leaves behind",
       "outcomes": [
@@ -479,7 +431,7 @@
       },
       "anchor": false,
       "image": {
-        "src": "assets/img/close-stage-1664.webp",
+        "src": "assets/img/keynote-1920.webp",
         "sizes": "100vw"
       },
       "placement": {

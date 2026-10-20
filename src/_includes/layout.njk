@@ -33,16 +33,44 @@
 {%- endif %}
 {%- endif %}
 <link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ build.v }}">
-<script>document.documentElement.className = document.documentElement.className.replace('no-js','js');</script>
-{%- if page.jsonld %}
+{% for s in page.styles %}<link rel="stylesheet" href="{{ s | root(r) }}?v={{ build.v }}">
+{% endfor %}<script>document.documentElement.className = document.documentElement.className.replace('no-js','js');
+/* failsafe: main.js sets window.dwMainOk as its last line. Deferred scripts run
+   before DOMContentLoaded, so if it is still unset here the script failed to
+   load or threw, and the page falls back to its no-script state (everything
+   visible, nothing waiting on an entrance). */
+document.addEventListener('DOMContentLoaded', function () { setTimeout(function () { if (!window.dwMainOk) { var h = document.documentElement; h.className = h.className.replace(/(^|\s)js(\s|$)/, '$1no-js$2'); } }, 0); });</script>
 {%- set ps = site.person %}
+{%- if page.jsonld %}
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Person","name":{{ ps.name | dump | safe }},
+{"@context":"https://schema.org","@type":"Person","@id":{{ ps.id | dump | safe }},"name":{{ ps.name | dump | safe }},
+"alternateName":{{ ps.alternateName | dump | safe }},
 "jobTitle":{{ ps.jobTitle | dump | safe }},
 "description":{{ ps.description | dump | safe }},
+"image":{{ ps.image | dump | safe }},
 "url":{{ ps.url | dump | safe }},"email":{{ site.contact.email | dump | safe }},"telephone":{{ ps.telephone | dump | safe }},
-"knowsAbout":{{ ps.knowsAbout | dump | safe }},
-"sameAs":[{% for s in site.socials %}{{ s.href | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}]}
+"affiliation":{"@type":"CollegeOrUniversity","name":{{ ps.affiliation | dump | safe }}},
+"knowsAbout":{{ ps.knowsAbout | dump | safe }}
+{%- if site.socials and site.socials.length %},
+"sameAs":[{% for s in site.socials %}{{ s.href | dump | safe }}{% if not loop.last %},{% endif %}{% endfor %}]{% endif %}}
+</script>
+{%- endif %}
+{%- if page.videoSchema %}
+{%- set vs = page.videoSchema %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoObject","name":{{ vs.name | dump | safe }},
+"description":{{ vs.description | dump | safe }},
+"thumbnailUrl":{{ vs.thumbnailUrl | dump | safe }},
+{%- if vs.uploadDate %}"uploadDate":{{ vs.uploadDate | dump | safe }},{% endif %}
+"contentUrl":{{ vs.contentUrl | dump | safe }},"duration":{{ vs.duration | dump | safe }},
+"inLanguage":{{ site.lang | dump | safe }},"creator":{"@id":{{ ps.id | dump | safe }}}}
+</script>
+{%- endif %}
+{%- if slug != 'home' %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+{"@type":"ListItem","position":1,"name":{{ site.crumbs.home | dump | safe }},"item":{{ ps.url | dump | safe }}},
+{"@type":"ListItem","position":2,"name":{{ slug | crumbName(site, page.title) | dump | safe }},"item":{{ page.canonical | dump | safe }}}]}
 </script>
 {%- endif %}
 </head>
@@ -50,15 +78,17 @@
 <script type="application/json" id="ui">{{ site.ui | dump | safe }}</script>
 <a class="skip" href="#main">{{ site.ui.skip }}</a>
 
-<!-- {{ page.comments.loader | safe }} -->
+{%- if page.loader %}
+{# {{ page.comments.loader | safe }} (this page only; a CSS failsafe in main.css hides it after 3s if the script never does) #}
 <div class="loader" id="loader" aria-hidden="true">
   <div class="loader__name"><span>{{ site.brand }}</span></div>
   <div class="loader__bar" id="loaderBar"></div>
 </div>
+{%- endif %}
 <div class="grain" aria-hidden="true"></div>
 
-<!-- {{ page.comments.nav | safe }} -->
-<!-- phones: the brand large under the nav, moving into the nav as the hero scrolls (js module 13) -->
+{# {{ page.comments.nav | safe }} #}
+{# phones: the brand large under the nav, moving into the nav as the hero scrolls (js module 13) #}
 <span class="hero__name" aria-hidden="true">{{ site.brand }}</span>
 <header class="nav" id="nav">
   {%- set bl = site.brandLink | navlink(slug, r) %}
@@ -84,11 +114,11 @@
 
 <main id="main"{% if page.mainTabindex %} tabindex="{{ page.mainTabindex }}"{% endif %}>
 {%- if page.ground %}
-  <!-- The ground. One room under the whole page (a theatre from the back
+  {# The ground. One room under the whole page (a theatre from the back
        row) and a colour veil over it whose tone the scroll spine warms and
        cools as the page goes down. Every section that has no picture of its
        own is transparent, so the page has no bands; sections that ARE a
-       picture (hero, the talks, the room, the walk-out) cover it. -->
+       picture (hero, the talks, the room, the walk-out) cover it. #}
   <div class="spk-ground" aria-hidden="true">
     <img class="spk-ground__img" src="{{ page.ground.image | root(r) }}"
          {%- set ss2 = page.ground.image | srcset(r) %}{% if ss2 %} srcset="{{ ss2 }}"{% endif %}
@@ -102,7 +132,7 @@
 {% include "blocks/" + b.type + ".njk" %}
 {% endif %}{% endfor %}
 {%- if page.comments.mainEnd %}
-  <!-- {{ page.comments.mainEnd | safe }} -->
+  {# {{ page.comments.mainEnd | safe }} #}
 {%- endif %}
 </main>
 

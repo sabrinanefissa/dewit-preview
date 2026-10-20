@@ -1,23 +1,49 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- ==============================================================
-       5. FORMATS - the sentence, then six rooms in a strip the scroll moves
-       ============================================================== -->
-  {#- the formats sentence stands alone first, its own section on a solid ground #}
+  {# ==============================================================
+       5. FORMATS - the sentence over the seat rows (canvas.spk-room, js
+       module 5: rows of seats as dots, seen from the stage), then the rooms
+       he speaks to as event types: a plain static table, one row per event
+       with a dotted leader to the talk usually booked for it ("events").
+       The older photo grid ("rooms") still renders if a page uses it.
+       Nothing pins and nothing slides: the seat rows are this block's one
+       moment.
+       ============================================================== #}
   {%- if block.sentence %}
-  <section class="spk-avail" aria-label="{{ block.sentence | plain }}">
+  <section class="spk-avail" aria-label="{{ block.sentence | plain }}" data-tone="{{ block | tone('plum') }}">
+    {%- if block.seats !== false %}
+    <canvas class="spk-room" aria-hidden="true"></canvas>
+    {%- endif %}
     {%- set ps = placeStyle(block.placement) | trim %}
-    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}<p class="spk-avail__line reveal">{{ block.sentence | inline() }}</p>{% if ps | length %}</div></div>{% endif %}
+    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}<p class="spk-avail__line">{{ block.sentence | inline() }}</p>{% if ps | length %}</div></div>{% endif %}
   </section>
   {%- endif %}
-  <section class="spk-formats"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('transparent') }}">
-    <div class="spk-formats__track">
-      <div class="spk-formats__stage">
-        <h2 class="spk-formats__h fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
-        <ul class="spk-formats__strip">
-        {%- for room in block.rooms %}
-          <li class="spk-formats__room"><img src="{{ room.image.src | root(r) }}" {%- set ss1 = room.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.sizes or '100vw' }}" alt="" loading="lazy" decoding="async"><span>{{ room.caption | inline() }}</span></li>
+  {%- if block.events and block.events.length %}
+  <section class="spk-formats spk-events"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="spk-events__wrap">
+      <h2 class="spk-events__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+      <table class="spk-events__table">
+        <thead class="spk-sr"><tr><th scope="col">{{ (block.eventsLabel or 'Event') | inline() }}</th><th scope="col">{{ (block.talkLabel or 'Talk') | inline() }}</th></tr></thead>
+        <tbody>
+        {%- for e in block.events %}
+          <tr>
+            <th scope="row"><span class="spk-events__name">{{ e.label | inline() }}</span></th>
+            <td><span class="spk-events__usually">{{ (block.usuallyLabel or 'usually:') | inline() }}</span> {% if e.talk.href %}<a class="spk-events__talk" href="{{ e.talk.href | root(r) }}">{{ e.talk.label | inline() }}</a>{% else %}<span class="spk-events__talk">{{ e.talk.label | inline() }}</span>{% endif %}</td>
+          </tr>
         {%- endfor %}
-        </ul>
-      </div>
+        </tbody>
+      </table>
     </div>
   </section>
+  {%- else %}
+  <section class="spk-formats spk-rooms"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <h2 class="spk-rooms__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+    <ul class="spk-rooms__grid">
+    {%- for room in block.rooms %}
+      <li class="spk-rooms__room">
+        <div class="media spk-rooms__media"><img src="{{ room.image.src | root(r) }}" {%- set ss1 = room.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.sizes or '(max-width: 768px) 46vw, 40vw' }}" alt="{{ room.image.alt | inline() }}"{% if room.image.position %} style="object-position: {{ room.image.position | plain }}"{% endif %} loading="lazy" decoding="async"></div>
+        <p class="spk-rooms__cap">{{ room.caption | inline() }}{% if room.note %}<span class="spk-rooms__note">{{ room.note | inline() }}</span>{% endif %}</p>
+      </li>
+    {%- endfor %}
+    </ul>
+  </section>
+  {%- endif %}

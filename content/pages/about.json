@@ -1,0 +1,133 @@
+{
+  "slug": "about",
+  "permalink": "/about/",
+  "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
+  "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
+  "canonical": "https://drdewit.com/about/",
+  "og": {
+    "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
+    "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
+    "url": "https://drdewit.com/about/",
+    "image": "https://drdewit.com/assets/img/headshot-blue-suit-1365.webp"
+  },
+  "preload": {
+    "href": "assets/img/headshot-blue-suit-960.webp",
+    "sizes": "(max-width: 900px) 100vw, 42vw"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "styles": [
+    "css/about.css"
+  ],
+  "scripts": [],
+  "comments": {
+    "loader": "Loader",
+    "nav": "Nav"
+  },
+  "blocks": [
+    {
+      "type": "ab-portrait",
+      "id": "top",
+      "anchor": false,
+      "enabled": true,
+      "name": "Dr. Stephen de Wit",
+      "category": "Human connection and relational intelligence",
+      "line": "Dr. Stephen de Wit has spent years in rooms where silence spoke louder than titles. Today he helps leaders turn human tension into high-trust cultures where people stay.",
+      "portrait": {
+        "src": "assets/img/headshot-blue-suit-960.webp",
+        "sizes": "(max-width: 900px) 100vw, 42vw",
+        "alt": "Portrait of Dr. Stephen de Wit in a blue suit, smiling"
+      },
+      "settings": {}
+    },
+    {
+      "type": "ab-story",
+      "id": "story",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Built in the rooms where *trust was fragile*.",
+      "paragraphs": [
+        "For more than 20 years Stephen’s work has lived at the frontlines of vulnerability, conflict and connection: in transformational retreats and in research with homeless veterans and people living with dementia.",
+        "Along the way he saw what most leadership playbooks miss. When people don't feel seen, safe or heard, performance erodes.",
+        "Today he brings that lens to the stage. His Lead Human™ framework shows leaders how to clear silent friction, rebuild trust and build cultures where people lean in, step up and stay, even under pressure.",
+        "He works with executive teams and senior leaders, managers and emerging leaders, associations and professional organizations, healthcare teams, and teams working through change, growth or cultural strain."
+      ],
+      "figures": [
+        {
+          "after": 1,
+          "src": "assets/img/ctv-interview-960.webp",
+          "sizes": "(max-width: 900px) 100vw, 36vw",
+          "alt": "Stephen in a blue suit being interviewed on the CTV Your Morning set",
+          "caption": "On CTV's Your Morning."
+        },
+        {
+          "after": 3,
+          "src": "assets/img/panel-live.jpg",
+          "sizes": "(max-width: 900px) 100vw, 30vw",
+          "alt": "Stephen with a microphone on a live panel, seated between three other speakers",
+          "caption": "Speaking on a live panel."
+        }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "ab-creds",
+      "id": "credentials",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Credentials",
+      "items": [
+        "Doctorate",
+        "Master of Public Health",
+        "20+ years in practice",
+        "Research Associate, Ontario Tech University"
+      ],
+      "settings": {}
+    },
+    {
+      "type": "ab-numbers",
+      "id": "numbers",
+      "anchor": false,
+      "enabled": true,
+      "ariaLabel": "Stephen in numbers",
+      "counters": [
+        { "value": "170", "label": "keynotes delivered." },
+        { "value": "7,000+", "label": "leaders in the room." },
+        { "value": "20+", "label": "years in practice." }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "ab-media",
+      "id": "media",
+      "anchor": false,
+      "enabled": true,
+      "heading": "As seen on",
+      "logos": [
+        { "src": "assets/logos/CBC-ko.png", "alt": "CBC", "scale": "0.85" },
+        { "src": "assets/logos/GMA-mark.png", "alt": "Good Morning America", "scale": "1.4" },
+        { "src": "assets/logos/Showtime.svg.png", "alt": "Showtime", "scale": "0.7" },
+        { "src": "assets/logos/Men_s_Health.svg.png", "alt": "Men's Health", "scale": "0.6" },
+        { "src": "assets/logos/TGAM-wordmark-mark.png", "alt": "The Globe and Mail", "scale": "1.25" },
+        { "src": "assets/logos/1200px-Marilyn_Logo.svg.png", "alt": "Marilyn", "scale": "0.55" }
+      ],
+      "settings": {}
+    },
+    {
+      "type": "close",
+      "id": "close",
+      "enabled": true,
+      "anchor": false,
+      "heading": "Bring him into your room.",
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "image": {
+        "src": "assets/img/keynote-1920.webp",
+        "sizes": "100vw"
+      },
+      "settings": null
+    }
+  ]
+}

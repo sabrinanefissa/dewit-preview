@@ -1,0 +1,138 @@
+  {# Book: the enquiry form, in two steps. Every label, hint, option and
+       message is in content/pages/book.json.
+
+       Without script: one long form. Both steps show as two fieldsets,
+       the health care questions included (their hint says when they
+       apply), and the form posts to a mailto: address as plain text (the
+       browser's own required checks apply).
+       With js/book.js: step 1 (the basics) shows first; "Continue"
+       checks name and email and moves focus to step 2's heading; step 2
+       (all optional) has "Back" and the submit. The health care questions
+       show only when the sector is health care. ?talk=<id> pre-selects
+       the talk ("Not sure yet" for a missing or unknown id). Submitting
+       opens a prefilled email built from every field, then a
+       confirmation repeats what was sent (the typed values are kept,
+       with "Edit" and "Open the email again").
+
+       WordPress form plugin mapping (Gravity Forms or Fluent Forms), one
+       field per row, in order; the `name` is the field's admin name /
+       parameter name:
+         page 1  name          Name (single)         required
+                 email         Email                 required
+                 organization  Single line text
+                 date          Single line text
+                 event_type    Radio buttons (6)
+                 delivery      Radio buttons (3)
+         page 2  talk          Drop down; "Allow field to be populated
+                               dynamically", parameter name: talk; values
+                               are the talk ids, default not-sure
+                 location      Single line text
+                 audience      Single line text
+                 sector        Radio buttons (values: corporate,
+                               association, health, education, other)
+                 ce_credit     Radio buttons; conditional: sector is health
+                 shift_repeat  Radio buttons; conditional: sector is health
+                 bureau        Checkbox (one choice, value Yes)
+                 notes         Paragraph text
+       The privacy line sits under the submit button; the confirmation
+       message repeats the entry ({all_fields} in Gravity Forms). #}
+  {%- macro bkField(fd, block) %}
+    {%- set fid = block.id + '-' + fd.name %}
+    {%- set showIf = ' data-show-if="' + fd.showIf.field + '=' + fd.showIf.value + '"' if fd.showIf else '' %}
+    {%- if fd.type == 'radio' %}
+        <fieldset class="bk-field bk-field--choice{% if fd.wide %} bk-field--wide{% endif %}" data-field="{{ fd.name }}"{{ showIf | safe }}{% if fd.hint %} aria-describedby="{{ fid }}-hint"{% endif %}>
+          <legend class="bk-label">{{ fd.label | inline() }}{% if fd.required %} <span class="bk-label__req">{{ block.requiredWord }}</span>{% endif %}</legend>
+          {%- if fd.hint %}<p class="bk-hint" id="{{ fid }}-hint">{{ fd.hint | inline() }}</p>{% endif %}
+          <div class="bk-choices">
+          {%- for o in fd.options %}{% set ov = o.value if o.value else o %}{% set ol = o.label if o.label else o %}
+            <label class="bk-choice"><input type="radio" name="{{ fd.name }}" value="{{ ov }}"{% if fd.required and loop.first %} required{% endif %}><span>{{ ol | inline() }}</span></label>
+          {%- endfor %}
+          </div>
+          <p class="bk-error" id="{{ fid }}-error" data-error-for="{{ fd.name }}" role="alert" hidden></p>
+        </fieldset>
+    {%- elif fd.type == 'checkbox' %}
+        <div class="bk-field bk-field--check{% if fd.wide %} bk-field--wide{% endif %}" data-field="{{ fd.name }}"{{ showIf | safe }}>
+          <label class="bk-check" for="{{ fid }}"><input type="checkbox" id="{{ fid }}" name="{{ fd.name }}" value="{{ fd.value or 'Yes' }}"{% if fd.hint %} aria-describedby="{{ fid }}-hint"{% endif %}><span class="bk-label">{{ fd.label | inline() }}</span></label>
+          {%- if fd.hint %}<p class="bk-hint" id="{{ fid }}-hint">{{ fd.hint | inline() }}</p>{% endif %}
+        </div>
+    {%- else %}
+        <div class="bk-field{% if fd.wide %} bk-field--wide{% endif %}" data-field="{{ fd.name }}"{{ showIf | safe }}>
+          <label class="bk-label" for="{{ fid }}">{{ fd.label | inline() }}{% if fd.required %} <span class="bk-label__req">{{ block.requiredWord }}</span>{% endif %}</label>
+          {%- if fd.hint %}<p class="bk-hint" id="{{ fid }}-hint">{{ fd.hint | inline() }}</p>{% endif %}
+          {%- set attrs %} id="{{ fid }}" name="{{ fd.name }}"{% if fd.autocomplete %} autocomplete="{{ fd.autocomplete }}"{% endif %}{% if fd.inputmode %} inputmode="{{ fd.inputmode }}"{% endif %}{% if fd.required %} required aria-required="true"{% endif %}{% if fd.hint %} aria-describedby="{{ fid }}-hint"{% endif %}{% if fd.spellcheck === false %} spellcheck="false"{% endif %}{% if fd.placeholder %} placeholder="{{ fd.placeholder }}"{% endif %}{% if fd.errorMessage %} data-error="{{ fd.errorMessage }}"{% endif %}{% if fd.invalidMessage %} data-invalid="{{ fd.invalidMessage }}"{% endif %}{% if fd.prefill %} data-prefill="{{ fd.prefill }}"{% endif %}{% endset %}
+          {%- if fd.type == 'textarea' %}
+          <textarea class="bk-input bk-input--area" rows="{{ fd.rows or 5 }}"{{ attrs | safe }}></textarea>
+          {%- elif fd.type == 'select' %}
+          <div class="bk-select"><select class="bk-input"{{ attrs | safe }}>
+            {%- if fd.emptyOption %}<option value="">{{ fd.emptyOption }}</option>{% endif %}
+            {%- for o in fd.options %}{% set ov = o.value if o.value else o %}{% set ol = o.label if o.label else o %}<option value="{{ ov }}"{% if fd.default and ov == fd.default %} selected{% endif %}>{{ ol }}</option>{% endfor %}
+          </select><svg class="bk-select__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+          {%- else %}
+          <input class="bk-input" type="{{ fd.type or 'text' }}"{{ attrs | safe }}>
+          {%- endif %}
+          <p class="bk-error" id="{{ fid }}-error" data-error-for="{{ fd.name }}" role="alert" hidden></p>
+        </div>
+    {%- endif %}
+  {%- endmacro %}
+  {%- set steps = block.steps or [{ heading: '' }] %}
+  <section class="bk-form"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="bk-form__inner">
+      <div class="bk-form__side">
+        <div class="bk-form__who">
+          {%- if block.portrait and block.portrait.src %}
+          <img class="bk-form__face" src="{{ block.portrait.src | root(r) }}" width="72" height="72" alt="{{ block.portrait.alt | plain }}" loading="lazy" decoding="async">
+          {%- endif %}
+          <h2 class="bk-form__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h2>
+        </div>
+        <p class="bk-form__req">{{ block.requiredNote | inline() }}</p>
+        {%- if block.bureau and block.bureau.lead %}
+        <p class="bk-form__bureau">{{ block.bureau.lead | inline() }} <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a> {{ block.bureau.tail | inline() }}</p>
+        {%- endif %}
+      </div>
+      <div class="bk-form__main">
+      <form class="bk-form__form" data-bk-form action="mailto:{{ site.contact.email }}" method="post" enctype="text/plain"
+            data-to="{{ site.contact.email }}" data-subject="{{ block.mail.subject }}" data-intro="{{ block.mail.intro }}"
+            data-empty="{{ block.mail.empty }}">
+      {%- for st in steps %}
+        {%- set n = loop.index %}
+        {%- set sid = block.id + '-step-' + n %}
+        <fieldset class="bk-step" data-bk-step="{{ n }}" id="{{ sid }}">
+          {%- if st.heading %}
+          <legend class="bk-step__legend"><h3 class="bk-step__h" id="{{ sid }}-h" tabindex="-1"><span class="bk-step__t">{{ st.heading | inline() }}</span>{% if st.count %}<span class="bk-step__n" data-bk-js hidden>{{ st.count | inline() }}</span>{% endif %}</h3>{% if st.hint %}<span class="bk-step__hint">{{ st.hint | inline() }}</span>{% endif %}</legend>
+          {%- endif %}
+          {%- for fd in block.fields %}{% if (fd.step or 1) == n %}
+          {{- bkField(fd, block) }}
+          {%- endif %}{% endfor %}
+          <div class="bk-step__actions">
+          {%- if not loop.last %}
+            <button type="button" class="btn btn--lg bk-step__next" data-bk-next data-bk-js hidden>{{ (st.next or 'Continue') | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          {%- else %}
+            {%- if not loop.first %}
+            <button type="button" class="btn btn--lg btn--inv bk-step__back" data-bk-back data-bk-js hidden>{{ (st.back or 'Back') | inline() }}</button>
+            {%- endif %}
+            <button class="btn btn--lg bk-submit__btn" type="submit">{{ block.submit | inline() }}</button>
+            <p class="bk-submit__note">{{ block.note | inline() }} <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>.</p>
+            {%- if block.privacy %}
+            <p class="bk-submit__privacy">{{ block.privacy | inline() }}</p>
+            {%- endif %}
+          {%- endif %}
+          </div>
+        </fieldset>
+      {%- endfor %}
+        <p class="bk-status" role="status" aria-live="polite" data-bk-status data-sent="{{ block.sentMessage }}"></p>
+      </form>
+      {%- if block.done %}
+      {# the confirmation (script only): what was sent, field by field #}
+      <div class="bk-done" data-bk-done hidden>
+        <h3 class="bk-done__h" tabindex="-1">{{ block.done.heading | inline() }}</h3>
+        <p class="bk-done__p">{{ block.done.text | inline() }} <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>.</p>
+        <dl class="bk-done__list" data-bk-summary></dl>
+        <div class="bk-done__actions">
+          <a class="btn btn--lg" href="mailto:{{ site.contact.email }}" data-bk-again>{{ block.done.again | inline() }}</a>
+          <button type="button" class="btn btn--lg btn--inv" data-bk-edit>{{ block.done.edit | inline() }}</button>
+        </div>
+      </div>
+      {%- endif %}
+      </div>
+    </div>
+  </section>

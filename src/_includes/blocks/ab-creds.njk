@@ -1,0 +1,11 @@
+  {# About: credentials, a plain list. #}
+  <section class="ab-creds"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="ab-creds__grid">
+      <h2 class="ab-creds__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
+      <ul class="ab-creds__list">
+      {%- for c in block.items %}
+        <li>{{ c | inline() }}</li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

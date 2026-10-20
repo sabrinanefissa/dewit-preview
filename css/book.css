@@ -1,0 +1,175 @@
+/* =====================================================================
+   BOOK PAGE (/book/) — loaded only on this page. No animation: the only
+   transitions are the shared button hover and the fields' colour states.
+   The form's two steps and its confirmation switch instantly.
+   ===================================================================== */
+/* field edges: .46 cream over plum is 4.0:1 against the page and 3.6:1
+   against the field's own fill (WCAG 1.4.11 asks 3:1); hover .62 */
+.bk-form { --bk-line: rgba(244,236,222,.46); --bk-line-hover: rgba(244,236,222,.62); }
+.bk-form [hidden] { display: none !important; }
+.bk-em { font-style: italic; color: var(--violet-300); }
+.bk-intro ::selection, .bk-form ::selection, .bk-steps ::selection { background: rgba(124,77,224,.55); color: #fff; }
+
+/* the three sections share one grid: a narrow label column, a wide body */
+.bk-intro__inner, .bk-form__inner, .bk-steps__grid { width: var(--wrap); margin-inline: auto; display: grid;
+  grid-template-columns: 4fr 8fr; column-gap: clamp(2rem, 6vw, 7rem); align-items: start; }
+
+/* ---------------------------------------------------------------- top */
+.bk-intro { color: var(--tx-inv); padding-block: clamp(8rem, 18vh, 11rem) clamp(2.5rem, 5vw, 4rem); }
+.bk-intro__h { grid-column: 1 / -1; font-size: var(--step-5); font-weight: 320; line-height: .92;
+  letter-spacing: -0.04em; }
+.bk-intro__lead { grid-column: 2; margin-top: clamp(1.6rem, 3vw, 2.4rem); max-width: 46ch; font-size: var(--step-1);
+  line-height: 1.4; color: var(--tx-inv-soft); text-wrap: pretty; }
+.bk-intro__contact { grid-column: 2; list-style: none; margin: clamp(1.8rem, 3vw, 2.4rem) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: .4rem clamp(2rem, 4vw, 3.5rem); }
+.bk-intro__contact li { display: flex; align-items: baseline; gap: .7rem; }
+.bk-intro__k { font-size: var(--step--1); color: var(--tx-inv-soft); }
+.bk-intro__contact a { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--f-display);
+  font-weight: 360; font-size: var(--step-1); letter-spacing: -0.01em; color: var(--tx-inv);
+  text-decoration: underline; text-decoration-color: rgba(169,133,230,.5); text-decoration-thickness: 1px;
+  text-underline-offset: .22em; transition: text-decoration-color var(--dur-fast) ease; }
+.bk-intro__contact a:hover { text-decoration-color: var(--violet-300); }
+
+/* --------------------------------------------------------------- form */
+.bk-form { color: var(--tx-inv); padding-block: clamp(2.5rem, 5vw, 4rem) var(--section-y); }
+.bk-form__h { font-size: var(--step-2); font-weight: 360; letter-spacing: -0.02em; }
+/* a small portrait of the person being booked, beside the heading */
+.bk-form__who { display: flex; align-items: center; gap: 1rem; }
+.bk-form__face { flex: 0 0 auto; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+  object-position: 50% 18%; background: var(--plum-2); box-shadow: 0 0 0 1px var(--line-inv); }
+.bk-form__req { margin-top: 1.2rem; max-width: 30ch; font-size: var(--step--1); line-height: 1.6;
+  color: var(--tx-inv-soft); }
+.bk-form__bureau { margin-top: 1rem; max-width: 30ch; font-size: var(--step--1); line-height: 1.6;
+  color: var(--tx-inv-soft); }
+.bk-form__bureau a, .bk-done__p a { color: var(--tx-inv); text-decoration: underline; text-underline-offset: .2em;
+  text-decoration-color: rgba(169,133,230,.5); overflow-wrap: anywhere; }
+.bk-form__main { grid-column: 2; min-width: 0; }
+
+/* the two steps: each a fieldset with its heading in the legend. With
+   no script both show, one after the other. */
+.bk-step { display: grid; grid-template-columns: 1fr 1fr; min-width: 0; margin: 0; padding: 0; border: 0;
+  gap: clamp(1.4rem, 2.4vw, 1.9rem) clamp(1.2rem, 2.4vw, 2rem); }
+/* no script: a hairline over step 2's legend (a fieldset's own border
+   would be drawn behind its legend) */
+.bk-step + .bk-step { margin-top: clamp(3rem, 5vw, 4rem); }
+.bk-step + .bk-step > .bk-step__legend { padding-top: clamp(2rem, 3.5vw, 2.6rem); border-top: 1px solid var(--line-inv); }
+.is-stepped .bk-step + .bk-step { margin-top: 0; }
+.is-stepped .bk-step + .bk-step > .bk-step__legend { padding-top: 0; border-top: 0; }
+/* an actions row whose only control is script-only stays out of the way */
+.bk-step__actions:not(:has(> :not([hidden]))) { display: none; }
+.bk-step__legend { padding: 0; margin: 0 0 clamp(1.2rem, 2vw, 1.6rem); width: 100%; }
+.bk-step__h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .3rem 1rem;
+  font-family: var(--f-display); font-size: var(--step-1); font-weight: 380; line-height: 1.2;
+  letter-spacing: -0.012em; scroll-margin-top: 7rem; }
+.bk-step__h:focus { outline: none; }
+.bk-step__h:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 4px; }
+.bk-step__n { font-family: var(--f-text); font-size: var(--step--1); font-weight: 500; letter-spacing: .02em;
+  color: var(--tx-inv-soft); font-variant-numeric: lining-nums tabular-nums; }
+/* the step's hint sits in its legend, so it is read with the step name */
+.bk-step__hint { display: block; margin-top: .5rem; font-size: var(--step--1); line-height: 1.5;
+  color: var(--tx-inv-soft); }
+.bk-step__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.2rem;
+  margin-top: .6rem; }
+.bk-step__actions .btn { min-height: 52px; }
+.bk-step__actions .btn:focus-visible, .bk-done__actions .btn:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
+.bk-step__actions .btn:active, .bk-done__actions .btn:active { transform: translateY(0) scale(.98); }
+.bk-field { display: flex; flex-direction: column; gap: .5rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.bk-field--wide { grid-column: 1 / -1; }
+.bk-label { padding: 0; font-size: var(--step--1); font-weight: 600; letter-spacing: .02em; color: var(--tx-inv); }
+.bk-label__req { font-weight: 400; color: var(--tx-inv-soft); }
+.bk-field--choice > .bk-hint { margin: .2rem 0 .35rem; }
+.bk-hint { margin-top: -.15rem; font-size: var(--step--1); line-height: 1.5; color: var(--tx-inv-soft); }
+.bk-input { scroll-margin-top: 7rem; scroll-margin-bottom: 4rem; width: 100%; min-height: 48px; padding: .75rem 1rem; font: inherit; font-size: max(16px, 1rem);
+  color: var(--tx-inv); background: rgba(244,236,222,.05); border: 1px solid var(--bk-line);
+  border-radius: var(--radius); caret-color: var(--violet-300);
+  transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease; }
+/* .55 on the field fill over plum: 5.15:1 (4.9:1 on the focused fill) */
+.bk-input::placeholder { color: rgba(244,236,222,.55); }
+.bk-input:hover { border-color: var(--bk-line-hover); }
+.bk-input:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 2px; border-color: var(--violet-300);
+  background: rgba(244,236,222,.08); }
+.bk-input--area { min-height: 9rem; resize: vertical; line-height: 1.55; }
+.bk-input[aria-invalid="true"] { border-color: #F0544F; }
+.bk-error { display: flex; gap: .45rem; align-items: baseline; font-size: var(--step--1); line-height: 1.45;
+  font-weight: 500; color: #FF8A84; }
+.bk-error[hidden] { display: none; }
+.bk-error::before { content: ""; flex: 0 0 auto; width: .5rem; height: .5rem; border-radius: 1px;
+  transform: translateY(-.05rem) rotate(45deg); background: currentColor; }
+
+/* select: native control, own chevron */
+.bk-select { position: relative; }
+.bk-select select { appearance: none; -webkit-appearance: none; padding-right: 2.8rem; cursor: pointer; }
+.bk-select select option { color: var(--ink); background: var(--paper); }
+.bk-select__chev { position: absolute; right: 1rem; top: 50%; width: 1.1rem; height: 1.1rem; transform: translateY(-50%);
+  pointer-events: none; color: var(--tx-inv-soft); }
+
+/* format: native radios, each a 48px chip whose whole box is the label */
+.bk-choices { display: flex; flex-wrap: wrap; gap: .6rem; }
+.bk-choice { position: relative; display: inline-flex; align-items: center; gap: .65rem; min-height: 48px;
+  padding: .55rem 1.15rem .55rem .95rem; border: 1px solid var(--bk-line); border-radius: var(--radius);
+  cursor: pointer; font-size: var(--step-0); color: var(--tx-inv);
+  transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease; }
+.bk-choice input { scroll-margin-top: 7rem; width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--violet-500); }
+.bk-choice input:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .bk-choice:hover { border-color: var(--bk-line-hover); } }
+.bk-choice:has(input:checked) { border-color: var(--violet-300); background: rgba(169,133,230,.12); }
+
+/* one checkbox: the native box, its label beside it, a 48px row */
+.bk-check { display: inline-flex; align-items: center; gap: .75rem; min-height: 48px; cursor: pointer; }
+.bk-check input { flex: 0 0 auto; width: 1.15rem; height: 1.15rem; margin: 0; accent-color: var(--violet-500);
+  scroll-margin-top: 7rem; }
+.bk-check input:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
+.bk-check .bk-label { font-size: var(--step-0); font-weight: 400; letter-spacing: 0; }
+
+.bk-submit__note, .bk-submit__privacy { flex: 1 1 100%; font-size: var(--step--1); line-height: 1.55;
+  color: var(--tx-inv-soft); }
+.bk-submit__privacy { margin-top: -.6rem; }
+.bk-submit__note a { color: var(--tx-inv); text-decoration: underline; text-underline-offset: .2em;
+  text-decoration-color: rgba(169,133,230,.5); }
+.bk-status { margin-top: 1rem; font-size: var(--step--1); color: var(--tx-inv); }  /* always rendered (empty), so a screen reader hears it fill */
+
+/* the confirmation: what was sent, as a plain list of label and value */
+.bk-done__h { font-family: var(--f-display); font-size: var(--step-1); font-weight: 380; line-height: 1.2;
+  letter-spacing: -0.012em; scroll-margin-top: 7rem; }
+.bk-done__h:focus { outline: none; }
+.bk-done__h:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 4px; }
+.bk-done__p { margin-top: 1rem; max-width: 56ch; font-size: var(--step-0); line-height: 1.6; color: var(--tx-inv-soft); }
+.bk-done__list { margin: clamp(1.6rem, 3vw, 2.2rem) 0 0; border-top: 1px solid var(--line-inv-strong); }
+.bk-done__list > div { display: grid; grid-template-columns: minmax(8rem, 2fr) 5fr; gap: .3rem 1.4rem;
+  padding-block: .8rem; border-bottom: 1px solid var(--line-inv); }
+.bk-done__list dt { font-size: var(--step--1); font-weight: 600; letter-spacing: .02em; color: var(--tx-inv-soft); }
+.bk-done__list dd { margin: 0; font-size: var(--step-0); line-height: 1.5; color: var(--tx-inv);
+  overflow-wrap: anywhere; white-space: pre-line; }
+.bk-done__actions { margin-top: clamp(1.8rem, 3vw, 2.4rem); display: flex; flex-wrap: wrap; gap: 1rem 1.2rem; }
+.bk-done__actions .btn { min-height: 52px; }
+
+/* ---------------------------------------------------------- what's next */
+.bk-steps { color: var(--tx-inv); padding-block: var(--section-y); }
+.bk-steps__h { font-size: var(--step-2); font-weight: 360; letter-spacing: -0.02em; }
+.bk-steps__list { list-style: none; margin: 0; padding: 0; counter-reset: bk; border-top: 1px solid var(--line-inv-strong); }
+.bk-steps__list li { counter-increment: bk; display: grid; grid-template-columns: 3rem 1fr; column-gap: 1rem;
+  padding-block: clamp(1.1rem, 2.2vw, 1.6rem); border-bottom: 1px solid var(--line-inv); }
+.bk-steps__list li::before { content: counter(bk); grid-row: 1 / span 2; font-family: var(--f-display); font-style: italic;
+  font-size: var(--step-1); line-height: 1.15; color: var(--violet-300); font-variant-numeric: lining-nums; }
+.bk-steps__t { font-family: var(--f-display); font-weight: 380; font-size: var(--step-1); line-height: 1.2;
+  letter-spacing: -0.012em; }
+.bk-steps__d { margin-top: .35rem; font-size: var(--step-0); line-height: 1.55; color: var(--tx-inv-soft);
+  max-width: 56ch; }
+
+@media (max-width: 900px) {
+  .bk-intro__inner, .bk-form__inner, .bk-steps__grid { grid-template-columns: 1fr; }
+  .bk-intro__lead, .bk-intro__contact, .bk-form__main { grid-column: 1; }
+  .bk-form__main { margin-top: 2rem; }
+  .bk-form__req, .bk-form__bureau { max-width: 46ch; }
+  .bk-intro__h { font-size: clamp(3rem, 15vw, 4.6rem); }
+  .bk-intro__contact { flex-direction: column; }
+  .bk-steps__h { margin-bottom: 1.4rem; }
+}
+@media (max-width: 600px) {
+  .bk-step { grid-template-columns: minmax(0, 1fr); }
+  .bk-form__face { width: 60px; height: 60px; }
+  .bk-done__list > div { grid-template-columns: minmax(0, 1fr); }
+}
+@media (forced-colors: active) {
+  .bk-choice:has(input:checked) { outline: 2px solid Highlight; }
+}

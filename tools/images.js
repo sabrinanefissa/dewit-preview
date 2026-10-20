@@ -38,17 +38,7 @@ const PORTRAITS = [
   'hero',                    // home hero poster
   'reel-poster',             // speaking hero poster
   'permission',              // home chap stills
-  'feeling lonely at work',  // speaking chap stills
-  'chap-feel',
-  'ACT',
-  'on stage',                // keys rest
-  'keys-stage',              // keys talk stills
-  'out-aisle',               //   (and the speaking walk-out)
-  'room-offsite',
   'keynote',                 // home out ("idea") and the bleed
-  'act-terrace',             // speaking chap: Trust's first still
-  'pos-honest',              // speaking chap: the takeaways (positive stills; Trust is out-aisle)
-  'pos-curiosity', 'pos-shared', 'pos-confidence',
 ];
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

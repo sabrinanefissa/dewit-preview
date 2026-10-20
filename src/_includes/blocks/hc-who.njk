@@ -1,0 +1,14 @@
+  {# Healthcare: who it is for. Four plain items, no icons. #}
+  <section class="hc-who"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="hc-who__grid">
+      <h2 class="hc-who__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
+      <ul class="hc-who__list">
+      {%- for it in block.items %}
+        <li class="hc-who__item">
+          <h3 class="hc-who__name">{{ it.title | inline() }}</h3>
+          {%- if it.text %}<p class="hc-who__text">{{ it.text | inline() }}</p>{% endif %}
+        </li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

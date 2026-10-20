@@ -1,0 +1,11 @@
+  {# About: the numbers, as one sentence. Static: the count-up belongs to
+       Home, so nothing here carries data-count. #}
+  <section class="ab-numbers"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | inline() }}"{% endif %} data-tone="{{ block | tone('plum') }}">
+    <div class="ab-numbers__grid">
+    <p class="ab-numbers__line">
+    {%- for c in block.counters %}
+      <span class="ab-numbers__item"><span class="ab-numbers__n">{{ c.value }}</span> {{ c.label | inline() }}</span>{% if not loop.last %} {% endif %}
+    {%- endfor %}
+    </p>
+    </div>
+  </section>

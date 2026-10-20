@@ -211,18 +211,39 @@ var UI = (function () {
     addEventListener("keydown", function (e) { if (e.key === "Escape") closeLB(); });
   }
 
-  /* ---- Mobile drawer ---- */
+  /* ---- Mobile drawer ----
+     Open: focus moves to its first link and everything else on the page is
+     inert (no tabbing or reading behind it). Escape, the close button or a
+     link closes it, and focus goes back to the Menu button (not on a link
+     click, which navigates). */
   var drawer = document.querySelector(".drawer"), toggle = document.querySelector(".menu-toggle"),
-      dClose = drawer && drawer.querySelector(".drawer__close");
-  function setDrawer(open) {
-    if (!drawer) return; drawer.classList.toggle("is-open", open);
+      dClose = drawer && drawer.querySelector(".drawer__close"), inerted = [];
+  function setDrawer(open, refocus) {
+    if (!drawer) return;
+    var was = drawer.classList.contains("is-open");
+    drawer.classList.toggle("is-open", open);
     drawer.setAttribute("aria-hidden", open ? "false" : "true");
     if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
     document.body.style.overflow = open ? "hidden" : "";
+    if (open && !was) {
+      inerted = [].slice.call(document.body.children).filter(function (el) {
+        return el !== drawer && el.tagName !== "SCRIPT" && !el.inert;
+      });
+      inerted.forEach(function (el) { el.inert = true; });
+      var first = drawer.querySelector("nav a") || dClose;
+      if (first) first.focus({ preventScroll: true });
+    } else if (!open && was) {
+      inerted.forEach(function (el) { el.inert = false; });
+      inerted = [];
+      if (refocus !== false && toggle) toggle.focus({ preventScroll: true });
+    }
   }
   if (toggle) toggle.addEventListener("click", function () { setDrawer(!drawer.classList.contains("is-open")); });
   if (dClose) dClose.addEventListener("click", function () { setDrawer(false); });
-  if (drawer) drawer.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setDrawer(false); }); });
+  if (drawer) drawer.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setDrawer(false, false); }); });
+  if (drawer) addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && drawer.classList.contains("is-open")) { e.preventDefault(); setDrawer(false); }
+  });
 
   var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
 })();
@@ -1603,7 +1624,7 @@ var UI = (function () {
 (function () {
   "use strict";
   /* the home hero's push-in (module 10.A) rides the spine too */
-  var page = document.querySelector(".spk-hero, .spk-said, .spk-keys, .spk-bio, .spk-formats, .hero[data-zoom]");
+  var page = document.querySelector(".spk-hero, .spk-bio, .spk-formats, .hero[data-zoom]");
   if (!page) return;
 
   var root = document.documentElement;
@@ -1680,11 +1701,11 @@ var UI = (function () {
     start: function () { return 0; },
     end: function () {
       /* the section tops are taken here, with the rest of the measuring */
-      var keys = top(".spk-keys"), chap = top(".spk-chap"),
+      var chap = top(".spk-chap"),
           form = top(".spk-formats"), mainEl = document.querySelector("main");
       var max = root.scrollHeight - window.innerHeight;
       var s = [0,
-               keys ? keys.y : max * 0.25,
+               max * 0.25,
                chap ? chap.y + chap.el.offsetHeight / 2 : max * 0.5,
                form ? form.y : max * 0.75,
                /* the last stop is the end of main: the footer is fixed under
@@ -1767,6 +1788,9 @@ var UI = (function () {
     video.load();
 
     var ended = false, soundOn = false, ccOn = false, awayPaused = false;
+    /* while a chapter jump scrolls the page back up to the reel, the
+       scrolled-away pause holds off (until this time, ms) */
+    var holdAway = 0;
 
     function say(msg) {
       if (!live) return;
@@ -1896,6 +1920,7 @@ var UI = (function () {
     /* Scrolled away or tab hidden: pause and remember. Coming back resumes
        muted, with the Sound control showing "Sound on" again. */
     function away() {
+      if (Date.now() < holdAway) return;
       if (!video.paused) { video.pause(); awayPaused = true; syncPlay(); }
     }
     function back() {
@@ -1927,730 +1952,36 @@ var UI = (function () {
     if (rmq.addEventListener) rmq.addEventListener("change", onMotionChange);
     else if (rmq.addListener) rmq.addListener(onMotionChange);
 
+    /* ---- chapters (the list under the reel, [data-seek] in seconds) ----
+       A chapter is a click, so it is a sound gesture like the big control:
+       it unmutes, jumps the reel to that second and plays, then brings the
+       reel back into view (instantly under reduced motion). */
+    [].slice.call(document.querySelectorAll("[data-seek]")).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = parseFloat(b.getAttribute("data-seek")) || 0;
+        claim();
+        ended = false;
+        soundOn = true;
+        video.muted = false;
+        try { video.currentTime = t; } catch (err) {}
+        soundGesture();
+        holdAway = Date.now() + 1800;
+        tryPlay();
+        awayPaused = false;
+        hideBig();
+        showPlay(true);
+        syncSound(); syncPlay();
+        var y = Math.max(0, hero.getBoundingClientRect().top + window.scrollY);
+        if (getComputedStyle(hero).position === "sticky") y = 0;
+        if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y, reduce ? { immediate: true } : { duration: 0.9 });
+        else window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
+        var lab = b.querySelector(".spk-chapters__t");
+        say("Playing from " + (lab ? lab.textContent : t + " seconds"));
+      });
+    });
+
     syncSound(); syncCC(); applyCC(); syncPlay();
     if (autoOK) { video.muted = true; tryPlay(); }
-  }
-})();
-
-/* ===== 2. Keynotes: N talks on a pinned stage, the scroll wipes between them ===
-   One instance per .spk-keys. N = the panels in the markup (2-5); the
-   phase lengths come from the section's data-head (90) and data-panel (80),
-   so U = head + N * panel + 50 (380 for three talks) and the CSS track is
-   U + 100svh (--panels, --head-svh, --panel-svh on the section).
-   The section is a pinned stage (the track is 480svh, the stage sticky
-   inside it for 380svh of scroll). It rises over the last 60svh of the
-   candle wheel's held stage, so there is no grow any more: the ground is
-   full-bleed from the start (--rise and --g are written once, at 1) and
-   always up (--reveal 1); it rises UNDER the wheel's stage (z 3), whose
-   velvet fades out over its first 60svh (--spk-keys-reveal on the wheel's
-   section), so the talks show in the gap between the candles, which stay
-   in front and scroll away. This module registers ONE entry
-   with the spine and has no scroll listener of its own; update(p) turns p
-   into svh of scroll (u = p * 380) and writes the phases as custom
-   properties:
-     0-60     the wheel's velvet fades out over the ground
-              (--spk-keys-reveal on the wheel's section; --reveal stays 1)
-     40-70    the wheel's candles fade out as they slide (--spk-keys-gone
-              on the wheel's section)
-     0-90     the heading alone (--head: in over 63-81, 70%-90% of the
-              head, once the candles have faded; held to 90; out over
-              the first 40svh of talk 01)
-     90-170   talk 01
-     170-250  talk 02 wipes in from the right (--wi over the first 40%)
-     250-330  talk 03 wipes in from the right
-     330-380  hold, while the room section rises over the stage
-   (in general: talk k occupies head + k * panel ... head + (k + 1) * panel)
-   A talk becomes the live one when its wipe is half done; only the live
-   panel's ring is interactive. "Watch Stephen speak" plays that talk's
-   segment of the reel WITH SOUND on the one shared <video>, full-bleed
-   above the pictures; the video is seen only while a clip plays.
-   Only one audio source is ever running: pressing a talk claims the audio
-   through the document-level "spk:audio" event, which stops the hero reel,
-   and the hero's own controls claim it back.
-   Four modes, written to data-spk-keys-mode: "pin"; "reel" (phones: no
-   pin, N + 1 full-screen cards snapping in the page's flow, dots for the
-   index, the spine entry disabled; see the reel section below); "strip"
-   (phones with reduced motion: the talks as a horizontal snap strip);
-   "stacked" (reduced motion wider than a phone, or no spine: the talks one
-   under another). No script: stacked. */
-(function () {
-  "use strict";
-  [].slice.call(document.querySelectorAll(".spk-keys")).forEach(keys);
-
-  function keys(sec) {
-    var track    = sec.querySelector(".spk-keys__track");
-    var stage    = sec.querySelector(".spk-keys__stage");
-    var ground   = sec.querySelector(".spk-keys__ground");
-    var box      = sec.querySelector(".spk-keys__panels");
-    var head     = sec.querySelector(".spk-keys__head");
-    var index    = sec.querySelector(".spk-keys__index");
-    var vid      = sec.querySelector(".spk-keys__video");
-    var tabs     = [].slice.call(sec.querySelectorAll(".spk-keys__tab"));
-    var panels   = [].slice.call(sec.querySelectorAll(".spk-keys__panel"));
-    var hears    = [].slice.call(sec.querySelectorAll(".spk-keys__hear"));
-    var cap      = sec.querySelector(".spk-keys__cap");
-    var playWrap = sec.querySelector(".spk-keys__play");
-    var pauseBtn = sec.querySelector(".spk-keys__pause");
-    var live     = sec.querySelector("[aria-live]");
-    if (!track || !stage || !ground || !box || !head || !index ||
-        !tabs.length || tabs.length !== panels.length) return;
-    var N = panels.length;
-
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var small  = window.matchMedia("(max-width: 820px)");
-    var strip  = window.matchMedia("(max-width: 768px)");
-    var cur = 0;
-
-    function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
-    function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
-
-    function say(msg) {
-      if (!live) return;
-      live.textContent = "";
-      setTimeout(function () { live.textContent = msg; }, 60);
-    }
-
-    /* ------------------------------------------------------------------
-       The clip. One shared <video>, three segments, whose in and out points
-       live on the buttons in the markup as data-seg-start / data-seg-end.
-       ------------------------------------------------------------------ */
-    /* a: the in point the clip plays from, b: the out point it stops at, and
-       p: a frame inside the segment the element is parked on when it stops. */
-    var segs = hears.map(function (b) {
-      var a = parseFloat(b.getAttribute("data-seg-start"));
-      var p = parseFloat(b.getAttribute("data-seg-poster"));
-      return { a: a, b: parseFloat(b.getAttribute("data-seg-end")),
-               p: isNaN(p) ? a : p };
-    });
-    var playing = -1, watchRaf = 0, srcSet = false, ccTrack = null;
-    var idleT = 0, pauseHideT = 0;
-
-    function clipSrc() {
-      if (!vid) return "";
-      return small.matches
-        ? (vid.getAttribute("data-src-mobile") || vid.getAttribute("data-src-1080"))
-        : vid.getAttribute("data-src-1080");
-    }
-    function ensureSrc() {
-      if (!vid || srcSet) return;
-      var s = clipSrc();
-      if (!s) return;
-      vid.setAttribute("src", s);
-      vid.load();
-      srcSet = true;
-      var t = vid.textTracks && vid.textTracks.length ? vid.textTracks[0] : null;
-      if (t && !ccTrack) {
-        ccTrack = t;
-        ccTrack.mode = "hidden";          /* the cues, without the native box */
-        ccTrack.addEventListener("cuechange", onCue);
-      }
-    }
-    /* One line at the bottom of the frame, from the reel's own VTT, and only
-       when the visitor has captions on in the hero (the CSS hides it too). */
-    function onCue() {
-      if (playing < 0 || !ccTrack || !cap) return;
-      var ccOn = document.documentElement.getAttribute("data-spk-cc") === "on";
-      var c = ccTrack.activeCues && ccTrack.activeCues.length ? ccTrack.activeCues[0] : null;
-      var txt = (ccOn && c) ? String(c.text).replace(/\s+/g, " ").trim() : "";
-      cap.textContent = txt;
-      cap.classList.toggle("is-on", !!txt);
-    }
-    function clearCap() {
-      if (!cap) return;
-      cap.classList.remove("is-on");
-      cap.textContent = "";
-    }
-    /* The pause ring fades to .35 after 2s without the pointer, and comes back
-       on pointer movement or focus. */
-    function wake() {
-      if (!pauseBtn) return;
-      pauseBtn.classList.remove("is-idle");
-      clearTimeout(idleT);
-      if (playing < 0) return;
-      idleT = setTimeout(function () { pauseBtn.classList.add("is-idle"); }, 2000);
-    }
-    function syncHear(i) {
-      var b = hears[i];
-      if (!b) return;
-      var on = (playing === i);
-      b.setAttribute("data-state", on ? "pause" : "play");
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-      var l = b.querySelector(".spk-keys__hearlabel");
-      /* the block's own label (hearLabel), kept from the markup */
-      if (l && !l.hasAttribute("data-label")) l.setAttribute("data-label", l.textContent);
-      if (l) l.textContent = on ? "Pause" : l.getAttribute("data-label");
-    }
-    /* The out point is watched on a frame callback, not on timeupdate, which
-       fires about four times a second and would overshoot the line. */
-    function watch() {
-      watchRaf = 0;
-      if (playing < 0 || !vid) return;
-      var s = segs[playing];
-      if (s && vid.currentTime >= s.b) { stopClip(true); return; }
-      watchRaf = requestAnimationFrame(watch);
-    }
-    /* noPark: the caller is changing the live talk itself, so this must not
-       queue a seek back to the current one first. */
-    function stopClip(atEnd, noPark) {
-      var i = playing;
-      if (watchRaf) { cancelAnimationFrame(watchRaf); watchRaf = 0; }
-      playing = -1;
-      sec.classList.remove("is-playing", "is-muted");
-      clearTimeout(idleT);
-      if (playWrap) playWrap.removeAttribute("data-accent");
-      if (pauseBtn) {
-        clearTimeout(pauseHideT);
-        /* hidden only once the 420ms fade has finished */
-        pauseHideT = setTimeout(function () { if (playing < 0) pauseBtn.hidden = true; }, 420);
-      }
-      if (vid) {
-        if (!vid.paused) vid.pause();
-        vid.muted = true;
-        if (!noPark && segs[cur]) { try { vid.currentTime = segs[cur].p; } catch (err) {} }
-        /* the stills are the ground: the clip is only seen while it plays */
-        vid.classList.remove("is-on");
-      }
-      if (i >= 0) { clearCap(); syncHear(i); if (atEnd) say("Clip finished"); }
-    }
-    function playClip(i, auto) {
-      if (!vid || !segs[i]) return;
-      sec.classList.remove("is-muted");
-      claim();                        /* stops the hero reel */
-      ensureSrc();
-      var s = segs[i];
-      vid.classList.add("is-on");
-      /* always from the in point */
-      try { vid.currentTime = s.a; } catch (err) {}
-      vid.muted = false;
-      playing = i;
-      sec.classList.add("is-playing");
-      if (playWrap) playWrap.setAttribute("data-accent", panels[i].getAttribute("data-accent") || "");
-      if (pauseBtn) {
-        clearTimeout(pauseHideT);
-        pauseBtn.hidden = false;
-        wake();
-      }
-      syncHear(i);
-      var p = vid.play();
-      if (p && p.catch) p.catch(function () {
-        /* an automatic start the browser will not allow with sound (no
-           click on the page yet): play muted, and the talk's own button
-           becomes "Tap for sound" */
-        if (!auto || playing !== i) { stopClip(false); return; }
-        vid.muted = true;
-        sec.classList.add("is-muted");
-        var l = hears[i] && hears[i].querySelector(".spk-keys__hearlabel");
-        if (l) l.textContent = UI.tapSound || "Tap for sound";
-        var p2 = vid.play();
-        if (p2 && p2.catch) p2.catch(function () { stopClip(false); });
-      });
-      if (!watchRaf) watchRaf = requestAnimationFrame(watch);
-      var name = tabs[i] ? (tabs[i].querySelector(".spk-keys__name") || {}).textContent : "";
-      say("Playing " + (name || "clip") + " with sound");
-    }
-
-    function claim() {
-      document.dispatchEvent(new CustomEvent("spk:audio", { detail: { owner: "keys", el: sec } }));
-    }
-    document.addEventListener("spk:audio", function (e) {
-      if (!e.detail || e.detail.el === sec) return;
-      if (playing >= 0) stopClip(false);
-    });
-
-    hears.forEach(function (b, i) {
-      b.addEventListener("click", function () {
-        autoDone[i] = true;
-        /* playing muted after an automatic start: this tap turns the sound on */
-        if (playing === i && vid && vid.muted) {
-          vid.muted = false; sec.classList.remove("is-muted"); syncHear(i);
-          var pp = vid.play(); if (pp && pp.catch) pp.catch(function () {});
-          return;
-        }
-        if (playing === i) { stopClip(false); say(UI.paused || "Paused"); return; }
-        if (playing >= 0) stopClip(false);
-        playClip(i);
-      });
-    });
-
-    /* The pause ring stops the clip and hands focus back to the talk's own
-       button, so a keyboard user is not left on a control that is going away. */
-    if (pauseBtn) {
-      pauseBtn.addEventListener("click", function () {
-        var i = playing;
-        stopClip(false); say(UI.paused || "Paused");
-        if (i < 0) i = cur;
-        if (hears[i]) hears[i].focus({ preventScroll: true });
-      });
-      pauseBtn.addEventListener("focus", wake);
-    }
-    sec.addEventListener("pointermove", function (e) {
-      if (playing < 0 || e.pointerType === "touch") return;
-      wake();
-    }, { passive: true });
-    document.addEventListener("keydown", function (e) {
-      if (playing >= 0 && e.key === "Escape") stopClip(false);
-    });
-
-    /* Nothing keeps talking off screen or in a hidden tab. The stage is
-       observed, not the section: the section is 540svh tall, so its own
-       ratio never reaches .25. */
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (e) {
-        /* the reel's stage is N + 1 screens tall: its cards watch instead */
-        if (mode !== "reel" && e[0].intersectionRatio < 0.25 && playing >= 0) stopClip(false);
-      }, { threshold: [0, 0.25, 1] }).observe(stage);
-    }
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden && playing >= 0) stopClip(false);
-    });
-    if (vid) {
-      vid.addEventListener("ended", function () { if (playing >= 0) stopClip(true); });
-      vid.addEventListener("pause", function () { if (playing >= 0) syncHear(playing); });
-    }
-
-    /* ---- the automatic start ----
-       When a talk has settled on screen (its caption fully in, --cap >= .95,
-       and it is the live one), a thin lilac ring draws around its play
-       button over AUTO ms (4s); when it closes, the talk plays. Leaving the
-       talk, or playing anything, resets the ring. A talk that was played,
-       paused or finished does not start again until the visitor has left
-       it and come back. Never under reduced motion. The ring is added by
-       the script (an SVG in each play ring), so no-script pages have none. */
-    var AUTO = 4000, autoK = -1, autoT0 = 0, autoRaf = 0, autoOn = false;
-    var autoDone = panels.map(function () { return false; });
-    var loads = hears.map(function (b) {
-      var ring = b.querySelector(".play__ring");
-      if (!ring) return null;
-      var sv = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      sv.setAttribute("class", "spk-keys__load"); sv.setAttribute("viewBox", "0 0 64 64"); sv.setAttribute("aria-hidden", "true");
-      var c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      c.setAttribute("cx", "32"); c.setAttribute("cy", "32"); c.setAttribute("r", "31"); c.setAttribute("pathLength", "1");
-      sv.appendChild(c); ring.appendChild(sv);
-      return b;
-    });
-    function setLoad(k, v) { if (loads[k]) loads[k].style.setProperty("--load", v.toFixed(4)); }
-    function candidate() {
-      if (playing >= 0 || document.hidden || !onStageAuto) return -1;
-      var k = cur, pnl = panels[k];
-      if (!pnl || autoDone[k]) return -1;
-      return parseFloat(pnl.style.getPropertyValue("--cap")) >= 0.95 ? k : -1;
-    }
-    function autoTick(now) {
-      autoRaf = 0;
-      if (!autoOn) return;
-      var k = candidate();
-      if (k !== autoK) {
-        if (autoK >= 0) setLoad(autoK, 0);
-        /* a talk left: it may start again when the visitor comes back */
-        panels.forEach(function (p, i) { if (i !== k && i !== playing) autoDone[i] = false; });
-        autoK = k; autoT0 = now;
-      }
-      if (k >= 0) {
-        var v = Math.min(1, (now - autoT0) / AUTO);
-        setLoad(k, v);
-        if (v >= 1) { setLoad(k, 0); autoDone[k] = true; autoK = -1; playClip(k, true); }
-      }
-      autoRaf = requestAnimationFrame(autoTick);
-    }
-    var onStageAuto = false;
-    if (!reduce && "IntersectionObserver" in window) {
-      autoOn = true;
-      new IntersectionObserver(function (e) {
-        onStageAuto = e[0].isIntersecting;
-        if (onStageAuto && !autoRaf) autoRaf = requestAnimationFrame(autoTick);
-        if (!onStageAuto && autoRaf) { cancelAnimationFrame(autoRaf); autoRaf = 0; if (autoK >= 0) setLoad(autoK, 0); autoK = -1; }
-      }, { threshold: 0 }).observe(stage);
-    }
-
-    /* Reduced motion: no pin, no grow, no wipe. All the talks are present
-       one under another, and the index stops being a tablist. The one thing
-       that still works on a click is "Watch Stephen speak". Without the
-       spine there is nothing to drive the stage, so it stacks too. */
-    var mode = "";
-    function goStacked() {
-      mode = "stacked";
-      sec.classList.add("is-stacked");
-      sec.setAttribute("data-spk-keys-mode", "stacked");
-      index.removeAttribute("role");
-      tabs.forEach(function (t) {
-        t.removeAttribute("role"); t.removeAttribute("aria-selected");
-        t.removeAttribute("aria-controls"); t.removeAttribute("tabindex");
-      });
-      panels.forEach(function (p) {
-        p.removeAttribute("inert"); p.classList.add("is-on"); p.classList.remove("is-off");
-        p.removeAttribute("role"); p.removeAttribute("aria-labelledby"); p.removeAttribute("tabindex");
-      });
-    }
-    /* reduced motion on a phone keeps the strip (no pin, the swipe is the
-       visitor's own); wider, or with no spine, the talks stack */
-    if (!window.spkSpine || (reduce && !strip.matches)) { goStacked(); return; }
-
-    /* ---- the live talk ---- */
-    /* In the pin only the live panel is reachable: the others take no
-       pointer and are inert. In the strip every picture is on screen in
-       turn, so every ring works. */
-    function syncPanels() {
-      panels.forEach(function (p, k) {
-        var off = mode === "pin" && k !== cur;
-        p.classList.toggle("is-on", k === cur);
-        p.classList.toggle("is-off", off);
-        if (off) p.setAttribute("inert", ""); else p.removeAttribute("inert");
-      });
-    }
-    function setCur(i) {
-      if (i === cur || !panels[i]) return;
-      /* a talk's clip belongs to that talk: changing talks stops it */
-      if (playing >= 0) stopClip(false, true);
-      tabs[cur].setAttribute("aria-selected", "false"); tabs[cur].tabIndex = -1; tabs[cur].classList.remove("is-on");
-      tabs[i].setAttribute("aria-selected", "true");    tabs[i].tabIndex = 0;    tabs[i].classList.add("is-on");
-      cur = i;
-      syncPanels();
-    }
-
-    /* ---- the stage: one spine entry ---- */
-    function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
-    var HEAD  = num("data-head", 240);            /* svh: the stage picture and the heading alone */
-    var PANEL = num("data-panel", 80);            /* svh: one talk */
-    var U = HEAD + N * PANEL + 50;                /* svh of scroll across the pin (380 for three) */
-    /* the candle wheel this stage rises over: the section right before it */
-    var said = sec.previousElementSibling;
-    if (said && !said.classList.contains("spk-said")) said = null;
-    function span() { return Math.max(0, track.offsetHeight - window.innerHeight); }
-    var last = {};
-    function put(el, key, name, v) {
-      var s = v.toFixed(4);
-      if (last[key] === s) return;
-      last[key] = s;
-      el.style.setProperty(name, s);
-    }
-    var wi = new Array(N + 1);
-    function update(p) {
-      if (entry.disabled) return;
-      var u = p * U, k;
-      /* the heading waits until the wheel's candles have faded (u 40-70),
-         then rises over 70%-90% of the head (63-81 for a 90svh head) and
-         holds to its end; it leaves over the first half of talk 01 */
-      /* for a 240svh head: the wheel's velvet fades up into the stage
-         picture over 0-173, slowly at first (eased, then squared: the
-         picture shows through from about 60), the candles over 19-79; the
-         heading rises over 149-178, holds, and is gone over 216-240, before talk 01's
-         picture comes in at HEAD: the heading is only ever on this picture */
-      var hd = smooth(clamp((u - 0.62 * HEAD) / (0.12 * HEAD))) * (1 - smooth(clamp((u - 0.9 * HEAD) / (0.1 * HEAD))));
-      var on = u >= HEAD;
-      /* talk k (k >= 1) wipes in over the first 40% of its own phase */
-      wi[0] = 1; wi[N] = 0;
-      for (k = 1; k < N; k++) wi[k] = clamp(clamp((u - HEAD - k * PANEL) / PANEL) / 0.4);
-      var wheel = !!said && said.classList.contains("is-wheel");
-      var rv = wheel ? Math.pow(smooth(clamp(u / (0.72 * HEAD))), 1.8) : 1;
-      /* the ground is always up: the wheel stays in front (z 3) and its
-         velvet fades out over it instead */
-      put(ground, "reveal", "--reveal", 1);
-      /* the wheel's velvet, veil and window lines leave with the hand-off
-         (module 7's CSS reads it, on the wheel's own section) */
-      /* ...and then its candles fade out as they slide (u 40-70) */
-      if (wheel) {
-        put(said, "rootReveal", "--spk-keys-reveal", rv);
-        put(said, "rootGone", "--spk-keys-gone", smooth(clamp((u - 0.08 * HEAD) / (0.25 * HEAD))));
-      } else if (last.rootReveal) {
-        if (said) { said.style.removeProperty("--spk-keys-reveal"); said.style.removeProperty("--spk-keys-gone"); }
-        last.rootReveal = ""; last.rootGone = "";
-      }
-      put(head, "head", "--head", hd);
-      box.classList.toggle("is-on", on);
-      index.classList.toggle("is-on", on);
-      /* the previous talk's caption fades as the next one wipes in */
-      put(panels[0], "c0", "--cap", Math.min(on ? 1 - hd : 0, 1 - clamp(wi[1] / 0.3)));
-      for (k = 1; k < N; k++) {
-        put(panels[k], "w" + k, "--wi", wi[k]);
-        put(panels[k], "c" + k, "--cap", Math.min(clamp((wi[k] - 0.7) / 0.3), 1 - clamp(wi[k + 1] / 0.3)));
-      }
-      /* a talk becomes the live one 20% into its phase (its wipe half done) */
-      var c = 0;
-      for (k = 1; k < N; k++) if (u >= HEAD + k * PANEL + 0.2 * PANEL) c = k;
-      setCur(c);
-    }
-    var entry = { disabled: true,
-      start: function () { return sec.offsetTop; },
-      end: function () { return sec.offsetTop + span(); },
-      update: update };
-
-    /* ---- the strip (phones): a swipe selects ---- */
-    var autoScroll = false, autoT = 0, swipeT = 0;
-    box.addEventListener("scroll", function () {
-      if (mode !== "strip" || autoScroll) return;
-      clearTimeout(swipeT);
-      swipeT = setTimeout(function () {
-        if (mode !== "strip" || autoScroll) return;
-        var r = box.getBoundingClientRect();
-        var mid = r.left + r.width / 2, best = -1, bestD = Infinity;
-        panels.forEach(function (p, k) {
-          var b = p.getBoundingClientRect();
-          var d = Math.abs(b.left + b.width / 2 - mid);
-          if (d < bestD) { bestD = d; best = k; }
-        });
-        if (best >= 0) setCur(best);
-      }, 140);
-    }, { passive: true });
-
-    /* ---- the index ---- */
-    function go(i) {
-      if (mode === "reel") { reelTo(i + 1); return; }
-      if (mode === "strip") {
-        setCur(i);
-        autoScroll = true;
-        clearTimeout(autoT);
-        autoT = setTimeout(function () { autoScroll = false; }, 700);
-        try { panels[i].scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); }
-        catch (err) { panels[i].scrollIntoView(); }
-        return;
-      }
-      /* the middle of that talk's hold */
-      var y = sec.offsetTop + ((HEAD + PANEL * i + 0.5 * PANEL) / U) * span();
-      if (window.spkLenis) window.spkLenis.scrollTo(y);
-      else window.scrollTo({ top: y, behavior: "smooth" });
-    }
-    tabs.forEach(function (t, i) {
-      t.addEventListener("click", function () { go(i); });
-      /* Roving tabindex, arrow keys move focus, Enter/Space activate. */
-      t.addEventListener("focus", function () {
-        tabs.forEach(function (o) { o.tabIndex = (o === t ? 0 : -1); });
-      });
-      t.addEventListener("keydown", function (e) {
-        var k = e.key, n = -1, L = tabs.length;
-        if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
-        else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
-        else if (k === "Home") n = 0;
-        else if (k === "End") n = L - 1;
-        else return;
-        e.preventDefault();
-        tabs[n].focus();
-      });
-    });
-
-    /* ---- the reel (phones): N + 1 full-height cards in the page's flow ----
-       Card 0 is the rest picture with the heading (the scroll-fill, module
-       12); cards 1..N are the talks, each caption centred as on the pin.
-       A card is "arrived" when 60% of it is on screen (an
-       IntersectionObserver): its caption rises in (--cap 0 → 1 over
-       --cap-ms, 360) and the one before fades. The document snaps to the
-       cards only while the viewport's top is between the first card's top
-       and the last card's (html.spk-snap, from an IntersectionObserver),
-       so the rest of the page scrolls freely. The index row is hidden; a column of dots (1 + N)
-       at the bottom right takes its place, the N talk dots being the
-       tablist (the index's ids and ARIA move onto them, and back). */
-    var railTabs = tabs, dotWrap = null, dotHead = null, dotTabs = [];
-    var cardIO = null, coverIO = null, cards = [], active = -1, covering = false;
-    var CAP_MS = num("data-cap-ms", 360);
-    var capV = panels.map(function () { return 0; }), capTo = capV.slice(), capRaf = 0, capT0 = 0, capFrom = capV.slice();
-    var TAB_A = ["role", "aria-selected", "aria-controls", "tabindex"];
-    var tabSaved = railTabs.map(function (t) {
-      var o = {}; TAB_A.forEach(function (n) { o[n] = t.getAttribute(n); }); return o;
-    });
-    var indexRole = index.getAttribute("role");
-
-    function capTick(now) {
-      var k = Math.min(1, (now - capT0) / CAP_MS), e = 1 - Math.pow(1 - k, 3), more = false;
-      panels.forEach(function (p, i) {
-        var v = capFrom[i] + (capTo[i] - capFrom[i]) * e;
-        capV[i] = v;
-        p.style.setProperty("--cap", v.toFixed(3));
-      });
-      if (k < 1) more = true;
-      capRaf = more ? requestAnimationFrame(capTick) : 0;
-    }
-    function capsTo(i) {
-      panels.forEach(function (p, k) { capFrom[k] = capV[k]; capTo[k] = (k === i ? 1 : 0); });
-      capT0 = performance.now();
-      if (!capRaf) capRaf = requestAnimationFrame(capTick);
-    }
-    function arrive(c) {
-      if (c === active) return;
-      active = c;
-      capsTo(c - 1);
-      if (c >= 1) setCur(c - 1);
-      if (dotHead) dotHead.classList.toggle("is-cur", c === 0);
-      dotTabs.forEach(function (d, k) { d.classList.toggle("is-cur", k === c - 1); });
-    }
-    function reelTo(c) {
-      var el = cards[c];
-      if (!el) return;
-      var y = el.getBoundingClientRect().top + window.pageYOffset;
-      /* native smooth scroll: it lands on a snap point (Lenis's own tween
-         would fight the snap) */
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-    /* the dots show while the section fills the screen */
-    function setCover(on) {
-      if (on === covering) return;
-      covering = on;
-      if (dotWrap) dotWrap.classList.toggle("is-in", on);
-    }
-    /* The snap: on only while the viewport's top edge lies between the top
-       of card 0 and the top of the last card (an IntersectionObserver whose
-       root is a 1px line at that edge, over cards 0..N-1), so a thumb that pulls past the
-       last card, or stops short of the first, is never pulled back. */
-    var zoneIO = null, inZone = [];
-    function setSnap(on) { document.documentElement.classList.toggle("spk-snap", on); }
-    /* a link that jumps (an in-page anchor, Lenis's anchors) must not be
-       pulled back to a card: the snap lets go first, and comes back only
-       if the jump lands inside the reel */
-    function onLinkDown(e) {
-      var a = e.target && e.target.closest ? e.target.closest("a[href*='#']") : null;
-      if (a) setSnap(false);
-    }
-    function watchZone() {
-      if (zoneIO) zoneIO.disconnect();
-      inZone = [];
-      zoneIO = new IntersectionObserver(function (es) {
-        es.forEach(function (e) {
-          var k = inZone.indexOf(e.target);
-          /* an edge touch does not count: resting on the last card, the
-             one before it only touches the line, and the snap is off */
-          var on = e.isIntersecting && e.boundingClientRect.bottom > 1;
-          if (on && k < 0) inZone.push(e.target);
-          else if (!on && k > -1) inZone.splice(k, 1);
-        });
-        setSnap(inZone.length > 0);
-      }, { rootMargin: "0px 0px -" + Math.max(0, window.innerHeight - 1) + "px 0px",     /* a 1px line */
-           threshold: [0, 0.5 / Math.max(1, window.innerHeight)] });     /* ...and a call as a card leaves it */
-      cards.slice(0, -1).forEach(function (c) { if (c) zoneIO.observe(c); });
-    }
-    function watchCover() {
-      if (coverIO) coverIO.disconnect();
-      /* covering = the section's visible part is the whole viewport: its
-         ratio reaches innerHeight / its height */
-      var t = Math.min(1, Math.max(0, (window.innerHeight - 2) / Math.max(1, sec.offsetHeight)));
-      coverIO = new IntersectionObserver(function (es) {
-        var e = es[es.length - 1];
-        var rb = e.rootBounds ? e.rootBounds.height : window.innerHeight;
-        setCover(e.isIntersecting && e.intersectionRect.height >= rb - 2);
-      }, { threshold: [0, t * 0.98, t] });
-      coverIO.observe(sec);
-    }
-    var coverRT = 0;
-    function onReelResize() { clearTimeout(coverRT); coverRT = setTimeout(function () { if (mode === "reel") { watchCover(); watchZone(); } }, 120); }
-
-    function startReel() {
-      sec.classList.add("is-reel");
-      sec.style.setProperty("--cap-ms", CAP_MS + "ms");
-      index.hidden = true;
-      index.removeAttribute("role");
-      dotWrap = document.createElement("div");
-      dotWrap.className = "spk-keys__dots";
-      dotHead = document.createElement("button");
-      dotHead.type = "button";
-      dotHead.className = "spk-keys__dot spk-keys__dot--head";
-      var hh = head.querySelector("h2");
-      dotHead.setAttribute("aria-label", hh ? (hh.getAttribute("aria-label") || hh.textContent.trim()) : "1");
-      dotHead.addEventListener("click", function () { reelTo(0); });
-      dotWrap.appendChild(dotHead);
-      var tl = document.createElement("div");
-      tl.className = "spk-keys__dotlist";
-      tl.setAttribute("role", "tablist");
-      if (index.getAttribute("aria-label")) tl.setAttribute("aria-label", index.getAttribute("aria-label"));
-      dotTabs = railTabs.map(function (t, i) {
-        var b = document.createElement("button");
-        b.type = "button";
-        b.className = "spk-keys__dot";
-        if (t.getAttribute("data-accent")) b.setAttribute("data-accent", t.getAttribute("data-accent"));
-        if (t.id) { b.id = t.id; t.removeAttribute("id"); }
-        TAB_A.forEach(function (n) { if (tabSaved[i][n] !== null) b.setAttribute(n, t.getAttribute(n) || tabSaved[i][n]); t.removeAttribute(n); });
-        var nm = t.querySelector(".spk-keys__name");
-        b.setAttribute("aria-label", (nm ? nm.textContent : t.textContent).replace(/\s+/g, " ").trim());
-        b.addEventListener("click", function () { go(i); });
-        b.addEventListener("focus", function () { dotTabs.forEach(function (o) { o.tabIndex = (o === b ? 0 : -1); }); });
-        b.addEventListener("keydown", function (e) {
-          var k = e.key, n = -1, L = dotTabs.length;
-          if (k === "ArrowDown" || k === "ArrowRight") n = (i + 1) % L;
-          else if (k === "ArrowUp" || k === "ArrowLeft") n = (i - 1 + L) % L;
-          else if (k === "Home") n = 0;
-          else if (k === "End") n = L - 1;
-          else return;
-          e.preventDefault();
-          dotTabs[n].focus();
-        });
-        tl.appendChild(b);
-        return b;
-      });
-      dotWrap.appendChild(tl);
-      stage.appendChild(dotWrap);
-      tabs = dotTabs;
-
-      var rest = ground.querySelector(".spk-keys__rest");
-      cards = [rest].concat(panels);
-      active = -1;
-      panels.forEach(function (p, k) { capV[k] = 0; p.style.setProperty("--cap", "0"); });
-      cardIO = new IntersectionObserver(function (es) {
-        es.forEach(function (e) {
-          var c = cards.indexOf(e.target);
-          if (c < 0) return;
-          if (e.intersectionRatio >= 0.6) arrive(c);
-          /* a playing talk stops once its card is mostly gone */
-          if (c >= 1 && playing === c - 1 && e.intersectionRatio < 0.25) stopClip(false);
-        });
-      }, { threshold: [0, 0.25, 0.6, 1] });
-      cards.forEach(function (c) { if (c) cardIO.observe(c); });
-      watchCover();
-      watchZone();
-      document.addEventListener("click", onLinkDown, true);
-      window.addEventListener("resize", onReelResize, { passive: true });
-    }
-    function stopReel() {
-      if (cardIO) { cardIO.disconnect(); cardIO = null; }
-      if (coverIO) { coverIO.disconnect(); coverIO = null; }
-      if (zoneIO) { zoneIO.disconnect(); zoneIO = null; }
-      document.removeEventListener("click", onLinkDown, true);
-      setSnap(false);
-      window.removeEventListener("resize", onReelResize);
-      if (capRaf) { cancelAnimationFrame(capRaf); capRaf = 0; }
-      setCover(false);
-      dotTabs.forEach(function (b, i) {
-        var t = railTabs[i];
-        if (b.id) { t.id = b.id; }
-        TAB_A.forEach(function (n) { var v = b.getAttribute(n); if (v !== null) t.setAttribute(n, v); });
-      });
-      if (dotWrap && dotWrap.parentNode) dotWrap.parentNode.removeChild(dotWrap);
-      dotWrap = dotHead = null; dotTabs = [];
-      tabs = railTabs;
-      if (indexRole) index.setAttribute("role", indexRole);
-      index.hidden = false;
-      sec.classList.remove("is-reel");
-      sec.style.removeProperty("--cap-ms");
-      panels.forEach(function (p) { p.style.removeProperty("--cap"); });
-      active = -1;
-    }
-
-    /* ---- modes: the spine has no remove, so leaving the pin disables
-       the entry through its flag ---- */
-    var added = false;
-    function setMode() {
-      if (mode === "stacked") return;
-      if (reduce && !strip.matches) { if (mode === "reel") stopReel(); goStacked(); return; }
-      var m = strip.matches ? (reduce ? "strip" : "reel") : "pin";
-      if (m === mode) return;
-      if (mode === "reel") stopReel();
-      mode = m;
-      sec.setAttribute("data-spk-keys-mode", m);
-      if (playing >= 0) stopClip(false);
-      entry.disabled = (m !== "pin");
-      if (m !== "pin") {
-        ground.style.removeProperty("--reveal");
-        if (said) { said.style.removeProperty("--spk-keys-reveal"); said.style.removeProperty("--spk-keys-gone"); }
-      }
-      if (m === "pin") {
-        last = {};
-        /* no grow: the ground is full-bleed from the start (written once) */
-        put(ground, "rise", "--rise", 1);
-        put(ground, "g", "--g", 1);
-        if (!added) { window.spkSpine.add(entry); added = true; }
-        else window.spkSpine.measure();          /* re-reads start/end and repaints */
-      }
-      if (m === "reel") startReel();
-      syncPanels();
-    }
-    setMode();
-    if (strip.addEventListener) strip.addEventListener("change", setMode);
-    else if (strip.addListener) strip.addListener(setMode);
   }
 })();
 
@@ -2939,16 +2270,18 @@ var UI = (function () {
    and the loop sleeps between waves. After the rows are drawn, a feathered
    destination-out ellipse clears the dot layer around the measured sentence,
    so the type keeps clean ground with no scrim and no text-shadow.
-   One instance per canvas.spk-room inside a .spk-formats section (the
-   current markup carries none, so this stays inert). */
+   One instance per canvas.spk-room: inside the formats sentence's own
+   section (.spk-avail, today's markup: the dots sit behind the sentence
+   alone and there are no room labels on the array), or inside a
+   .spk-formats section (the older markup, labels from its strip). */
 (function () {
   "use strict";
-  [].slice.call(document.querySelectorAll(".spk-formats canvas.spk-room")).forEach(room);
+  [].slice.call(document.querySelectorAll(".spk-avail canvas.spk-room, .spk-formats canvas.spk-room")).forEach(room);
 
   function room(cv) {
     var sec = cv.parentNode;
     var formats = cv.closest(".spk-formats");
-    var line = sec && sec.querySelector(".spk-formats__line");
+    var line = sec && sec.querySelector(".spk-formats__line, .spk-avail__line");
     var ctx = cv.getContext && cv.getContext("2d");
     if (!ctx || !sec) return;
 
@@ -2958,7 +2291,7 @@ var UI = (function () {
        the dots themselves use, read at the label's own seat. Where there are
        not enough rows to place six labels without collisions (under 768) they
        fall back to a centred list and the wave lights them in turn instead. */
-    var rooms  = formats.querySelector(".spk-formats__strip");
+    var rooms  = formats && formats.querySelector(".spk-formats__strip");
     var labels = rooms ? [].slice.call(rooms.children) : [];
     var anchors = [], flow = false;
 
@@ -2978,15 +2311,14 @@ var UI = (function () {
       }
     })();
 
-    /* a0 / a1 are the front and back row alphas. Raised about 40% this round —
-       the room was reading as almost nothing — and nothing else moves: the
-       pointer lift (0.42) and the wave lift (0.22) are unchanged, so the seats
-       still only ever step from subtle to slightly present. */
+    /* a0 / a1 are the front and back row alphas, set
+       so the rows read as a quiet pattern at 1440; nothing else moves: the
+       pointer lift (0.42) and the wave lift (0.22) are unchanged. */
     function tier() {
       var w = window.innerWidth;
-      if (w >= 1200) return { R: 9, S: 26, r0: 2.6, r1: 1.2, a0: .42, a1: .14, reach: 260, lean: 3.0, sag0: 10, sag1: 5 };
-      if (w >= 768)  return { R: 7, S: 20, r0: 2.2, r1: 1.1, a0: .39, a1: .14, reach: 220, lean: 2.5, sag0: 10, sag1: 5 };
-      return { R: 5, S: 13, r0: 1.9, r1: 1.0, a0: .36, a1: .14, reach: 0, lean: 0, sag0: 7, sag1: 3.5 };
+      if (w >= 1200) return { R: 9, S: 26, r0: 2.6, r1: 1.2, a0: .60, a1: .24, reach: 260, lean: 3.0, sag0: 10, sag1: 5 };
+      if (w >= 768)  return { R: 7, S: 20, r0: 2.2, r1: 1.1, a0: .56, a1: .22, reach: 220, lean: 2.5, sag0: 10, sag1: 5 };
+      return { R: 5, S: 13, r0: 1.9, r1: 1.0, a0: .50, a1: .22, reach: 0, lean: 0, sag0: 7, sag1: 3.5 };
     }
 
     var hole = null;
@@ -3298,649 +2630,6 @@ var UI = (function () {
         }
       });
     }
-  }
-})();
-
-/* ===== 7. A. What he talks about: the candle wheel =====
-   A pinned stage (the track is 780svh, the stage sticky inside it) over
-   the velvet. A giant wheel stands on its edge facing the viewer, its
-   centre below the screen (radius 0.40 W, centred on W/2, its top point
-   at 96% of the height: the top candle stands on the bottom edge). The
-   rim is a full ring of nine places 40 degrees apart: place q < N holds
-   line q's candle, the rest are fillers (the unlit frame, never a line),
-   so there is always a candle each side of the top one, lit, its line
-   above its flame. ONE spine entry (the section's top to the bottom of
-   its track, u = p * 780 svh of scroll), no scroll listener of its own:
-     0-60     the intro (t 0-1): candle 0 rises unlit from below the screen
-              into the tall row pose (0-0.5), then lights and settles into
-              its rim spot while its two neighbours come up (0.5-1)
-     60-540   six beats of 80svh. Beat k: the line arrives over the first
-              20%, the wheel turns 40 degrees (eased) over the last 45%
-              while the line leaves; the bridge (06) arrives on beat 5
-     (desktop, data-grow 160, below as uT)
-     500-660  the ending (g 0-1), half a beat after the bridge: "Three
-              talks." up high, above the resting candle (0-0.1); the top
-              candle and its two neighbours rise out of the ring into a
-              row of three upright lit candles (0.1-0.4), the rest fade
-              (0-0.3); the row lifts 0.26 H (0.35-0.62) so the wax covers
-              A (behind the canvas), which fades under it (0.55-0.68); B
-              rolls up into its own window in front (0.6-0.78)
-     628-720  the push: a camera scale x2.4 about the point between the
-              left and the middle candle (the velvet follows, x1.12)
-     720-820  held while the talks' stage picture fades up slowly through
-              the velvet (module 2, the talks' first 173svh)
-     720-820  the stage is held (on every screen); where the talks section
-              is pinned it rises under it: the velvet fades, the talks show in the
-              gap, the candles stay in front (z 3, no pointer events) and
-              scroll away, fading out over the talks' u 40-70
-              (--spk-keys-gone, from module 2); on phones (no pinned talks)
-              the stage's bottom dissolves over the track's last 120svh
-              (erased in the canvas, the velvet and B faded) and is
-              invisible by the end of the track
-   Every candle draws one still, candle-turn-03 lit or candle-unlit dark,
-   crossfaded as it lights (600ms; dark at once, 80ms). Only the current
-   candle is lit in the beats, the three from the rise on; a lit flame
-   under the pointer glows up (250ms in, 400ms out). An own rAF loop
-   draws, only on screen with the tab visible. Lines are real text.
-   Reduced motion, Save-Data, no canvas or no spine: no pin, the lines
-   stacked on the velvet, each under one lit candle (<img>).
-   Counts: N = the lines (3-9, the last is the bridge); the numbers above
-   are for N = 6, data-intro="60", data-beat="80" and data-grow="100".
-   After the intro (I), the ending starts at B = (N + 1) * beat, and
-   U = I + B + grow + 60 svh (--intro, --beats, --beat, --grow: the
-   section's inline style, read by the CSS). */
-(function () {
-  "use strict";
-  [].slice.call(document.querySelectorAll(".spk-said")).forEach(said);
-
-  function said(sec) {
-    var track   = sec.querySelector(".spk-said__track");
-    var stage   = sec.querySelector(".spk-said__stage");
-    var cv      = sec.querySelector(".spk-said__wheel");
-    var nextA   = sec.querySelector(".spk-said__nextA");
-    var nextB   = sec.querySelector(".spk-said__nextB");
-    var linesEl = sec.querySelector(".spk-said__lines");
-    var head    = sec.querySelector(".spk-said__h");
-    var live    = sec.querySelector("[aria-live]");
-    var lines   = [].slice.call(sec.querySelectorAll(".spk-said__line"));
-    var limgs   = [].slice.call(sec.querySelectorAll(".spk-said__lineimg"));   /* one lit picture per line (phones) */
-    var N = lines.length;
-    if (!track || !stage || !linesEl || !head || N < 1) return;
-    if (live) live.textContent = "";
-
-    function num(name, d) { var v = parseFloat(sec.getAttribute(name)); return v > 0 ? v : d; }
-    var INTRO = num("data-intro", 60);          /* svh of scroll across the intro */
-    var BEAT = num("data-beat", 80);            /* svh of scroll per beat */
-    var GROW_D = num("data-grow", 160);         /* svh of scroll across the ending (desktop) */
-    var FADE_D = 100;                           /* desktop: svh the stage holds after the push while the talks' picture fades up through the velvet */
-    var GROW_P = num("data-grow-phone", 480);   /* the same on phones: the long grow */
-    /* set by build() for the screen: desktop B0 = (N + 1) beat (560) and
-       U = 780; phones B0 = (N - 0.6) beat (432: no hold beat, the ending
-       starts 16svh after the bridge is fully in); the grow is over at
-       E = U - 250 (822) and the candle is still from there while the
-       reel's first card scrolls up over it; the stage is held for the
-       track's last 100svh: U = 1072 */
-    var GROW = GROW_D, B0 = (N + 1) * BEAT, U = INTRO + B0 + GROW + 60;
-    var LAST = N - 1;                           /* the bridge's beat, and the top candle from it on */
-
-    var base = (cv && cv.getAttribute("data-frames")) || "../assets/img/";
-    var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-                !!(navigator.connection && navigator.connection.saveData);
-    var ctx = cv && cv.getContext && cv.getContext("2d");
-
-    function clamp(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
-    function smooth(x) { return x <= 0 ? 0 : (x >= 1 ? 1 : x * x * (3 - 2 * x)); }
-
-    /* the phone grow's curve: p runs from g 0.06 (u = B0 + 0.06 GROW) to
-       the END of the track (uT = U, through the dissolve: no plateau);
-       linear, with a quadratic ease-in over the first 8% of p (same slope
-       at the join, so no kink), 0 -> 1 */
-    var S_END = 3.0;                            /* phones: the grow's end scale (at E = U - 250) */
-    var PIV = 0.40;                             /* phones: the grow's fixed point, of hC up the axis (in the holder) */
-    var PIV_Y = 0.62;                           /* phones: where that point ends on screen (of H, at E): it rises from its rest spot (0.76 H) */
-    function growP() {
-      var u0 = B0 + 0.06 * GROW, uE = U - 250 - INTRO;
-      var q = clamp((u - u0) / (uE - u0)), a = 0.08;  /* 1 at E = U - 250: still from there */
-      return (q < a ? q * q / (2 * a) : q - a / 2) / (1 - a / 2);
-    }
-
-    /* ---- the stacked path: one lit candle over each line (also for a count
-       the wheel cannot carry: under 3 or over 9 lines) ---- */
-    if (still || !ctx || !window.spkSpine || !nextA || !nextB || N < 3 || N > 9) {
-      sec.classList.add("is-stacked");
-      lines.forEach(function (l) {
-        var im = document.createElement("img");
-        im.className = "spk-said__candle";
-        im.src = base + "candle-turn-01-450.webp";
-        im.alt = "";
-        im.width = 52; im.height = 140;
-        im.loading = "lazy"; im.decoding = "async";
-        l.insertBefore(im, l.firstChild);
-      });
-      return;
-    }
-
-    sec.classList.add("is-wheel");
-    var phoneMq = window.matchMedia("(max-width: 768px)");
-
-    /* ---- the frames ----
-       Two: candle-turn-03 (FACE, lit, the opening facing the camera) and
-       candle-unlit. FACE is drawn at height hC, anchored on its brass foot
-       (the centre and the bottom of the foot sit on the rim); the unlit
-       frame keeps its own anchors, measured on the 900 file, scaled so its
-       foot is FACE's width. The 450 set loads as the section nears; the 900
-       set when the last beat nears (u > LAST * beat), or at once on a
-       screen that draws it on the rim. */
-    var FACE = 0, UNLIT = 1, NF = 2;
-    var NAMES = ["candle-turn-03", "candle-unlit"];
-    var T_ASP = 336 / 900, T_AX = 0.502, T_AY = 0.997;          /* FACE: width / height, foot centre, foot bottom */
-    var U_ASP = 711 / 900, U_AX = 370 / 711, U_AY = 897 / 900;  /* unlit */
-    var U_H = 328 / 338;                                        /* unlit height, of hC */
-    var FL = 0.94;                                              /* the flame, up the axis, of hC */
-    /* phones draw the taller candle (candle-tall-lit / -unlit: one cutout,
-       so both frames share the anchors and the height) */
-    var tall = false;
-    function pickSet(t) {
-      tall = t;
-      if (t) { NAMES = ["candle-tall-lit", "candle-tall-unlit"]; T_ASP = U_ASP = 507 / 1584; T_AX = U_AX = 0.495; T_AY = U_AY = 0.999; U_H = 1; FL = 0.94; }
-      else   { NAMES = ["candle-turn-03", "candle-unlit"]; T_ASP = 336 / 900; T_AX = 0.502; T_AY = 0.997; U_ASP = 711 / 900; U_AX = 370 / 711; U_AY = 897 / 900; U_H = 328 / 338; FL = 0.94; }
-    }
-    var imgs = [[], []];                                        /* [450 set, 900 set] */
-    var loaded450 = false, loaded900 = false;
-    function loadSet(s) {
-      for (var f = 0; f < NF; f++) {
-        var im = new Image();
-        im.decoding = "async";
-        im.src = base + NAMES[f] + (s ? "-900" : "-450") + ".webp";
-        if (im.decode) im.decode().then(null, function () {});
-        imgs[s][f] = im;
-      }
-    }
-    function loadAll() {
-      if (loaded450) return;
-      loaded450 = true;
-      loadSet(0);
-    }
-    function loadBig() {
-      if (loaded900) return;
-      loaded900 = true;
-      loadSet(1);
-    }
-    function ready(im) { return !!im && im.complete && im.naturalWidth > 0; }
-
-    /* the glow: one gold sprite, built once, drawn at the flame's alpha */
-    var glow = document.createElement("canvas");
-    glow.width = glow.height = 128;
-    (function () {
-      var gc = glow.getContext("2d");
-      var gr = gc.createRadialGradient(64, 64, 0, 64, 64, 64);
-      gr.addColorStop(0, "rgba(232,187,104,1)");
-      gr.addColorStop(1, "rgba(232,187,104,0)");
-      gc.fillStyle = gr;
-      gc.fillRect(0, 0, 128, 128);
-    })();
-
-    /* ---- geometry (CSS px), rebuilt on resize ----
-       The three's row: foot centres at W/2 + j * D (j = -1, 0, 1), feet
-       on 99% of H, scaled sR about the foot (never wider than 0.3 W).
-       Phones: D = 0.40 W, sR 1.2 (never wider than 0.32 W), so the outer
-       two are cut a little by the screen's edges and the middle one has
-       room to grow.
-       The push scales about P, between the left and the middle candle:
-       x2.4 at the end (phones x3.2, KP). */
-    var W = 1, H = 1, dpr = 1, hC = 300, Rw = 1, cyW = 1, svh = 1, phone = false;
-    var D = 1, sR = 1, Px = 0, Py = 0, KP = 1.4;
-    var fw = new Float32Array(NF), fh = new Float32Array(NF), fx = new Float32Array(NF), fy = new Float32Array(NF);
-    function build() {
-      W = Math.max(1, stage.clientWidth); H = Math.max(1, stage.clientHeight);
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-      phone = phoneMq.matches;
-      /* the tall candle everywhere (desktop too, as on phones) */
-      if (!tall) {
-        pickSet(true);
-        /* the other set was already loading: fetch this one instead */
-        if (loaded450) { imgs = [[], []]; loadSet(0); if (loaded900) loadSet(1); }
-      }
-      GROW = phone ? GROW_P : GROW_D;
-      /* desktop: the ending starts half a beat after the bridge's (no hold
-         beat): "Three talks." comes up 24svh after line 06 is in */
-      B0 = phone ? (N - 0.6) * BEAT : (N - 0.5) * BEAT;
-      U = INTRO + B0 + GROW + (phone ? 100 : 60 + FADE_D);
-      hC = phone ? Math.max(300, Math.min(620, H * 0.50)) : Math.max(300, Math.min(600, H * 0.50));
-      Rw = W * (phone ? 0.44 : 0.40);
-      /* the rim's top point at 96% of H (desktop: 103%, the candles sit
-         low, the foot's rim just under the screen's edge) */
-      cyW = H * (phone ? 0.96 : 1.03) + Rw;
-      svh = track.offsetHeight / U;
-      for (var f = 0; f < NF; f++) {
-        var un = f === UNLIT;
-        fh[f] = un ? hC * U_H : hC;
-        fw[f] = fh[f] * (un ? U_ASP : T_ASP);
-        fx[f] = -(un ? U_AX : T_AX) * fw[f];
-        fy[f] = -(un ? U_AY : T_AY) * fh[f];
-      }
-      D = (phone ? 0.40 : 0.34) * W;
-      /* phones: no row, so sR is the intro's rise only */
-      /* desktop: the row stands with its flames at 33% of H, under the
-         ending's lines (which sit at 11-27%), never cut by the top */
-      sR = phone ? 1.15 : Math.min(0.66 * H / (FL * hC), 0.3 * W / fw[FACE]);
-      KP = phone ? 0 : 1.4;
-      Px = W / 2 - D / 2; Py = 0.55 * H;
-      sec.style.setProperty("--push-ox", (100 * Px / W).toFixed(2) + "%");
-      sec.style.setProperty("--push-oy", "55%");
-      if (hC * dpr > 470) loadBig();             /* a big screen draws the 900 set on the rim */
-    }
-
-    /* ---- the state the scroll sets (per rim place: NP entries) ---- */
-    var STEP = 40;                                           /* degrees between places, and per beat */
-    var NP = 360 / STEP;                                     /* nine places on the ring */
-    var uT = 0, tI = 0, u = 0, beat = 0, theta = 0, cxF = 0.5, g = 0, push = 0, first = true;   /* the wheel's centre stays at W/2 */
-    var litTo = new Int8Array(NP), litFrom = new Float32Array(NP), litT0 = new Float64Array(NP);
-    var L = new Float32Array(NP);
-    /* the three: the top candle and its neighbours, j = -1, 0, 1 */
-    var THREE = [LAST - 1, LAST, (LAST + 1) % NP];
-    /* phones: no row of three; the top candle alone (j 0) grows */
-    function role(q) {
-      if (phone) return q === LAST ? 0 : 9;
-      return q === THREE[0] ? -1 : (q === THREE[1] ? 0 : (q === THREE[2] ? 1 : 9));
-    }
-
-    var last = {};
-    function put(el, key, name, v) {
-      var s = v.toFixed(4);
-      if (last[key] === s) return;
-      last[key] = s;
-      el.style.setProperty(name, s);
-    }
-    var lastBridge = null, lastHold = "", gone = false;
-    var keysEl = document.querySelector(".spk-keys");            /* phones: the reel's first card follows the track */
-    var card0 = keysEl && keysEl.querySelector(".spk-keys__head");
-    function covered() {
-      return phone && !!card0 && keysEl.classList.contains("is-reel") && card0.getBoundingClientRect().top <= -0.18 * H;
-    }
-
-    function update(p) {
-      if (entry.disabled) return;
-      /* uT: svh into the track; u: svh after the intro, which every beat
-         and the ending count from; tI: the intro's progress */
-      uT = p * U;
-      u = Math.max(0, uT - INTRO);
-      tI = clamp(uT / INTRO);
-      var s = 1, turn = 0;
-      if (u < B0) { beat = Math.min(N, Math.floor(u / BEAT)); s = clamp(u / BEAT - beat); }
-      else beat = N;
-      /* the wheel turns on beats 0..N-2 only: from beat N-1 the last candle
-         (the bridge's) stays at the top through the ending */
-      var tTurn = beat < LAST ? clamp((s - 0.65) / 0.35) : 0;    /* the turn's own progress */
-      turn = smooth(tTurn);
-      theta = -(Math.min(beat, LAST) * STEP + turn * STEP);
-      g = clamp((u - B0) / GROW);
-      /* the push: from g = 0.8 (the row of three at rest) to the end of the track */
-      push = phone ? 0 : smooth(clamp((u - (B0 + 0.8 * GROW)) / (0.2 * GROW + 60)));
-      if (u > LAST * BEAT) loadBig();
-
-      /* the lines: in over the first 20% of their beat, out over the first
-         30% of the turn;
-         the bridge holds from beat 5 and is gone by g = 0.2 */
-      var arrive = smooth(clamp(s / 0.2));
-      for (var j = 0; j < N; j++) {
-        var on = 0;
-        /* gone within the first 30% of the turn, before the leaving candle
-           can cross it */
-        if (j < LAST) { if (beat === j) on = Math.min(arrive, 1 - smooth(clamp(tTurn / 0.3))); }
-        else if (beat === LAST) on = arrive;
-        else if (beat === N) on = 1 - smooth(clamp(g / (phone ? 0.06 : 0.1)));
-        put(lines[j], "l" + j, "--on", on);
-        if (limgs[j]) put(limgs[j], "li" + j, "--on", on);
-      }
-      put(head, "h", "--on", beat === 0 ? 1 - smooth(clamp(s / 0.2)) : 0);
-      var bridge = beat >= LAST;
-      if (bridge !== lastBridge) { linesEl.classList.toggle("is-bridge", bridge); lastBridge = bridge; }
-
-      /* lit: the current candle only during the beats (candle 0 from the
-         intro's settle, t > 0.5; on phones it rises already lit, so the
-         first candle seen is the same as every other); the three from the
-         rise on (g > 0.2), through the end. A filler is lit only as one of
-         the three. */
-      var now = performance.now();
-      var rise = g > (phone ? 0.2 : 0.12);
-      for (var i = 0; i < NP; i++) {
-        var to = (rise ? role(i) !== 9 : i === Math.min(beat, LAST) && (phone || tI > 0.5)) ? 1 : 0;
-        if (first) { litTo[i] = to; L[i] = to; litFrom[i] = to; litT0[i] = -1e9; }
-        else if (to !== litTo[i]) { litFrom[i] = L[i]; litTo[i] = to; litT0[i] = now; }
-      }
-      first = false;
-
-      /* the ending's DOM half, in order: line A up behind the resting
-         candle (g 0-0.2); the roll as the three start to rise (0.2-0.5) */
-      /* phones: A up over g 0-0.06 (behind the canvas, as on desktop),
-         held to g 0.38 (about 150svh) while the candle rises behind it; no
-         shared window there (A mid, B low), so a crossfade instead of the
-         roll: A out rising over g 0.38-0.48, B in rising over 0.44-0.56 */
-      /* desktop: A comes up high, above the resting candle (g 0-0.1), and
-         stays while the three rise into their row (0.1-0.4) and then lift
-         (0.35-0.62) until their wax covers it (A is behind the canvas); it
-         fades out under them (0.55-0.68); then B rolls up into its own
-         window in front of the wax (0.6-0.78) */
-      /* desktop: A (high, fully on screen, behind the canvas) while the
-         three rise into their row (0.1-0.4) and lift (0.35-0.62) so their
-         wax passes over it; A fades under them (0.58-0.68); B comes up in
-         front of the wax, lower (0.6-0.74) */
-      put(nextA, "na", "--na", phone ? smooth(clamp(g / 0.06)) : smooth(clamp(g / 0.1)));
-      put(nextA, "rollA", "--roll", 0);
-      put(nextB, "rollB", "--roll", 0);
-      /* A out rising, then B in rising, in the same place; nothing clipped */
-      var nao = phone ? smooth(clamp((g - 0.38) / 0.10)) : smooth(clamp((g - 0.58) / 0.1));
-      put(nextA, "nao", "--nao", nao);
-      put(nextB, "nb", "--nb", phone ? smooth(clamp((g - 0.44) / 0.12)) : smooth(clamp((g - 0.6) / 0.14)));
-      if (phone) {
-        /* the lit picture between A and the flame follows A (the CSS reads
-           these on the section) */
-        put(sec, "gna", "--glow-na", smooth(clamp(g / 0.06)));
-        put(sec, "gnao", "--glow-nao", nao);
-      }
-      /* the velvet follows the camera (the CSS scales it by 1 + 0.12 --push) */
-      put(sec, "push", "--push", push);
-
-      /* held in place to the end of the track: the stage's sticky run ends
-         100svh before the track does (680 of 780), and the ending (the
-         row, the push) plays in those last 100svh. On desktop the pinned
-         talks section rises under it there; on phones (the talks a reel,
-         not pinned) it is held as well while the reel's first card (plain
-         plum and its heading, stacked above the stage) slides up over the
-         candle's faded bottom (U - 100 -> U); then it scrolls away under
-         the reel */
-      var HOLD = U - 100;
-      var hold = uT > HOLD
-        ? "translate3d(0," + ((uT - HOLD) * svh).toFixed(1) + "px,0)" : "";
-      if (hold !== lastHold) { stage.style.transform = hold; lastHold = hold; }
-      /* phones: no pinned talks to hand to (--spk-keys-gone is never
-         written there): the candle's bottom always fades into the velvet
-         (draw()), B stays, and the reel covers the stage by U */
-      /* phones: the grow is over at E = U - 250 and the candle is still
-         from there; the reel's first card (stacked above the stage, the
-         reel pulled up 150svh by the CSS) enters at E and scrolls up over
-         it at the scroll's own speed. B leaves (linear) over E -> E + 35,
-         before the card's heading reaches B's box */
-      put(sec, "bout", "--spk-said-bout", phone ? clamp((uT - (U - 250)) / 35) : 0);
-      /* once the card's opaque part (below its top 18%) covers the
-         screen, nothing to draw */
-      gone = covered();
-      wake();
-    }
-
-    /* ---- the hover: fine pointers only. The pointer is kept in stage
-       coordinates; each drawn candle leaves its flame point and radius,
-       and a lit candle under the pointer eases hov[] to 1 (250ms in,
-       400ms out, time-based like the lighting). ---- */
-    var mx = -1e9, my = -1e9;
-    var hov = new Float32Array(NP), hovTo = new Int8Array(NP), hovFrom = new Float32Array(NP), hovT0 = new Float64Array(NP);
-    var flX = new Float32Array(NP), flY = new Float32Array(NP), flR = new Float32Array(NP);
-    /* the stage takes no pointer events (the talks' buttons under it stay
-       live), so the pointer is read on the document; outside the stage's
-       rect it is cleared */
-    if (!window.matchMedia("(pointer: coarse)").matches) {
-      document.addEventListener("mousemove", function (e) {
-        if (!onScreen) { mx = my = -1e9; return; }
-        var b = stage.getBoundingClientRect();
-        mx = e.clientX - b.left; my = e.clientY - b.top;
-        if (mx < 0 || my < 0 || mx > b.width || my > b.height) mx = my = -1e9;
-        wake();
-      }, { passive: true });
-      document.documentElement.addEventListener("mouseleave", function () { mx = my = -1e9; wake(); }, { passive: true });
-    }
-    /* ---- the tap: coarse pointers. A pointerdown (read on the document,
-       as the hover is; never prevented, so the page still scrolls) that
-       ends in a pointerup within 8px, over a lit candle's flame, glows that
-       candle: hov[] eases to 1 over 250ms, holds 900ms, eases out over
-       600ms, on its own clock (tapT0; a second tap restarts it from where
-       the glow is). A pointer that travels (a scroll) or is cancelled
-       lights nothing. ---- */
-    var coarse = window.matchMedia("(pointer: coarse)").matches;
-    var tapT0 = new Float64Array(NP), tapFrom = new Float32Array(NP);
-    if (coarse) {
-      var tp = null;
-      document.addEventListener("pointerdown", function (e) {
-        tp = null;
-        if (!onScreen || e.isPrimary === false) return;
-        var b = stage.getBoundingClientRect();
-        var x = e.clientX - b.left, y = e.clientY - b.top;
-        if (x < 0 || y < 0 || x > b.width || y > b.height) return;
-        tp = { id: e.pointerId, cx: e.clientX, cy: e.clientY, x: x, y: y };
-      }, { passive: true });
-      document.addEventListener("pointermove", function (e) {
-        if (tp && e.pointerId === tp.id && (Math.abs(e.clientX - tp.cx) > 8 || Math.abs(e.clientY - tp.cy) > 8)) tp = null;
-      }, { passive: true });
-      document.addEventListener("pointercancel", function () { tp = null; }, { passive: true });
-      document.addEventListener("pointerup", function (e) {
-        var t = tp; tp = null;
-        if (!t || e.pointerId !== t.id || !onScreen) return;
-        if (Math.abs(e.clientX - t.cx) > 8 || Math.abs(e.clientY - t.cy) > 8) return;
-        var now = performance.now();
-        for (var i = 0; i < NP; i++) {
-          if (litTo[i] !== 1 || !(flR[i] > 0)) continue;
-          var dx = t.x - flX[i], dy = t.y - flY[i];
-          if (dx * dx + dy * dy < flR[i] * flR[i]) { tapFrom[i] = hov[i]; tapT0[i] = now; }
-        }
-        wake();
-      }, { passive: true });
-    }
-    function tapGlow(i, now) {
-      if (!tapT0[i]) return 0;
-      var t = now - tapT0[i];
-      if (t < 0) t = 0;
-      if (t < 250) return tapFrom[i] + (1 - tapFrom[i]) * smooth(t / 250);
-      if (t < 1150) return 1;
-      if (t < 1750) return 1 - smooth((t - 1150) / 600);
-      tapT0[i] = 0; return 0;
-    }
-    function hover(i, now, on) {
-      if (coarse) { hov[i] = tapGlow(i, now); return; }
-      var to = on ? 1 : 0;
-      if (to !== hovTo[i]) { hovFrom[i] = hov[i]; hovTo[i] = to; hovT0[i] = now; }
-      var t = (now - hovT0[i]) / (hovTo[i] ? 250 : 400);
-      hov[i] = t >= 1 ? hovTo[i] : hovFrom[i] + (hovTo[i] - hovFrom[i]) * smooth(t);
-    }
-
-    /* ---- the draw ---- */
-    var RAD = Math.PI / 180;
-    function frame(f, big, alpha) {
-      if (alpha <= 0.003) return;
-      var im = imgs[big][f];
-      if (!ready(im)) im = imgs[1 - big][f];
-      if (!ready(im)) return;
-      ctx.globalAlpha = alpha > 1 ? 1 : alpha;
-      ctx.drawImage(im, fx[f], fy[f], fw[f], fh[f]);
-    }
-    /* the lighting (600ms in; out at once, 80ms) */
-    function step(now) {
-      for (var i = 0; i < NP; i++) {
-        var t = (now - litT0[i]) / (litTo[i] ? 600 : 80);
-        L[i] = t >= 1 ? litTo[i] : litFrom[i] + (litTo[i] - litFrom[i]) * smooth(t);
-      }
-    }
-    var poses = [], c0 = null;                               /* the three's poses and candle 0's, for the profile */
-    /* rim pose -> row pose: from a rim pose (x, y, rot, scale 1) to the
-       row's upright pose j (foot at W/2 + j D, 99% of H, scale sR), linear
-       in r (r is eased by the caller); the rotation goes the shortest way.
-       Used by the ending (r up) and by the intro's settle (r down). */
-    var PZ = { x: 0, y: 0, rot: 0, s: 1 };
-    function toRow(x, y, rot, j, r) {
-      rot = Math.atan2(Math.sin(rot), Math.cos(rot));
-      PZ.x = x + (W / 2 + j * D - x) * r;
-      PZ.y = y + (0.99 * H - y) * r;
-      PZ.rot = rot - rot * r;
-      PZ.s = 1 + (sR - 1) * r;
-      return PZ;
-    }
-    function draw(now) {
-      step(now);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      var cxW = W * cxF;
-      /* phones: over the first 30svh of the grow (g 0-0.0625 of 480) */
-      var others = 1 - clamp(g / (phone ? 30 / GROW : 0.3));
-      /* the three rise from their rim poses to the row over g 0.1-0.4,
-         then the row lifts 0.26 H over g 0.35-0.62, over "Three talks." */
-      var r = smooth(clamp((g - 0.1) / 0.3));
-      /* desktop: the row then lifts 0.2 H (flames to ~13%, never off the
-         top) so their wax passes over line A, behind it */
-      var lift = phone ? 0 : 0.2 * H * smooth(clamp((g - 0.35) / 0.27));
-      /* phones: the top candle grows instead (from g 0.06 to U), x1 ->
-         x2, linear with an ease-in over the first 8% of its p only, about
-         the point PIV hC up its axis, which itself travels up to PIV_Y H on
-         the same curve: less zoom, more travel. The candle rises through
-         the frame without stopping, the flame passes behind the pinned
-         line and reaches the top at the end, the holder rises to the
-         middle of the screen */
-      var dg = phone ? growP() : 0, S = 1 + (S_END - 1) * dg;
-      /* the camera: k about P, multiplied into every candle's transform */
-      var k = 1 + KP * push;
-      var gr = 0.55 * hC, fyL = -FL * hC;
-      poses.length = 0; c0 = null;
-      for (var i = 0; i < NP; i++) {
-        var phi = -90 + theta + i * STEP;
-        var rel = ((phi + 90) % 360 + 540) % 360 - 180;
-        flR[i] = 0;
-        if (rel > 100 || rel < -100) { hover(i, now, false); continue; }
-        var rad = phi * RAD;
-        var x = cxW + Rw * Math.cos(rad), y = cyW + Rw * Math.sin(rad);
-        var jR = g > 0 ? role(i) : 9;                        /* -1, 0, 1: one of the three */
-        if (jR === 9 && y > H + hC) { hover(i, now, false); continue; }
-        var a = 0.35 + 0.65 * clamp(1 - Math.abs(rel) / 80);
-        var rot = rad + Math.PI / 2, sc = 1;
-        if (tI < 1) {
-          /* the intro: candle 0 rises from below the screen into the
-             middle row pose (t 0-0.5), then settles back into its rim spot
-             (0.5-1) while places 1 and NP-1 come up from 0.5 H below at
-             alpha e; nothing else until t = 1, where the rim takes over
-             in place */
-          var eI = smooth((tI - 0.5) / 0.5);
-          if (i === 0) {
-            toRow(x, y, rot, 0, tI < 0.5 ? 1 : 1 - eI);
-            x = PZ.x; y = PZ.y; rot = PZ.rot; sc = PZ.s; a = 1;
-            if (tI < 0.5) y += (1 - smooth(tI / 0.5)) * (1.02 * sR * hC + 0.02 * H);
-          } else if (i === 1 || i === NP - 1) { y += (1 - eI) * 0.5 * H; a *= eI; }
-          else { hover(i, now, false); continue; }
-        }
-        var Fx = 0, Fy = 0, grow = false;
-        if (jR === 9) a *= others;
-        else if (phone) {
-          grow = true;
-          Fx = x + PIV * hC * Math.sin(rot); Fy = y - PIV * hC * Math.cos(rot);
-          sc = S;
-          poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
-        } else {
-          toRow(x, y, rot, jR, r);
-          x = PZ.x; y = PZ.y - lift; rot = PZ.rot; sc = PZ.s;
-          a += (1 - a) * r;
-          poses.push({ q: i, j: jR, x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3) });
-        }
-        if (i === 0) c0 = { x: +x.toFixed(1), y: +y.toFixed(1), rot: +(rot / RAD).toFixed(2), s: +sc.toFixed(3), a: +a.toFixed(3) };
-        if (a <= 0.003) { flR[i] = 0; hover(i, now, false); continue; }  /* not drawn: no flame to hit */
-        var c = Math.cos(rot), sn = Math.sin(rot), m = k * sc;
-        var ex = Px + k * (x - Px), ey = Py + k * (y - Py);
-        if (grow) { ex = Fx + (W / 2 - Fx) * dg + S * (x - Fx); ey = Fy + (PIV_Y * H - Fy) * dg + S * (y - Fy); }
-        ctx.setTransform(dpr * m * c, dpr * m * sn, -dpr * m * sn, dpr * m * c, dpr * ex, dpr * ey);
-        var big = hC * dpr * m > 470 ? 1 : 0;
-        var Li = L[i];
-        /* the flame: 0.94 hC up the axis, through the full transform */
-        flX[i] = ex + m * sn * FL * hC; flY[i] = ey - m * c * FL * hC; flR[i] = 0.22 * hC * m;
-        var dx = mx - flX[i], dy = my - flY[i];
-        hover(i, now, litTo[i] === 1 && dx * dx + dy * dy < flR[i] * flR[i]);
-        var hv = hov[i], gR = gr * (1 + 0.3 * hv);
-        /* the growing candle's glow grows with it, but never past 1.25x
-           its resting size on screen (it would wash the text) */
-        if (grow && m > 1.25) gR *= 1.25 / m;
-        /* the ending: no glow pass once the whole glow is above the screen */
-        if (Li > 0.001 && !(grow && g > 0.06 && flY[i] + gR * m < 0)) {
-          ctx.globalCompositeOperation = "lighter";
-          ctx.globalAlpha = Math.min(1, (0.24 + 0.05 * Math.sin(now / 900 + i) + 0.03 * Math.sin(now / 310 + 2 * i)) * Li * a * (1 + 0.9 * hv));
-          ctx.drawImage(glow, -gR, fyL - gR, 2 * gR, 2 * gR);
-          ctx.globalCompositeOperation = "source-over";
-        }
-        if (Li < 0.999) frame(UNLIT, big, a * (1 - Li));
-        if (Li > 0.001) frame(FACE, big, a * Li);
-      }
-      ctx.globalAlpha = 1;
-      /* phones, the whole ending (g > 0.06): the candle's bottom fades
-         into the velvet, every frame: erased (destination-out, no CSS
-         mask) from clear at 0.72 H to fully at H, only over that band.
-         Its strength eases in over g 0.06-0.14 so the foot does not pop */
-      if (phone && g > 0.06) {
-        var fk = smooth(clamp((g - 0.06) / 0.08));
-        var eg = ctx.createLinearGradient(0, 0.72 * H, 0, H);
-        eg.addColorStop(0, "rgba(0,0,0,0)");
-        eg.addColorStop(1, "rgba(0,0,0," + fk.toFixed(3) + ")");
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = eg;
-        ctx.fillRect(0, 0.72 * H, W, 0.28 * H);
-        ctx.globalCompositeOperation = "source-over";
-      }
-    }
-
-    /* ---- the loop: only while the stage is on screen and the tab shows ----
-       window.__spkProfile = true times each draw into window.__spkWheelCost
-       (the last 240 frames, in ms) and writes window.__spkWheelState (each
-       place's lit L and hover hov, each flame [x, y, radius], the three's
-       poses, the rise r, the push and the camera scale k). */
-    var raf = 0, onScreen = false;
-    function tick(now) {
-      raf = 0;
-      if (entry.disabled || !onScreen || document.hidden || gone) return;
-      var prof = window.__spkProfile === true, t0 = prof ? performance.now() : 0;
-      draw(now);
-      if (prof) {
-        var cost = window.__spkWheelCost || (window.__spkWheelCost = []);
-        cost.push(performance.now() - t0);
-        if (cost.length > 240) cost.shift();
-        var fl = [];
-        for (var i = 0; i < NP; i++) fl.push([+flX[i].toFixed(1), +flY[i].toFixed(1), +flR[i].toFixed(1)]);
-        window.__spkWheelState = { u: +uT.toFixed(1), tI: +tI.toFixed(3), c0: c0, g: +g.toFixed(3), push: +push.toFixed(3), k: +(1 + KP * push).toFixed(3),
-          S: phone ? +(1 + (S_END - 1) * growP()).toFixed(3) : 1, hC: +hC.toFixed(1), U: U, B0: B0, GROW: GROW,
-          three: THREE.slice(), L: [].slice.call(L), hov: [].slice.call(hov), flame: fl, poses: poses.slice() };
-      }
-      /* phones: the reel's first card (its top 18% see-through) has
-         covered the stage: nothing more to draw until the scroll comes
-         back (update() clears the flag) */
-      if (covered()) { gone = true; return; }
-      raf = requestAnimationFrame(tick);
-    }
-    function wake() { if (!raf && !entry.disabled && onScreen && !document.hidden && !gone) raf = requestAnimationFrame(tick); }
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } } else wake();
-    });
-
-    function pageTop(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
-    var entry = { disabled: false,
-      start: function () { return pageTop(sec); },
-      end: function () { return pageTop(sec) + track.offsetHeight; },
-      update: update };
-
-    build();
-    window.spkSpine.add(entry);
-
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (e, obs) {
-        if (!e[0].isIntersecting) return;
-        loadAll(); obs.disconnect();
-      }, { rootMargin: "100% 0px" }).observe(sec);
-      new IntersectionObserver(function (e) {
-        onScreen = e[0].isIntersecting && e[0].intersectionRatio >= 0.05;
-        if (onScreen) { gone = false; wake(); }
-      }, { threshold: [0, 0.05] }).observe(stage);
-    } else { loadAll(); onScreen = true; wake(); }
-
-    var rT = 0;
-    function relayout() { build(); last = {}; lastBridge = null; window.spkSpine.measure(); wake(); }
-    window.addEventListener("resize", function () {
-      clearTimeout(rT);
-      rT = setTimeout(relayout, 200);
-    }, { passive: true });
-    if (phoneMq.addEventListener) phoneMq.addEventListener("change", relayout);
-    else if (phoneMq.addListener) phoneMq.addListener(relayout);
   }
 })();
 
@@ -4957,11 +3646,7 @@ var UI = (function () {
   var phone = window.matchMedia("(max-width: 768px)");
 
   function owned(h) {
-    var s = h.closest(".spk-said");
-    if (s && s.classList.contains("is-wheel")) return true;
-    s = h.closest(".spk-keys");
-    if (s && s.getAttribute("data-spk-keys-mode") === "pin") return true;
-    s = h.closest(".spk-chap");
+    var s = h.closest(".spk-chap");
     if (s && h.classList.contains("spk-chap__h") && !s.classList.contains("is-phone")) return true;
     return false;
   }
@@ -5128,7 +3813,7 @@ var UI = (function () {
 (function () {
   "use strict";
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var SEL = ".thread__track, .spk-said__track, .spk-keys__track, .spk-chap__track, .spk-formats__track, .tstrip__track, .steps__track";
+  var SEL = ".thread__track, .spk-chap__track, .spk-formats__track, .tstrip__track, .steps__track";
   var tracks = [].slice.call(document.querySelectorAll(SEL));
   if (!tracks.length) return;
 
@@ -5230,11 +3915,9 @@ var UI = (function () {
   }, { passive: true });
 
   /* where a press lands: the top of the NEXT section (the first visible
-     section after this one), so the next section fills the screen. Where
-     that next section is itself a pinned stage with its own opening (the
-     talks rising under the candle wheel on desktop), land on its heading:
-     72% of its head beat in. Never before the end of the current pin
-     when the next section starts after it. */
+     section after this one), so the next section fills the screen. Never
+     before the end of the current pin when the next section starts
+     after it. */
   function target(tr) {
     var sec = tr.closest("section"), nx = sec && sec.nextElementSibling;
     while (nx && (nx.tagName !== "SECTION" || !nx.offsetHeight)) nx = nx.nextElementSibling;
@@ -5244,13 +3927,9 @@ var UI = (function () {
     /* a section that scrolls normally lands just under the fixed nav, so
        its heading is not hidden behind it (a pinned one fills the screen
        from the top) */
-    var stk = nx.querySelector(".thread__stage, .spk-said__stage, .spk-keys__stage, .spk-chap__stage, .spk-formats__stage, .tstrip__stage, .steps__sticky");
+    var stk = nx.querySelector(".thread__stage, .spk-chap__stage, .spk-formats__stage, .tstrip__stage, .steps__sticky");
     var nav = document.querySelector(".nav, #nav");
     if (!(stk && getComputedStyle(stk).position === "sticky") && nav) y -= nav.offsetHeight;
-    if (nx.classList.contains("spk-keys") && nx.getAttribute("data-spk-keys-mode") === "pin") {
-      var head = parseFloat(nx.getAttribute("data-head")) || 240;
-      y += 0.72 * head * vh() / 100;
-    }
     return Math.max(y, Math.min(end, y));
   }
   btn.addEventListener("click", function () {
@@ -5270,3 +3949,6 @@ var UI = (function () {
 
   onScroll();
 })();
+
+/* The layout's failsafe reads this: the whole script ran. Keep it last. */
+window.dwMainOk = true;

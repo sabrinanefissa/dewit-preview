@@ -1,0 +1,121 @@
+/* =====================================================================
+   ABOUT PAGE (/about/) — loaded only on this page.
+   The page's one animation is the portrait's lights (js/main.js module 6,
+   bound to .spk-bio .media .spk-lights). The story photos use the
+   site-wide image reveal. Numbers and logos are static. Nothing pinned.
+   ===================================================================== */
+.ab-em { font-style: italic; color: var(--violet-300); }
+.ab-portrait ::selection, .ab-story ::selection, .ab-creds ::selection, .ab-numbers ::selection,
+.ab-media ::selection { background: rgba(124,77,224,.55); color: #fff; }
+
+/* ------------------------------------------------------------ portrait
+   .spk-bio brings main.css's padding and colour; the grid is this page's
+   own. Desktop: the name large on the left, the portrait on the right,
+   bottom-aligned so the photo sits on the section's floor. Phones: the
+   portrait first, then the name. */
+.ab-portrait.spk-bio { padding-block: clamp(7rem, 15vh, 10rem) clamp(4rem, 8vw, 7rem); }
+.ab-portrait__grid { width: var(--wrap); margin-inline: auto; display: grid;
+  grid-template-columns: 7fr 5fr; column-gap: clamp(2rem, 6vw, 6rem); align-items: end; }
+.ab-portrait__h { font-size: var(--step-5); font-weight: 320; line-height: .92; letter-spacing: -0.04em;
+  max-width: 8ch; text-wrap: balance; }
+.ab-portrait__cat { margin-top: clamp(1.2rem, 2.4vh, 1.8rem); font-family: var(--f-display); font-style: italic;
+  font-weight: 360; font-size: var(--step-1); line-height: 1.3; color: var(--violet-300); }
+.ab-portrait__line { margin-top: clamp(1.6rem, 3vh, 2.4rem); max-width: 46ch; font-size: var(--step-0);
+  line-height: 1.6; color: var(--tx-inv-soft); text-wrap: pretty; }
+.ab-portrait__media { aspect-ratio: 4 / 5; border-radius: 4px; }
+.ab-portrait__media img { object-position: 50% 22%; }
+/* the lights: dark house until the section arrives, then fully up (the
+   Speaking diptych stops at .74; here the portrait is the subject) */
+.ab-portrait .media .spk-lights { --lights-dur: 1.4s; filter: brightness(.28) saturate(.5) contrast(1.04); }
+.ab-portrait .media .spk-lights.is-lit { filter: brightness(1) saturate(.95) contrast(1.04); }
+html.no-js .ab-portrait .media .spk-lights { filter: var(--img-filter); opacity: 1; }
+
+@media (max-width: 900px) {
+  .ab-portrait.spk-bio { padding-top: clamp(5.5rem, 22vw, 7rem); }
+  .ab-portrait__grid { grid-template-columns: 1fr; row-gap: 2rem; }
+  .ab-portrait__media { grid-row: 1; width: min(100%, 30rem); }
+  .ab-portrait__h { font-size: clamp(3rem, 14vw, 4.4rem); }
+}
+
+/* --------------------------------------------------------------- story
+   Wide screens: two columns. The heading and the reading column (7fr) on
+   the left; the photos with their captions stacked on the right (5fr),
+   starting level with the heading so both columns end together and the
+   section closes cleanly before Credentials. The second photo is narrower
+   and steps in from the right edge so the pair reads as a set.
+   Phones: one column; the wrappers dissolve (display: contents) and each
+   figure takes the flex order after the paragraph it names. */
+.ab-story { color: var(--tx-inv); padding-block: var(--section-y); }
+.ab-story__inner { width: var(--wrap); margin-inline: auto; display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(2.5rem, 6vw, 7rem); align-items: start; }
+.ab-story__h { grid-column: 1; grid-row: 1; font-size: var(--step-3); font-weight: 340; letter-spacing: -0.028em;
+  line-height: 1.02; max-width: 16ch; text-wrap: balance; }
+.ab-story__body { display: contents; }
+.ab-story__text { grid-column: 1; grid-row: 2; margin-top: clamp(2.4rem, 5vw, 4rem); }
+.ab-story__text p { font-size: var(--step-0); line-height: 1.7; color: var(--tx-inv-soft); max-width: 62ch;
+  text-wrap: pretty; }
+.ab-story__text p + p { margin-top: 1.25em; }
+/* the first paragraph is the lede */
+.ab-story__text > p:first-child { font-family: var(--f-display); font-weight: 360; font-size: var(--step-1);
+  line-height: 1.35; letter-spacing: -0.01em; color: var(--tx-inv); max-width: 34ch; }
+.ab-story__figs { grid-column: 2; grid-row: 1 / span 2; display: grid; row-gap: clamp(2rem, 3.4vw, 3rem);
+  padding-top: .5rem; }
+.ab-fig { margin: 0; }
+.ab-fig__media { overflow: hidden; border-radius: 4px; aspect-ratio: 3 / 2; }
+.ab-fig + .ab-fig { width: 70%; justify-self: end; }
+.ab-fig + .ab-fig .ab-fig__media { aspect-ratio: 4 / 3; }
+.ab-fig__media img { width: 100%; height: 100%; object-fit: cover; filter: var(--img-filter); }
+.ab-fig figcaption { margin-top: .8rem; font-size: var(--step--1); color: var(--tx-inv-soft); line-height: 1.5; }
+@media (max-width: 900px) {
+  .ab-story__inner { display: block; }
+  .ab-story__body { display: flex; flex-direction: column; margin-top: clamp(2.4rem, 5vw, 4rem); }
+  .ab-story__text, .ab-story__figs { display: contents; }
+  .ab-story__text p, .ab-fig { order: var(--o, 0); }
+  .ab-story__text p + p { margin-top: 0; }
+  .ab-story__text p:not(:first-child) { margin-top: 1.25em; }
+  .ab-fig, .ab-fig + .ab-fig { width: 100%; margin: 2rem 0 .75rem; }
+  .ab-fig__media, .ab-fig + .ab-fig .ab-fig__media { aspect-ratio: 4 / 3; }
+}
+
+/* --------------------------------------------------------- credentials */
+.ab-creds { color: var(--tx-inv); padding-block: clamp(4.5rem, 9vw, 8rem) clamp(2rem, 4vw, 3rem); }
+.ab-creds__grid { width: var(--wrap); margin-inline: auto; display: grid; grid-template-columns: 4fr 8fr;
+  column-gap: clamp(2rem, 6vw, 7rem); align-items: start; }
+.ab-creds__h { font-size: var(--step-2); font-weight: 360; letter-spacing: -0.02em; }
+.ab-creds__list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line-inv-strong); }
+.ab-creds__list li { padding-block: clamp(1rem, 2vw, 1.4rem); border-bottom: 1px solid var(--line-inv);
+  font-family: var(--f-display); font-weight: 360; font-size: var(--step-1); line-height: 1.25;
+  letter-spacing: -0.012em; }
+@media (max-width: 900px) {
+  .ab-creds__grid { grid-template-columns: 1fr; row-gap: 1.4rem; }
+}
+
+/* ------------------------------------------------------------- numbers */
+.ab-numbers { color: var(--tx-inv); padding-block: clamp(3rem, 7vw, 6rem) clamp(4.5rem, 9vw, 8rem); }
+.ab-numbers__grid { width: var(--wrap); margin-inline: auto; display: grid; grid-template-columns: 4fr 8fr;
+  column-gap: clamp(2rem, 6vw, 7rem); }
+.ab-numbers__line { grid-column: 2; font-family: var(--f-display); font-weight: 330;
+  font-size: var(--step-3); line-height: 1.12; letter-spacing: -0.028em; max-width: 24ch;
+  text-wrap: balance; }
+.ab-numbers__n { color: var(--violet-300); font-style: italic; font-variant-numeric: lining-nums tabular-nums; }
+@media (max-width: 900px) {
+  .ab-numbers__grid { grid-template-columns: 1fr; }
+  .ab-numbers__line { grid-column: 1; font-size: clamp(2rem, 8.4vw, 2.8rem); }
+}
+
+/* ------------------------------------------------------------ as seen on */
+.ab-media { color: var(--tx-inv); padding-block: clamp(4rem, 8vw, 7rem); }
+.ab-media__inner { width: var(--wrap); margin-inline: auto; }
+.ab-media__h { font-size: var(--step-1); font-weight: 360; letter-spacing: -0.015em; color: var(--tx-inv-soft); }
+.ab-media__row { list-style: none; margin: clamp(2rem, 4vw, 3rem) 0 0; padding: 0; display: flex; flex-wrap: wrap;
+  align-items: center; gap: clamp(2rem, 4vw, 4.2rem) clamp(2.4rem, 5vw, 5rem); }
+.logo-mark { display: block; height: calc(clamp(40px, 4.4vw, 64px) * var(--s, 1)); width: auto; max-width: 220px;
+  object-fit: contain; filter: brightness(0) invert(1); opacity: .8; }
+.logo-mark--plate { filter: grayscale(1) brightness(1.35) contrast(1.15); opacity: .85; }
+@media (max-width: 560px) {
+  .ab-media__row { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem 1.5rem; justify-items: start; }
+  .logo-mark { height: calc(40px * var(--s, 1)); max-width: 100%; }
+}
+
+/* ------------------------------------------------- the close (in the footer) */
+main:has(> .ab-portrait) + .foot { padding-top: 0; }

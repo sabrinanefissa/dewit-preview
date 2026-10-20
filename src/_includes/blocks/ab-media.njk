@@ -1,0 +1,11 @@
+  {# About: as seen on. A static row of media marks on plum. #}
+  <section class="ab-media"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="ab-media__inner">
+      <h2 class="ab-media__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
+      <ul class="ab-media__row">
+      {%- for l in block.logos %}
+        <li><img src="{{ l.src | root(r) }}" alt="{{ l.alt | inline() }}" class="logo-mark{% if l.treatment == 'plate' %} logo-mark--plate{% endif %}" loading="lazy" decoding="async"{% if l.scale %} style="--s:{{ l.scale }}"{% endif %}></li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

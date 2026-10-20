@@ -1,0 +1,88 @@
+  {# ==============================================================
+       Keynotes intro: the heading, two sentences, and the org chart
+       (js/keynotes.js). The SVG below is written in its END state: the
+       people as dots with lines between them, four of the lines named,
+       the boxes and reporting lines already gone. With no script and
+       under reduced motion that is what shows. With a script the chart
+       is set back to titled boxes on reporting lines, and the scroll
+       through this section dissolves it into the end state once (it
+       never runs backwards); each named line's phrase fades in with
+       that line's own draw.
+       Phones (under 768px): the phrases are hidden; the box titles play
+       as above, and one caption sentence sits under the chart.
+       Geometry: viewBox 640 x 440. Each person has a chart position
+       (c) and a connected position (n). Each phrase slot names one link
+       (its index in `links`), the side of the line it sits on (y: the
+       baseline offset, + below, - above), a nudge along the line away
+       from a crowded end (x) and the line's angle at rest.
+       ============================================================== #}
+  {%- set people = [
+    { c: [320, 64],  n: [318, 214] },
+    { c: [176, 194], n: [158, 120] },
+    { c: [464, 194], n: [494, 270] },
+    { c: [96, 324],  n: [90, 290] },
+    { c: [256, 324], n: [262, 362] },
+    { c: [384, 324], n: [432, 104] },
+    { c: [544, 324], n: [568, 182] }
+  ] %}
+  {%- set reports = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6]] %}
+  {%- set links = [[0, 1], [0, 5], [0, 4], [0, 2], [1, 5], [1, 3], [3, 4], [4, 2], [2, 6], [5, 6]] %}
+  {%- set slots = [
+    { link: 0, x: -8,  y: 17, deg: 30.43 },
+    { link: 7, x: 14,  y: 17, deg: -21.63 },
+    { link: 4, x: 0,   y: -9, deg: -3.34 },
+    { link: 6, x: -14, y: 17, deg: 22.71 }
+  ] %}
+  {%- set roles = block.chart.roles or ["CEO", "VP", "VP", "Director", "Manager", "Director", "Manager"] %}
+  {%- set phrases = block.chart.phrases or [] %}
+  {%- set chartLabel = block.chart.label %}
+  {%- if phrases.length %}{% set chartLabel = chartLabel + " Some of the lines between them are named: " + (phrases | join("; ")) + "." %}{% endif %}
+  <section class="kn-intro"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="kn-intro__grid">
+      <div class="kn-intro__copy">
+        <h1 class="kn-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('kn-em') }}</h1>
+        {%- for para in block.lead %}
+        <p class="kn-intro__lead">{{ para | inline() }}</p>
+        {%- endfor %}
+      </div>
+      <figure class="kn-chart" data-kn-chart>
+        <svg class="kn-chart__svg" viewBox="0 0 640 440" role="img" aria-label="{{ chartLabel | plain }}" focusable="false">
+          <g class="kn-chart__reports">
+          {%- for rp in reports %}{% set a = people[rp[0]] %}{% set b = people[rp[1]] %}{% set mid = (a.c[1] + b.c[1]) / 2 %}
+            <path d="M{{ a.c[0] }} {{ a.c[1] + 20 }}V{{ mid }}H{{ b.c[0] }}V{{ b.c[1] - 20 }}" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" opacity="0"/>
+          {%- endfor %}
+          </g>
+          <g class="kn-chart__links">
+          {%- for lk in links %}{% set a = people[lk[0]] %}{% set b = people[lk[1]] %}
+            <path d="M{{ a.n[0] }} {{ a.n[1] }}L{{ b.n[0] }} {{ b.n[1] }}" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="0" data-a="{{ lk[0] }}" data-b="{{ lk[1] }}"/>
+          {%- endfor %}
+          </g>
+          {%- if phrases.length %}
+          <g class="kn-chart__phrases" aria-hidden="true">
+          {%- for s in slots %}{% if phrases[loop.index0] %}{% set lk = links[s.link] %}{% set a = people[lk[0]] %}{% set b = people[lk[1]] %}
+            <text class="kn-chart__phrase" data-link="{{ s.link }}" transform="translate({{ (a.n[0] + b.n[0]) / 2 }} {{ (a.n[1] + b.n[1]) / 2 }}) rotate({{ s.deg }})" x="{{ s.x }}" y="{{ s.y }}" text-anchor="middle">{{ phrases[loop.index0] | plain }}</text>
+          {%- endif %}{% endfor %}
+          </g>
+          {%- endif %}
+          <g class="kn-chart__people">
+          {%- for p in people %}
+            <g class="kn-chart__person" transform="translate({{ p.n[0] }} {{ p.n[1] }})" data-c="{{ p.c[0] }} {{ p.c[1] }}" data-n="{{ p.n[0] }} {{ p.n[1] }}">
+              <g class="kn-chart__box" opacity="0" transform="scale(0.35)">
+                <rect x="-52" y="-20" width="104" height="40" rx="3"/>
+                {%- if roles[loop.index0] %}
+                <text class="kn-chart__role" y="0" dy=".36em" text-anchor="middle">{{ roles[loop.index0] | plain }}</text>
+                {%- endif %}
+              </g>
+              <circle class="kn-chart__dot" r="7"/>
+            </g>
+          {%- endfor %}
+          </g>
+        </svg>
+        {%- if block.chart.caption %}
+        <figcaption class="kn-chart__cap">{{ block.chart.caption | inline() }}</figcaption>
+        {%- elif block.chart.phoneCaption %}
+        <figcaption class="kn-chart__cap kn-chart__cap--phone">{{ block.chart.phoneCaption | inline() }}</figcaption>
+        {%- endif %}
+      </figure>
+    </div>
+  </section>

@@ -1,19 +1,19 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- HERO - static full-bleed scene (the framed-card handoff was lifted
-       out on 2026-09-20 and saved to js|css/effects/frame-card.*) -->
-  <!-- The entrance (once, when the loader has gone): the headline's words
+  {# HERO - static full-bleed scene (the framed-card handoff was lifted
+       out on 2026-09-20 and saved to js|css/effects/frame-card.*) #}
+  {# The entrance (once, when the loader has gone): the headline's words
        arrive one after another (data-stagger / data-delay, ms), then the
        play ring draws itself, then the meta lines. On scroll the picture
        pushes in by data-zoom (data-zoom-sm on phones) and a veil darkens
        to data-dim over the first screen. Reduced motion and no script:
-       everything at rest. -->
+       everything at rest. #}
   <section class="hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-stagger="{{ block | motion('stagger', 110) }}" data-delay="{{ block | motion('delay', 250) }}" data-zoom="{{ block | motion('zoom', 0.12) }}" data-zoom-sm="{{ block | motion('zoomPhone', 0.08) }}" data-dim="{{ block | motion('dim', 0.55) }}" data-name-morph="{{ block | motion('nameMorph', 0.4) }}">
     <div class="media media--plum">
-      <!-- Instant poster / reduced-motion + fallback layer -->
+      {# Instant poster / reduced-motion + fallback layer #}
       {%- set pp = block.poster.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="hero__poster" src="{{ block.poster.src | root(r) }}"
            {%- set ss1 = block.poster.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
            sizes="{{ block.poster.sizes or '100vw' }}" alt="{{ block.poster.alt | inline() }}" fetchpriority="high">{% if pp %}</picture>{% endif %}
-      <!-- Ambient muted keynote loop (upgraded in via JS unless prefers-reduced-motion) -->
+      {# Ambient muted keynote loop (upgraded in via JS unless prefers-reduced-motion) #}
       <video class="hero__video" muted loop playsinline preload="none"
              poster="{{ block.video.poster | root(r) }}" aria-hidden="true"
              data-src-webm="{{ block.video.webm | root(r) }}"

@@ -112,8 +112,16 @@ em, .italic { font-style: italic; }
 .loader__name span { display:inline-block; transform: translateY(110%); animation: rise .9s var(--ease-out) forwards; }
 .loader__bar { position:absolute; left:0; bottom:0; height:2px; width:0; background:var(--violet-500); }
 .loader.is-done { opacity:0; visibility:hidden; }
+/* failsafe (the loader renders on Home only): if the script never dismisses
+   it, CSS does at 3s. The fill only applies once the delay has run, so an
+   earlier dismissal by the script is untouched. */
+.loader { animation: loader-failsafe .5s var(--ease-amb) 3s forwards; }
+@keyframes loader-failsafe { to { opacity:0; visibility:hidden; pointer-events:none; } }
 @keyframes rise { to { transform: translateY(0); } }
 html.no-js .loader, .loader[hidden] { display:none; }
+/* the hero entrance hides its words until the script runs it; if the
+   script failed part-way (the failsafe in the layout sets no-js), show them */
+html.no-js .hero.is-enter .hero__w, html.no-js .hero.is-enter .hero__meta > span { opacity:1; transform:none; filter:none; }
 @media (prefers-reduced-motion: reduce) {
   .loader__name span { animation:none; transform:none; }
 }
@@ -500,6 +508,13 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .care__list li { position:relative; padding-left:1.1rem; }
 .care__list li::before { content:""; position:absolute; left:0; top:.62em; width:6px; height:6px; border-radius:50%; background:var(--teal); }
 .care__cta { margin-top: 2.4rem; }
+/* the quiet route for corporate visitors who landed on the healthcare band */
+.care__route { margin-top: 1.4rem; font-size: var(--step--1); color: var(--tx-inv-soft); max-width: 46ch; }
+.care__route-link { display:inline-flex; align-items:center; gap:.4em; color: var(--tx-inv);
+  border-bottom: 1px solid var(--line-inv-strong); padding-bottom: 1px;
+  transition: border-color var(--dur-fast) ease, gap var(--dur-fast) var(--ease-out); }
+.care__route-link:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .care__route-link:hover { border-color: currentColor; gap:.65em; } }
 
 /* =====================================================================
    Final CTA + footer
@@ -517,11 +532,15 @@ html.no-js .loader, .loader[hidden] { display:none; }
 .foot__grid { width:var(--wrap); margin-inline:auto; display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:2.5rem; }
 .foot .brand { color:var(--tx-inv); margin-bottom:1rem; display:block; }
 .foot h3 { font-family:var(--f-text); font-size:var(--step--1); letter-spacing:.16em; text-transform:uppercase;
-  color:var(--tx-inv-faint); margin-bottom:1rem; font-weight:600; }
+  color:var(--tx-inv-soft); margin-bottom:1rem; font-weight:600; }
 .foot ul { list-style:none; padding:0; display:flex; flex-direction:column; gap:.6rem; }
 .foot a:hover { color:var(--tx-inv); }
 .foot__base { width:var(--wrap); margin: 3rem auto 0; padding-top:1.5rem; border-top:1px solid var(--line-inv);
-  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; font-size:var(--step--1); color:var(--tx-inv-faint); }
+  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; font-size:var(--step--1); color:var(--tx-inv-soft); }
+/* footer text on plum-2: links and small text at --tx-inv-soft (about 7:1),
+   never the 40% faint tone (about 3.2:1, under AA) */
+.foot a { color: var(--tx-inv-soft); }
+.foot a:hover, .foot .brand { color: var(--tx-inv); }
 
 /* =====================================================================
    Video lightbox
@@ -1202,6 +1221,8 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
   display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
 .orgband__cta p { margin: 0; font-family: var(--f-display); font-size: var(--step-1); font-weight: 360;
   letter-spacing: -0.02em; line-height: 1.15; max-width: 22ch; color: var(--tx-inv); }
+/* no line of text: the button stands alone, without the card around it */
+.orgband__cta:not(:has(p)) { background: none; border: 0; padding: 0; justify-content: center; }
 @media (max-width: 700px) {
   .orgband__cta { flex-direction: column; align-items: stretch; text-align: left; }
   .orgband__cta .btn { width: 100%; justify-content: center; }
@@ -1213,7 +1234,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
    Ground sequence, one tone step between neighbours:
    hero plum-2 · proof plum-2 · keynotes plum · turn plum-2 · formats plum
    · bio ink · ribbon plum · footer plum-2.
-   Round 6: exactly one position:sticky on the page: .spk-chap__stage.
+   Exactly one position:sticky on the page: .spk-chap__stage.
    ===================================================================== */
 
 /* Visually-hidden utility for this page's live regions and connectives */
@@ -1229,7 +1250,7 @@ html { caret-color: var(--violet); scrollbar-color: color-mix(in oklab, var(--vi
 .spk-ground__veil { position:absolute; inset:0;
   background: rgb(var(--spk-ground, 26 16 38)); opacity: .78; }
 html.no-js .spk-ground__img { display:none; }
-.spk-hero, .spk-proof, .spk-said, .spk-keys, .spk-chap, .spk-out, .spk-formats, .spk-plan, .spk-bio { position:relative; z-index:1; }
+.spk-hero, .spk-proof, .spk-chap, .spk-out, .spk-formats, .spk-plan, .spk-bio { position:relative; z-index:1; }
 
 /* ---------------------------------------------------------------------
    0. Lights up — ONE shared treatment for every photo on this page:
@@ -1386,6 +1407,10 @@ html.no-js .spk-voice { display:none; }
 }
 @media (max-width: 720px) {
   .spk-hero .media img, .spk-hero .media video { object-position: 52% 26%; }
+  /* phones upright see about a quarter of the 16:9 reel's width: hold that
+     window where Stephen stands in most shots (x 33-55% of the frame), so his face stays
+     in frame (52% cut him at the left edge) */
+  .spk-hero .media video { object-position: 38% 26%; }
 }
 
 /* ---------------------------------------------------------------------
@@ -1393,315 +1418,6 @@ html.no-js .spk-voice { display:none; }
    --------------------------------------------------------------------- */
 .spk-proof .stats__line { padding-top: clamp(3.5rem, 7vw, 6.5rem);
   margin-inline: auto; text-align: center; max-width: 30ch; }
-
-/* ---------------------------------------------------------------------
-   3. Keynotes — a pinned stage. The track is 480svh; the stage is sticky
-   inside it for 380svh of scroll. Module 2 registers one spine entry and
-   writes the phases as custom properties (the scroll is the clock, so
-   none of them has a transition):
-     --rise, --g  on the ground: both held at 1 (written once), so the
-                  ground is exactly the viewport; the card rules stay
-     --reveal     on the ground: held at 1 (the wheel's velvet fades
-                  out over it instead, --spk-keys-reveal, first 60svh)
-     --head       on the heading: in over 63-81svh (once the wheel's
-                  candles have faded, --spk-keys-gone, u 40-70), out over the first
-                  40svh of talk 01
-     --wi         on panels 2 and 3: the wipe in from the right
-     --cap        on each panel: its caption, the ring inside it
-   The section rises UNDER the last 60svh of the candle wheel's stage
-   (its margin-top, over the wheel only; the wheel is z 3): the velvet
-   fades, the talks show in the gap between the candles, which stay in
-   front and scroll away. The room section
-   (.spk-chap) rises over this stage in the last 50svh (see its
-   margin-top).
-   --------------------------------------------------------------------- */
-.spk-keys { position:relative; background: transparent; color: var(--tx-inv); }
-/* under the candle wheel's held stage (a pinned wheel is z 3, see A.) */
-.spk-keys { margin-top: -160svh; z-index: 2; }
-/* only over a pinned wheel: no script, reduced motion, Save-Data and
-   phones (where this section is not pinned) have none */
-html.no-js .spk-keys, .spk-keys.is-stacked, .spk-said.is-stacked + .spk-keys { margin-top:0; }
-@media (max-width: 768px) { .spk-keys { margin-top:0; } }
-/* head + N talks + a 50svh hold, plus the stage's own screen: 480svh for
-   three talks (--panels, --head-svh, --panel-svh: the section's inline
-   style, from the block's settings) */
-.spk-keys__track { height: calc((var(--head-svh, 90) + var(--panel-svh, 80) * var(--panels, 3) + 50) * 1svh + 100svh); }
-.spk-keys__stage { position:sticky; top:0; height:100svh; overflow:hidden; }
-
-/* The ground: a centred card that grows to full-bleed. At --g 1 it is
-   exactly the viewport. */
-.spk-keys__ground { position:absolute; left:50%; top:50%; z-index:1; overflow:hidden;
-  width: calc(40vw + 60vw * var(--g, 0));
-  height: calc(25vw + (100svh - 25vw) * var(--g, 0));
-  transform: translate(-50%, calc(-50% + (1 - var(--rise, 0)) * 30svh));
-  border-radius: calc(4px * (1 - var(--g, 0)));
-  background: var(--plum-2); }
-.spk-keys__ground { opacity: var(--reveal, 1); }
-.spk-keys__rest, .spk-keys__still { position:absolute; inset:0; display:block;
-  width:100%; height:100%; object-fit:cover; object-position: 50% 40%; }
-
-/* The three talks exist only inside the grown picture. */
-.spk-keys__panels { position:absolute; inset:0; opacity:0; visibility:hidden;
-  transition: opacity .42s var(--ease-out), visibility 0s linear .42s; }
-.spk-keys__panels.is-on { opacity:1; visibility:visible;
-  transition: opacity .42s var(--ease-out), visibility 0s linear 0s; }
-.spk-keys__panel { position:absolute; inset:0; overflow:hidden; }
-.spk-keys__panel:focus-visible { outline:2px solid var(--violet-300); outline-offset:-4px; }
-/* the panels that are not live take no pointer; the script also makes
-   them inert */
-.spk-keys__panel.is-off { pointer-events:none; }
-.spk-keys__panel + .spk-keys__panel {
-  -webkit-mask-image: linear-gradient(to left, #000 calc(var(--wi, 0) * 112% - 12%), transparent calc(var(--wi, 0) * 112%));
-          mask-image: linear-gradient(to left, #000 calc(var(--wi, 0) * 112% - 12%), transparent calc(var(--wi, 0) * 112%)); }
-
-/* On each picture: its title, its one line and "Watch Stephen speak",
-   centred on the picture, over a soft dark pool drawn on the panel (not on
-   the text) that follows the caption's --cap. */
-.spk-keys__panel::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background: radial-gradient(60% 55% at 50% 50%, rgba(20,10,28,.62), rgba(20,10,28,.28) 60%, transparent 100%);
-  opacity: var(--cap, 0); }
-.spk-keys__caption { position:absolute; left:50%; top:50%; z-index:2;
-  transform: translate(-50%, -50%); text-align:center;
-  width: min(34ch, calc(100% - 2 * var(--gutter)));
-  opacity: var(--cap, 0); }
-.spk-keys__ptitle { font-family: var(--f-display); font-style:normal; font-weight:360;
-  font-size: var(--step-2); line-height:1.08; letter-spacing:-0.02em; color: var(--tx-inv);
-  text-shadow: 0 2px 24px rgba(0,0,0,.55); }
-.spk-keys__ptitle .tm { font-size:.38em; vertical-align:super; color: var(--tx-inv-faint); }
-.spk-keys__sub { margin-top:.45rem; font-family: var(--f-display); font-style:italic; font-weight:360;
-  font-size: var(--step-0); line-height:1.3; letter-spacing:-0.01em; color: var(--violet-100);
-  text-shadow: 0 2px 24px rgba(0,0,0,.55); }
-
-/* The automatic start: a thin lilac ring drawn around the play button over
-   4s (--load 0 -> 1, written by module 2); the talk plays when it closes. */
-.spk-keys .spk-keys__hear .play__ring svg.spk-keys__load { position:absolute; inset:-6px; width:calc(100% + 12px); height:calc(100% + 12px);
-  margin:0; fill:none; transform: rotate(-90deg); pointer-events:none; overflow:visible; }
-.spk-keys__load circle { fill:none; stroke: #D6C6FF; stroke-width:2.6; stroke-linecap:round;
-  stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--load, 0));
-  opacity: calc(min(1, var(--load, 0) * 20)); filter: drop-shadow(0 0 5px rgba(214,198,255,.75)); }
-/* the heading, alone over the full-bleed ground. */
-.spk-keys__head { position:absolute; inset:0; z-index:4; display:grid; place-items:center;
-  text-align:center; pointer-events:none; padding-inline: var(--gutter);
-  opacity: var(--head, 0);
-  transform: translateY(calc((1 - var(--head, 0)) * 12px));
-  filter: blur(calc((1 - var(--head, 0)) * 6px)); }
-.spk-keys__head h2 { font-size: var(--step-2); font-weight:360; color: var(--tx-inv);
-  max-width: 30ch; text-wrap: balance; text-shadow: 0 2px 24px rgba(0,0,0,.55); }
-
-/* The small index: one line, top-centre, shown with the panels. */
-.spk-keys__index { position:absolute; left:0; right:0; top: clamp(5rem, 12vh, 8rem); z-index:5;
-  display:flex; justify-content:center; gap: clamp(1.2rem, 3vw, 2.4rem);
-  opacity:0; visibility:hidden;
-  transition: opacity .42s var(--ease-out), visibility 0s linear .42s; }
-.spk-keys__index.is-on { opacity:1; visibility:visible;
-  transition: opacity .42s var(--ease-out), visibility 0s linear 0s; }
-.spk-keys__tab { display:inline-flex; align-items:baseline; gap:.55em; padding:.35rem .2rem;
-  font-family: var(--f-text); font-size: var(--step--1); font-weight:600;
-  letter-spacing:.08em; text-transform:uppercase; line-height:1.2; white-space:nowrap;
-  /* .62 is the floor: small text over a picture */
-  color: rgba(244,236,222,.62);
-  transition: color var(--dur-fast) var(--ease-out); }
-.spk-keys__no { font-variant-numeric: tabular-nums lining-nums;
-  color: rgba(244,236,222,.62); transition: color var(--dur-fast) var(--ease-out); }
-.spk-keys__name .tm { font-size:.6em; vertical-align:super; letter-spacing:0; color: var(--tx-inv-faint); }
-/* Each talk carries its own accent, on the tab and on its panel. */
-.spk-keys [data-accent="violet"] { --acc: var(--violet-300); }
-.spk-keys [data-accent="coral"]  { --acc: var(--coral); }
-.spk-keys [data-accent="gold"]   { --acc: var(--gold); }
-@media (hover: hover) {
-  .spk-keys__tab:hover, .spk-keys__tab:hover .spk-keys__no { color: rgba(244,236,222,.80); }
-}
-.spk-keys__tab:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; }
-.spk-keys__tab[aria-selected="true"] { color: var(--tx-inv); }
-.spk-keys__tab[aria-selected="true"] .spk-keys__no { color: var(--acc, var(--violet-300)); }
-
-/* "Watch Stephen speak" — one button in the caption block, under the line:
-   the ring (64px, 56px on phones) centred, its label under it; ring and
-   label are the hit area. Being inside the caption, it fades with --cap. */
-.spk-keys__hear { position:static; transform:none; display:inline-flex; flex-direction:column;
-  align-items:center; gap:.7rem; margin-top: clamp(1.1rem, 2.6vh, 1.6rem);
-  padding:0; border:0; background:none; color: var(--tx-inv); }
-.spk-keys__hear .play__ring { width:4rem; height:4rem; border-color: var(--line-inv-strong);
-  background: rgba(14,8,22,.26); }
-.spk-keys__hear .play__ring svg { width:1rem; height:1rem; margin-left:0; fill: currentColor; }
-.spk-keys__hear .spk-ic--play { margin-left:2px; }
-@media (hover: hover) and (pointer: fine) {
-  .spk-keys__hear:hover .play__ring { transform: scale(1.06); }
-  .spk-keys__hear:hover .play__ring::before { clip-path: inset(0 0 0 0); }
-}
-.spk-keys__hear:active .play__ring { transform: scale(.94); }
-.spk-keys__hear:focus-visible { outline:2px solid var(--violet-300); outline-offset:6px; }
-/* the ring's hover sweep takes the talk's accent (the base .play__ring::before
-   names --violet-400, which tokens.css does not define) */
-.spk-keys__hear .play__ring::before { border-color: var(--acc, var(--violet-400)); }
-.spk-keys__hear[aria-pressed="true"] .play__ring { border-color: var(--acc, var(--violet-300)); }
-.spk-keys__hearlabel { font-family: var(--f-text); font-weight:600; font-size: var(--step--1);
-  letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
-  text-shadow: 0 1px 12px rgba(0,0,0,.55); }
-.spk-keys__hear[data-state="play"]  .spk-ic--play  { display:block; }
-.spk-keys__hear[data-state="pause"] .spk-ic--pause { display:block; }
-
-/* The clip: one shared <video> above the pictures, seen only while a talk
-   plays. With no script it never gets a src. */
-.spk-keys__video { position:absolute; inset:0; z-index:3; width:100%; height:100%;
-  object-fit:cover; object-position: 50% 38%; pointer-events:none;
-  opacity:0; transition: opacity .42s var(--ease-out); }
-.spk-keys__video.is-on { opacity:1; }
-html.no-js .spk-keys__video { display:none; }
-
-/* Play state. The type leaves the frame: the index, the heading and every
-   caption (with its ring) fade out over 420ms, then go hidden. */
-.spk-keys.is-playing .spk-keys__index,
-.spk-keys.is-playing .spk-keys__head,
-.spk-keys.is-playing .spk-keys__caption { opacity:0; visibility:hidden;
-  transition: opacity .42s var(--ease-out), visibility 0s linear .42s; }
-
-/* The only things on the frame while a clip plays: the reel's own caption
-   as one line near the bottom (only when captions are on in the hero), and
-   one small pause ring bottom-centre. */
-.spk-keys__play { position:absolute; left:0; right:0; bottom: clamp(6.5rem, 14vh, 9rem);
-  z-index:4; pointer-events:none; text-align:center; }
-.spk-keys__cap { margin-inline:auto; max-width:46ch; padding-inline: var(--gutter);
-  font-family: var(--f-text); font-size: var(--step-0); line-height:1.5;
-  letter-spacing:.01em; color: var(--tx-inv); text-wrap:balance;
-  opacity:0; transition: opacity .3s var(--ease-out); }
-/* the leading hairline, in the playing talk's accent (the script sets
-   data-accent on .spk-keys__play) */
-.spk-keys__cap::before { content:""; display:block; width:2.5rem; height:1px;
-  margin: 0 auto .7rem; background: var(--acc, var(--violet-300)); }
-.spk-keys__cap.is-on { opacity:1; }
-html[data-spk-cc="off"] .spk-keys__cap { display:none; }
-
-.spk-keys__pause { position:absolute; left:50%; bottom: clamp(2.5rem, 6vh, 4rem);
-  transform: translateX(-50%); z-index:6; padding:0; border:0; background:none;
-  color: var(--tx-inv); opacity:0; transition: opacity .42s var(--ease-out); }
-.spk-keys__pause[hidden] { display:none; }
-.spk-keys.is-playing .spk-keys__pause { opacity:1; }
-.spk-keys.is-playing .spk-keys__pause.is-idle { opacity:.35; }
-.spk-keys__pause .play__ring { width:3rem; height:3rem; border-color: var(--line-inv-strong); }
-.spk-keys__pause .play__ring svg { width:1rem; height:1rem; margin:0; fill:currentColor; display:block; }
-@media (hover: hover) and (pointer: fine) {
-  .spk-keys__pause:hover .play__ring { transform: scale(1.07); }
-  .spk-keys__pause:hover .play__ring::before { clip-path: inset(0 0 0 0);
-    border-color: var(--acc, var(--violet-300)); }
-}
-.spk-keys__pause:focus-visible .play__ring { transform: scale(1.07); }
-.spk-keys__pause:focus-visible { outline:2px solid var(--violet-300); outline-offset:4px; opacity:1; }
-
-/* Phones: no pin, no grow. The heading, then the index as a centred row,
-   then the three talks as a horizontal snap strip. The script does not
-   register with the spine here. */
-@media (max-width: 768px) {
-  .spk-keys { padding-block: clamp(3.5rem, 12vw, 5rem); }
-  .spk-keys__track { height:auto; }
-  .spk-keys__stage { position:static; height:auto; overflow:visible;
-    display:flex; flex-direction:column; }
-  .spk-keys__head { order:1; position:static; inset:auto; display:block;
-    opacity:1; transform:none; filter:none; }
-  .spk-keys__head h2 { margin-inline:auto; }
-  .spk-keys__index { order:2; position:static; flex-wrap:wrap; row-gap:.2rem;
-    margin: 1.1rem 0 1.4rem; padding-inline: var(--gutter);
-    opacity:1; visibility:visible; transition:none; }
-  .spk-keys__tab { min-height:44px; align-items:center; }
-  .spk-keys__ground { order:3; position:static; left:auto; top:auto;
-    width:auto; height:auto; transform:none; border-radius:0; overflow:visible;
-    background:none; }
-  .spk-keys__rest { display:none; }
-  .spk-keys__panels { position:static; opacity:1; visibility:visible; transition:none;
-    display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
-    gap: 1rem; padding-inline: 8vw; scrollbar-width:none; -ms-overflow-style:none;
-    -webkit-overflow-scrolling: touch; }
-  .spk-keys__panels::-webkit-scrollbar { display:none; }
-  .spk-keys__panel { flex: 0 0 84vw; position:relative; inset:auto; aspect-ratio: 4 / 5;
-    scroll-snap-align:center; }
-  .spk-keys__panel + .spk-keys__panel { -webkit-mask-image:none; mask-image:none; }
-  .spk-keys__caption, .spk-keys__panel::after { opacity:1; }
-  .spk-keys__hear .play__ring { width:3.5rem; height:3.5rem; }
-  /* with no stage to fill, a playing talk fills the viewport */
-  .spk-keys__video, .spk-keys__play, .spk-keys__pause { position:fixed; }
-}
-
-/* Phones with motion (.is-reel, js module 2): the reel. N + 1 cards of a
-   full screen each in the page's own flow: card 0 the rest picture with
-   the heading centred on it (the scroll-fill), then one card per talk, its
-   caption centred exactly as on the pin. The ground and the panel box let
-   go of their boxes (display: contents) so the stage's grid holds the
-   cards. No scroll snapping: a mandatory snap on the root made iOS Safari
-   yank the page to the first card while the candle wheel's held stage
-   was still playing its ending over it (the script still marks
-   html.spk-snap while the cards are in view; nothing reads it). A card's
-   caption rises in on arrival (--cap 0 → 1, written by the script over
-   --cap-ms); the dots (1 + N, bottom right, vertical) replace the index. */
-@media (max-width: 768px) {
-  .spk-keys.is-reel { padding-block:0; }
-  .spk-keys.is-reel .spk-keys__stage { display:grid; grid-template-columns: 100%; }
-  .spk-keys.is-reel .spk-keys__ground,
-  .spk-keys.is-reel .spk-keys__panels { display:contents; }
-  .spk-keys.is-reel .spk-keys__rest { grid-area: 1 / 1; display:block; position:relative; inset:auto;
-    width:100%; height:100svh; scroll-snap-align:start; }
-  .spk-keys.is-reel .spk-keys__head { grid-area: 1 / 1; position:relative; z-index:2; display:grid;
-    place-items:center; height:100svh; padding-inline: var(--gutter);
-    background: radial-gradient(70% 45% at 50% 50%, rgba(20,10,28,.5), transparent 100%); }
-  .spk-keys.is-reel .spk-keys__panel { position:relative; inset:auto; width:100%; height:100svh;
-    aspect-ratio:auto; scroll-snap-align:start; }
-  .spk-keys.is-reel .spk-keys__caption { opacity: var(--cap, 0);
-    transform: translate(-50%, calc(-50% + (1 - var(--cap, 0)) * 16px)); }
-  .spk-keys.is-reel .spk-keys__panel::after { opacity: var(--cap, 0); }
-  .spk-keys.is-reel .spk-keys__panel.is-off { pointer-events:auto; }
-  .spk-keys.is-reel .spk-keys__index[hidden] { display:none; }
-}
-.spk-keys__dots { position:fixed; right: 12px; bottom: max(1.2rem, env(safe-area-inset-bottom)); z-index:6;
-  display:flex; flex-direction:column; align-items:center;
-  opacity:0; visibility:hidden; transition: opacity .32s var(--ease-out), visibility 0s linear .32s; }
-.spk-keys__dots.is-in { opacity:1; visibility:visible; transition: opacity .32s var(--ease-out), visibility 0s; }
-.spk-keys.is-playing .spk-keys__dots { opacity:0; visibility:hidden; }
-.spk-keys__dotlist { display:flex; flex-direction:column; align-items:center; }
-.spk-keys__dot { position:relative; width:44px; height:32px; padding:0; border:0; background:none; cursor:pointer; }
-.spk-keys__dot::before { content:""; position:absolute; left:50%; top:50%; width:8px; height:8px;
-  border-radius:4px; transform: translate(-50%, -50%); background: rgba(244,236,222,.45);
-  box-shadow: 0 0 10px rgba(0,0,0,.35);
-  transition: height .32s var(--ease-out), background-color .32s var(--ease-out); }
-.spk-keys__dot.is-cur::before { height:22px; background: var(--acc, var(--tx-inv)); }
-.spk-keys__dot:focus-visible { outline:2px solid var(--violet-300); outline-offset:-4px; border-radius:16px; }
-
-/* No script, or the stacked mode reduced motion switches on: no pin, no
-   grow, no index. The heading, then the three talks stacked, each a 16:9
-   picture with its caption and its ring. */
-html.no-js .spk-keys, .spk-keys.is-stacked { padding-block: clamp(4rem, 8vw, 7rem); }
-html.no-js .spk-keys__track, .spk-keys.is-stacked .spk-keys__track { height:auto; }
-html.no-js .spk-keys__stage, .spk-keys.is-stacked .spk-keys__stage { position:static; height:auto;
-  overflow:visible; display:flex; flex-direction:column; }
-html.no-js .spk-keys__head, .spk-keys.is-stacked .spk-keys__head { order:1; position:static;
-  inset:auto; display:block; opacity:1; transform:none; filter:none; }
-html.no-js .spk-keys__head h2, .spk-keys.is-stacked .spk-keys__head h2 { margin-inline:auto; }
-html.no-js .spk-keys__index, .spk-keys.is-stacked .spk-keys__index { display:none; }
-html.no-js .spk-keys__ground, .spk-keys.is-stacked .spk-keys__ground { order:2; position:static;
-  left:auto; top:auto; width: var(--wrap); max-width: 1200px; height:auto; margin-inline:auto;
-  transform:none; border-radius:0; overflow:visible; background:none; }
-html.no-js .spk-keys__rest, .spk-keys.is-stacked .spk-keys__rest { display:none; }
-html.no-js .spk-keys__panels, .spk-keys.is-stacked .spk-keys__panels { position:static;
-  display:block; opacity:1; visibility:visible; transition:none; overflow:visible; padding:0; }
-html.no-js .spk-keys__panel, .spk-keys.is-stacked .spk-keys__panel { position:relative; inset:auto;
-  aspect-ratio: 16 / 9; margin-top: clamp(2rem, 4vw, 3rem); }
-html.no-js .spk-keys__panel + .spk-keys__panel,
-.spk-keys.is-stacked .spk-keys__panel + .spk-keys__panel { -webkit-mask-image:none; mask-image:none; }
-html.no-js .spk-keys__caption, .spk-keys.is-stacked .spk-keys__caption,
-html.no-js .spk-keys__panel::after, .spk-keys.is-stacked .spk-keys__panel::after { opacity:1; }
-/* No script means no clip and no captions, so neither control is offered. */
-html.no-js .spk-keys__hear, html.no-js .spk-keys__cap { display:none; }
-/* with no stage to fill, a playing talk fills the viewport */
-.spk-keys.is-stacked .spk-keys__video, .spk-keys.is-stacked .spk-keys__play,
-.spk-keys.is-stacked .spk-keys__pause { position:fixed; }
-@media (max-width: 768px) {
-  html.no-js .spk-keys__panel, .spk-keys.is-stacked .spk-keys__panel { aspect-ratio: 4 / 5; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spk-keys__pause, .spk-keys__cap, .spk-keys__video,
-  .spk-keys__index, .spk-keys__panels, .spk-keys__tab, .spk-keys__no { transition:none; }
-  .spk-keys.is-stacked.is-playing .spk-keys__head,
-  .spk-keys.is-stacked.is-playing .spk-keys__caption { opacity:0; visibility:hidden; transition:none; }
-}
 
 /* ---------------------------------------------------------------------
    4. What the room walks out with — no pin. A dark room and five words
@@ -1944,251 +1660,16 @@ html.no-js .spk-formats__room { flex: 0 0 84vw; scroll-snap-align:center; max-he
 
 
 /* =====================================================================
-   SPEAKING PAGE — ROUND 5 SECTIONS
-   Spec: 05_Website/Design/SPEAKING-R5-SECTIONS-SPEC.md
+   SPEAKING PAGE SECTIONS
    Page order: hero · numbers · A · keynotes · B · turn · C · D · E · footer
    Ground, one tone step between neighbours:
    plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2 · plum · plum-2.
-   Round 6: the turn's pin is gone; see the note at the top of this block.
    ===================================================================== */
 
 /* The two tone swaps the new order needs, and the proof line's own ground.
    Nothing else about those sections changes. */
 .spk-proof   { background: transparent; border-top:0; }
 .spk-formats { background: transparent; }
-
-/* ---------------------------------------------------------------------
-   A. .spk-said — "What he talks about." The candle wheel. The six lines
-   ship in the markup, stacked on the velvet, so the section reads with no
-   script, under reduced motion and on Save-Data (the script then puts one
-   lit candle over each line). With the script and motion the section
-   becomes a pinned stage (.is-wheel): a 720svh track, the velvet under a
-   plum veil, the wheel on a canvas above them, and the six lines in one
-   grid cell, each carrying --on (0..1) from the scroll. The scroll is the
-   clock: nothing here has a transition. The ending (three candles rise
-   out of the ring, the camera pushes between the left and the middle
-   one) is drawn on the canvas; the script also writes --push (0..1) on
-   the section, which scales the velvet slightly about --push-ox/-oy.
-   --------------------------------------------------------------------- */
-.spk-said { position:relative; background: var(--plum-2); color: var(--tx-inv); }
-.spk-said__stage { position:relative; overflow:hidden;
-  padding-block: clamp(4rem, 9vw, 7rem); }
-.spk-said__velvet { position:absolute; inset:0; z-index:0; display:block;
-  width:100%; height:100%; object-fit:cover; object-position: 50% 50%; }
-.spk-said__veil { position:absolute; inset:0; z-index:1; pointer-events:none;
-  background: rgba(26,16,38,.42); }
-.spk-said__wheel,
-.spk-said__nextA, .spk-said__nextB, .spk-said__glowimg, .spk-said__lineimgs { display:none; }
-.spk-said__inner { position:relative; z-index:5; width: var(--wrap); margin-inline:auto;
-  text-align:center; }
-.spk-said__h { margin:0; font-family: var(--f-display); font-style:italic; font-weight:360;
-  font-size: var(--step-0); line-height:1.3; letter-spacing:0;
-  color: var(--tx-inv-soft); }
-
-/* Stacked (no script, reduced motion, Save-Data): every line is there. */
-.spk-said__lines { display:grid; justify-items:center; row-gap: clamp(2.2rem, 6vh, 3.6rem);
-  margin: clamp(1.8rem, 5vh, 3rem) auto 0; }
-.spk-said__line { max-width:22ch; margin:0;
-  font-family: var(--f-display); font-weight:340; font-size: var(--step-2);
-  line-height:1.12; letter-spacing:-0.02em; color: var(--tx-inv); text-wrap: balance; }
-.spk-said__no { display:block; margin-bottom:.75rem;
-  font-family: var(--f-text); font-size: var(--step--1); font-weight:500; font-style:normal;
-  line-height:1; letter-spacing:.12em; font-variant-numeric: tabular-nums lining-nums;
-  color: rgba(244,236,222,.62); }
-/* the quiet close: not the audience's own experience but what it has
-   already cost the organization by the time anyone names it */
-.spk-said__bridge { max-width:34ch; font-family: var(--f-text); font-weight:400;
-  font-size: var(--step-0); line-height:1.55; letter-spacing:0;
-  color: var(--tx-inv-soft); }
-/* one lit candle over each line, inserted by the script (never with no-js) */
-.spk-said__candle { display:block; width:auto; height:140px; margin: 0 auto 1rem; }
-html.no-js .spk-said__candle { display:none; }
-
-/* The wheel: a pinned stage, a 60svh intro, N + 1 beats of 80svh (N
-   lines: --beats), a 100svh ending and 60svh over the talks section as it
-   rises: 780svh for six lines (--intro, --beats, --beat, --grow: the
-   section's inline style). */
-.spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.5) * var(--beat, 80) + var(--grow, 160) + 160) * 1svh); }
-.spk-said.is-wheel .spk-said__stage { position:sticky; top:0; height:100svh; padding:0; }
-.spk-said.is-wheel .spk-said__wheel { display:block; position:absolute; inset:0; z-index:2;
-  width:100%; height:100%; pointer-events:none; }
-/* the push: the velvet follows the camera a little (x1.12 at the end),
-   about the point between the left and the middle candle */
-.spk-said.is-wheel .spk-said__velvet { transform: scale(calc(1 + 0.12 * var(--push, 0)));
-  transform-origin: var(--push-ox, 39%) var(--push-oy, 55%); }
-/* the hand-off: the pinned wheel sits over the talks section (z 3 over its
-   z 2) with no ground of its own; its velvet and veil fade out as the
-   talks rise under it (--spk-keys-reveal, from module 2), so the talks show
-   in the gap while the candles stay in front; then the whole stage fades
-   out as it slides (--spk-keys-gone, talks u 40-70), before the talks'
-   heading rises. No pointer events, so the talks' buttons under it stay
-   live. */
-.spk-said.is-wheel { z-index:3; background: transparent; pointer-events:none; }
-.spk-said.is-wheel .spk-said__stage { pointer-events:none; }
-.spk-said.is-wheel .spk-said__velvet,
-.spk-said.is-wheel .spk-said__veil { opacity: calc(1 - var(--spk-keys-reveal, 0)); }
-/* the candles fade (--spk-keys-gone) well before the velvet has gone
-   (--spk-keys-reveal), so the talks' picture comes up slowly through it */
-.spk-said.is-wheel .spk-said__wheel { opacity: calc(1 - var(--spk-keys-gone, 0)); }
-/* phones: no pinned talks take the wheel over, so it hands off by itself
-   (module 7): the candle's bottom always fades into the velvet (in the
-   canvas, no CSS mask, a still band); the grow is over 250svh before
-   the track ends and the talks reel's first card (plain plum and its
-   heading, stacked ABOVE the stage: keys z 4 over said z 3) scrolls up
-   over the still candle; the stage is held for the track's last 100svh,
-   then scrolls away under the reel. The track has no hold beat, a long
-   grow (--grow-phone) and the hold's 100svh: 1072svh for six lines. */
-@media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__track { height: calc((var(--intro, 60) + (var(--beats, 6) - 0.6) * var(--beat, 80) + var(--grow-phone, 480) + 100) * 1svh); }
-  .spk-keys.is-reel { z-index:4; }
-  /* the reel pulled up 150svh: its first card enters as the grow ends
-     (U - 250) and scrolls up over the still candle */
-  .spk-said.is-wheel + .spk-keys.is-reel { margin-top: -150svh; }
-  .spk-keys.is-reel .spk-keys__ground > .pic,
-  .spk-keys.is-reel .spk-keys__rest { display:none; }
-  /* card 0: plain plum, its top fading in (clear -> plum-2 over its first
-     18%) so it rises over the candle's faded bottom with no edge; the
-     heading at 30% of the card, on screen when the card is ~70% up */
-  /* card 0 is short (48svh) and solid near-black, its top edge fading in
-     over the first 22% so it rises over the candle's faded bottom with no
-     edge; the heading sits in the solid part */
-  .spk-keys.is-reel .spk-keys__head { height: 48svh; place-items: center; padding-top: 10svh;
-    background: linear-gradient(to bottom, rgba(6,4,9,0) 0%, #060409 22%); }
-}
-/* The ending's two lines (visual only; the real heading is in the talks
-   section), one roll through one window. Two windows with identical
-   geometry sit at the same spot (centred, top 30%, two rows of the big
-   type tall, overflow hidden): one under the canvas (z 1) holding A,
-   "Three talks.", one over the canvas (z 4)
-   holding B, "for people, teams / and organizations.". A comes up on the
-   window's lower row over g 0-0.2 while the candle rests (--na: opacity
-   and a 16px rise); then over g 0.2-0.5 (--roll), as the three candles
-   start to rise, A rolls up and out
-   through the window's top while B rolls up into it from below: one
-   roll, no fade, no size change. The windows only hold text; they never
-   clip the candle. Both leave with the talks section's reveal. */
-.spk-said__win { display:none; }
-.spk-said.is-wheel .spk-said__win { display:block; position:absolute; left:50%; top:30%;
-  transform: translateX(-50%); width: calc(100% - 2 * var(--gutter));
-  font-size: clamp(3.4rem, 6.6vw, 7.4rem); height: 2.08em;
-  overflow:hidden; clip-path: inset(0); pointer-events:none; }
-/* A alone, high: one row from 6% down, above the resting candle's flame,
-   so the lifting row of three covers it */
-.spk-said.is-wheel .spk-said__win--a { z-index:1; }
-/* the key word of each ending line in the italic face */
-.spk-said__cur { font-style: italic; font-weight: 400; letter-spacing: -0.02em; }
-.spk-said.is-wheel .spk-said__win--b { z-index:4; }
-.spk-said.is-wheel .spk-said__nextA,
-.spk-said.is-wheel .spk-said__nextB {
-  display:block; margin:0 auto; pointer-events:none;
-  font-family: var(--f-display); font-optical-sizing: auto; color: var(--tx-inv);
-  font-size: 1em; font-weight:340; line-height: 1.0; letter-spacing: -0.035em;
-  text-align:center; text-wrap: balance; }
-/* A sits on the window's lower row (a one-line padding above it) */
-.spk-said.is-wheel .spk-said__nextA { padding-top: 0.1em;
-  transform: translateY(calc((1 - var(--na, 0)) * 16px + var(--roll, 0) * -100%));
-  opacity: calc(var(--na, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
-.spk-said.is-wheel .spk-said__nextA { max-width: 15ch; }
-.spk-said.is-wheel .spk-said__nextB { text-shadow: 0 2px 28px rgba(0,0,0,.7), 0 0 60px rgba(20,10,28,.6); }
-.spk-said.is-wheel .spk-said__nextB { max-width: 15ch; min-height: 2.08em;
-  transform: translateY(calc((1 - var(--roll, 0)) * 100%));
-  opacity: calc(1 - min(1, var(--spk-keys-reveal, 0) * 2.5)); }
-/* desktop: both windows high (11%) and two rows tall at a size that fits
-   ("You don't need / more resilience."), above the row's flames (31%) */
-@media (min-width: 769px) {
-  .spk-said.is-wheel .spk-said__win { top:11%; font-size: clamp(2.6rem, 4.4vw, 5rem); height: auto;
-    overflow:visible; clip-path:none; }
-  .spk-said.is-wheel .spk-said__nextA { padding-top: 0;
-    transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
-    opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
-  .spk-said.is-wheel .spk-said__win--b { top:40%; }
-  .spk-said.is-wheel .spk-said__nextB { min-height:0;
-    transform: translateY(calc((1 - var(--nb, 0)) * 16px));
-    opacity: calc(var(--nb, 0) * (1 - min(1, var(--spk-keys-reveal, 0) * 2.5))); }
-}
-
-/* Phones: smaller type in the same two-row window, high on the screen
-   (top 9%): the one candle grows under it until its wax fills the frame,
-   so B carries a shadow over the wax. B is two rows at 13ch (at 11ch
-   "and organizations." breaks to a third row the window cuts off); it is as tall as
-   the window, so before the roll it waits wholly below it; A keeps its
-   one-row padding. */
-@media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__win { top:9%; font-size: clamp(2.1rem, 9vw, 3.2rem); line-height: 1.0; height: 3.2em; }
-  .spk-said.is-wheel .spk-said__nextB { max-width: 12ch; min-height: 3.2em;
-    text-shadow: 0 2px 20px rgba(0,0,0,.6); }
-  /* A (top 33%, behind the canvas: the growing candle rises up behind
-     it) and B low (its two-row window from 66% down, in front, pinned to
-     the end: it leaves with the stage): no shared window, so no roll. A
-     comes up (--na, g 0-0.06), stays to g 0.38, and leaves rising 16px
-     (--nao, g 0.38-0.48); B comes in rising 16px (--nb, g 0.44-0.56) and leaves over U - 250 -> U - 215
-     (--spk-said-bout) */
-  .spk-said.is-wheel .spk-said__win--a { top:10%; font-size: clamp(2.2rem, 9.4vw, 3.4rem); height: 3.2em; }
-  .spk-said.is-wheel .spk-said__nextA { padding-top: 0; max-width: 12ch; }
-  /* one lit picture per line: between the line (which ends near 30%) and
-     the flame (46% at rest), behind the canvas, feathered on every edge;
-     each follows its line's --on (written by the script on the image) */
-  .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
-  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:27%; width: 94vw; height: 26svh;
-    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover;
-    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
-            mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
-    filter: brightness(1.05) saturate(1.05); opacity: calc(var(--on, 0) * .95); }
-  /* the picture the candle lights: sits between "Three talks." and the
-     flame, behind the canvas, its edges feathered to nothing so only the
-     middle reads, lit; it comes and goes with line A (--na / --nao) */
-  .spk-said.is-wheel .spk-said__glowimg { display:block; position:absolute; left:50%; top:25%; z-index:1;
-    width: 94vw; height: 26svh; transform: translateX(-50%); object-fit: cover; pointer-events:none;
-    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
-            mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 0%, rgba(0,0,0,.85) 35%, transparent 72%);
-    filter: brightness(1.05) saturate(1.05);
-    opacity: calc(var(--glow-na, 0) * (1 - var(--glow-nao, 0)) * .95); }
-  .spk-said.is-wheel .spk-said__win--b { top:66%; }
-  .spk-said.is-wheel .spk-said__nextA {
-    transform: translateY(calc((1 - var(--na, 0)) * 16px - var(--nao, 0) * 16px));
-    opacity: calc(var(--na, 0) * (1 - var(--nao, 0))); }
-  .spk-said.is-wheel .spk-said__nextB {
-    transform: translateY(calc((1 - var(--nb, 0)) * 16px));
-    opacity: calc(var(--nb, 0) * (1 - var(--spk-said-bout, 0))); }
-  /* the layering as on desktop: A behind the canvas (z 1; the growing
-     candle passes over it), B pinned in front of it (z 4) */
-  .spk-said.is-wheel .spk-said__nextA { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
-}
-/* Desktop: each line's picture, lit by the flame: a wide window from
-   behind the line (on one row at 11%) down behind the candle, its edges
-   feathered into the velvet; behind the canvas, following its line (--on).
-   The line itself stays on one row over it, with a soft shadow. */
-@media (min-width: 769px) {
-  .spk-said.is-wheel .spk-said__lineimgs { display:block; position:absolute; inset:0; z-index:1; pointer-events:none; }
-  .spk-said.is-wheel .spk-said__lineimg { position:absolute; left:50%; top:4%; width: 100vw; height: 76svh;
-    transform: translateX(-50%) translateY(calc((1 - var(--on, 0)) * 10px)); object-fit: cover; object-position: 50% 42%;
-    -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 52%, #000 0%, rgba(0,0,0,.85) 40%, transparent 76%);
-            mask-image: radial-gradient(ellipse 50% 50% at 50% 52%, #000 0%, rgba(0,0,0,.85) 40%, transparent 76%);
-    filter: brightness(1.05) saturate(1.05) sepia(.12); opacity: calc(var(--on, 0) * .95); }
-  .spk-said.is-wheel .spk-said__lines .spk-said__line:not(.spk-said__bridge) { max-width:none; white-space:nowrap;
-    font-size: min(var(--step-2), 2.3vw); }
-  .spk-said.is-wheel .spk-said__lines .spk-said__bridge { max-width:none; white-space:nowrap; font-size: min(var(--step-0), 1.55vw); }
-  .spk-said.is-wheel .spk-said__line { text-shadow: 0 1px 18px rgba(18,8,26,.85), 0 0 4px rgba(18,8,26,.6); }
-  .spk-said.is-wheel .spk-said__lines { grid-template-columns: 100%; }
-  .spk-said.is-wheel .spk-said__line { justify-self:center; width:max-content; }
-}
-.spk-said.is-wheel .spk-said__inner { position:absolute; inset:0; width:auto; margin:0; }
-.spk-said.is-wheel .spk-said__h { position:absolute; left:50%; top:12%;
-  transform: translateX(-50%); white-space:nowrap; opacity: var(--on, 1); }
-/* The lines: centred above the top candle's flame on every beat, the
-   bridge included (it keeps its own typography). */
-.spk-said.is-wheel .spk-said__lines { position:absolute; left:50%; top:11%; margin:0;
-  width: calc(100% - 32px); transform: translate(-50%, 0);
-  justify-items:center; text-align:center; row-gap:0; }
-.spk-said.is-wheel .spk-said__line { grid-area: 1 / 1; opacity: var(--on, 0);
-  transform: translateY(calc((1 - var(--on, 0)) * 12px));
-  filter: blur(calc((1 - var(--on, 0)) * 6px)); }
-.spk-said.is-wheel .spk-said__line:not(.spk-said__bridge) { max-width:30ch; }
-/* Phones: the same wheel and the same rule; the flame sits higher. */
-@media (max-width: 768px) {
-  .spk-said.is-wheel .spk-said__lines { top:16%; }
-  .spk-said.is-wheel .spk-said__h { white-space:normal; width: calc(100% - 32px); text-align:center; }
-}
 
 /* ---------------------------------------------------------------------
    B. .spk-chap — "What it's like in the room." The page's one pin, seven
@@ -2204,13 +1685,10 @@ html.no-js .spk-said__candle { display:none; }
    and no script get no pin: three stacked blocks.
    --------------------------------------------------------------------- */
 .spk-chap { position:relative; background: var(--plum-2); color: var(--tx-inv); }
-/* the curtain: the room rises over the pinned talks stage for its last
-   50svh (the spine gave every section z-index 1, so 2 wins) */
+/* the spine gave every section z-index 1, so 2 wins */
 .spk-chap { z-index:2; }
-.spk-keys + .spk-chap { margin-top: -50svh; }
-/* only over a pinned stage: phones, reduced motion and no script have none */
-html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
-@media (max-width: 768px) { .spk-chap, .spk-keys + .spk-chap { margin-top:0; } }
+html.no-js .spk-chap { margin-top:0; }
+@media (max-width: 768px) { .spk-chap { margin-top:0; } }
 /* the turn's geometry: 1 + 2N beats (N chapters: --chapters) of 70vh
    (--beat) plus a tail; the script writes nothing to it */
 .spk-chap__track { height: calc((1 + 2 * var(--chapters, 3)) * var(--beat, 70) * 1vh + 60vh); }
@@ -2258,7 +1736,7 @@ html.no-js .spk-chap, .spk-keys.is-stacked ~ .spk-chap { margin-top:0; }
   width:12px; height:12px; border-radius:50%; transform: translate(-50%, -50%);
   background: var(--violet-300);
   box-shadow: 0 0 18px 6px rgba(169,133,230,.55), 0 0 48px 16px rgba(169,133,230,.18); }
-/* the .spk-keys__tab typography; .62 is the contrast floor, keep it */
+/* .62 is the contrast floor, keep it */
 .spk-chap__tab { position:absolute; left:0; top: calc(var(--i) / max(1, var(--chapters, 3) - 1) * 100%); transform: translateY(-50%);
   display:flex; align-items:center; gap:.9rem; padding:.3rem .5rem .3rem 0; white-space:nowrap;
   font-family: var(--f-display); font-size: var(--step-1); font-weight:360;
@@ -2710,33 +2188,6 @@ html.no-js .steps .place, html.no-js .steps .place__inner { display:contents; }
 .spk-hero > .place { --pdx:50%; --pdy:100%; --pda:center; --pdj:center; z-index:3; }
 .spk-hero > .place .spk-hero__cta { position:relative; left:auto; bottom:auto; transform:none;
   align-items: var(--place-j); }
-/* said: heading, lines, and the two grow windows (one shared placement);
-   only on the pinned wheel, the stacked fallback keeps its flow */
-.spk-said:not(.is-wheel) .place, .spk-said:not(.is-wheel) .place__inner { display:contents; }
-.spk-said.is-wheel .place--h { --pdx:50%; --pdy:12%; --pda:center; --pdj:center; }
-.spk-said.is-wheel .place--h .spk-said__h { position:relative; left:auto; top:auto; width:auto;
-  transform:none; text-align:inherit; }
-.spk-said.is-wheel .place--lines { --pdx:50%; --pdy:11%; --pdy-m:16%; --pda:center; --pdj:center; }
-.spk-said.is-wheel .place--lines .spk-said__lines { position:relative; left:auto; top:auto; width:auto;
-  transform:none; text-align:inherit; justify-items: var(--place-j); }
-.spk-said.is-wheel :is(.place--win-a, .place--win-b) { --pdx:50%; --pdy:30%; --pdy-m:9%; --pda:center; --pdj:center; }
-.spk-said.is-wheel .place--win-a { --pdy-m:33%; }   /* phones: A where the flame rises behind it */
-.spk-said.is-wheel .place--win-b { --pdy-m:66%; }   /* phones: B low */
-.spk-said.is-wheel .place--win-a { z-index:1; }
-.spk-said.is-wheel .place--win-b { z-index:4; }
-.spk-said.is-wheel :is(.place--win-a, .place--win-b) .spk-said__win { position:relative; left:auto; top:auto;
-  width:auto; transform:none; }
-.spk-said.is-wheel :is(.place--win-a, .place--win-b) :is(.spk-said__nextA, .spk-said__nextB) { text-align:inherit; }
-/* keys: the heading (only over the pinned ground) and each talk's caption
-   (over its picture in every mode); captions today centred */
-.spk-keys__head .place { --pdx:50%; --pdy:50%; --pda:center; --pdj:center; }
-.spk-keys__head .place__inner { pointer-events:none; }
-html.no-js .spk-keys__head .place, html.no-js .spk-keys__head .place__inner,
-.spk-keys.is-stacked .spk-keys__head .place, .spk-keys.is-stacked .spk-keys__head .place__inner { display:contents; }
-@media (max-width: 768px) { .spk-keys__head .place, .spk-keys__head .place__inner { display:contents; } }
-.spk-keys__panel > .place { --pdx:50%; --pdy:50%; --pda:center; --pdj:center; z-index:2; }
-.spk-keys__panel > .place .spk-keys__caption { position:relative; left:auto; top:auto; transform:none;
-  width:34ch; max-width:100%; text-align:inherit; }
 /* chap: each chapter's word and its line over its still (one placement,
    two boxes on the same anchor: they take turns on the stage), and the
    rail. The placed chapter fills the stage's frame; its data-spot preset

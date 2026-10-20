@@ -1,5 +1,5 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- Cinematic bleed: the idea (live constellation) -->
+  {# Cinematic bleed: the idea (live constellation) #}
   <section class="bleed{% if block.constellation %} bleed--net{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
     <div class="media media--plum">
       {%- set pp = block.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ block.image.src | root(r) }}"

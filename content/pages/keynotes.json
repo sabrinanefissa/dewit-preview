@@ -1,0 +1,225 @@
+{
+  "slug": "keynotes",
+  "permalink": "/keynotes/",
+  "title": "Keynotes on Trust, Connection & Leadership | Dr. Stephen de Wit",
+  "description": "Three keynotes on human connection and relational intelligence: Lead Human, Invisible Friction and The Hidden Multiplier.",
+  "canonical": "https://drdewit.com/keynotes/",
+  "og": {
+    "title": "Keynotes on Trust, Connection & Leadership | Dr. Stephen de Wit",
+    "description": "Three keynotes on human connection and relational intelligence: Lead Human, Invisible Friction and The Hidden Multiplier.",
+    "url": "https://drdewit.com/keynotes/",
+    "image": "https://drdewit.com/assets/img/keynote-1920.webp"
+  },
+  "jsonld": false,
+  "lightbox": false,
+  "scripts": [
+    "js/keynotes.js"
+  ],
+  "comments": {
+    "loader": "Loader",
+    "nav": "Nav"
+  },
+  "blocks": [
+    {
+      "type": "kn-intro",
+      "id": "intro",
+      "enabled": true,
+      "heading": "Talks that go where the real work is.",
+      "lead": [
+        "Three talks about what happens between people at work, and what it costs when nobody says it out loud.",
+        "Each one runs as a keynote, a workshop or a half-day session."
+      ],
+      "chart": {
+        "label": "An org chart of boxes and reporting lines loosens into people joined by lines between them.",
+        "caption": "",
+        "roles": [
+          "CEO",
+          "VP",
+          "VP",
+          "Director",
+          "Manager",
+          "Director",
+          "Manager"
+        ],
+        "phrases": [
+          "Manager and team trust",
+          "Friction between departments",
+          "Conversations that keep slipping",
+          "Belonging on the team"
+        ],
+        "phoneCaption": "Trust, friction and belonging live in the lines between people."
+      },
+      "settings": {
+        "background": "plum-2"
+      }
+    },
+    {
+      "type": "kn-index",
+      "id": "talks",
+      "enabled": true,
+      "ariaLabel": "The three keynotes",
+      "settings": {
+        "background": "plum-2"
+      }
+    },
+    {
+      "type": "kn-talk",
+      "enabled": true,
+      "trademark": true,
+      "signature": true,
+      "subtitle": "The Human Edge",
+      "indexLine": "The signature keynote",
+      "outcomesHeading": "What the room leaves with",
+      "outcomesNote": "Leaders leave with a repeatable relational strategy they can put to work straight away.",
+      "audienceHeading": "Who it’s for",
+      "formatsHeading": "Formats",
+      "formats": [
+        "Keynote",
+        "Workshop",
+        "Half-day session"
+      ],
+      "link": {
+        "label": "",
+        "href": ""
+      },
+      "editorNote": "",
+      "jumpLabel": "Jump to a keynote",
+      "id": "lead-human",
+      "title": "Lead Human",
+      "premise": "Stephen’s signature keynote: how relational intelligence fuels *performance, retention and trust*.",
+      "overview": [
+        "In high-pressure, often hybrid workplaces, most performance breakdowns start in relationships. Burnout, disengagement, retention loss and cultural drift are symptoms of a deeper issue: leaders are trained to manage tasks, and the human system around those tasks goes unmanaged.",
+        "This keynote introduces a practical, research-informed framework for clearing silent friction, strengthening trust, and leading through influence."
+      ],
+      "outcomes": [
+        "Diagnose the hidden relational dynamics that affect retention and engagement.",
+        "Apply a clear framework for high-trust leadership.",
+        "Reduce tension and misalignment before performance declines.",
+        "Rebuild trust quickly after breakdowns.",
+        "Lead with presence and emotional credibility under pressure."
+      ],
+      "audience": "Executive teams and senior leaders, managers and emerging leaders, and human-centered organizations.",
+      "image": {
+        "src": "assets/img/line-stage-1280.webp",
+        "sizes": "(max-width: 768px) 100vw, 40vw",
+        "alt": "Stephen on stage in a black blazer, speaking with both hands open",
+        "position": "24% 10%"
+      },
+      "settings": {
+        "background": "plum"
+      },
+      "bookLabel": "Book this talk"
+    },
+    {
+      "type": "kn-talk",
+      "enabled": true,
+      "trademark": false,
+      "signature": false,
+      "subtitle": "",
+      "indexLine": "Why teams break down",
+      "outcomesHeading": "What the room leaves with",
+      "outcomesNote": "",
+      "audienceHeading": "Who it’s for",
+      "formatsHeading": "Formats",
+      "formats": [
+        "Keynote",
+        "Workshop",
+        "Half-day session"
+      ],
+      "link": {
+        "label": "",
+        "href": ""
+      },
+      "editorNote": "",
+      "jumpLabel": "Jump to a keynote",
+      "id": "invisible-friction",
+      "title": "Invisible Friction",
+      "premise": "Why teams break down, and how to clear the *hidden barriers* to performance.",
+      "overview": [
+        "A lot of what wears a team down never gets said out loud. This talk looks at the quiet breakdowns that affect culture and collaboration, and shows leaders how to bring difficult conversations into the open and turn avoidance into alignment."
+      ],
+      "outcomes": [
+        "Identify silent breakdowns affecting culture and collaboration.",
+        "Surface difficult conversations productively.",
+        "Replace avoidance with alignment.",
+        "Embed accountability without eroding trust."
+      ],
+      "audience": "Teams navigating change, growth or cultural strain, and the managers who lead them.",
+      "image": {
+        "src": "assets/img/stage-dark-1440.webp",
+        "sizes": "(max-width: 768px) 100vw, 40vw",
+        "alt": "Stephen on a dark stage in a grey suit, speaking with open hands as the front row listens",
+        "position": "30% 5%"
+      },
+      "settings": {
+        "background": "plum-2",
+        "flip": true
+      },
+      "bookLabel": "Book this talk"
+    },
+    {
+      "type": "kn-talk",
+      "enabled": true,
+      "trademark": false,
+      "signature": false,
+      "subtitle": "",
+      "indexLine": "Retention, safety and results",
+      "outcomesHeading": "What the room leaves with",
+      "outcomesNote": "",
+      "audienceHeading": "Who it’s for",
+      "formatsHeading": "Formats",
+      "formats": [
+        "Keynote",
+        "Workshop",
+        "Half-day session"
+      ],
+      "link": {
+        "label": "",
+        "href": ""
+      },
+      "editorNote": "",
+      "jumpLabel": "Jump to a keynote",
+      "id": "hidden-multiplier",
+      "title": "The Hidden Multiplier",
+      "premise": "How relational intelligence drives *retention, safety and results*.",
+      "overview": [
+        "Trust shows up in the numbers an organization already tracks. This talk connects everyday relational patterns to performance outcomes, and gives leaders daily habits that keep engagement up and protect culture through growth and change."
+      ],
+      "outcomes": [
+        "Connect relational patterns to measurable performance outcomes.",
+        "Build the kind of trust that helps people stay.",
+        "Increase engagement through daily relational rituals.",
+        "Protect culture during growth and change."
+      ],
+      "audience": "Executive teams, people and culture leaders, and associations and professional membership organizations.",
+      "image": {
+        "src": "assets/img/step-05-1280.webp",
+        "sizes": "(max-width: 768px) 100vw, 40vw",
+        "alt": "An audience at round tables applauding"
+      },
+      "settings": {
+        "background": "plum"
+      },
+      "bookLabel": "Book this talk"
+    },
+    {
+      "type": "close",
+      "id": "close",
+      "enabled": true,
+      "anchor": false,
+      "heading": "Bring him into your room.",
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "image": {
+        "src": "assets/img/keynote-1920.webp",
+        "sizes": "100vw"
+      },
+      "settings": null
+    }
+  ],
+  "styles": [
+    "css/keynotes.css"
+  ]
+}

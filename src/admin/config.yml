@@ -23,6 +23,8 @@ collections:
     fields:
       - { label: Title, name: title, widget: string, hint: "Allows *emphasis* and **bold**." }
       - { label: Description, name: description, widget: text, hint: "Allows *emphasis* and **bold**." }
+      - { label: Extra stylesheets, name: styles, widget: list, field: { label: Path, name: path, widget: string }, required: false, hint: "Extra stylesheet paths for this page, e.g. css/keynotes.css" }
+      - { label: Extra scripts, name: scripts, widget: list, field: { label: Path, name: path, widget: string }, required: false, hint: "Extra script paths for this page, e.g. js/keynotes.js" }
       - { label: Canonical URL, name: canonical, widget: string }
       - label: Social preview (og)
         name: og
@@ -32,6 +34,18 @@ collections:
           - { label: Description, name: description, widget: text, hint: "Allows *emphasis* and **bold**." }
           - { label: URL, name: url, widget: string }
           - { label: Image, name: image, widget: string, hint: "Full https:// URL (used by link previews, not the img widget)." }
+      - { label: "Loading screen (Home only; one page site-wide)", name: loader, widget: boolean, default: false, required: false }
+      - label: "Video schema (VideoObject JSON-LD, Speaking)"
+        name: videoSchema
+        widget: object
+        required: false
+        fields:
+          - { label: Name, name: name, widget: string }
+          - { label: Description, name: description, widget: text }
+          - { label: Thumbnail URL (full https://), name: thumbnailUrl, widget: string }
+          - { label: Video file URL (full https://), name: contentUrl, widget: string }
+          - { label: "Duration (ISO 8601, e.g. PT2M40S)", name: duration, widget: string }
+          - { label: "Upload date (YYYY-MM-DD; leave empty until known)", name: uploadDate, widget: string, required: false }
       - label: Ground (speaking page only)
         name: ground
         widget: object
@@ -326,6 +340,7 @@ collections:
                     fields:
                       - { label: "Count-up duration (ms)", name: duration, widget: number, required: false, hint: "How long each digit takes to roll to its number. Default: 1500" }
                       - { label: "Odometer: gap between digit columns (ms)", name: stagger, widget: number, required: false, hint: "The rightmost digit rolls first; each column to its left starts this much later. Default: 60" }
+                      - { label: "Count up (uncheck for still numbers)", name: countUp, widget: boolean, default: true, required: false, hint: "The count-up belongs to the homepage; other pages show the numbers still." }
 
           # ------------------------------------------------------- orgband
           - name: orgband
@@ -441,6 +456,14 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - label: "Route line under the button (optional)"
+                name: route
+                widget: object
+                required: false
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: Link label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
               - *placement
               - label: Settings
                 name: settings
@@ -536,7 +559,22 @@ collections:
                   - { label: Captions file (.vtt), name: src, widget: file, media_folder: "/assets/video" }
                   - { label: Language code, name: srclang, widget: string, default: en }
                   - { label: Language label, name: label, widget: string, default: English }
-              - { label: Heading (visually hidden), name: heading, widget: string }
+              - { label: "Heading (the page's h1, shown under the reel)", name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: "Line under the heading (optional)", name: line, widget: string, required: false }
+              - label: "Chapters under the reel (optional)"
+                name: chapters
+                widget: object
+                required: false
+                fields:
+                  - { label: Heading, name: heading, widget: string }
+                  - { label: Note, name: note, widget: string, required: false }
+                  - label: Chapters
+                    name: items
+                    widget: list
+                    summary: "{{fields.time}}s {{fields.label}}"
+                    fields:
+                      - { label: "Start (seconds into the reel)", name: time, widget: number, value_type: int }
+                      - { label: Label, name: label, widget: string }
               - label: Labels
                 name: labels
                 widget: object
@@ -559,60 +597,6 @@ collections:
                       - { label: "Poster parallax (0–1)", name: parallax, widget: number, value_type: float, required: false, hint: "Default: 0.5" }
                       - { label: "Phones: darkening as the next section covers it", name: dim, widget: number, value_type: float, required: false, hint: "Phones only: how dark the reel's picture gets as the next section slides up over it (0 = none, 1 = black). Default: 0.55" }
                       - { label: "Phones: name into the header", name: nameMorph, widget: number, value_type: float, required: false, hint: "Phones only. The large name under the menu moves into the header over this share of the hero's height as you scroll (0.4 = the first 40%). Default: 0.4" }
-
-          # ----------------------------------------------------------- said
-          - name: said
-            label: "Candle wheel: what he talks about"
-            summary: "Said — {{fields.heading}}"
-            fields:
-              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
-              - { label: Show on page, name: enabled, widget: boolean, default: true }
-              - label: Velvet background
-                name: velvet
-                widget: object
-                fields:
-                  - { label: Image, name: src, widget: image }
-                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
-              - { label: "Window A (rolls up first, behind the candle)", name: windowA, widget: string, hint: "Allows one *emphasis* word." }
-              - { label: "Window B (rolls up after, in front of the candle)", name: windowB, widget: string, hint: "Allows one *emphasis* word." }
-              - label: "Picture the candle lights (phones: between 'Three talks.' and the flame)"
-                name: glowImage
-                widget: object
-                required: false
-                collapsed: true
-                fields:
-                  - { label: Image, name: src, widget: image, required: false, hint: "Its edges fade to nothing; only the middle shows, as if lit by the flame." }
-                  - { label: Sizes attribute, name: sizes, widget: string, required: false, default: 100vw }
-              - { label: "Position on the image (windows A and B)", name: windowPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
-              - { label: Heading, name: heading, widget: string }
-              - { label: "Position on the image (heading)", name: headingPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
-              - label: "Lines (3–9; the last is the bridge line)"
-                name: lines
-                widget: list
-                field: { label: Line, name: line, widget: text }
-              - label: "Pictures the candle lights, one per line (phones: between the line and the flame)"
-                name: lineImages
-                widget: list
-                required: false
-                hint: "Same order as the lines. Edges fade to nothing; only the middle shows, lit by the flame."
-                fields:
-                  - { label: Image, name: src, widget: image, required: false }
-              - { label: "Position on the image (lines)", name: linesPlacement, widget: object, required: false, collapsed: true, fields: *placement-fields }
-              - label: Settings
-                name: settings
-                widget: object
-                required: false
-                fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
-                  - label: Motion
-                    name: motion
-                    widget: object
-                    required: false
-                    fields:
-                      - { label: "Intro length (svh)", name: intro, widget: number, required: false, hint: "The first candle rising into the wheel before the first line. Default: 60" }
-                      - { label: "Scroll per beat (svh)", name: beat, widget: number, required: false, hint: "How much scroll turns the wheel one candle. Default: 80" }
-                      - { label: "Ending length (svh)", name: grow, widget: number, required: false, hint: "Scroll spent on "Three talks.", the three candles rising over it, the second line and the push between them. Default: 160" }
-                      - { label: "Ending length on phones (svh)", name: growPhone, widget: number, required: false, hint: "Ending length on phones. Default: 480" }
 
           # ----------------------------------------------------------- keys
           - name: keys
@@ -799,18 +783,39 @@ collections:
               - { label: Sentence, name: sentence, widget: text, hint: "Allows *emphasis*." }
               - *placement
               - { label: Heading, name: heading, widget: string }
-              - { label: "Room image sizes attribute", name: sizes, widget: string, default: 70vw }
-              - label: Rooms
+              - { label: '"usually:" label', name: usuallyLabel, widget: string, required: false }
+              - { label: "Table header: event (screen readers)", name: eventsLabel, widget: string, required: false }
+              - { label: "Table header: talk (screen readers)", name: talkLabel, widget: string, required: false }
+              - label: "Event types (the table; used when present)"
+                name: events
+                widget: list
+                required: false
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: Event, name: label, widget: string }
+                  - label: Usual talk
+                    name: talk
+                    widget: object
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string, required: false }
+              - { label: "Room image sizes attribute (photo grid)", name: sizes, widget: string, default: 70vw, required: false }
+              - label: "Rooms (older photo grid; only when there are no event types)"
                 name: rooms
+                required: false
                 widget: list
                 summary: "{{fields.caption}}"
                 fields:
                   - { label: Caption, name: caption, widget: string }
+                  - { label: "Note under the caption (optional)", name: note, widget: string, required: false, hint: "e.g. when the photo is not of that kind of room" }
                   - label: Image
                     name: image
                     widget: object
                     fields:
                       - { label: Image, name: src, widget: image }
+                      - { label: Alt text, name: alt, widget: string, required: false }
+                      - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the crop centres, across then down, e.g. 50% 12%" }
+              - { label: "Seat rows behind the sentence", name: seats, widget: boolean, default: true, required: false }
               - label: Settings
                 name: settings
                 widget: object
@@ -866,6 +871,384 @@ collections:
                     fields:
                       - { label: "Portrait drift (0–1)", name: drift, widget: number, value_type: float, required: false, hint: "Default: 0.04" }
 
+          # ================= Healthcare, About and Book blocks =================
+          # ------------------------------------------------------- hc-hero
+          - name: hc-hero
+            label: "Healthcare: opening"
+            summary: "Healthcare opening — {{fields.heading}}"
+            fields:
+              - &hcab-id { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - &hcab-anchor { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - &hcab-enabled { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis* (set in the healthcare teal)." }
+              - { label: Lead, name: lead, widget: text }
+              - label: Photo
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+                  - { label: "Focus point (object-position)", name: position, widget: string, required: false, hint: "e.g. 50% 30%" }
+              - label: Button
+                name: cta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Text link (optional)
+                name: link
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string, required: false }
+                  - { label: Link, name: href, widget: string, required: false }
+              - *settings-none
+
+          # -------------------------------------------------------- hc-who
+          - name: hc-who
+            label: "Healthcare: who it is for"
+            summary: "Who it is for — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - label: Items
+                name: items
+                widget: list
+                summary: "{{fields.title}}"
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Line, name: text, widget: string, required: false }
+              - *settings-none
+
+          # -------------------------------------------------------- hc-out
+          - name: hc-out
+            label: "Healthcare: what the room walks out with (five words)"
+            summary: "Five words — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
+              - label: Image
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+              - label: Words (in the order they light)
+                name: words
+                widget: list
+                summary: "{{fields.text}}"
+                fields:
+                  - { label: Text, name: text, widget: string }
+                  - { label: "X position (% from left, wide screens)", name: x, widget: string, hint: "e.g. 28%" }
+                  - { label: "Y position (% from top, wide screens)", name: y, widget: string, hint: "e.g. 36%" }
+                  - { label: Layer, name: layer, widget: select, options: [front, back], hint: "front = larger" }
+                  - { label: Size, name: size, widget: select, options: [lg, xl], default: lg, required: false }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Time between words (ms)", name: step, widget: number, required: false, hint: "Default: 380" }
+                      - { label: "Word rise (ms)", name: rise, widget: number, required: false, hint: "Default: 600" }
+
+          # ------------------------------------------------------- hc-talk
+          - name: hc-talk
+            label: "Healthcare: the session (lifting stack)"
+            summary: "Talk — {{fields.title}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Editor note (never shown on the site), name: editorNote, widget: text, required: false }
+              - { label: Title, name: title, widget: string }
+              - { label: Subtitle, name: subtitle, widget: string, required: false }
+              - { label: Overview, name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: Formats label, name: formatsLabel, widget: string, default: Formats }
+              - { label: Formats, name: formats, widget: list, field: { label: Format, name: format, widget: string } }
+              - label: Button
+                name: cta
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
+              - label: Text link (optional)
+                name: link
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string, required: false }
+                  - { label: Link, name: href, widget: string, required: false }
+              - { label: Label over the carried lines, name: carryLabel, widget: string }
+              - { label: What caregivers carry (each line lifts away), name: carried, widget: list, field: { label: Line, name: line, widget: string } }
+              - label: The line that stays (does not lift)
+                name: kept
+                widget: object
+                required: false
+                fields:
+                  - { label: Line, name: line, widget: string, required: false }
+                  - { label: Note beside it, name: note, widget: string, required: false }
+              - { label: Label over the outcomes, name: outcomesLabel, widget: string }
+              - { label: Outcomes, name: outcomes, widget: list, field: { label: Outcome, name: outcome, widget: string } }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - label: Motion
+                    name: motion
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: "Scroll for the whole stack (screens)", name: span, widget: number, value_type: float, required: false, hint: "Default: 0.45" }
+                      - { label: "One line lifting (ms)", name: lift, widget: number, required: false, hint: "Default: 640" }
+                      - { label: "Each outcome coming up (ms)", name: settle, widget: number, required: false, hint: "Default: 520" }
+
+          # ------------------------------------------------------ hc-logos
+          - name: hc-logos
+            label: "Healthcare: client logos (static)"
+            summary: "Logos — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - &hcab-logos
+                label: Logos
+                name: logos
+                widget: list
+                summary: "{{fields.alt}}"
+                fields:
+                  - { label: Logo, name: src, widget: image, hint: "A transparent PNG or WebP; it is shown as a cream silhouette." }
+                  - { label: Name (alt text), name: alt, widget: string }
+                  - { label: Treatment, name: treatment, widget: select, options: [mono, plate], default: mono, required: false, hint: "plate = a mark that is its own coloured box (shown in grey instead of as a silhouette)" }
+                  - { label: Size (1 = normal), name: scale, widget: string, required: false, hint: "e.g. 0.8 for a wide mark" }
+              - *settings-none
+
+          # --------------------------------------------------- ab-portrait
+          - name: ab-portrait
+            label: "About: portrait (the portrait's lights)"
+            summary: "Portrait — {{fields.name}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Name (page heading), name: name, widget: string }
+              - { label: Category line, name: category, widget: string }
+              - { label: One line (optional), name: line, widget: text, required: false }
+              - label: Portrait
+                name: portrait
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+              - *settings-none
+
+          # ------------------------------------------------------ ab-story
+          - name: ab-story
+            label: "About: the story"
+            summary: "Story — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - label: Photos (a column beside the text on wide screens)
+                name: figures
+                widget: list
+                required: false
+                summary: "{{fields.caption}}"
+                fields:
+                  - { label: After paragraph number, name: after, widget: number, value_type: int, hint: "Phones: the photo appears after this paragraph (1 = after the first). Wide screens: photos stack in order beside the text." }
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+                  - { label: Caption, name: caption, widget: string, required: false }
+                  - { label: "Focus point (object-position)", name: position, widget: string, required: false }
+              - *settings-none
+
+          # ------------------------------------------------------ ab-creds
+          - name: ab-creds
+            label: "About: credentials"
+            summary: "Credentials — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - { label: Credentials, name: items, widget: list, field: { label: Credential, name: item, widget: string } }
+              - *settings-none
+
+          # ---------------------------------------------------- ab-numbers
+          - name: ab-numbers
+            label: "About: numbers (static sentence)"
+            summary: "Numbers"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Label for screen readers, name: ariaLabel, widget: string, required: false }
+              - label: Numbers
+                name: counters
+                widget: list
+                summary: "{{fields.value}} {{fields.label}}"
+                fields:
+                  - { label: Number (as shown), name: value, widget: string, hint: "e.g. 7,000+" }
+                  - { label: Words after it, name: label, widget: string }
+              - *settings-none
+
+          # ------------------------------------------------------ ab-media
+          - name: ab-media
+            label: "About: as seen on (static logos)"
+            summary: "Media — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - *hcab-logos
+              - *settings-none
+
+          # ------------------------------------------------------ bk-intro
+          - name: bk-intro
+            label: "Book: top (heading, phone, email)"
+            summary: "Book top — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - { label: Lead, name: lead, widget: text, required: false }
+              - { label: Label before the phone number, name: phoneLabel, widget: string, default: Call, hint: "The number itself is Site > Contact." }
+              - { label: Label before the email, name: emailLabel, widget: string, default: Email, hint: "The address itself is Site > Contact." }
+              - *settings-none
+
+          # ------------------------------------------------------- bk-form
+          - name: bk-form
+            label: "Book: enquiry form"
+            summary: "Form — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - { label: Note about required fields, name: requiredNote, widget: text }
+              - { label: Word shown after a required label, name: requiredWord, widget: string, default: "(required)" }
+              - label: Portrait
+                name: portrait
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt text, name: alt, widget: string }
+              - label: Bureau line (the email address goes between)
+                name: bureau
+                widget: object
+                required: false
+                fields:
+                  - { label: Before the email, name: lead, widget: string }
+                  - { label: After the email, name: tail, widget: string }
+              - label: The two steps
+                name: steps
+                widget: list
+                summary: "{{fields.heading}}"
+                fields:
+                  - { label: Heading, name: heading, widget: string }
+                  - { label: Step count, name: count, widget: string, hint: "e.g. Step 1 of 2" }
+                  - { label: Hint under the heading, name: hint, widget: string, required: false }
+                  - { label: Continue button (step 1), name: next, widget: string, required: false }
+                  - { label: Back button (step 2), name: back, widget: string, required: false }
+              - label: Fields
+                name: fields
+                widget: list
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: Step, name: step, widget: select, options: [1, 2], default: 1 }
+                  - { label: "Name (used in the email and the WordPress form mapping; keep the existing names as they are)", name: name, widget: string }
+                  - { label: Label, name: label, widget: string }
+                  - { label: Type, name: type, widget: select, options: [text, email, tel, textarea, select, radio] }
+                  - { label: Hint under the label, name: hint, widget: string, required: false }
+                  - { label: Required, name: required, widget: boolean, default: false, required: false }
+                  - { label: Message when empty, name: errorMessage, widget: string, required: false }
+                  - { label: Message when not a valid email, name: invalidMessage, widget: string, required: false }
+                  - { label: Autocomplete, name: autocomplete, widget: string, required: false, hint: "e.g. name, email, organization, organization-title, off" }
+                  - { label: Keyboard (inputmode), name: inputmode, widget: string, required: false, hint: "e.g. email, numeric" }
+                  - { label: Spellcheck, name: spellcheck, widget: boolean, required: false }
+                  - label: Options (select and radio)
+                    name: options
+                    widget: list
+                    required: false
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Value (sent in the email), name: value, widget: string }
+                  - { label: Pre-selected option (its value), name: default, widget: string, required: false }
+                  - { label: "Fill from the link (?talk=)", name: prefill, widget: string, required: false, hint: "Only the talk field uses this." }
+                  - { label: Value when ticked (checkbox), name: value, widget: string, required: false }
+                  - label: Only show when
+                    name: showIf
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: Field name, name: field, widget: string, required: false }
+                      - { label: Has value, name: value, widget: string, required: false }
+                  - { label: Empty option (select), name: emptyOption, widget: string, required: false }
+                  - { label: Rows (textarea), name: rows, widget: number, required: false }
+                  - { label: Full width, name: wide, widget: boolean, default: false, required: false }
+              - { label: Button label, name: submit, widget: string }
+              - { label: Note beside the button (the email address follows it), name: note, widget: string }
+              - { label: Message after the email app opens, name: sentMessage, widget: text }
+              - { label: Privacy line (shown on both steps), name: privacy, widget: string, required: false }
+              - label: Confirmation panel
+                name: done
+                widget: object
+                required: false
+                fields:
+                  - { label: Heading, name: heading, widget: string }
+                  - { label: Text (the email address follows it), name: text, widget: text }
+                  - { label: Edit button, name: edit, widget: string }
+                  - { label: Open-again button, name: again, widget: string }
+              - label: The email it writes
+                name: mail
+                widget: object
+                fields:
+                  - { label: Subject (the organization and date are added), name: subject, widget: string }
+                  - { label: First line, name: intro, widget: string }
+                  - { label: Shown for a field left empty, name: empty, widget: string }
+              - *settings-none
+
+          # ------------------------------------------------------ bk-steps
+          - name: bk-steps
+            label: "Book: what happens next"
+            summary: "Steps — {{fields.heading}}"
+            fields:
+              - *hcab-id
+              - *hcab-anchor
+              - *hcab-enabled
+              - { label: Heading, name: heading, widget: string }
+              - label: Steps
+                name: steps
+                widget: list
+                summary: "{{fields.title}}"
+                fields:
+                  - { label: Title, name: title, widget: string }
+                  - { label: Text, name: text, widget: string }
+              - *settings-none
+          # ================= end Healthcare, About and Book blocks =================
+
           # ---------------------------------------------------------- close
           - name: close
             label: "Closing call to action (in the footer)"
@@ -889,6 +1272,242 @@ collections:
                   - { label: Link, name: href, widget: string }
               - *placement
               - *settings-none
+
+          # ================= Speaking and Keynotes pages (spk- / kn- blocks) =================
+
+          # ---------------------------------------------------- spk-unsaid
+          - name: spk-unsaid
+            label: "Speaking: what he talks about"
+            summary: "What he talks about — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: '"Answered in:" label', name: answeredLabel, widget: string, required: false }
+              - label: Lines
+                name: lines
+                widget: list
+                summary: "{{fields.text}}"
+                fields:
+                  - { label: Line, name: text, widget: string, hint: "Allows *emphasis* (violet italic)." }
+                  - label: "Answered in (optional)"
+                    name: talk
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: Talk, name: label, widget: string }
+                      - { label: Link, name: href, widget: string, hint: "e.g. keynotes/#invisible-friction" }
+              - label: Photo
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+                  - { label: Caption (optional), name: caption, widget: string, required: false }
+              - { label: Paragraph, name: text, widget: text }
+              - label: Link
+                name: link
+                widget: object
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string, hint: "e.g. keynotes/" }
+              - &spk-settings-tone
+                label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false }
+
+          # -------------------------------------------------- spk-planners
+          - name: spk-planners
+            label: "Speaking: for planners (bios, intro, downloads, headshots, AV)"
+            summary: "For planners — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, default: planners, hint: "Anchor for links (the footer links to speaking/#planners); must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: Lead, name: lead, widget: text }
+              - label: Contact link (after the lead)
+                name: contact
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string, hint: "e.g. mailto:info@drdewit.com" }
+              - { label: '"Copied" state label', name: copiedLabel, widget: string, default: Copied }
+              - label: Bio in three lengths
+                name: bios
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string, default: Bio }
+                  - { label: Toggle label (for screen readers), name: toggleLabel, widget: string, default: Bio length }
+                  - { label: Copy button label, name: copyLabel, widget: string, default: Copy bio }
+                  - { label: "Length shown first (1, 2 or 3)", name: start, widget: number, default: 2, required: false }
+                  - label: Lengths
+                    name: items
+                    widget: list
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Button label, name: label, widget: string }
+                      - { label: Length note, name: meta, widget: string, required: false, hint: "e.g. One sentence" }
+                      - { label: Text, name: text, widget: text }
+              - label: Stage introduction
+                name: intro
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string, default: Stage introduction }
+                  - { label: Note, name: note, widget: string, required: false }
+                  - { label: Copy button label, name: copyLabel, widget: string, default: Copy introduction }
+                  - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - label: Downloads
+                name: downloads
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string, default: Downloads }
+                  - label: Files
+                    name: items
+                    widget: list
+                    summary: "{{fields.label}} ({{fields.format}}, {{fields.size}})"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: File, name: file, widget: file, media_folder: "/assets/downloads" }
+                      - { label: Format, name: format, widget: string, default: PDF }
+                      - { label: Size, name: size, widget: string, hint: "e.g. 245 KB or 4.1 MB" }
+              - label: Headshots
+                name: headshots
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string, default: Headshots }
+                  - { label: Note, name: note, widget: string, required: false }
+                  - label: Photos
+                    name: items
+                    widget: list
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Preview image, name: image, widget: image, hint: "A smaller webp for the page" }
+                      - { label: Full-size file, name: file, widget: file, hint: "The full-size JPG visitors download" }
+                      - { label: Format, name: format, widget: string, default: JPG }
+                      - { label: Size, name: size, widget: string, hint: "e.g. 2.5 MB" }
+                      - { label: Alt text, name: alt, widget: string }
+              - label: AV at a glance
+                name: av
+                widget: object
+                fields:
+                  - { label: Heading, name: heading, widget: string, default: AV at a glance }
+                  - { label: Items, name: items, widget: list, field: { label: Item, name: item, widget: string } }
+                  - label: Link to the full requirements
+                    name: link
+                    widget: object
+                    required: false
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string }
+              - *spk-settings-tone
+
+          # ----------------------------------------------------- spk-logos
+          - name: spk-logos
+            label: "Speaking: trusted by (still logo wall)"
+            summary: "Logos — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading, name: heading, widget: string }
+              - label: Logos
+                name: logos
+                widget: list
+                summary: "{{fields.alt}}"
+                fields:
+                  - { label: Logo, name: src, widget: image }
+                  - { label: Organization name (alt text), name: alt, widget: string }
+                  - { label: Ink on a white plate (invert it), name: knockout, widget: boolean, default: false, required: false }
+                  - { label: "The mark is its own coloured box (dim, never invert)", name: plate, widget: boolean, default: false, required: false }
+              - *spk-settings-tone
+
+          # ------------------------------------------------------ kn-intro
+          - name: kn-intro
+            label: "Keynotes: intro with the org chart"
+            summary: "Keynotes intro — {{fields.heading}}"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Heading (the page's h1), name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: Sentences, name: lead, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - label: The org chart
+                name: chart
+                widget: object
+                fields:
+                  - { label: Description (for screen readers), name: label, widget: string }
+                  - { label: "Caption (optional, shown under it)", name: caption, widget: string, required: false }
+                  - { label: Role titles in the boxes (top to bottom, left to right), name: roles, widget: list, required: false, field: { label: Role, name: role, widget: string } }
+                  - { label: Phrases on the lines between people, name: phrases, widget: list, required: false, field: { label: Phrase, name: phrase, widget: string } }
+                  - { label: Caption on phones, name: phoneCaption, widget: string, required: false }
+              - *spk-settings-tone
+
+          # ------------------------------------------------------ kn-index
+          - name: kn-index
+            label: "Keynotes: index of the talks"
+            summary: "Keynotes index"
+            fields:
+              - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
+              - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Label (for screen readers), name: ariaLabel, widget: string, default: The three keynotes, hint: "The links are built from the talk blocks on this page, in their order." }
+              - *spk-settings-tone
+
+          # ------------------------------------------------------- kn-talk
+          - name: kn-talk
+            label: "Keynotes: one talk"
+            summary: "Talk — {{fields.title}}"
+            fields:
+              - { label: Block id (the talk's anchor), name: id, widget: string, hint: "e.g. lead-human. Links elsewhere use keynotes/#this-id, so change it with care." }
+              - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Editor note (never shown on the site), name: editorNote, widget: text, required: false, hint: "e.g. Unconfirmed as an official talk." }
+              - { label: Title, name: title, widget: string }
+              - { label: Trademark ™ after the title, name: trademark, widget: boolean, default: false, required: false }
+              - { label: Signature talk (larger title), name: signature, widget: boolean, default: false, required: false }
+              - { label: Subtitle (optional), name: subtitle, widget: string, required: false }
+              - { label: Index line (under the title in the index), name: indexLine, widget: string, required: false }
+              - { label: Premise (one line), name: premise, widget: string, hint: "Allows *emphasis*." }
+              - { label: Overview, name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: Outcomes heading, name: outcomesHeading, widget: string, default: What the room leaves with }
+              - { label: Outcomes, name: outcomes, widget: list, field: { label: Outcome, name: outcome, widget: string } }
+              - { label: Note under the outcomes (optional), name: outcomesNote, widget: string, required: false }
+              - { label: '"Who it''s for" heading', name: audienceHeading, widget: string, default: "Who it’s for" }
+              - { label: Who it's for, name: audience, widget: text }
+              - { label: Formats heading, name: formatsHeading, widget: string, default: Formats }
+              - { label: Formats, name: formats, widget: list, field: { label: Format, name: format, widget: string } }
+              - label: Link (optional)
+                name: link
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string, required: false }
+                  - { label: Link, name: href, widget: string, required: false, hint: "e.g. healthcare/" }
+              - label: Photo
+                name: image
+                widget: object
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+                  - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the crop centres, across then down, e.g. 25% 40%" }
+              - { label: Jump row label (for screen readers), name: jumpLabel, widget: string, default: Jump to a keynote, required: false }
+              - { label: '"Book this talk" button label', name: bookLabel, widget: string, default: Book this talk, required: false, hint: "Links to the booking form with this talk already chosen." }
+              - label: Settings
+                name: settings
+                widget: object
+                required: false
+                fields:
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false }
+                  - { label: Photo on the left, name: flip, widget: boolean, default: false, required: false }
+          # ================= end Speaking and Keynotes blocks =================
 
   - name: site
     label: Site

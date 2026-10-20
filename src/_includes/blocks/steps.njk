@@ -1,6 +1,6 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- What happens when you book: sticky step list; a sixth stage turns the
-       scene into the final call to action -->
+  {# What happens when you book: sticky step list; a sixth stage turns the
+       scene into the final call to action #}
   <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum-2') }}">
     <div class="steps__track" data-steps>
       <div class="steps__sticky">
@@ -28,7 +28,7 @@
       </div>
       {%- set f = block.final %}
       {%- if f %}
-      <!-- Stage 6: the scene becomes the final call to action (was section.final) -->
+      {# Stage 6: the scene becomes the final call to action (was section.final) #}
       <div class="final steps__final"{% if f.id %} id="{{ f.id }}"{% endif %}>
         {%- set pf = placeStyle(f.placement) | trim %}
         {% if pf | length %}<div class="place" style="{{ pf }}"><div class="place__inner">{% endif %}

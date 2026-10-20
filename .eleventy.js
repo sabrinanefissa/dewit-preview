@@ -7,16 +7,17 @@ const SCHEME = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i; // https:, mailto:, tel:, //host
 
 module.exports = function (eleventyConfig) {
   // tokens.css is generated (theme.json -> css/tokens.css.njk); only
-  // main.css is passed through untouched. src/admin (Sveltia CMS) is
+  // the hand-written css/*.css files are passed through untouched. src/admin (Sveltia CMS) is
   // static and copied through as-is too.
-  eleventyConfig.addPassthroughCopy({ assets: 'assets', 'css/main.css': 'css/main.css', js: 'js', 'src/admin': 'admin' });
+  eleventyConfig.addPassthroughCopy({ assets: 'assets', 'css/*.css': 'css', js: 'js', 'src/admin': 'admin' });
 
   // 1 -> "01"
   eleventyConfig.addFilter('pad2', n => String(n).padStart(2, '0'));
 
   // Prefix a root-relative content path with the page's root ("" or "../").
-  // Absolute URLs and scheme links (https:, mailto:, tel:) pass through.
-  const root = (p, r) => (p == null ? '' : SCHEME.test(p) ? p : (r || '') + p);
+  // Absolute URLs, scheme links (https:, mailto:, tel:) and in-page
+  // fragments ("#care-talk") pass through.
+  const root = (p, r) => (p == null ? '' : (SCHEME.test(p) || p[0] === '#') ? p : (r || '') + p);
   eleventyConfig.addFilter('root', root);
 
   // One image path -> its srcset candidate string, derived from disk: strip
@@ -155,6 +156,14 @@ module.exports = function (eleventyConfig) {
     if (link.overrides && link.overrides[slug] != null) return { href: link.overrides[slug], current: false };
     if (link.slug && link.slug === slug) return { href: './', current: true };
     return { href: root(link.href, r), current: false };
+  });
+
+  // A page's breadcrumb name: its nav label, else site.crumbs[slug], else
+  // its title (plain text, for the BreadcrumbList JSON-LD).
+  eleventyConfig.addFilter('crumbName', (slug, site, title) => {
+    const n = (site.nav || []).find(l => l.slug === slug);
+    const name = (n && n.label) || (site.crumbs && site.crumbs[slug]) || title || slug;
+    return String(name).replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1');
   });
 
   // A block's motion setting: block.settings.motion[key], or the default

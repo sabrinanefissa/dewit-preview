@@ -1,0 +1,100 @@
+  {# ==============================================================
+       For planners: everything needed to book, introduce and stage
+       Stephen. The bio in three lengths (all three in the markup; with a
+       script, a real button group shows one at a time), the stage
+       introduction as on-page text with a Copy button (the button only
+       appears with a script), the downloads with format and size, three
+       headshots as full-size JPGs, and the AV needs at a glance.
+       js/speaking.js runs the toggle and the copy buttons.
+       ============================================================== #}
+  <section class="spk-planners"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="spk-planners__head">
+      <h2 class="spk-planners__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
+      <p class="spk-planners__lead">{{ block.lead | inline() }}{% if block.contact and block.contact.href %} <a class="spk-planners__mail" href="{{ block.contact.href }}">{{ block.contact.label | inline() }}</a>{% endif %}</p>
+    </div>
+
+    <div class="spk-planners__grid">
+      {#- ---- the bio, three lengths ---- #}
+      <div class="spk-pl spk-pl--bio" data-bios>
+        <div class="spk-pl__bar">
+          <h3 class="spk-pl__h">{{ block.bios.heading | inline() }}</h3>
+          <div class="spk-seg" role="group" aria-label="{{ block.bios.toggleLabel | inline() }}" hidden>
+          {%- for b in block.bios.items %}
+            <button type="button" class="spk-seg__btn" aria-pressed="{{ 'true' if loop.index == (block.bios.start or 1) else 'false' }}" aria-controls="{{ block.id }}-bio-{{ loop.index }}" data-bio="{{ loop.index }}">{{ b.label | inline() }}</button>
+          {%- endfor %}
+          </div>
+        </div>
+        <div class="spk-pl__texts">
+        {%- for b in block.bios.items %}
+          <div class="spk-pl__text{% if loop.index == (block.bios.start or 1) %} is-on{% endif %}" id="{{ block.id }}-bio-{{ loop.index }}">
+            <p class="spk-pl__label">{{ b.label | inline() }}{% if b.meta %}<span>{{ b.meta | inline() }}</span>{% endif %}</p>
+            <p class="spk-pl__copytext">{{ b.text | inline() }}</p>
+          </div>
+        {%- endfor %}
+        </div>
+        <button type="button" class="spk-copy" data-copy-bio data-copied="{{ block.copiedLabel | inline() }}" hidden><svg class="spk-copy__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="12" rx="1.5"/><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v10A1.5 1.5 0 0 0 6 16.5h2.5"/></svg><svg class="spk-copy__ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="spk-copy__label">{{ block.bios.copyLabel | inline() }}</span></button>
+      </div>
+
+      {#- ---- the stage introduction ---- #}
+      <div class="spk-pl spk-pl--intro">
+        <div class="spk-pl__bar">
+          <h3 class="spk-pl__h">{{ block.intro.heading | inline() }}</h3>
+        </div>
+        {%- if block.intro.note %}
+        <p class="spk-pl__note">{{ block.intro.note | inline() }}</p>
+        {%- endif %}
+        <div class="spk-pl__intro" id="{{ block.id }}-intro">
+        {%- for para in block.intro.paragraphs %}
+          <p>{{ para | inline() }}</p>
+        {%- endfor %}
+        </div>
+        <button type="button" class="spk-copy" data-copy="{{ block.id }}-intro" data-copied="{{ block.copiedLabel | inline() }}" hidden><svg class="spk-copy__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="12" rx="1.5"/><path d="M15.5 8.5V5a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 5v10A1.5 1.5 0 0 0 6 16.5h2.5"/></svg><svg class="spk-copy__ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="spk-copy__label">{{ block.intro.copyLabel | inline() }}</span></button>
+      </div>
+
+      {#- ---- downloads ---- #}
+      <div class="spk-pl spk-pl--dl">
+        <h3 class="spk-pl__h">{{ block.downloads.heading | inline() }}</h3>
+        <ul class="spk-dl">
+        {%- for d in block.downloads.items %}
+          <li><a class="spk-dl__a" href="{{ d.file | root(r) }}" download>
+            <span class="spk-dl__name">{{ d.label | inline() }}</span>
+            <span class="spk-dl__meta">{{ d.format | inline() }}<span aria-hidden="true"> · </span><span class="spk-sr">, </span>{{ d.size | inline() }}</span>
+            <svg class="spk-dl__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/></svg>
+          </a></li>
+        {%- endfor %}
+        </ul>
+      </div>
+
+      {#- ---- headshots ---- #}
+      <div class="spk-pl spk-pl--shots">
+        <h3 class="spk-pl__h">{{ block.headshots.heading | inline() }}</h3>
+        {%- if block.headshots.note %}
+        <p class="spk-pl__note">{{ block.headshots.note | inline() }}</p>
+        {%- endif %}
+        <ul class="spk-shots">
+        {%- for h in block.headshots.items %}
+          <li><a class="spk-shots__a" href="{{ h.file | root(r) }}" download>
+            <span class="media spk-shots__media"><img src="{{ h.image | root(r) }}" {%- set ss3 = h.image | srcset(r) %}{% if ss3 %} srcset="{{ ss3 }}"{% endif %} sizes="(max-width: 768px) 30vw, 14vw" alt="{{ h.alt | inline() }}" loading="lazy" decoding="async"></span>
+            <span class="spk-shots__name">{{ h.label | inline() }}</span>
+            <span class="spk-shots__meta">{{ h.format | inline() }}<span aria-hidden="true"> · </span><span class="spk-sr">, </span>{{ h.size | inline() }}</span>
+          </a></li>
+        {%- endfor %}
+        </ul>
+      </div>
+
+      {#- ---- AV at a glance ---- #}
+      <div class="spk-pl spk-pl--av">
+        <h3 class="spk-pl__h">{{ block.av.heading | inline() }}</h3>
+        <ul class="spk-av">
+        {%- for item in block.av.items %}
+          <li>{{ item | inline() }}</li>
+        {%- endfor %}
+        </ul>
+        {%- if block.av.link and block.av.link.href %}
+        <a class="textlink spk-av__link" href="{{ block.av.link.href | root(r) }}" download>{{ block.av.link.label | inline() }}
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 4v13M6.5 11.5l5.5 5.5 5.5-5.5"/></svg></a>
+        {%- endif %}
+      </div>
+    </div>
+    <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
+  </section>

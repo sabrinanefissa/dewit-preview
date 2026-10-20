@@ -1,0 +1,76 @@
+  {%- if block.editorNote %}
+  {# Editor note: {{ block.editorNote | plain }} #}
+  {%- endif %}
+  {# ==============================================================
+       One keynote: the jump row to every talk on the page (a plain row
+       at the top of the section, never sticky), then the title, the
+       premise, the overview, what the room leaves with (then "Book this
+       talk"), who it is for and the formats, beside one real photo. The
+       jump row is hidden on phones, where the index above already lists
+       every talk.
+       ============================================================== #}
+  <section class="kn-talk{% if block.settings and block.settings.flip %} kn-talk--flip{% endif %}{% if block.signature %} kn-talk--sig{% endif %}"{% if block.id %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <nav class="kn-jump" aria-label="{{ block.jumpLabel or 'Jump to a keynote' }}, from {{ block.title | plain }}{% if block.trademark %}™{% endif %}">
+      <ul>
+      {%- for t in page.blocks %}{% if t.type == "kn-talk" and t.enabled !== false %}
+        <li><a href="#{{ t.id }}"{% if t.id == block.id %} aria-current="true"{% endif %}>{{ t.title | inline() }}{% if t.trademark %}<span class="tm">™</span>{% endif %}</a></li>
+      {%- endif %}{% endfor %}
+      </ul>
+    </nav>
+    <div class="kn-talk__grid">
+      <div class="kn-talk__copy">
+        <h2 class="kn-talk__h" id="{{ block.id }}-h">{{ block.title | inline() }}{% if block.trademark %}<span class="tm">™</span>{% endif %}</h2>
+        {%- if block.subtitle %}
+        <p class="kn-talk__sub">{{ block.subtitle | inline() }}</p>
+        {%- endif %}
+        <p class="kn-talk__premise">{{ block.premise | inline('kn-em') }}</p>
+        {%- for para in block.overview %}
+        <p class="kn-talk__p">{{ para | inline() }}</p>
+        {%- endfor %}
+
+        <div class="kn-talk__facts">
+          <div class="kn-talk__fact kn-talk__fact--out">
+            <h3 class="kn-talk__h3">{{ block.outcomesHeading | inline() }}</h3>
+            <ul class="kn-talk__out">
+            {%- for o in block.outcomes %}
+              <li>{{ o | inline() }}</li>
+            {%- endfor %}
+            </ul>
+            {%- if block.outcomesNote %}
+            <p class="kn-talk__note">{{ block.outcomesNote | inline() }}</p>
+            {%- endif %}
+            {%- if block.bookLabel and block.id %}
+            {# Book this talk: /book/?talk=<this talk's id> pre-selects it in
+                 the enquiry form (js/book.js reads ?talk=; an unknown id
+                 falls back to "Not sure yet"). #}
+            <a class="textlink kn-talk__book" href="{{ ('book/?talk=' ~ block.id) | root(r) }}">{{ block.bookLabel | inline() }}<span class="kn-vh">: {{ block.title | plain }}{% if block.trademark %}™{% endif %}</span>
+              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            {%- endif %}
+          </div>
+          <div class="kn-talk__fact">
+            <h3 class="kn-talk__h3">{{ block.audienceHeading | inline() }}</h3>
+            <p class="kn-talk__aud">{{ block.audience | inline() }}</p>
+          </div>
+          <div class="kn-talk__fact">
+            <h3 class="kn-talk__h3">{{ block.formatsHeading | inline() }}</h3>
+            <ul class="kn-talk__formats">
+            {%- for f in block.formats %}
+              <li>{{ f | inline() }}</li>
+            {%- endfor %}
+            </ul>
+          </div>
+        </div>
+        {%- if block.link and block.link.href %}
+        <a class="textlink kn-talk__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        {%- endif %}
+      </div>
+      {%- if block.image and block.image.src %}
+      <figure class="kn-talk__fig">
+        <div class="media kn-talk__media">
+          <img src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.image.sizes or '(max-width: 768px) 100vw, 40vw' }}" alt="{{ block.image.alt | inline() }}"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %} loading="lazy" decoding="async">
+        </div>
+      </figure>
+      {%- endif %}
+    </div>
+  </section>

@@ -1,5 +1,5 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- Healthcare -->
+  {# Healthcare #}
   <section class="care"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}">
     <div class="media media--warm">
       <img data-reveal-clip src="{{ block.image.src | root(r) }}"
@@ -16,6 +16,9 @@
           {% for it in block.items %}<li>{{ it | inline() }}</li>{% endfor %}
         </ul>
         <div class="care__cta"><a class="btn btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a></div>
+        {%- if block.route and block.route.href %}
+        <p class="care__route">{{ block.route.text | inline() }} <a class="care__route-link" href="{{ block.route.href | root(r) }}">{{ block.route.label | inline() }}<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+        {%- endif %}
       </div>
       {% if ps | length %}</div></div>{% endif %}
     </div>

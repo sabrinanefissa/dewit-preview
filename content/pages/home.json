@@ -14,6 +14,7 @@
     "href": "assets/img/hero-1280.webp"
   },
   "jsonld": true,
+  "loader": true,
   "lightbox": true,
   "scripts": [],
   "comments": {
@@ -45,7 +46,7 @@
       },
       "meta": [
         "Human connection & relational intelligence",
-        "**170+** keynotes · Toronto to worldwide"
+        "**170** keynotes"
       ],
       "settings": {}
     },
@@ -56,10 +57,10 @@
       "ariaLabel": "What the work is about",
       "eyebrow": "The through-line",
       "bg": [
-        "assets/img/line-greet-860.webp",
-        "assets/img/line-room-860.webp",
-        "assets/img/line-stage-860.webp",
-        "assets/img/line-handshake-860.webp",
+        "assets/img/line-greet-520.webp",
+        "assets/img/line-room-520.webp",
+        "assets/img/line-stage-520.webp",
+        "assets/img/line-handshake-520.webp",
         "assets/img/friction-507.webp"
       ],
       "stations": [
@@ -71,7 +72,7 @@
             "alt": "Stephen greeting attendees before a talk"
           },
           "label": "Human Connection",
-          "gloss": "What every result in your organization actually runs on."
+          "gloss": "What every result in your organization runs on."
         },
         {
           "pillar": false,
@@ -184,7 +185,7 @@
           "home": "Coming back after the door slams.",
           "work": "Coming back after the email.",
           "homeImg": "assets/img/card-repair-home",
-          "workImg": "assets/img/card-repair-work"
+          "workImg": "assets/img/card-repair-greet"
         }
       ],
       "cta": {
@@ -325,18 +326,17 @@
         "sizes": "(max-width:1024px) 100vw, 46vw",
         "alt": "Portrait of Dr. Stephen de Wit"
       },
-      "heading": "Depth most stages never get near.",
-      "lead": "Twenty years as a therapist, sexologist and researcher, in the rooms where people finally tell the truth.",
+      "heading": "Twenty years in the room before the stage.",
+      "lead": "As a therapist and researcher, in the rooms where people finally tell the truth.",
       "creds": [
-        "**Doctorate of Human Sexuality**",
-        "**Master of Public Health**, Human Sexuality",
-        "**Board-Certified Sexologist**",
-        "**20+ years** in clinical practice",
+        "**Doctorate**",
+        "**Master of Public Health**",
+        "**20+ years** in practice",
         "**Research Associate**, Ontario Tech University"
       ],
       "link": {
         "label": "Read Stephen's story",
-        "href": "#about"
+        "href": "about/"
       },
       "settings": {}
     },
@@ -361,7 +361,7 @@
         {
           "value": 20,
           "suffix": "+",
-          "label": "years learning how people actually connect."
+          "label": "years learning how people connect."
         }
       ],
       "settings": {}
@@ -457,7 +457,7 @@
         }
       ],
       "cta": {
-        "text": "Your organization could be next on this list.",
+        "text": "",
         "label": "Bring Stephen to your event",
         "href": "#contact"
       },
@@ -474,7 +474,7 @@
           "tag": "Signature keynote",
           "sub": "**Trust, performance, retention.** How relational intelligence fuels all three, especially when pressure is high and connection is strained.",
           "accent": "violet",
-          "href": "speaking/#keynotes",
+          "href": "keynotes/#lead-human",
           "image": {
             "src": "assets/img/keynote-860.webp",
             "sizes": "640px"
@@ -485,27 +485,27 @@
           "title": "Invisible Friction",
           "sub": "**Why teams quietly break down.** How to clear the hidden barriers before collaboration and performance suffer.",
           "accent": "coral",
-          "href": "speaking/#keynotes",
+          "href": "keynotes/#invisible-friction",
           "image": {
-            "src": "assets/img/room-860.webp",
+            "src": "assets/img/line-room-860.webp",
             "sizes": "640px"
           }
         },
         {
           "title": "The Hidden Multiplier",
-          "sub": "**Results you can measure.** How relational intelligence drives retention, psychological safety and performance.",
+          "sub": "**What trust does to the numbers.** How relational intelligence shows up in retention, psychological safety and performance.",
           "accent": "gold",
-          "href": "speaking/#keynotes",
+          "href": "keynotes/#hidden-multiplier",
           "image": {
             "src": "assets/img/statement-860.webp",
             "sizes": "640px"
           }
         },
         {
-          "title": "Care Without Carrying It All",
-          "sub": "**For healthcare and caregiving teams.** Compassion, healthier boundaries and staying connected under real pressure.",
+          "title": "For health care teams",
+          "sub": "**Hospitals, long-term care and caregiving teams.** Compassion, healthier boundaries and staying connected under real pressure.",
           "accent": "teal",
-          "href": "#healthcare",
+          "href": "healthcare/",
           "image": {
             "src": "assets/img/permission-860.webp",
             "sizes": "640px"
@@ -536,7 +536,12 @@
       ],
       "cta": {
         "label": "See the healthcare work",
-        "href": "#contact"
+        "href": "healthcare/"
+      },
+      "route": {
+        "text": "Planning a leadership offsite, conference or all-hands?",
+        "label": "See speaking",
+        "href": "speaking/"
       },
       "settings": {}
     },
@@ -591,7 +596,7 @@
       ],
       "link": {
         "label": "Start with an email",
-        "href": "#contact"
+        "href": "book/"
       },
       "final": {
         "id": "contact",
@@ -601,7 +606,7 @@
         "buttons": [
           {
             "label": "Bring Stephen to your event",
-            "href": "mailto:info@drdewit.com?subject=Speaking%20inquiry%20for%20Dr.%20Stephen%20de%20Wit"
+            "href": "book/"
           },
           {
             "label": "Watch Stephen speak",

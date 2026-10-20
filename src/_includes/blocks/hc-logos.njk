@@ -1,0 +1,11 @@
+  {# Healthcare clients: a static row of knocked-out logos on plum. #}
+  <section class="hc-logos"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="hc-logos__inner">
+      <h2 class="hc-logos__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
+      <ul class="hc-logos__row">
+      {%- for l in block.logos %}
+        <li><img src="{{ l.src | root(r) }}" alt="{{ l.alt | inline() }}" class="logo-mark{% if l.treatment == 'plate' %} logo-mark--plate{% endif %}" loading="lazy" decoding="async"{% if l.scale %} style="--s:{{ l.scale }}"{% endif %}></li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

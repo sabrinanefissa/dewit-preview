@@ -1,0 +1,12 @@
+  {# Book: the top. A short heading, then phone and email as plain links
+       (values from site.json contact). No animation on this page. #}
+  <section class="bk-intro"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="bk-intro__inner">
+      <h1 class="bk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h1>
+      {%- if block.lead %}<p class="bk-intro__lead">{{ block.lead | inline() }}</p>{% endif %}
+      <ul class="bk-intro__contact">
+        <li><span class="bk-intro__k">{{ block.phoneLabel | inline() }}</span> <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
+        <li><span class="bk-intro__k">{{ block.emailLabel | inline() }}</span> <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
+      </ul>
+    </div>
+  </section>

@@ -1,0 +1,29 @@
+  {# About: the story. Wide screens: the reading column on the left, the
+       real photographs stacked with their captions in a second column on
+       the right. Phones: one column, each figure placed after the
+       paragraph number it names (flex order; source order stays text
+       first, then photos). #}
+  <section class="ab-story"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+    <div class="ab-story__inner">
+      <h2 class="ab-story__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
+      <div class="ab-story__body">
+        <div class="ab-story__text">
+        {%- for p in block.paragraphs %}
+          <p style="--o:{{ loop.index * 2 }}">{{ p | inline() }}</p>
+        {%- endfor %}
+        </div>
+        {%- if block.figures and block.figures.length %}
+        <div class="ab-story__figs">
+        {%- for f in block.figures %}
+          <figure class="ab-fig" style="--o:{{ (f.after or block.paragraphs.length) * 2 + 1 }}">
+            <div class="ab-fig__media"><img src="{{ f.src | root(r) }}"
+                 {%- set ss1 = f.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+                 sizes="{{ f.sizes or '(max-width: 900px) 100vw, 40vw' }}" alt="{{ f.alt | inline() }}" loading="lazy" decoding="async"{% if f.position %} style="object-position:{{ f.position }}"{% endif %}></div>
+            {%- if f.caption %}<figcaption>{{ f.caption | inline() }}</figcaption>{% endif %}
+          </figure>
+        {%- endfor %}
+        </div>
+        {%- endif %}
+      </div>
+    </div>
+  </section>

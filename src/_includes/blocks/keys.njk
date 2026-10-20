@@ -1,12 +1,9 @@
 {%- from "place.njk" import placeStyle %}
-  <!-- ==============================================================
+  {# ==============================================================
        3. KEYNOTES - a pinned stage. The track is 480svh; the stage
-       inside it is sticky for 380svh of scroll. The section rises over
-       the last 60svh of the candle wheel's stage, and its full-bleed
-       ground fades in over the first 60svh of its own scroll, out of
-       the wheel's push between its candles. Phases:
-         0-90     the heading alone over the full-bleed ground: the wheel's
-                  candles fade out over 40-70, then it rises over 63-81
+       inside it is sticky for 380svh of scroll. Phases:
+         0-90     the heading alone over the full-bleed ground: it rises
+                  over 63-81
          90-170   talk 01
          170-250  talk 02 wipes in from the right
          250-330  talk 03 wipes in from the right
@@ -23,7 +20,7 @@
        listed under "For planners".
        Phones: no pin, a horizontal snap strip of the three talks.
        Reduced motion and no script: the three talks stacked.
-       ============================================================== -->
+       ============================================================== #}
   {%- set head = block | motion('head', 240) %}{% set panel = block | motion('panel', 80) %}
   <section class="spk-keys"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('transparent') }}" data-head="{{ head }}" data-panel="{{ panel }}" style="--panels:{{ block.talks.length }};--head-svh:{{ head }};--panel-svh:{{ panel }}">
     <div class="spk-keys__track">
@@ -57,9 +54,9 @@
 {% endfor %}
           </div>
         </div>
-        <!-- One shared element for all three talks, separate from the hero's.
+        {# One shared element for all three talks, separate from the hero's.
              Same reel, same encodes; the script assigns the src. It is
-             only seen while a talk plays. -->
+             only seen while a talk plays. #}
         <video class="spk-keys__video" playsinline muted preload="metadata"
                data-src-1080="{{ block.video.src1080 | root(r) }}"
                data-src-mobile="{{ block.video.srcMobile | root(r) }}">

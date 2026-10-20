@@ -1,17 +1,19 @@
 {
-  "title": "Human Connection & Relational Intelligence Speaker | Dr. Stephen de Wit",
+  "title": "Keynote Speaker on Trust & Human Connection, Canada | Dr. Stephen de Wit",
   "description": "Keynotes on human connection and relational intelligence for teams, conferences, associations and healthcare organizations. 170 keynotes, 7,000+ leaders.",
   "canonical": "https://drdewit.com/speaking/",
   "og": {
-    "title": "Human Connection & Relational Intelligence Speaker | Dr. Stephen de Wit",
+    "title": "Keynote Speaker on Trust & Human Connection, Canada | Dr. Stephen de Wit",
     "description": "Keynotes on human connection and relational intelligence for teams, conferences, associations and healthcare organizations. 170 keynotes, 7,000+ leaders.",
     "url": "https://drdewit.com/speaking/",
     "image": "https://drdewit.com/assets/img/reel-poster-1280.webp"
   },
-  "ground": {
-    "image": "assets/img/ground-theatre-1664.webp",
-    "sizes": "100vw",
-    "veil": true
+  "videoSchema": {
+    "name": "Dr. Stephen de Wit: speaking reel",
+    "description": "A short reel of Dr. Stephen de Wit on stage, on human connection, relational intelligence and the Lead Human model.",
+    "thumbnailUrl": "https://drdewit.com/assets/img/reel-poster-1280.webp",
+    "contentUrl": "https://drdewit.com/assets/video/reel-1080.mp4",
+    "duration": "PT2M40S"
   },
   "blocks": [
     {
@@ -31,7 +33,42 @@
         "srcMobile": "assets/video/reel-mobile.mp4",
         "mobileAutoplay": "true"
       },
-      "heading": "A talk about the part people don’t say out loud.",
+      "heading": "The part people don’t say out loud.",
+      "line": "170 keynotes for teams, conferences, associations and health care.",
+      "chapters": {
+        "heading": "In the reel",
+        "note": "Select a chapter to play the reel from there, with sound.",
+        "items": [
+          {
+            "time": 0,
+            "label": "What you say when you’re not speaking"
+          },
+          {
+            "time": 37,
+            "label": "Who Stephen is"
+          },
+          {
+            "time": 42,
+            "label": "What disengagement costs"
+          },
+          {
+            "time": 62,
+            "label": "Leading human"
+          },
+          {
+            "time": 87,
+            "label": "Performance follows connection"
+          },
+          {
+            "time": 104,
+            "label": "Connect before you correct"
+          },
+          {
+            "time": 145,
+            "label": "Close"
+          }
+        ]
+      },
       "settings": null,
       "captions": {
         "src": "assets/video/reel-en.vtt",
@@ -46,18 +83,77 @@
       }
     },
     {
+      "type": "spk-unsaid",
+      "id": "talks-about",
+      "enabled": true,
+      "heading": "What he talks about.",
+      "answeredLabel": "Answered in:",
+      "lines": [
+        {
+          "text": "You can be surrounded by colleagues and still on your own."
+        },
+        {
+          "text": "You’re doing the job well and struggling quietly underneath it.",
+          "talk": {
+            "label": "The Hidden Multiplier",
+            "href": "keynotes/#hidden-multiplier"
+          }
+        },
+        {
+          "text": "You carry everyone else’s feelings and nobody asks about yours.",
+          "talk": {
+            "label": "Lead Human™",
+            "href": "keynotes/#lead-human"
+          }
+        },
+        {
+          "text": "There’s a conversation you keep moving to next week.",
+          "talk": {
+            "label": "Invisible Friction",
+            "href": "keynotes/#invisible-friction"
+          }
+        },
+        {
+          "text": "Small unsaid tensions add up until everyone is tired.",
+          "talk": {
+            "label": "Invisible Friction",
+            "href": "keynotes/#invisible-friction"
+          }
+        },
+        {
+          "text": "Left unsaid long enough, this becomes what the organization calls a *performance problem*."
+        }
+      ],
+      "image": {
+        "src": "assets/img/line-listen-1280.webp",
+        "sizes": "(max-width: 600px) 100vw, (max-width: 900px) 94vw, 32vw",
+        "alt": "An audience listening closely in a darkened conference room",
+        "caption": ""
+      },
+      "text": "In the room, Stephen says these things out loud, so people recognize them in their own team. Then he gives leaders a practical, research-informed way to work with them: clear the silent friction, strengthen trust, and rebuild it quickly after a breakdown.",
+      "link": {
+        "label": "See the three keynotes",
+        "href": "keynotes/"
+      },
+      "settings": {
+        "background": "plum"
+      }
+    },
+    {
       "type": "stats",
       "id": "proof",
       "enabled": true,
       "settings": {
-        "background": "transparent",
-        "motion": null
+        "background": "plum-2",
+        "motion": {
+          "countUp": false
+        }
       },
       "ariaLabel": "Speaking record",
       "eyebrow": "",
       "anchor": false,
       "extraClass": "spk-proof",
-      "note": "==============================================================\n       2. PROOF LINE - reused stats count-up, centred, no eyebrow\n       ==============================================================",
+      "note": "==============================================================\n       PROOF LINE - the stats block with the count-up off (static\n       numbers; the count-up belongs to the homepage)\n       ==============================================================",
       "counters": [
         {
           "value": 170,
@@ -72,227 +168,7 @@
         {
           "value": 20,
           "suffix": "+",
-          "label": "years inside the relationships people care about most."
-        }
-      ]
-    },
-    {
-      "type": "said",
-      "id": "said",
-      "enabled": true,
-      "heading": "What he talks about.",
-      "settings": null,
-      "velvet": {
-        "src": "/assets/img/Plum Velvet Background.png",
-        "sizes": "100vw"
-      },
-      "macro": "assets/img/wax-macro-1440.webp",
-      "windowA": "You don’t need more *resilience*.",
-      "windowB": "You need a *clearer way* through.",
-      "lines": [
-        "You can be surrounded by colleagues and still on your own.",
-        "You’re doing the job well and struggling quietly underneath it.",
-        "You carry everyone else’s feelings and nobody asks about yours.",
-        "There’s a conversation you keep moving to next week.",
-        "Small unsaid tensions add up until everyone is tired.",
-        "Left unsaid long enough, this becomes what the organization calls a performance problem."
-      ],
-      "glowImage": {
-        "src": "assets/img/mobile/round-tables-portrait.jpg",
-        "sizes": "100vw"
-      },
-      "lineImages": [
-        {
-          "src": "assets/img/mobile/aisle-applause-portrait.jpg"
-        },
-        {
-          "src": "assets/img/mobile/boardroom-skyline-portrait.jpg"
-        },
-        {
-          "src": "assets/img/mobile/round-tables-portrait.jpg"
-        },
-        {
-          "src": "assets/img/mobile/stage-connection-portrait.jpg"
-        },
-        {
-          "src": "assets/img/mobile/couple-apart-portrait.jpg"
-        },
-        {
-          "src": "assets/img/mobile/couple-talking-portrait.jpg"
-        }
-      ]
-    },
-    {
-      "type": "keys",
-      "id": "keynotes",
-      "enabled": true,
-      "heading": "Watch Stephen say what goes unsaid.",
-      "settings": null,
-      "video": {
-        "src1080": "assets/video/reel-1080.mp4",
-        "srcMobile": "assets/video/reel-mobile.mp4"
-      },
-      "captions": {
-        "src": "assets/video/reel-en.vtt",
-        "srclang": "en",
-        "label": "English"
-      },
-      "indexLabel": "Keynotes",
-      "hearLabel": "Watch Stephen speak",
-      "pauseLabel": "Pause",
-      "rest": {
-        "src": "assets/img/on stage.png",
-        "sizes": "100vw"
-      },
-      "talks": [
-        {
-          "title": "",
-          "titleHtml": "Lead Human<span class=\"tm\">™</span>",
-          "sub": "Relational Intelligence at Work.",
-          "accent": "violet",
-          "image": {
-            "src": "assets/img/keys-stage-1664.webp",
-            "sizes": "100vw"
-          },
-          "segment": {
-            "start": 103.66,
-            "end": 115.42,
-            "poster": 110
-          }
-        },
-        {
-          "title": "Invisible Friction",
-          "titleHtml": "",
-          "sub": "Why teams break down.",
-          "accent": "coral",
-          "image": {
-            "src": "assets/img/out-aisle-1664.webp",
-            "sizes": "100vw"
-          },
-          "segment": {
-            "start": 115.42,
-            "end": 130.9,
-            "poster": 126
-          }
-        },
-        {
-          "title": "The Hidden Multiplier",
-          "titleHtml": "",
-          "sub": "What relational intelligence does to retention.",
-          "accent": "gold",
-          "image": {
-            "src": "assets/img/room-offsite-1200.webp",
-            "sizes": "100vw"
-          },
-          "segment": {
-            "start": 137.34,
-            "end": 145.7,
-            "poster": 144
-          }
-        }
-      ]
-    },
-    {
-      "type": "chap",
-      "id": "room",
-      "enabled": true,
-      "heading": "What it’s like in the room.",
-      "settings": null,
-      "railLabel": "Chapters",
-      "chapters": [
-        {
-          "word": "Think",
-          "text": "You find yourself thinking of past conversations, this time from a different *perspective*",
-          "tone": "violet",
-          "spot": "c",
-          "still": {
-            "src": "/assets/img/feeling lonely at work.png",
-            "sizes": "100vw"
-          },
-          "turn": {
-            "text": "Instead of judging the person across the table, you get *curious* about them",
-            "still": {
-              "src": "assets/img/pos-curiosity.jpg",
-              "sizes": "100vw"
-            }
-          }
-        },
-        {
-          "word": "Feel",
-          "text": "How we feel becomes the *patterns* we carry, shaping how we show up in every room",
-          "tone": "bone",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/chap-feel-1664.webp",
-            "sizes": "100vw"
-          },
-          "turn": {
-            "text": "The honest conversation finally happens, and the weight stops sitting on one person. It becomes *shared*",
-            "still": {
-              "src": "assets/img/pos-honest.jpg",
-              "sizes": "100vw"
-            }
-          }
-        },
-        {
-          "word": "Trust",
-          "text": "What moved you starts *changing* what you do",
-          "tone": "violet",
-          "spot": "c",
-          "still": {
-            "src": "assets/img/act-terrace.jpg",
-            "sizes": "100vw"
-          },
-          "turn": {
-            "text": "You walk back into your work with a quieter *confidence*, trusting the people beside you",
-            "still": {
-              "src": "assets/img/pos-confidence.jpg",
-              "sizes": "100vw"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "type": "out",
-      "id": "walkout",
-      "enabled": false,
-      "heading": "What the room walks out with.",
-      "settings": null,
-      "image": {
-        "src": "/assets/img/out-aisle-1664.webp",
-        "sizes": "100vw"
-      },
-      "words": [
-        {
-          "text": "Trust",
-          "x": "26%",
-          "y": "70%",
-          "layer": "front"
-        },
-        {
-          "text": "Honest conversation",
-          "x": "34%",
-          "y": "44%",
-          "layer": "back"
-        },
-        {
-          "text": "Curiosity",
-          "x": "50%",
-          "y": "70%",
-          "layer": "front"
-        },
-        {
-          "text": "Shared responsibility",
-          "x": "66%",
-          "y": "44%",
-          "layer": "back"
-        },
-        {
-          "text": "Openness",
-          "x": "74%",
-          "y": "70%",
-          "layer": "front"
+          "label": "years in practice."
         }
       ]
     },
@@ -301,94 +177,246 @@
       "id": "formats",
       "enabled": true,
       "heading": "Rooms he speaks to.",
-      "settings": null,
-      "ariaLabel": "Formats and rooms",
+      "settings": {
+        "background": "plum"
+      },
+      "ariaLabel": "Rooms he speaks to",
       "anchor": false,
       "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*.",
-      "sizes": "70vw",
-      "rooms": [
+      "usuallyLabel": "usually:",
+      "eventsLabel": "Event",
+      "talkLabel": "Talk",
+      "events": [
         {
-          "caption": "Executive and senior teams",
-          "image": {
-            "src": "assets/img/room-association-1200.webp"
+          "label": "Leadership offsite",
+          "talk": {
+            "label": "Lead Human™",
+            "href": "keynotes/#lead-human"
           }
         },
         {
-          "caption": "Managers and emerging leaders",
-          "image": {
-            "src": "/assets/img/stephen in conference hall.png"
+          "label": "Annual conference",
+          "talk": {
+            "label": "The Hidden Multiplier",
+            "href": "keynotes/#hidden-multiplier"
           }
         },
         {
-          "caption": "Teams under strain",
-          "image": {
-            "src": "assets/img/room-offsite-1200.webp"
+          "label": "All-hands or town hall",
+          "talk": {
+            "label": "Invisible Friction",
+            "href": "keynotes/#invisible-friction"
           }
         },
         {
-          "caption": "Associations and membership bodies",
-          "image": {
-            "src": "assets/img/room-conference-1200.webp"
+          "label": "People-leader program",
+          "talk": {
+            "label": "Lead Human™",
+            "href": "keynotes/#lead-human"
           }
         },
         {
-          "caption": "People, culture and L&D teams",
-          "image": {
-            "src": "assets/img/room-gala-1200.webp"
+          "label": "HR, L&D or wellbeing event",
+          "talk": {
+            "label": "The Hidden Multiplier",
+            "href": "keynotes/#hidden-multiplier"
           }
         },
         {
-          "caption": "Healthcare and long-term care",
-          "image": {
-            "src": "assets/img/room-healthcare-1200.webp"
+          "label": "Health care",
+          "talk": {
+            "label": "a session shaped for care teams",
+            "href": "healthcare/"
           }
-        }
-      ]
-    },
-    {
-      "type": "bio",
-      "id": "bio",
-      "enabled": true,
-      "settings": null,
-      "portrait": {
-        "src": "assets/img/contact-1280.webp",
-        "sizes": "(max-width: 900px) 240px, 38vw",
-        "alt": "Dr. Stephen de Wit in a plum jacket, smiling, seated outside a café"
-      },
-      "link": {
-        "label": "Meet Stephen",
-        "href": "#about"
-      },
-      "line": "Twenty years as a therapist, sexologist and researcher taught Stephen what holds people together, and he has been taking it to stages since 2004.",
-      "plannersHeading": "For planners.",
-      "outcomesLabel": "What each talk leaves behind",
-      "outcomes": [
-        {
-          "title": "",
-          "titleHtml": "Lead Human<span class=\"tm\">™</span>",
-          "text": "Spot the relational patterns behind engagement and retention. Work from a clear framework for building trust. Name tension and misalignment early, before performance dips."
-        },
-        {
-          "title": "Invisible Friction",
-          "titleHtml": "",
-          "text": "Notice the quiet breakdowns wearing on culture and collaboration. Open a difficult conversation without making it worse. Build accountability that doesn’t cost trust."
-        },
-        {
-          "title": "The Hidden Multiplier",
-          "titleHtml": "",
-          "text": "Connect everyday relational patterns to the outcomes an organization already measures. Look at turnover as a trust question. Protect culture through growth and change."
         }
       ],
-      "tailoringLabel": "Tailoring",
-      "tailoring": "Every planner resource comes in more than one version. Bios run from one sentence to a short paragraph, and Stephen’s team will build one to your event theme on request.",
-      "onDayLabel": "On the day",
-      "onDay": [
-        "A wireless headset mic. Stephen moves and works the room. A lavalier can stand in.",
-        "A sound system matched to the room size.",
-        "Fresh batteries, please. We like the energy on stage and no surprises.",
-        "Projection and screens every seat can read, HDMI to Stephen’s laptop, and at least one confidence monitor at the foot of the stage.",
-        "A countdown timer he can see, and 30 minutes of soundcheck in the room before doors open."
-      ]
+      "seats": true
+    },
+    {
+      "type": "spk-planners",
+      "id": "planners",
+      "enabled": true,
+      "heading": "For planners.",
+      "lead": "Everything you need to book, introduce and stage Stephen. For a version tailored to your event theme, write to",
+      "contact": {
+        "label": "info@drdewit.com",
+        "href": "mailto:info@drdewit.com"
+      },
+      "copiedLabel": "Copied",
+      "bios": {
+        "heading": "Bio",
+        "toggleLabel": "Bio length",
+        "copyLabel": "Copy bio",
+        "start": 2,
+        "items": [
+          {
+            "label": "Short",
+            "meta": "One sentence",
+            "text": "Dr. Stephen de Wit draws on more than twenty years as a therapist and researcher to help leaders turn human tension into trust, and trust into performance."
+          },
+          {
+            "label": "Medium",
+            "meta": "Two sentences",
+            "text": "Dr. Stephen de Wit has spent more than twenty years as a therapist, researcher, speaker and facilitator, from transformational retreats to research with homeless veterans and people living with dementia. He now helps leaders read the human dynamics in their teams and turn them into practical ways to strengthen trust and performance under pressure."
+          },
+          {
+            "label": "Long",
+            "meta": "A few sentences",
+            "text": "For more than twenty years, Dr. Stephen de Wit has worked as a therapist, researcher, speaker and facilitator, in rooms where trust was fragile and the silence was loud. His work has ranged from transformational retreats to research with homeless veterans and people living with dementia. What he saw there is the basis of his talks: when people don’t feel seen, safe or heard, performance erodes. Today he helps leaders clear silent friction, rebuild trust after a breakdown and build the kind of trust that helps people stay. He is a Research Associate at Ontario Tech University and has delivered 170 keynotes."
+          }
+        ]
+      },
+      "intro": {
+        "heading": "Stage introduction",
+        "copyLabel": "Copy introduction",
+        "note": "For your host to read when welcoming Stephen to the stage.",
+        "paragraphs": [
+          "For more than twenty years, Dr. Stephen de Wit has worked as a therapist, researcher, speaker and facilitator. He has sat with people when trust was fragile and the silence was loud.",
+          "What he saw there is the basis of his work: when people don’t feel seen, safe or understood, performance erodes.",
+          "Today he helps leaders clear invisible friction, rebuild trust and shape cultures where people lean in.",
+          "Please welcome Dr. Stephen de Wit."
+        ]
+      },
+      "downloads": {
+        "heading": "Downloads",
+        "items": [
+          {
+            "label": "Speaker bio",
+            "file": "assets/downloads/speaker-bio.pdf",
+            "format": "PDF",
+            "size": "75 KB"
+          },
+          {
+            "label": "Stage introduction",
+            "file": "assets/downloads/stage-intro.pdf",
+            "format": "PDF",
+            "size": "64 KB"
+          },
+          {
+            "label": "Speaking topics",
+            "file": "assets/downloads/speaking-topics.pdf",
+            "format": "PDF",
+            "size": "89 KB"
+          },
+          {
+            "label": "AV requirements",
+            "file": "assets/downloads/av-requirements.pdf",
+            "format": "PDF",
+            "size": "101 KB"
+          },
+          {
+            "label": "One-pager",
+            "file": "assets/downloads/one-pager.pdf",
+            "format": "PDF",
+            "size": "774 KB"
+          },
+          {
+            "label": "Full speaker packet",
+            "file": "assets/downloads/full-speaker-packet.pdf",
+            "format": "PDF",
+            "size": "879 KB"
+          }
+        ]
+      },
+      "headshots": {
+        "heading": "Headshots",
+        "note": "Full-size photos for your program, website and slides.",
+        "items": [
+          {
+            "label": "Blue suit",
+            "image": "assets/img/headshot-blue-suit-960.webp",
+            "file": "assets/img/headshot-blue-suit.jpg",
+            "format": "JPG",
+            "size": "2.5 MB",
+            "alt": "Dr. Stephen de Wit in a blue suit and patterned tie, smiling"
+          },
+          {
+            "label": "Dark jacket, smiling",
+            "image": "assets/img/headshot-light-smile-960.webp",
+            "file": "assets/img/headshot-light-smile.jpg",
+            "format": "JPG",
+            "size": "1.2 MB",
+            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt, smiling"
+          },
+          {
+            "label": "Dark jacket",
+            "image": "assets/img/headshot-light-960.webp",
+            "file": "assets/img/headshot-light.jpg",
+            "format": "JPG",
+            "size": "1.2 MB",
+            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt"
+          }
+        ]
+      },
+      "av": {
+        "heading": "AV at a glance",
+        "items": [
+          "A wireless headset microphone, as Stephen moves through the room. A wireless lavalier works if needed.",
+          "A professional sound system suited to the room, with fresh batteries.",
+          "Projection and screens the whole audience can see, with HDMI if Stephen uses his laptop.",
+          "At least one confidence monitor at the foot of the stage, and a countdown timer he can see.",
+          "A soundcheck of at least 30 minutes in the room on the day, before doors open."
+        ],
+        "link": {
+          "label": "Full AV requirements (PDF)",
+          "href": "assets/downloads/av-requirements.pdf"
+        }
+      },
+      "settings": {
+        "background": "plum-2"
+      }
+    },
+    {
+      "type": "spk-logos",
+      "id": "trusted",
+      "enabled": true,
+      "heading": "Trusted by.",
+      "logos": [
+        {
+          "src": "assets/logos/Reckitt-Logo-ko.png",
+          "alt": "Reckitt"
+        },
+        {
+          "src": "assets/logos/mdrt-logo-ko.png",
+          "alt": "MDRT"
+        },
+        {
+          "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
+          "alt": "University of Toronto"
+        },
+        {
+          "src": "assets/logos/tmu-mark-white.png",
+          "alt": "Toronto Metropolitan University"
+        },
+        {
+          "src": "assets/logos/george-brown-mark-white.png",
+          "alt": "George Brown College"
+        },
+        {
+          "src": "assets/logos/laurentian-university-vector-logo-ko.png",
+          "alt": "Laurentian University"
+        },
+        {
+          "src": "assets/logos/Lakeridge-mark.png",
+          "alt": "Lakeridge Health"
+        },
+        {
+          "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
+          "alt": "Toronto Academy of Dentistry"
+        },
+        {
+          "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
+          "alt": "NESO"
+        },
+        {
+          "src": "assets/logos/OSOT-mark.png",
+          "alt": "Ontario Society of Occupational Therapists",
+          "scale": "0.6"
+        }
+      ],
+      "settings": {
+        "background": "plum"
+      }
     },
     {
       "type": "close",
@@ -398,18 +426,18 @@
       "settings": null,
       "cta": {
         "label": "Book Stephen",
-        "href": "#contact"
+        "href": "book/"
       },
       "anchor": false,
       "image": {
-        "src": "/assets/img/on stage.png",
+        "src": "assets/img/line-room-1280.webp",
         "sizes": "100vw"
       }
     }
   ],
   "comments": {
     "loader": "Loader (reused)",
-    "mainEnd": "The credibility ribbon (\"Trusted by\" / \"As seen on\") belongs to the\n       homepage only. This page ends on the bio and goes straight to the\n       footer; the shared .orgband / .cred__* CSS and the lane script are\n       untouched and simply have nothing to bind to here.",
+    "mainEnd": "The page ends on the logo wall; the close and the footer follow.",
     "nav": "Nav (reused chrome; homepage anchors are relative to this folder)"
   },
   "footer": {
@@ -425,7 +453,11 @@
     "sizes": "100vw"
   },
   "scripts": [
-    "js/vendor/lenis.min.js"
+    "js/vendor/lenis.min.js",
+    "js/speaking.js"
   ],
-  "slug": "speaking"
+  "slug": "speaking",
+  "styles": [
+    "css/speaking.css"
+  ]
 }
