@@ -4,6 +4,7 @@
   "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
   "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
   "canonical": "https://drdewit.com/about/",
+  "profilePage": true,
   "og": {
     "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
     "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
@@ -62,7 +63,7 @@
         },
         {
           "after": 3,
-          "src": "assets/img/panel-live.jpg",
+          "src": "assets/img/panel-live-640.webp",
           "sizes": "(max-width: 900px) 100vw, 30vw",
           "alt": "Stephen with a microphone on a live panel, seated between three other speakers",
           "caption": "Speaking on a live panel."

@@ -35,6 +35,7 @@ collections:
           - { label: URL, name: url, widget: string }
           - { label: Image, name: image, widget: string, hint: "Full https:// URL (used by link previews, not the img widget)." }
       - { label: "Loading screen (Home only; one page site-wide)", name: loader, widget: boolean, default: false, required: false }
+      - { label: "Profile page schema (About only)", name: profilePage, widget: boolean, default: false, required: false }
       - label: "Video schema (VideoObject JSON-LD, Speaking)"
         name: videoSchema
         widget: object

@@ -66,6 +66,12 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 "inLanguage":{{ site.lang | dump | safe }},"creator":{"@id":{{ ps.id | dump | safe }}}}
 </script>
 {%- endif %}
+{%- if page.profilePage %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ProfilePage","name":{{ page.title | dump | safe }},
+"url":{{ page.canonical | dump | safe }},"mainEntity":{"@id":{{ ps.id | dump | safe }}}}
+</script>
+{%- endif %}
 {%- if slug != 'home' %}
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[

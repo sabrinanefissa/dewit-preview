@@ -106,6 +106,9 @@
           <div class="bk-step__actions">
           {%- if not loop.last %}
             <button type="button" class="btn btn--lg bk-step__next" data-bk-next data-bk-js hidden>{{ (st.next or 'Continue') | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            {%- if loop.first and block.privacy %}
+            <p class="bk-submit__privacy">{{ block.privacy | inline() }}</p>
+            {%- endif %}
           {%- else %}
             {%- if not loop.first %}
             <button type="button" class="btn btn--lg btn--inv bk-step__back" data-bk-back data-bk-js hidden>{{ (st.back or 'Back') | inline() }}</button>

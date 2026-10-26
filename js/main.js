@@ -580,10 +580,9 @@ var UI = (function () {
     var N = glyphs.length;
     if (!N) return;
     /* The stills: one per word and room, named on the word itself
-       (data-home-img / data-work-img: a path without the width suffix; the
-       page loads <base>-560.webp and <base>-1120.webp). */
+       (data-home-srcset / data-work-srcset: the 560w and 1120w files). */
     var PHOTOS = glyphs.map(function (g) {
-      return { home: g.getAttribute("data-home-img"), work: g.getAttribute("data-work-img") };
+      return { home: g.getAttribute("data-home-srcset"), work: g.getAttribute("data-work-srcset") };
     });
 
     /* ms between automatic word changes */
@@ -612,7 +611,7 @@ var UI = (function () {
         stills.push(PHOTOS.map(function (p, k) {
           var img = document.createElement("img");
           img.alt = ""; img.decoding = "async";
-          if (p[room]) img.setAttribute("data-base", p[room]);
+          if (p[room]) img.setAttribute("data-srcset", p[room]);
           if (k === 0) img.className = "is-on";
           box.appendChild(img);
           return img;
@@ -623,11 +622,11 @@ var UI = (function () {
       stills.forEach(function (set) {
         var img = set[wrap(i)];
         if (!img || img.getAttribute("src")) return;
-        var b = img.getAttribute("data-base");
+        var b = img.getAttribute("data-srcset");
         if (!b) return;
         img.sizes = "(max-width: 767px) 94vw, 560px";
-        img.srcset = b + "-560.webp 560w, " + b + "-1120.webp 1120w";
-        img.src = b + "-560.webp";
+        img.srcset = b;
+        img.src = b.split(" ")[0];
       });
     }
     function loadNear() { if (!near) return; loadStill(cur); loadStill(cur + 1); }
