@@ -1,0 +1,9 @@
+{#- One drop-down: a native <details>, closed by default. The label is a
+     short noun phrase; the body is whatever the caller renders.
+     js/dd.js animates the open and close and opens it for a hash link. -#}
+{%- macro dd(label, id, cls) -%}
+<details class="dd{% if cls %} {{ cls }}{% endif %}"{% if id %} id="{{ id }}"{% endif %}>
+  <summary class="dd__sum"><span class="dd__label">{{ label | inline() }}</span><svg class="dd__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14"/><path class="dd__v" d="M12 5v14"/></svg></summary>
+  <div class="dd__body"><div class="dd__in">{{ caller() }}</div></div>
+</details>
+{%- endmacro -%}

@@ -1,12 +1,39 @@
-{%- from "place.njk" import placeStyle %}
-  <div class="spk-close" aria-hidden="false">
-    <img class="spk-close__img" src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">
-    <div class="spk-close__veil" aria-hidden="true"></div>
-    {%- set ps = placeStyle(block.placement) | trim %}
-    {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
+  {# The close, at the top of the footer. Text always sits on solid
+       colour, never on the photo. Layouts:
+         split       text on the left 40%, the photo on the right 60%, to the edge
+         portrait    text on the left, a 4:5 photo in the right third
+         photo-left  the photo on the left two-thirds, text in the right third
+         type        no photo; the page's talks as links to the enquiry form
+       contact: true adds the phone and email above the button; next adds
+       a link on to the next page under it. #}
+  {%- set lay = block.layout or 'split' %}
+  {%- set hasImg = lay != 'type' and block.image and block.image.src %}
+  <div class="spk-close spk-close--{{ lay }}{% if not hasImg %} spk-close--noimg{% endif %}" data-tone="{{ block | tone('plum-2') }}">
     <div class="spk-close__inner">
-      <h2 class="spk-close__h">{{ block.heading | inline() }}</h2>
+      <h2 class="spk-close__h">{{ block.heading | inline('spk-close__em') }}</h2>
+      {%- if block.talks %}
+      <ul class="spk-close__talks">
+      {%- for t in page.blocks | talks %}
+        <li><a class="spk-close__talk" href="{{ ('book/?talk=' ~ t.id) | root(r) }}" style="--acc: var(--{{ t.accent | accentVar }})"><span>{{ t.title | inline() }}{% if t.trademark %}<span class="tm">™</span>{% endif %}</span>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></li>
+      {%- endfor %}
+      </ul>
+      {%- endif %}
+      {%- if block.contact %}
+      <ul class="spk-close__contact">
+        <li><a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
+        <li><a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
+      </ul>
+      {%- endif %}
       <a class="btn spk-close__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+      {%- if block.next and block.next.href %}
+      <a class="textlink spk-close__next" href="{{ block.next.href | root(r) }}">{{ block.next.label | inline() }}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      {%- endif %}
     </div>
-    {% if ps | length %}</div></div>{% endif %}
+    {%- if hasImg %}
+    <div class="spk-close__media">
+      <img class="spk-close__img" src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.image.sizes or '60vw' }}" alt="{{ (block.image.alt or '') | plain }}" loading="lazy" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
+    </div>
+    {%- endif %}
   </div>

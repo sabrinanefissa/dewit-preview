@@ -35,6 +35,31 @@
       },
       "heading": "The part people don’t say out loud.",
       "line": "170 keynotes for teams, conferences, associations and health care.",
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
+      "index": {
+        "label": "On this page",
+        "items": [
+          {
+            "label": "What he talks about",
+            "href": "#talks-about"
+          },
+          {
+            "label": "Rooms he speaks to",
+            "href": "#formats"
+          },
+          {
+            "label": "For planners",
+            "href": "#planners"
+          },
+          {
+            "label": "Where Stephen has spoken",
+            "href": "#trusted"
+          }
+        ]
+      },
       "chapters": {
         "heading": "In the reel",
         "note": "Select a chapter to play the reel from there, with sound.",
@@ -67,9 +92,12 @@
             "time": 145,
             "label": "Close"
           }
-        ]
+        ],
+        "countLabel": "chapters"
       },
-      "settings": null,
+      "settings": {
+        "background": "stage-black"
+      },
       "captions": {
         "src": "assets/video/reel-en.vtt",
         "srclang": "en",
@@ -126,17 +154,19 @@
       ],
       "image": {
         "src": "assets/img/line-listen-1280.webp",
-        "sizes": "(max-width: 600px) 100vw, (max-width: 900px) 94vw, 32vw",
+        "sizes": "100vw",
         "alt": "An audience listening closely in a darkened conference room",
-        "caption": ""
+        "caption": "",
+        "position": "50% 45%"
       },
       "text": "In the room, Stephen says these things out loud, so people recognize them in their own team. Then he gives leaders a practical, research-informed way to work with them: clear the silent friction, strengthen trust, and rebuild it quickly after a breakdown.",
+      "textLabel": "What he does with them in the room",
       "link": {
         "label": "See the three keynotes",
         "href": "keynotes/"
       },
       "settings": {
-        "background": "plum"
+        "background": "plum-2"
       }
     },
     {
@@ -168,7 +198,7 @@
         {
           "value": 20,
           "suffix": "+",
-          "label": "years in practice."
+          "label": "years in the field."
         }
       ]
     },
@@ -178,10 +208,9 @@
       "enabled": true,
       "heading": "Rooms he speaks to.",
       "settings": {
-        "background": "plum"
+        "background": "plum-2"
       },
       "ariaLabel": "Rooms he speaks to",
-      "anchor": false,
       "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*.",
       "usuallyLabel": "usually:",
       "eventsLabel": "Event",
@@ -242,6 +271,7 @@
         "label": "info@drdewit.com",
         "href": "mailto:info@drdewit.com"
       },
+      "kitLabel": "Planner kit: bios, stage introduction, headshots, AV",
       "copiedLabel": "Copied",
       "bios": {
         "heading": "Bio",
@@ -252,7 +282,7 @@
           {
             "label": "Short",
             "meta": "One sentence",
-            "text": "Dr. Stephen de Wit draws on more than twenty years as a therapist and researcher to help leaders turn human tension into trust, and trust into performance."
+            "text": "Dr. Stephen de Wit draws on more than twenty years as a therapist, researcher and speaker to help leaders turn human tension into trust, and trust into performance."
           },
           {
             "label": "Medium",
@@ -324,24 +354,21 @@
         "items": [
           {
             "label": "Blue suit",
-            "image": "assets/img/headshot-blue-suit-960.webp",
-            "file": "assets/img/headshot-blue-suit.jpg",
+            "file": "assets/downloads/headshot-blue-suit.jpg",
             "format": "JPG",
             "size": "2.5 MB",
             "alt": "Dr. Stephen de Wit in a blue suit and patterned tie, smiling"
           },
           {
             "label": "Dark jacket, smiling",
-            "image": "assets/img/headshot-light-smile-960.webp",
-            "file": "assets/img/headshot-light-smile.jpg",
+            "file": "assets/downloads/headshot-light-smile.jpg",
             "format": "JPG",
             "size": "1.2 MB",
             "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt, smiling"
           },
           {
             "label": "Dark jacket",
-            "image": "assets/img/headshot-light-960.webp",
-            "file": "assets/img/headshot-light.jpg",
+            "file": "assets/downloads/headshot-light.jpg",
             "format": "JPG",
             "size": "1.2 MB",
             "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt"
@@ -370,7 +397,7 @@
       "type": "spk-logos",
       "id": "trusted",
       "enabled": true,
-      "heading": "Trusted by.",
+      "heading": "Where Stephen has spoken.",
       "logos": [
         {
           "src": "assets/logos/Reckitt-Logo-ko.png",
@@ -415,7 +442,7 @@
         }
       ],
       "settings": {
-        "background": "plum"
+        "background": "plum-2"
       }
     },
     {
@@ -423,7 +450,9 @@
       "id": "close",
       "enabled": true,
       "heading": "Bring him into your room.",
-      "settings": null,
+      "settings": {
+        "background": "stage-black"
+      },
       "cta": {
         "label": "Book Stephen",
         "href": "book/"
@@ -431,7 +460,12 @@
       "anchor": false,
       "image": {
         "src": "assets/img/line-room-1280.webp",
-        "sizes": "100vw"
+        "sizes": "(max-width: 768px) 100vw, 60vw"
+      },
+      "layout": "split",
+      "next": {
+        "label": "The three keynotes",
+        "href": "keynotes/"
       }
     }
   ],
@@ -453,11 +487,13 @@
     "sizes": "100vw"
   },
   "scripts": [
+    "js/dd.js",
     "js/vendor/lenis.min.js",
     "js/speaking.js"
   ],
   "slug": "speaking",
   "styles": [
+    "css/dd.css",
     "css/speaking.css"
   ]
 }

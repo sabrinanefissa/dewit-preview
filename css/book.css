@@ -1,8 +1,14 @@
 /* =====================================================================
-   BOOK PAGE (/book/) — loaded only on this page. No animation: the only
-   transitions are the shared button hover and the fields' colour states.
-   The form's two steps and its confirmation switch instantly.
+   BOOK PAGE (/book/) — loaded only on this page. No page animation: the
+   form's two steps switch instantly, the confirmation fades in once
+   (state feedback), and the shared drop-down opens and closes.
+   The brand colour: the whole page on deep violet, the form on a plum
+   panel, labels in violet-100. Wide screens: the stage photo on the left
+   with "Book Stephen", the five stops and the phone and email on its
+   dark side; the form panel on the right; the steps in detail under
+   both, in a drop-down.
    ===================================================================== */
+body { background: var(--violet-deep); --dd-page-acc: var(--violet-300); }
 /* field edges: .46 cream over plum is 4.0:1 against the page and 3.6:1
    against the field's own fill (WCAG 1.4.11 asks 3:1); hover .62 */
 .bk-form { --bk-line: rgba(244,236,222,.46); --bk-line-hover: rgba(244,236,222,.62); }
@@ -10,40 +16,98 @@
 .bk-em { font-style: italic; color: var(--violet-300); }
 .bk-intro ::selection, .bk-form ::selection, .bk-steps ::selection { background: rgba(124,77,224,.55); color: #fff; }
 
-/* the three sections share one grid: a narrow label column, a wide body */
+/* one column inside each section */
 .bk-intro__inner, .bk-form__inner, .bk-steps__grid { width: var(--wrap); margin-inline: auto; display: grid;
-  grid-template-columns: 4fr 8fr; column-gap: clamp(2rem, 6vw, 7rem); align-items: start; }
+  grid-template-columns: minmax(0, 1fr); align-items: start; }
 
-/* ---------------------------------------------------------------- top */
-.bk-intro { color: var(--tx-inv); padding-block: clamp(8rem, 18vh, 11rem) clamp(2.5rem, 5vw, 4rem); }
-.bk-intro__h { grid-column: 1 / -1; font-size: var(--step-5); font-weight: 320; line-height: .92;
-  letter-spacing: -0.04em; }
-.bk-intro__lead { grid-column: 2; margin-top: clamp(1.6rem, 3vw, 2.4rem); max-width: 46ch; font-size: var(--step-1);
-  line-height: 1.4; color: var(--tx-inv-soft); text-wrap: pretty; }
-.bk-intro__contact { grid-column: 2; list-style: none; margin: clamp(1.8rem, 3vw, 2.4rem) 0 0; padding: 0;
-  display: flex; flex-wrap: wrap; gap: .4rem clamp(2rem, 4vw, 3.5rem); }
+/* ---------------------------------------------------------------- top
+   The photo's right side is black above the front rows; the words sit
+   there, clear of the speaker (left half) and the audience (bottom). */
+.bk-intro { position: relative; color: var(--tx-inv); }
+.bk-intro__media { position: absolute; inset: 0; background: #050307; }
+.bk-intro__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0%; }
+.bk-intro__h { font-size: clamp(3rem, 1.6rem + 3.4vw, 5rem); font-weight: 320; line-height: .92;
+  letter-spacing: -0.04em; max-width: 7ch; }
+.bk-intro__lead { margin-top: clamp(1rem, 2.2vh, 1.4rem); max-width: 34ch; font-size: var(--step-0);
+  line-height: 1.55; color: rgba(244,236,222,.78); text-wrap: pretty; }
+/* the five stops: the step titles on one line of dots */
+.bk-stops { list-style: none; margin: clamp(1.4rem, 3vh, 2rem) 0 0; padding: 0; counter-reset: stop; position: relative; }
+.bk-stops::before { content: ""; position: absolute; left: .32rem; top: .75rem; bottom: .75rem; width: 1px;
+  background: rgba(169,133,230,.55); }
+.bk-stops__s { position: relative; counter-increment: stop; padding: .32rem 0 .32rem 1.6rem;
+  font-family: var(--f-display); font-weight: 360; font-size: var(--step-0); line-height: 1.3; letter-spacing: -0.005em; }
+.bk-stops__s::before { content: ""; position: absolute; left: 0; top: .72em; width: .66rem; height: .66rem;
+  border-radius: 50%; background: var(--violet-300); box-shadow: 0 0 0 3px #08050c; }
+.bk-intro__contact { list-style: none; margin: clamp(1.4rem, 3vh, 2rem) 0 0; padding: clamp(.8rem, 1.6vh, 1.1rem) 0 0;
+  display: flex; flex-direction: column; gap: 0; border-top: 1px solid rgba(231,220,246,.26); }
 .bk-intro__contact li { display: flex; align-items: baseline; gap: .7rem; }
-.bk-intro__k { font-size: var(--step--1); color: var(--tx-inv-soft); }
+.bk-intro__k { min-width: 3.4rem; font-size: var(--step--1); color: rgba(244,236,222,.78); }
 .bk-intro__contact a { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--f-display);
-  font-weight: 360; font-size: var(--step-1); letter-spacing: -0.01em; color: var(--tx-inv);
-  text-decoration: underline; text-decoration-color: rgba(169,133,230,.5); text-decoration-thickness: 1px;
+  font-weight: 360; font-size: var(--step-1); letter-spacing: -0.01em; color: var(--tx-inv); overflow-wrap: anywhere;
+  text-decoration: underline; text-decoration-color: rgba(169,133,230,.6); text-decoration-thickness: 1px;
   text-underline-offset: .22em; transition: text-decoration-color var(--dur-fast) ease; }
 .bk-intro__contact a:hover { text-decoration-color: var(--violet-300); }
+.bk-intro__contact a:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
+/* no photo: the words on the violet ground */
+.bk-intro:not(.bk-intro--photo) { padding-block: clamp(8rem, 18vh, 11rem) clamp(2.5rem, 5vw, 4rem); }
+
+@media (min-width: 1101px) {
+  main:has(> .bk-intro) { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    background: var(--violet-deep); align-items: stretch; }
+  main:has(> .bk-intro) > .bk-intro { grid-column: 1; grid-row: 1; min-height: max(100svh, 46rem); }
+  main:has(> .bk-intro) > .bk-form { grid-column: 2; grid-row: 1; padding: clamp(6.5rem, 13svh, 8rem) calc((100vw - var(--wrap)) / 2) 4rem clamp(2rem, 3.5vw, 3.5rem); }
+  main:has(> .bk-intro) > .bk-steps { grid-column: 1 / -1; }
+  main:has(> .bk-intro) .bk-form__inner { width: auto; }
+  .bk-intro--photo .bk-intro__inner { position: relative; z-index: 1; width: auto; margin: 0;
+    padding: clamp(6.5rem, 13svh, 8rem) 6% 3rem 53%; }
+}
+
+@media (max-width: 1100px) {
+  .bk-intro--photo { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; }
+  .bk-intro--photo .bk-intro__media { position: relative; inset: auto; grid-row: 1 / 4; grid-column: 1; aspect-ratio: 4 / 3; }
+  .bk-intro--photo .bk-intro__inner { display: contents; }
+  .bk-intro--photo .bk-intro__h, .bk-intro--photo .bk-intro__contact { grid-column: 1; position: relative; z-index: 1;
+    margin-left: 53%; margin-right: var(--gutter); }
+  .bk-intro--photo .bk-intro__h { grid-row: 1; padding-top: clamp(5rem, 14vw, 7rem); }
+  .bk-intro--photo .bk-intro__contact { grid-row: 2; }
+  .bk-intro--photo .bk-intro__lead, .bk-intro--photo .bk-stops { grid-column: 1; padding-inline: var(--gutter); }
+  .bk-intro--photo .bk-intro__lead { grid-row: 4; margin-top: clamp(1.4rem, 5vw, 2rem); max-width: 46ch; color: var(--tx-inv-soft); }
+  .bk-intro--photo .bk-stops { grid-row: 5; margin-left: 0; }
+  .bk-intro--photo .bk-stops::before { left: calc(var(--gutter) + .32rem); }
+  .bk-intro--photo .bk-stops__s::before { box-shadow: 0 0 0 3px var(--violet-deep); }
+}
+@media (max-width: 600px) {
+  .bk-intro--photo .bk-intro__media { aspect-ratio: 1 / 1; }
+  .bk-intro--photo .bk-intro__h { font-size: clamp(2.3rem, 10vw, 2.8rem); padding-top: 4.6rem; }
+  .bk-intro--photo .bk-intro__contact { margin-top: .9rem; padding-top: .5rem; }
+  .bk-intro--photo .bk-intro__contact li { flex-direction: column; gap: 0; }
+  .bk-intro--photo .bk-intro__k { display: none; }
+  .bk-intro--photo .bk-intro__contact a { min-height: 44px; font-size: .98rem; }
+  .bk-intro--photo .bk-stops { display: flex; flex-wrap: wrap; gap: .2rem 1.1rem; margin-top: 1rem; padding-left: var(--gutter); }
+  .bk-intro--photo .bk-stops::before { display: none; }
+  .bk-intro--photo .bk-stops__s { padding: .2rem 0 .2rem 1.05rem; font-size: .98rem; }
+  .bk-intro--photo .bk-stops__s::before { width: .5rem; height: .5rem; top: .62em; box-shadow: none; }
+}
 
 /* --------------------------------------------------------------- form */
 .bk-form { color: var(--tx-inv); padding-block: clamp(2.5rem, 5vw, 4rem) var(--section-y); }
+/* the panel: the whole form on plum */
+.bk-form__inner { background: var(--plum); border-radius: var(--radius);
+  padding: clamp(1.5rem, 4vw, 3.25rem); box-shadow: 0 30px 70px -40px rgba(10,4,24,.7); }
 .bk-form__h { font-size: var(--step-2); font-weight: 360; letter-spacing: -0.02em; }
-/* a small portrait of the person being booked, beside the heading */
-.bk-form__who { display: flex; align-items: center; gap: 1rem; }
-.bk-form__face { flex: 0 0 auto; width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
-  object-position: 50% 18%; background: var(--plum-2); box-shadow: 0 0 0 1px var(--line-inv); }
-.bk-form__req { margin-top: 1.2rem; max-width: 30ch; font-size: var(--step--1); line-height: 1.6;
+/* the person being booked, an 80px circle at the top of the panel */
+.bk-form__who { display: flex; align-items: center; gap: 1.1rem; }
+.bk-form__face { flex: 0 0 auto; width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+  object-position: 50% 18%; background: var(--plum-2); box-shadow: 0 0 0 1px rgba(231,220,246,.24); }
+.bk-form__side { padding-bottom: clamp(1.4rem, 2.6vw, 2rem); margin-bottom: clamp(1.6rem, 3vw, 2.4rem);
+  border-bottom: 1px solid var(--line-inv); }
+.bk-form__req { margin-top: 1.2rem; max-width: 52ch; font-size: var(--step--1); line-height: 1.6;
   color: var(--tx-inv-soft); }
-.bk-form__bureau { margin-top: 1rem; max-width: 30ch; font-size: var(--step--1); line-height: 1.6;
+.bk-form__bureau { margin-top: 1rem; max-width: 52ch; font-size: var(--step--1); line-height: 1.6;
   color: var(--tx-inv-soft); }
 .bk-form__bureau a, .bk-done__p a { color: var(--tx-inv); text-decoration: underline; text-underline-offset: .2em;
   text-decoration-color: rgba(169,133,230,.5); overflow-wrap: anywhere; }
-.bk-form__main { grid-column: 2; min-width: 0; }
+.bk-form__main { min-width: 0; }
 
 /* the two steps: each a fieldset with its heading in the legend. With
    no script both show, one after the other. */
@@ -75,7 +139,7 @@
 .bk-step__actions .btn:active, .bk-done__actions .btn:active { transform: translateY(0) scale(.98); }
 .bk-field { display: flex; flex-direction: column; gap: .5rem; min-width: 0; margin: 0; padding: 0; border: 0; }
 .bk-field--wide { grid-column: 1 / -1; }
-.bk-label { padding: 0; font-size: var(--step--1); font-weight: 600; letter-spacing: .02em; color: var(--tx-inv); }
+.bk-label { padding: 0; font-size: var(--step--1); font-weight: 600; letter-spacing: .02em; color: var(--violet-100); }
 .bk-label__req { font-weight: 400; color: var(--tx-inv-soft); }
 .bk-field--choice > .bk-hint { margin: .2rem 0 .35rem; }
 .bk-hint { margin-top: -.15rem; font-size: var(--step--1); line-height: 1.5; color: var(--tx-inv-soft); }
@@ -143,31 +207,33 @@
 .bk-done__actions { margin-top: clamp(1.8rem, 3vw, 2.4rem); display: flex; flex-wrap: wrap; gap: 1rem 1.2rem; }
 .bk-done__actions .btn { min-height: 52px; }
 
-/* ---------------------------------------------------------- what's next */
-.bk-steps { color: var(--tx-inv); padding-block: var(--section-y); }
-.bk-steps__h { font-size: var(--step-2); font-weight: 360; letter-spacing: -0.02em; }
-.bk-steps__list { list-style: none; margin: 0; padding: 0; counter-reset: bk; border-top: 1px solid var(--line-inv-strong); }
-.bk-steps__list li { counter-increment: bk; display: grid; grid-template-columns: 3rem 1fr; column-gap: 1rem;
-  padding-block: clamp(1.1rem, 2.2vw, 1.6rem); border-bottom: 1px solid var(--line-inv); }
+/* ---------------------------------------------------------- what's next
+   The ending, on the violet: the steps in detail in one drop-down, each
+   step under a hairline, its number a Fraunces italic numeral in
+   violet-100. */
+.bk-steps { color: var(--tx-inv); padding-block: clamp(2rem, 4vw, 3.5rem) var(--section-y); }
+.bk-steps__grid > * { max-width: 52rem; }
+.bk-steps__list { list-style: none; margin: 0; padding: 0; counter-reset: bk; }
+.bk-steps__list li { counter-increment: bk; display: grid; grid-template-columns: clamp(3.2rem, 6vw, 4.6rem) minmax(0, 1fr);
+  column-gap: clamp(.8rem, 2vw, 1.4rem); padding-block: clamp(1rem, 2vw, 1.5rem); border-bottom: 1px solid var(--line-inv); }
+.bk-steps__list li:last-child { border-bottom: 0; }
 .bk-steps__list li::before { content: counter(bk); grid-row: 1 / span 2; font-family: var(--f-display); font-style: italic;
-  font-size: var(--step-1); line-height: 1.15; color: var(--violet-300); font-variant-numeric: lining-nums; }
+  font-weight: 300; font-size: var(--step-3); line-height: .9; color: var(--violet-100); font-variant-numeric: lining-nums; }
 .bk-steps__t { font-family: var(--f-display); font-weight: 380; font-size: var(--step-1); line-height: 1.2;
   letter-spacing: -0.012em; }
 .bk-steps__d { margin-top: .35rem; font-size: var(--step-0); line-height: 1.55; color: var(--tx-inv-soft);
   max-width: 56ch; }
 
-@media (max-width: 900px) {
-  .bk-intro__inner, .bk-form__inner, .bk-steps__grid { grid-template-columns: 1fr; }
-  .bk-intro__lead, .bk-intro__contact, .bk-form__main { grid-column: 1; }
-  .bk-form__main { margin-top: 2rem; }
-  .bk-form__req, .bk-form__bureau { max-width: 46ch; }
-  .bk-intro__h { font-size: clamp(3rem, 15vw, 4.6rem); }
-  .bk-intro__contact { flex-direction: column; }
-  .bk-steps__h { margin-bottom: 1.4rem; }
-}
+/* the confirmation comes in once, as state feedback: a fade and an 8px rise */
+.bk-done:not([hidden]) { animation: bk-done-in 320ms var(--ease-out) both; }
+@keyframes bk-done-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .bk-done:not([hidden]) { animation: none; } }
+
+
 @media (max-width: 600px) {
   .bk-step { grid-template-columns: minmax(0, 1fr); }
-  .bk-form__face { width: 60px; height: 60px; }
+  .bk-form { padding-top: .5rem; }
+  .bk-form__inner { width: auto; margin-inline: calc(var(--gutter) * .5); padding: 1.4rem 1.15rem 1.8rem; }
   .bk-done__list > div { grid-template-columns: minmax(0, 1fr); }
 }
 @media (forced-colors: active) {

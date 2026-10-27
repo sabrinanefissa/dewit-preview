@@ -2270,9 +2270,9 @@ var UI = (function () {
    destination-out ellipse clears the dot layer around the measured sentence,
    so the type keeps clean ground with no scrim and no text-shadow.
    One instance per canvas.spk-room: inside the formats sentence's own
-   section (.spk-avail, today's markup: the dots sit behind the sentence
-   alone and there are no room labels on the array), or inside a
-   .spk-formats section (the older markup, labels from its strip). */
+   section (.spk-avail: the room names in .spk-avail__rooms sit on their
+   seats), or inside a .spk-formats section (the older markup, labels from
+   its strip). */
 (function () {
   "use strict";
   [].slice.call(document.querySelectorAll(".spk-avail canvas.spk-room, .spk-formats canvas.spk-room")).forEach(room);
@@ -2290,7 +2290,7 @@ var UI = (function () {
        the dots themselves use, read at the label's own seat. Where there are
        not enough rows to place six labels without collisions (under 768) they
        fall back to a centred list and the wave lights them in turn instead. */
-    var rooms  = formats && formats.querySelector(".spk-formats__strip");
+    var rooms  = formats ? formats.querySelector(".spk-formats__strip") : sec.querySelector(".spk-avail__rooms");
     var labels = rooms ? [].slice.call(rooms.children) : [];
     var anchors = [], flow = false;
 
@@ -2342,6 +2342,7 @@ var UI = (function () {
       flow = (mode === "static") || window.innerWidth < 768;
       rooms.classList.toggle("is-flow", flow);
       rooms.classList.toggle("is-static", mode === "static");
+      rooms.classList.toggle("is-placed", !flow);
       /* data-row is an index into the nine-row array the widest tier draws, so
          it is read as a fraction and mapped onto whatever row count this tier
          actually has */

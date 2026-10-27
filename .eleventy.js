@@ -174,9 +174,20 @@ module.exports = function (eleventyConfig) {
     return v === undefined || v === null || v === '' ? dflt : v;
   });
 
+  // A talk's accent name -> its colour token (the accents Home's talk
+  // cards use): violet (the default), coral or gold.
+  const ACCENTS = { violet: 'violet-300', coral: 'coral', gold: 'gold' };
+  eleventyConfig.addFilter('accentVar', a => ACCENTS[a] || ACCENTS.violet);
+
+  // The page's talks: its shown kn-talk blocks, in page order.
+  eleventyConfig.addFilter('talks', blocks => (blocks || []).filter(b => b && b.type === 'kn-talk' && b.enabled !== false));
+
+  // A talk's place among the page's talks, from 1.
+  eleventyConfig.addFilter('talkNo', (blocks, id) => (blocks || []).filter(b => b && b.type === 'kn-talk' && b.enabled !== false).findIndex(b => b.id === id) + 1);
+
   // A block's background tone (data-tone): block.settings.background or the
   // type's own tone today.
-  const TONES = ['plum', 'plum-2', 'ink', 'paper', 'transparent'];
+  const TONES = ['plum', 'plum-2', 'ink', 'ink-2', 'stage-black', 'indigo', 'indigo-2', 'aub', 'aub-2', 'violet-deep', 'paper', 'transparent'];
   eleventyConfig.addFilter('tone', (block, dflt) => {
     const v = (block && block.settings && block.settings.background) || dflt;
     if (!TONES.includes(v)) throw new Error(`Block "${block && block.id}": unknown background "${v}" (one of ${TONES.join(', ')})`);

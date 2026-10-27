@@ -1,0 +1,35 @@
+/* =====================================================================
+   Drop-downs on the inner pages: native <details class="dd">, closed by
+   default. A hairline above and below, the label in the display face, a
+   plus that becomes a minus. The accent comes from the page (--dd-acc)
+   or from the talk it sits in (--acc).
+   The open and close (js/dd.js) animate height and opacity only, 360ms;
+   under reduced motion they are instant. Print opens every one.
+   ===================================================================== */
+.dd { --dd-acc: var(--acc, var(--dd-page-acc, var(--violet-300)));
+  border-top: 1px solid var(--line-inv); border-bottom: 1px solid var(--line-inv); }
+.dd + .dd { border-top: 0; }
+.dd__sum { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; min-height: 56px; padding-block: .95rem; font-family: var(--f-display); font-weight: 360;
+  font-size: var(--step-1); line-height: 1.2; letter-spacing: -0.012em; color: var(--tx-inv);
+  -webkit-tap-highlight-color: transparent; }
+.dd__sum::-webkit-details-marker { display: none; }
+.dd__sum::marker { content: ""; }
+.dd__label { text-wrap: balance; transition: color var(--dur-fast) ease; }
+.dd__ic { flex: none; width: 1.25rem; height: 1.25rem; color: var(--dd-acc); }
+.dd[open]:not(.is-closing) > .dd__sum .dd__v { display: none; }
+.dd__sum:focus-visible { outline: 2px solid var(--dd-acc); outline-offset: 4px; border-radius: 2px; }
+@media (hover: hover) and (pointer: fine) { .dd__sum:hover .dd__label { color: var(--dd-acc); } }
+.dd.is-moving > .dd__body { overflow: hidden; }
+.dd__in { padding-bottom: clamp(1.2rem, 2.4vw, 1.8rem); }
+
+/* the plain text a drop-down usually holds */
+.dd__in > p, .dd__p { font-size: var(--step-0); line-height: 1.65; color: var(--tx-inv-soft); max-width: 62ch;
+  text-wrap: pretty; }
+.dd__in > p + p { margin-top: 1em; }
+
+@media print {
+  .dd::details-content { content-visibility: visible; display: block; }
+  .dd > .dd__body { height: auto !important; opacity: 1 !important; overflow: visible !important; }
+  .dd__ic { display: none; }
+}

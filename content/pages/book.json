@@ -13,9 +13,11 @@
   "jsonld": false,
   "lightbox": false,
   "styles": [
+    "css/dd.css",
     "css/book.css"
   ],
   "scripts": [
+    "js/dd.js",
     "js/book.js"
   ],
   "comments": {
@@ -29,10 +31,18 @@
       "anchor": false,
       "enabled": true,
       "heading": "Book Stephen",
+      "image": {
+        "src": "assets/img/stage-dark-1440.webp",
+        "sizes": "(max-width: 1100px) 100vw, 58vw",
+        "alt": "Dr. Stephen de Wit on a dark stage, speaking to the front rows with open hands",
+        "position": "50% 0%"
+      },
       "lead": "Tell us about your event and the people in the room. Stephen's team will come back to you about the date and the fit.",
       "phoneLabel": "Call",
       "emailLabel": "Email",
-      "settings": {}
+      "settings": {
+        "background": "violet-deep"
+      }
     },
     {
       "type": "bk-form",
@@ -310,7 +320,9 @@
         "intro": "Hello, I'd like to ask about booking Dr. Stephen de Wit.",
         "empty": "(not given)"
       },
-      "settings": {}
+      "settings": {
+        "background": "violet-deep"
+      }
     },
     {
       "type": "bk-steps",
@@ -318,6 +330,7 @@
       "anchor": false,
       "enabled": true,
       "heading": "What happens next",
+      "detailsLabel": "What happens next, in detail",
       "steps": [
         {
           "title": "Reach out.",
@@ -340,7 +353,13 @@
           "text": "The conversation keeps going: resources for your team and a follow-up if you want it."
         }
       ],
-      "settings": {}
+      "settings": {
+        "background": "violet-deep"
+      }
     }
-  ]
+  ],
+  "preload": {
+    "href": "assets/img/stage-dark-1440.webp",
+    "sizes": "(max-width: 1100px) 100vw, 58vw"
+  }
 }

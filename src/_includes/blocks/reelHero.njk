@@ -1,4 +1,5 @@
 {%- from "place.njk" import placeStyle %}
+{%- from "dd.njk" import dd %}
   {# ==============================================================
        1. HERO - full-screen reel, sound on a click only. No text over the
        frame: the reel carries its own on-screen titles, so only the three
@@ -84,32 +85,47 @@
     <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
   </section>
   {%- if band %}
-  {# Under the reel: the page's h1 in plain sight with its one line, and
-       the reel's chapters. Kept off the frame so the words never fight the
-       reel's own titles. Each chapter is a button that plays the reel from
-       that second with sound (js module 1, [data-seek]); with no script the
-       list still reads as the reel's contents. Static: nothing animates. #}
+  {# Under the reel: the page's h1 with its one line and the booking
+       button, the row of links to the page's sections, and the reel's
+       chapters in a drop-down. Each chapter is a button that plays the
+       reel from that second with sound (js module 1, [data-seek]); with no
+       script the list still reads as the reel's contents. #}
   <section class="spk-intro" aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
     <div class="spk-intro__grid">
       <div class="spk-intro__head">
         <h1 class="spk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h1>
-        {%- if block.line %}
-        <p class="spk-intro__line">{{ block.line | inline() }}</p>
-        {%- endif %}
+        <div class="spk-intro__row">
+          {%- if block.line %}
+          <p class="spk-intro__line">{{ block.line | inline() }}</p>
+          {%- endif %}
+          {%- if block.cta and block.cta.href %}
+          <a class="btn btn--lg spk-intro__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+          {%- endif %}
+        </div>
       </div>
+      {%- if block.index and block.index.items and block.index.items.length %}
+      <nav class="spk-index" aria-label="{{ (block.index.label or 'On this page') | plain }}">
+        <ul class="spk-index__list">
+        {%- for it in block.index.items %}
+          <li><a class="spk-index__a" href="{{ it.href | root(r) }}">{{ it.label | inline() }}</a></li>
+        {%- endfor %}
+        </ul>
+      </nav>
+      {%- endif %}
       {%- set ch = block.chapters %}
       {%- if ch and ch.items and ch.items.length %}
       <div class="spk-chapters">
-        <h2 class="spk-chapters__h" id="{{ block.id }}-ch">{{ ch.heading | inline() }}</h2>
+        {%- call dd(ch.heading ~ ': ' ~ ch.items.length ~ ' ' ~ (ch.countLabel or 'chapters'), block.id ~ '-chapters', 'spk-chapters__dd') %}
         {%- if ch.note %}
         <p class="spk-chapters__note">{{ ch.note | inline() }}</p>
         {%- endif %}
-        <ol class="spk-chapters__list" aria-labelledby="{{ block.id }}-ch">
+        <ol class="spk-chapters__list" aria-label="{{ ch.heading | plain }}">
         {%- for c in ch.items %}
           {%- set mm = (c.time / 60) | int %}{% set ss = c.time - mm * 60 %}
           <li><button type="button" class="spk-chapters__btn" data-seek="{{ c.time }}"><span class="spk-sr">Play from </span><time class="spk-chapters__time" datetime="PT{{ c.time }}S">{{ mm }}:{{ ss | pad2 }}</time><span class="spk-sr">: </span><span class="spk-chapters__t">{{ c.label | inline() }}</span></button></li>
         {%- endfor %}
         </ol>
+        {%- endcall %}
       </div>
       {%- endif %}
     </div>

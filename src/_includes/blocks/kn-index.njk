@@ -1,18 +1,21 @@
   {# ==============================================================
-       Keynotes index: the talks on this page as anchor links, read from
+       Keynotes index: the talks on this page as the programme, read from
        the page's own kn-talk blocks (reorder or hide a talk in the editor
-       and this row follows). A plain row: it does not stick.
+       and this list follows). One row per talk: its number in the talk's
+       accent, the title, the one-line description. A plain list: it does
+       not stick.
        ============================================================== #}
   <nav class="kn-index"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | plain }}" data-tone="{{ block | tone('plum-2') }}">
-    <ul class="kn-index__list">
-    {%- for t in page.blocks %}{% if t.type == "kn-talk" and t.enabled !== false %}
-      <li><a class="kn-index__a" href="#{{ t.id }}">
+    <ol class="kn-index__list">
+    {%- for t in page.blocks | talks %}
+      <li style="--acc: var(--{{ t.accent | accentVar }})"><a class="kn-index__a" href="#{{ t.id }}">
+        <span class="kn-index__n" aria-hidden="true">{{ loop.index | pad2 }}</span>
         <span class="kn-index__t">{{ t.title | inline() }}{% if t.trademark %}<span class="tm">™</span>{% endif %}</span>
         {%- if t.indexLine %}
         <span class="kn-index__s">{{ t.indexLine | inline() }}</span>
         {%- endif %}
         <svg class="kn-index__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 5v14M6.5 13.5l5.5 5.5 5.5-5.5"/></svg>
       </a></li>
-    {%- endif %}{% endfor %}
-    </ul>
+    {%- endfor %}
+    </ol>
   </nav>

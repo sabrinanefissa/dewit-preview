@@ -1,12 +1,16 @@
-  {# Book: what happens next. The five booking steps as a plain numbered
-       list (the sticky version belongs to Home). #}
-  <section class="bk-steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+{%- from "dd.njk" import dd %}
+  {# Book: what happens next, in detail. The step titles are in view in
+       the top's five stops; here each step with its description, as a
+       plain numbered list in a drop-down (the sticky version belongs to
+       Home). #}
+  <section class="bk-steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.heading | plain }}" data-tone="{{ block | tone('plum-2') }}">
     <div class="bk-steps__grid">
-      <h2 class="bk-steps__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h2>
+      {%- call dd(block.detailsLabel or 'What happens next, in detail', block.id ~ '-detail', 'bk-steps__dd') %}
       <ol class="bk-steps__list">
       {%- for s in block.steps %}
         <li><span class="bk-steps__t">{{ s.title | inline() }}</span> <span class="bk-steps__d">{{ s.text | inline() }}</span></li>
       {%- endfor %}
       </ol>
+      {%- endcall %}
     </div>
   </section>

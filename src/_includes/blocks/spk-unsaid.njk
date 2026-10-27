@@ -1,11 +1,13 @@
+{%- from "dd.njk" import dd %}
   {# ==============================================================
-       What he talks about: the unsaid lines as plain editorial text on
-       plum, one real audience photo beside them, one short paragraph and
-       a link to the keynotes. Under a line with a matching talk: "Answered
-       in: <talk>", a plain link to that talk on the keynotes page. No motion.
+       What he talks about: the unsaid lines as a centred credit roll,
+       one hairline row per line, each "Answered in: <talk>" link set to
+       the right of its row. Under the roll, one audience photo as a
+       full-width band with nothing on it; then the paragraph in a
+       drop-down and the link to the keynotes. No motion.
        ============================================================== #}
   <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
-    <div class="spk-unsaid__grid">
+    <div class="spk-unsaid__roll">
       <h2 class="spk-unsaid__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
       <ul class="spk-unsaid__lines">
       {%- for l in block.lines %}
@@ -16,24 +18,28 @@
         {%- endif %}</li>
       {%- endfor %}
       </ul>
-      {%- if block.image and block.image.src %}
-      <figure class="spk-unsaid__fig">
-        <div class="media spk-unsaid__media">
-          {%- set pp = block.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img src="{{ block.image.src | root(r) }}"
-               {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-               sizes="{{ block.image.sizes or '(max-width: 768px) 100vw, 38vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async">{% if pp %}</picture>{% endif %}
-        </div>
-        {%- if block.image.caption %}
-        <figcaption class="spk-unsaid__cap">{{ block.image.caption | inline() }}</figcaption>
-        {%- endif %}
-      </figure>
-      {%- endif %}
-      <div class="spk-unsaid__after">
-        <p class="spk-unsaid__p">{{ block.text | inline() }}</p>
-        {%- if block.link and block.link.href %}
-        <a class="textlink spk-unsaid__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
-          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        {%- endif %}
+    </div>
+    {%- if block.image and block.image.src %}
+    <figure class="spk-unsaid__fig">
+      <div class="media spk-unsaid__media">
+        <img src="{{ block.image.src | root(r) }}"
+             {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
       </div>
+      {%- if block.image.caption %}
+      <figcaption class="spk-unsaid__cap">{{ block.image.caption | inline() }}</figcaption>
+      {%- endif %}
+    </figure>
+    {%- endif %}
+    <div class="spk-unsaid__after">
+      {%- if block.text %}
+      {%- call dd(block.textLabel or 'What he does with them in the room', block.id ~ '-room', 'spk-unsaid__dd') %}
+      <p>{{ block.text | inline() }}</p>
+      {%- endcall %}
+      {%- endif %}
+      {%- if block.link and block.link.href %}
+      <a class="textlink spk-unsaid__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      {%- endif %}
     </div>
   </section>

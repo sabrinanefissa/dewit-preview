@@ -2,8 +2,10 @@
   {# ==============================================================
        5. FORMATS - the sentence over the seat rows (canvas.spk-room, js
        module 5: rows of seats as dots, seen from the stage), then the rooms
-       he speaks to as event types: a plain static table, one row per event
-       with a dotted leader to the talk usually booked for it ("events").
+       he speaks to as event types: their names sit on the seats and light
+       with the rows, then plain static tables in two columns,
+       one row per event with "usually:" and the talk booked for it
+       ("events").
        The older photo grid ("rooms") still renders if a page uses it.
        Nothing pins and nothing slides: the seat rows are this block's one
        moment.
@@ -15,16 +17,35 @@
     {%- endif %}
     {%- set ps = placeStyle(block.placement) | trim %}
     {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}<p class="spk-avail__line">{{ block.sentence | inline() }}</p>{% if ps | length %}</div></div>{% endif %}
+    {%- if block.seats !== false and block.events and block.events.length %}
+    {#- the rooms, each pinned to one seat of the array (row 0 is the front
+         row, seat 0 to 1 across it; side l sets the label to the left of its
+         seat). They light as the wave or the pointer passes their seat.
+         The table below names the same rooms for every reader. #}
+    {%- set seatsAt = [
+      { row: 8, seat: 0.18, side: 'r' }, { row: 8, seat: 0.82, side: 'l' },
+      { row: 6, seat: 0.05, side: 'r' }, { row: 6, seat: 0.95, side: 'l' },
+      { row: 1, seat: 0.22, side: 'r' }, { row: 1, seat: 0.78, side: 'l' }
+    ] %}
+    <ul class="spk-avail__rooms" aria-hidden="true">
+    {%- for e in block.events %}{% set at = seatsAt[loop.index0 % seatsAt.length] %}
+      <li data-row="{{ at.row }}" data-seat="{{ at.seat }}" data-side="{{ at.side }}">{{ e.label | inline() }}</li>
+    {%- endfor %}
+    </ul>
+    {%- endif %}
   </section>
   {%- endif %}
   {%- if block.events and block.events.length %}
   <section class="spk-formats spk-events"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
     <div class="spk-events__wrap">
       <h2 class="spk-events__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+      {%- set half = ((block.events.length + 1) / 2) | round(0, "floor") %}
+      <div class="spk-events__cols">
+      {%- for part in [block.events.slice(0, half), block.events.slice(half)] %}{% if part.length %}
       <table class="spk-events__table">
         <thead class="spk-sr"><tr><th scope="col">{{ (block.eventsLabel or 'Event') | inline() }}</th><th scope="col">{{ (block.talkLabel or 'Talk') | inline() }}</th></tr></thead>
         <tbody>
-        {%- for e in block.events %}
+        {%- for e in part %}
           <tr>
             <th scope="row"><span class="spk-events__name">{{ e.label | inline() }}</span></th>
             <td><span class="spk-events__usually">{{ (block.usuallyLabel or 'usually:') | inline() }}</span> {% if e.talk.href %}<a class="spk-events__talk" href="{{ e.talk.href | root(r) }}">{{ e.talk.label | inline() }}</a>{% else %}<span class="spk-events__talk">{{ e.talk.label | inline() }}</span>{% endif %}</td>
@@ -32,6 +53,8 @@
         {%- endfor %}
         </tbody>
       </table>
+      {%- endif %}{% endfor %}
+      </div>
     </div>
   </section>
   {%- else %}

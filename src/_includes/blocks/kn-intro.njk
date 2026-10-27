@@ -1,5 +1,6 @@
   {# ==============================================================
-       Keynotes intro: the heading, two sentences, and the org chart
+       Keynotes intro: the heading, two sentences, the numbered index of
+       the page's talks (read from its kn-talk blocks), and the org chart
        (js/keynotes.js). The SVG below is written in its END state: the
        people as dots with lines between them, four of the lines named,
        the boxes and reporting lines already gone. With no script and
@@ -8,8 +9,9 @@
        through this section dissolves it into the end state once (it
        never runs backwards); each named line's phrase fades in with
        that line's own draw.
-       Phones (under 768px): the phrases are hidden; the box titles play
-       as above, and one caption sentence sits under the chart.
+       Phones (under 768px): one phrase stays (chart.phonePhrase, from 1),
+       set larger; the others are hidden. The box titles play as above,
+       and one caption sentence sits under the chart.
        Geometry: viewBox 640 x 440. Each person has a chart position
        (c) and a connected position (n). Each phrase slot names one link
        (its index in `links`), the side of the line it sits on (y: the
@@ -44,6 +46,23 @@
         {%- for para in block.lead %}
         <p class="kn-intro__lead">{{ para | inline() }}</p>
         {%- endfor %}
+        {%- if block.index %}
+        {%- set talkList = page.blocks | talks %}
+        <nav class="kn-index" aria-label="{{ (block.index.ariaLabel or 'The keynotes') | plain }}">
+          <ol class="kn-index__list">
+          {%- for t in talkList %}
+            <li style="--acc: var(--{{ t.accent | accentVar }})"><a class="kn-index__a" href="#{{ t.id }}">
+              <span class="kn-index__n" aria-hidden="true">{{ loop.index | pad2 }}</span>
+              <span class="kn-index__t">{{ t.title | inline() }}{% if t.trademark %}<span class="tm">™</span>{% endif %}</span>
+              {%- if t.indexLine %}
+              <span class="kn-index__s">{{ t.indexLine | inline() }}</span>
+              {%- endif %}
+              <svg class="kn-index__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 5v14M6.5 13.5l5.5 5.5 5.5-5.5"/></svg>
+            </a></li>
+          {%- endfor %}
+          </ol>
+        </nav>
+        {%- endif %}
       </div>
       <figure class="kn-chart" data-kn-chart>
         <svg class="kn-chart__svg" viewBox="0 0 640 440" role="img" aria-label="{{ chartLabel | plain }}" focusable="false">
@@ -60,7 +79,7 @@
           {%- if phrases.length %}
           <g class="kn-chart__phrases" aria-hidden="true">
           {%- for s in slots %}{% if phrases[loop.index0] %}{% set lk = links[s.link] %}{% set a = people[lk[0]] %}{% set b = people[lk[1]] %}
-            <text class="kn-chart__phrase" data-link="{{ s.link }}" transform="translate({{ (a.n[0] + b.n[0]) / 2 }} {{ (a.n[1] + b.n[1]) / 2 }}) rotate({{ s.deg }})" x="{{ s.x }}" y="{{ s.y }}" text-anchor="middle">{{ phrases[loop.index0] | plain }}</text>
+            <text class="kn-chart__phrase{% if loop.index == (block.chart.phonePhrase or 1) %} kn-chart__phrase--phone{% endif %}" data-link="{{ s.link }}" transform="translate({{ (a.n[0] + b.n[0]) / 2 }} {{ (a.n[1] + b.n[1]) / 2 }}) rotate({{ s.deg }})" x="{{ s.x }}" y="{{ s.y }}" text-anchor="middle">{{ phrases[loop.index0] | plain }}</text>
           {%- endif %}{% endfor %}
           </g>
           {%- endif %}

@@ -1,9 +1,28 @@
-  {# Book: the top. A short heading, then phone and email as plain links
-       (values from site.json contact). No animation on this page. #}
-  <section class="bk-intro"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+  {# Book: the top. The stage photo, and on its own dark side "Book
+       Stephen", the lead, the five stops of what happens next (the titles
+       from the page's bk-steps block) and the phone and email (values
+       from site.json contact). Phones: the heading and contact on the
+       photo, the lead and the stops under it on the ground. Static. #}
+  {%- set stepsBlock = null %}
+  {%- for b in page.blocks %}{% if b.type == 'bk-steps' and b.enabled !== false %}{% set stepsBlock = b %}{% endif %}{% endfor %}
+  <section class="bk-intro{% if block.image and block.image.src %} bk-intro--photo{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    {%- if block.image and block.image.src %}
+    <div class="media bk-intro__media">
+      <img src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ (block.image.alt or '') | plain }}" fetchpriority="high" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
+    </div>
+    {%- endif %}
     <div class="bk-intro__inner">
       <h1 class="bk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h1>
       {%- if block.lead %}<p class="bk-intro__lead">{{ block.lead | inline() }}</p>{% endif %}
+      {%- if stepsBlock and stepsBlock.steps and stepsBlock.steps.length %}
+      <ol class="bk-stops" aria-label="{{ (stepsBlock.heading or 'What happens next') | plain }}">
+      {%- for st in stepsBlock.steps %}
+        <li class="bk-stops__s">{{ st.title | inline() }}</li>
+      {%- endfor %}
+      </ol>
+      {%- endif %}
       <ul class="bk-intro__contact">
         <li><span class="bk-intro__k">{{ block.phoneLabel | inline() }}</span> <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
         <li><span class="bk-intro__k">{{ block.emailLabel | inline() }}</span> <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>

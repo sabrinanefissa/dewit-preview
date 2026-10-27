@@ -1,4 +1,5 @@
-  {# Healthcare: who it is for. Four plain items, no icons. #}
+  {# Healthcare: who it is for. The heading, then four plain items in a
+       row, each a tall column under a teal hairline. No icons. #}
   <section class="hc-who"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
     <div class="hc-who__grid">
       <h2 class="hc-who__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>

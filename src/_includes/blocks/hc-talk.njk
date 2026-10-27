@@ -1,35 +1,22 @@
+{%- from "dd.njk" import dd %}
   {# Healthcare: what a session for health care teams covers. It names
        no talk (a heading for the subject, not a talk title, until Stephen
-       confirms one). Left, the session itself; right, the lifting stack:
-       what caregivers carry in, then what they walk out with. With
-       js/healthcare.js (and motion allowed) the carried lines lift away one
-       by one as the section scrolls through, and the outcomes come up in
-       the space they leave. One carried line (kept) never lifts: it stays
+       confirms one). The heading across the top; under it, the lifting
+       stack on the left and, on the right, the formats, the booking button
+       and the full session text in a drop-down.
+       With js/healthcare.js (and motion allowed) the carried lines lift
+       away one by one as the section scrolls through, the lines still to
+       go closing up under their label, and the outcomes come up in the
+       space they leave. One carried line (kept) never lifts: it stays
        under the stack with its note, because it is for leaders to lift.
        No script or reduced motion: everything stands as plain text, the
        kept line and its note included. #}
   <section class="hc-talk"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
     <div class="hc-talk__grid">
-      <div class="hc-talk__main">
+      <header class="hc-talk__head">
         <h2 class="hc-talk__h" id="{{ block.id }}-h">{{ block.title | inline('hc-em') }}</h2>
         {%- if block.subtitle %}<p class="hc-talk__sub">{{ block.subtitle | inline() }}</p>{% endif %}
-        <div class="hc-talk__body">
-        {%- for p in block.overview %}
-          <p>{{ p | inline() }}</p>
-        {%- endfor %}
-        </div>
-        {%- if block.formats and block.formats.length %}
-        <p class="hc-talk__formats"><span class="hc-talk__fl">{{ block.formatsLabel | inline() }}</span>
-          {%- for f in block.formats %} <span class="hc-talk__f">{{ f | inline() }}</span>{% if not loop.last %}<span class="hc-talk__sep" aria-hidden="true">/</span>{% endif %}{% endfor %}</p>
-        {%- endif %}
-        <div class="hc-talk__actions">
-          <a class="btn" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
-          {%- if block.link and block.link.label %}
-          <a class="textlink textlink--inv" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          {%- endif %}
-        </div>
-      </div>
+      </header>
       <div class="hc-lift" data-hc-lift data-span="{{ block | motion('span', 0.45) }}" data-lift="{{ block | motion('lift', 640) }}" data-settle="{{ block | motion('settle', 520) }}">
         <div class="hc-lift__carry">
           <h3 class="hc-lift__label">{{ block.carryLabel | inline() }}</h3>
@@ -55,6 +42,29 @@
           {%- endfor %}
           </ul>
         </div>
+      </div>
+      <div class="hc-talk__main">
+        {%- if block.formats and block.formats.length %}
+        <p class="hc-talk__formats"><span class="hc-talk__fl">{{ block.formatsLabel | inline() }}</span>
+          {%- for f in block.formats %} <span class="hc-talk__f">{{ f | inline() }}</span>{% if not loop.last %}<span class="hc-talk__sep" aria-hidden="true">/</span>{% endif %}{% endfor %}</p>
+        {%- endif %}
+        <div class="hc-talk__actions">
+          <a class="btn" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+          {%- if block.link and block.link.label %}
+          <a class="textlink textlink--inv" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          {%- endif %}
+        </div>
+        {%- if block.overview and block.overview.length %}
+        {%- call dd(block.overviewLabel or 'What the session covers', block.id ~ '-covers', 'hc-talk__dd') %}
+        {%- for p in block.overview %}
+        <p>{{ p | inline() }}</p>
+        {%- endfor %}
+        {%- if block.footnote %}
+        <p class="hc-talk__foot">{{ block.footnote | inline() }}</p>
+        {%- endif %}
+        {%- endcall %}
+        {%- endif %}
       </div>
     </div>
   </section>

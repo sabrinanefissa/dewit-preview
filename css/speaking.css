@@ -5,37 +5,59 @@
    (.spk-planners), the still logo wall (.spk-logos); the rooms as a
    still grid (.spk-rooms); the seat rows behind the formats sentence
    (canvas.spk-room, js module 5).
-   The page's two moments are the reel hero and the seat rows. Nothing
-   here moves except hover, focus and press feedback. The image wipe-in
+   The page's two moments are the reel hero and the seat rows (with the
+   room names lit on their seats). Beyond them only the shared drop-down
+   opens and closes; nothing else moves except hover, focus and press
+   feedback. The image wipe-in
    (data-reveal-clip) belongs to the homepage only: every photo here is
    simply there.
+   The room: stage black for the reel and the close, plum-2 between,
+   violet-300 for the marks.
    ===================================================================== */
 
+body { background: var(--stage-black); --dd-page-acc: var(--violet-300); }
+.spk-hero, .spk-hero .media { background: var(--stage-black); }
 .spk-em { font-style: italic; color: var(--violet-300); }
+.spk-unsaid ::selection, .spk-planners ::selection, .spk-events ::selection, .spk-logos ::selection,
+.spk-intro ::selection, .spk-close ::selection { background: rgba(124,77,224,.55); color: #fff; }
 
 .spk-unsaid, .spk-rooms, .spk-planners, .spk-logos, .spk-intro, .spk-events {
   position: relative; z-index: 1; color: var(--tx-inv); }
 
 /* ---------------------------------------------------------------------
-   Under the reel: the h1 and its line on the left, the reel's chapters on
-   the right (phones: stacked). Static. The chapters are real buttons: a
-   row each, the time in tabular figures, the press answered by a tint.
+   Under the reel. The reel gives up the bottom of the first screen
+   (--spk-band) so the h1, its line and the booking button are in view
+   on arrival. Then one row of links to the page's sections, and the
+   reel's chapters in a drop-down. Static: nothing animates.
    --------------------------------------------------------------------- */
-.spk-intro { padding-block: clamp(4rem, 3rem + 5vw, 8rem) clamp(3.5rem, 2.5rem + 4vw, 6.5rem); }
+.spk-hero { --spk-band: clamp(13rem, 24svh, 15.5rem); min-height: max(calc(100svh - var(--spk-band)), 26rem); }
+.spk-intro { padding-block: clamp(1.8rem, 3.6svh, 2.6rem) clamp(3.5rem, 2.5rem + 4vw, 6rem); }
 .spk-intro__grid { width: var(--wrap); margin-inline: auto; display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
-  row-gap: clamp(2.5rem, 5vw, 3.5rem); align-items: end; }
-.spk-intro__head { grid-column: 1 / span 7; }
-.spk-intro__h { font-size: clamp(2.6rem, 1.5rem + 4.6vw, 6rem); font-weight: 330; line-height: 1;
-  letter-spacing: -0.035em; text-wrap: balance; max-width: 13ch; }
-.spk-intro__line { margin-top: clamp(1.1rem, 2vw, 1.6rem); font-size: var(--step-1); line-height: 1.4;
-  color: var(--tx-inv-soft); max-width: 38ch; text-wrap: pretty; }
-.spk-chapters { grid-column: 9 / span 4; }
-.spk-chapters__h { font-family: var(--f-display); font-weight: 380; font-size: var(--step-1);
-  letter-spacing: -0.015em; line-height: 1.15; }
-.spk-chapters__note { margin-top: .5rem; font-size: var(--step--1); color: var(--tx-inv-soft); }
+  row-gap: clamp(2rem, 4vw, 3rem); align-items: start; }
+.spk-intro__head { grid-column: 1 / -1; }
+.spk-intro__h { font-size: clamp(2.4rem, 1.2rem + 3.4vw, 4.4rem); font-weight: 330; line-height: 1;
+  letter-spacing: -0.035em; text-wrap: balance; }
+.spk-intro__row { margin-top: clamp(.9rem, 1.8vw, 1.3rem); display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: 1rem 2.5rem; }
+.spk-intro__line { font-size: var(--step-1); line-height: 1.4; color: var(--tx-inv-soft); max-width: 48ch; text-wrap: pretty; }
+.spk-intro__cta { flex: none; }
+
+/* the row of links to the page's sections */
+.spk-index { grid-column: 1 / span 7; }
+.spk-index__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .2rem 1.8rem; }
+.spk-index__a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--step--1); font-weight: 500;
+  letter-spacing: .01em; color: var(--tx-inv); text-decoration: underline; text-decoration-color: rgba(169,133,230,.55);
+  text-decoration-thickness: 1px; text-underline-offset: .3em; transition: color var(--dur-fast) ease; }
+.spk-index__a:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .spk-index__a:hover { color: var(--violet-300); } }
+
+/* the chapters, in a drop-down: a row each, the time in tabular figures,
+   the press answered by a tint */
+.spk-chapters { grid-column: 8 / span 5; }
+.spk-chapters__note { font-size: var(--step--1); color: var(--tx-inv-soft); }
 html.no-js .spk-chapters__note { display: none; }
-.spk-chapters__list { list-style: none; padding: 0; margin: 1.1rem 0 0; border-top: 1px solid var(--line-inv); }
+.spk-chapters__list { list-style: none; padding: 0; margin: .9rem 0 0; border-top: 1px solid var(--line-inv); }
 .spk-chapters__list li { border-bottom: 1px solid var(--line-inv); }
 .spk-chapters__btn { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); align-items: baseline;
   width: 100%; min-height: 48px; padding: .8rem .5rem; text-align: left; color: var(--tx-inv);
@@ -51,67 +73,73 @@ html.no-js .spk-chapters__note { display: none; }
   .spk-chapters__btn:hover .spk-chapters__t { color: var(--violet-300); }
 }
 @media (max-width: 960px) {
-  .spk-intro__head, .spk-chapters { grid-column: 1 / -1; }
-  .spk-chapters { max-width: 34rem; }
+  .spk-index, .spk-chapters { grid-column: 1 / -1; }
+}
+@media (max-width: 768px) {
+  /* the reel moves under the nav, so no line of text may rest on it: the
+     large name that slides into the header elsewhere stays out here, and
+     the brand keeps its place in the nav */
+  html.js .hero__name.is-armed { display: none; }
+  .nav.is-name-morph .brand { opacity: 1; }
+  .spk-hero { --spk-band: 0px; min-height: 64svh; }
+  .spk-intro__h { font-size: clamp(2.3rem, 10.5vw, 3rem); }
+  .spk-intro__line { font-size: 1.15rem; }
+  .spk-intro__row { gap: 1.2rem; }
 }
 
 /* ---------------------------------------------------------------------
-   What he talks about. Desktop: the heading and the six lines on the
-   left (seven of twelve columns), the photo on the right, set down so
-   its top meets the second line; the paragraph and the link under the
-   lines. Phones: heading, lines, the photo full width, paragraph.
+   What he talks about: a credit roll. The heading and the six lines in
+   one centred column, a hairline under each row, the "Answered in" link
+   set to the right of its row. Under the roll the audience photo runs
+   the full width as a 21:9 band with nothing on it; the paragraph and
+   the link follow, centred. Phones: each answer drops under its line,
+   and the band is 16:9.
    --------------------------------------------------------------------- */
-.spk-unsaid { padding-block: clamp(5rem, 4rem + 6vw, 10rem); }
-.spk-unsaid__grid { width: var(--wrap); margin-inline: auto; display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
-  grid-template-areas:
-    "h h h h h h h . . . . ."
-    "l l l l l l l . f f f f"
-    "a a a a a a . . f f f f"; }
-.spk-unsaid__h { grid-area: h; font-size: var(--step-3); font-weight: 340; line-height: 1.02;
-  letter-spacing: -0.03em; text-wrap: balance; margin-bottom: clamp(2rem, 4vw, 3.5rem); }
-.spk-unsaid__lines { grid-area: l; list-style: none; padding: 0; margin: 0;
-  border-top: 1px solid var(--line-inv); }
-.spk-unsaid__lines li { font-family: var(--f-display); font-weight: 340;
-  font-size: var(--step-2); line-height: 1.16; letter-spacing: -0.02em; color: var(--tx-inv);
-  padding-block: clamp(1rem, 1.6vw, 1.5rem); border-bottom: 1px solid var(--line-inv);
-  text-wrap: balance; max-width: 30ch; }
+.spk-unsaid { padding-block: clamp(5rem, 4rem + 6vw, 10rem) clamp(2.5rem, 4vw, 4rem); }
+.spk-unsaid__roll { width: min(var(--wrap), 64rem); margin-inline: auto; }
+.spk-unsaid__h { text-align: center; font-size: var(--step-3); font-weight: 340; line-height: 1.02;
+  letter-spacing: -0.03em; text-wrap: balance; margin-bottom: clamp(2.4rem, 5vw, 4rem); }
+.spk-unsaid__lines { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line-inv); }
+.spk-unsaid__lines li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline;
+  column-gap: clamp(1.5rem, 4vw, 3.5rem); padding-block: clamp(1.1rem, 1.8vw, 1.6rem);
+  border-bottom: 1px solid var(--line-inv); }
+.spk-unsaid__t { font-family: var(--f-display); font-weight: 340; font-size: var(--step-1);
+  line-height: 1.3; letter-spacing: -0.015em; color: var(--tx-inv); text-wrap: pretty; max-width: 40ch; }
 /* the last line is the turn: it carries the business name for the cost */
-.spk-unsaid__lines li:last-child { color: var(--tx-inv-soft); }
+.spk-unsaid__lines li:last-child .spk-unsaid__t { color: var(--tx-inv-soft); font-style: italic; }
 .spk-unsaid__lines li:last-child .spk-em { color: var(--violet-300); }
-.spk-unsaid__t { display: block; }
 /* "Answered in: <talk>": the line's way into the keynote that answers it */
-.spk-unsaid__ans { display: block; margin-top: .6rem; font-family: var(--f-text); font-size: var(--step--1);
-  font-weight: 400; line-height: 1.4; letter-spacing: .01em; color: var(--tx-inv-soft); }
+.spk-unsaid__ans { justify-self: end; text-align: right; white-space: nowrap; font-size: var(--step--1);
+  line-height: 1.4; letter-spacing: .01em; color: var(--tx-inv-soft); }
 .spk-unsaid__talk { color: var(--tx-inv); font-weight: 500; border-bottom: 1px solid var(--violet-300);
   padding-bottom: 1px; transition: color var(--dur-fast) ease; }
 .spk-unsaid__talk:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { .spk-unsaid__talk:hover { color: var(--violet-300); } }
-.spk-unsaid__fig { grid-area: f; margin: 0; align-self: start;
-  margin-top: clamp(3rem, 7vw, 7rem); }
-.spk-unsaid__media { aspect-ratio: 4 / 3; border-radius: var(--radius); }
-.spk-unsaid__media img { object-position: 30% 50%; }
-.spk-unsaid__cap { margin-top: .8rem; font-size: var(--step--1); color: var(--tx-inv-soft); }
-.spk-unsaid__after { grid-area: a; margin-top: clamp(2rem, 3.5vw, 3rem); }
-.spk-unsaid__p { font-size: var(--step-1); line-height: 1.45; color: var(--tx-inv-soft);
-  max-width: 44ch; }
+.spk-unsaid__fig { margin: clamp(4rem, 7vw, 6.5rem) 0 0; }
+.spk-unsaid__media { aspect-ratio: 21 / 9; border-radius: 0; }
+.spk-unsaid__cap { width: var(--wrap); margin: .8rem auto 0; font-size: var(--step--1); color: var(--tx-inv-soft); }
+.spk-unsaid__after { width: min(var(--wrap), 64rem); margin: clamp(2.6rem, 4.5vw, 4rem) auto 0; }
+.spk-unsaid__dd .dd__in > p { font-size: var(--step-1); line-height: 1.5; max-width: 52ch; }
 .spk-unsaid__link { margin-top: 1.6rem; color: var(--tx-inv); }
-@media (max-width: 900px) {
-  .spk-unsaid__grid { grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "h" "l" "f" "a"; }
-  .spk-unsaid__lines li { font-size: clamp(1.45rem, 1.1rem + 1.6vw, 2.1rem); max-width: none; }
-  .spk-unsaid__fig { margin-top: clamp(2rem, 6vw, 3rem); }
-  .spk-unsaid__media { aspect-ratio: 4 / 3; }
-}
-@media (max-width: 600px) {
-  .spk-unsaid__fig { margin-inline: calc(-1 * (100vw - var(--wrap)) / 2); }
-  .spk-unsaid__media { border-radius: 0; aspect-ratio: 5 / 4; }
+@media (max-width: 700px) {
+  .spk-unsaid__lines li { grid-template-columns: minmax(0, 1fr); row-gap: .55rem; }
+  .spk-unsaid__ans { justify-self: start; text-align: left; white-space: normal; }
+  .spk-unsaid__t { font-size: 1.3rem; }
+  .spk-unsaid__media { aspect-ratio: 16 / 9; }
 }
 
 /* ---------------------------------------------------------------------
-   The proof line on this page: static numbers (stats block, countUp off)
+   The proof line on this page: static numbers (stats block, countUp off),
+   one Fraunces italic line, left-aligned under a violet-300 hairline.
    --------------------------------------------------------------------- */
-.spk-proof .stats__line { padding-block: clamp(3.5rem, 7vw, 6.5rem); }
+.spk-proof { padding-block: clamp(2rem, 3.5vw, 3.5rem) clamp(3.5rem, 7vw, 6.5rem); }
+.spk-proof .stats__line { width: var(--wrap); max-width: none; margin: 0 auto;
+  padding: clamp(1.4rem, 2.4vw, 2rem) 0 0;
+  border-top: 1px solid var(--violet-300); text-align: left; font-style: italic;
+  font-size: clamp(1.6rem, 0.5rem + 2.4vw, 2.9rem); line-height: 1.2; letter-spacing: -0.02em;
+  color: var(--tx-inv-soft); text-wrap: balance; }
+.spk-proof .stats__n { color: var(--tx-inv); }
+.spk-proof { border-top: 0; }
 
 /* ---------------------------------------------------------------------
    The formats sentence over the seat rows. The canvas fills the section
@@ -124,6 +152,20 @@ html.no-js .spk-chapters__note { display: none; }
 .spk-avail__line, .spk-avail > .place { position: relative; z-index: 1; }
 html.no-js .spk-avail .spk-room { display: none; }
 @media (max-width: 768px) { .spk-avail { min-height: 64svh; } }
+/* the room names on their seats. Placed (wide screens, script running):
+   each sits on its own seat, set to the side its data-side names, and
+   lights while the wave or the pointer passes that seat. Otherwise
+   (phones, no script, reduced motion) they are one centred row under the
+   sentence, and on phones the wave lights them in turn. */
+.spk-avail__rooms { position: relative; z-index: 1; list-style: none; margin: clamp(1.6rem, 4vw, 2.4rem) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.4rem; max-width: 40rem; }
+.spk-avail__rooms li { font-size: var(--step--1); font-weight: 500; letter-spacing: .01em; line-height: 1.3;
+  color: var(--tx-inv-soft); white-space: nowrap; transition: color 420ms var(--ease-out); }
+.spk-avail__rooms li.is-lit { color: var(--violet-100); }
+.spk-avail__rooms.is-placed { position: absolute; inset: 0; margin: 0; max-width: none; display: block; pointer-events: none; }
+.spk-avail__rooms.is-placed li { position: absolute; transform: translate(10px, -50%); }
+.spk-avail__rooms.is-placed li[data-side="l"] { transform: translate(calc(-100% - 10px), -50%); }
+@media (prefers-reduced-motion: reduce) { .spk-avail__rooms li { transition: none; } }
 
 /* ---------------------------------------------------------------------
    Rooms he speaks to: a still grid. Desktop: twelve columns, three rows
@@ -159,49 +201,52 @@ html.no-js .spk-avail .spk-room { display: none; }
 }
 
 /* ---------------------------------------------------------------------
-   Rooms he speaks to, as event types: a plain static table. Each row is
-   the event, a dotted leader, then "usually:" and the talk. Desktop: the
-   heading on the left, the table across the right seven columns. Phones:
-   stacked, the leader shortened, the talk wrapping in its own cell.
+   Rooms he speaks to, as event types: the heading centred above, then
+   the events in two columns of three. Each row is the event, a dotted
+   leader, then "usually:" in violet and the talk. Phones: one column,
+   the talk wrapping in its own cell.
    --------------------------------------------------------------------- */
 .spk-events { padding-block: clamp(1rem, 3vw, 3rem) clamp(5rem, 4rem + 6vw, 10rem); }
-.spk-events__wrap { width: var(--wrap); margin-inline: auto; display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem); align-items: start; }
-.spk-events__h { grid-column: 1 / span 4; font-size: var(--step-3); font-weight: 340; letter-spacing: -0.03em;
-  line-height: 1.02; text-wrap: balance; }
-.spk-events__table { grid-column: 6 / span 7; width: 100%; border-collapse: collapse;
-  border-top: 1px solid var(--line-inv); }
+.spk-events__wrap { width: var(--wrap); margin-inline: auto; }
+.spk-events__h { text-align: center; font-size: var(--step-3); font-weight: 340; letter-spacing: -0.03em;
+  line-height: 1.02; text-wrap: balance; margin-bottom: clamp(2.4rem, 5vw, 4rem); }
+.spk-events__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.spk-events__table { width: 100%; border-collapse: collapse; border-top: 1px solid var(--line-inv); }
 .spk-events__table tr { border-bottom: 1px solid var(--line-inv); }
 .spk-events__table th, .spk-events__table td { padding-block: clamp(1rem, 1.6vw, 1.35rem); vertical-align: baseline; }
 .spk-events__table th { text-align: left; font-weight: inherit; padding-right: .9rem; }
 .spk-events__name { display: flex; align-items: baseline; font-family: var(--f-display); font-weight: 360;
-  font-size: var(--step-1); line-height: 1.2; letter-spacing: -0.015em; color: var(--tx-inv); }
+  font-size: clamp(1.15rem, 0.8rem + 0.75vw, 1.6rem); line-height: 1.2; letter-spacing: -0.015em; color: var(--tx-inv); }
 .spk-events__name::after { content: ""; flex: 1 1 auto; min-width: 1.5rem; margin-left: .9rem;
   border-bottom: 1px dotted var(--line-inv-strong); transform: translateY(-.25em); }
 .spk-events__table td { width: 1%; white-space: nowrap; text-align: right; }
-.spk-events__usually { font-size: var(--step--1); color: var(--tx-inv-soft); margin-right: .35em; }
+.spk-events__usually { font-size: var(--step--1); color: var(--violet-300); margin-right: .35em; }
 .spk-events__talk { font-weight: 500; color: var(--tx-inv); }
 a.spk-events__talk { border-bottom: 1px solid var(--violet-300); padding-bottom: 1px; transition: color var(--dur-fast) ease; }
 a.spk-events__talk:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
 @media (hover: hover) and (pointer: fine) { a.spk-events__talk:hover { color: var(--violet-300); } }
+@media (min-width: 1101px) {
+  .spk-events__table th { white-space: nowrap; }
+  .spk-events__table td { white-space: normal; width: auto; }
+}
+@media (max-width: 1100px) {
+  .spk-events__table td { white-space: normal; width: 46%; font-size: .95rem; }
+}
 @media (max-width: 900px) {
-  .spk-events__h, .spk-events__table { grid-column: 1 / -1; }
-  .spk-events__h { margin-bottom: clamp(1.6rem, 4vw, 2.4rem); font-size: var(--step-2); }
+  .spk-events__cols { grid-template-columns: minmax(0, 1fr); }
+  .spk-events__table + .spk-events__table { border-top: 0; }
+  .spk-events__h { font-size: var(--step-2); }
 }
 @media (max-width: 600px) {
-  .spk-events__name { font-size: 1.15rem; }
   .spk-events__name::after { min-width: .75rem; margin-left: .6rem; }
-  .spk-events__table td { white-space: normal; width: 44%; font-size: .95rem; }
 }
 
 /* ---------------------------------------------------------------------
-   For planners. Desktop: the heading and lead across the top; then the
-   bio and the stage introduction (the two texts planners copy) on the
-   left, seven columns; the downloads, the AV needs and the headshots on
-   the right, five. Phones: one column, in the order a planner needs it:
-   bio, introduction, downloads, headshots, AV.
+   For planners. The heading and lead across the top, the six downloads
+   in view, then the planner kit in one drop-down. Phones: one column.
    --------------------------------------------------------------------- */
-.spk-planners { padding-block: clamp(5rem, 4rem + 6vw, 10rem); border-top: 1px solid var(--line-inv); }
+.spk-planners { padding-block: clamp(5rem, 4rem + 6vw, 10rem) clamp(3rem, 5vw, 5rem); border-top: 1px solid var(--line-inv); }
 .spk-planners__head { width: var(--wrap); margin: 0 auto clamp(2.6rem, 5vw, 4.5rem);
   display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
   align-items: end; }
@@ -213,19 +258,22 @@ a.spk-events__talk:focus-visible { outline: 2px solid var(--violet-300); outline
   padding-bottom: 1px; transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease; }
 .spk-planners__mail:hover { color: var(--violet-300); }
 
-.spk-planners__grid { width: var(--wrap); margin-inline: auto; display: grid;
+.spk-planners__body { width: var(--wrap); margin-inline: auto; display: grid; row-gap: clamp(2.4rem, 4vw, 3.4rem); }
+.spk-pl { scroll-margin-top: 7rem; min-width: 0; }
+/* the six downloads in view, in two columns */
+.spk-pl--dl .spk-dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(1.5rem, 4vw, 4rem); }
+/* the planner kit, in one drop-down: the two texts planners copy on the
+   left, the headshots and the AV needs on the right */
+.spk-kit .spk-planners__grid { padding-top: clamp(1rem, 2vw, 1.6rem); display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
-  row-gap: clamp(2.8rem, 5vw, 4.5rem);
+  row-gap: clamp(2.4rem, 4.5vw, 3.6rem);
   grid-template-areas:
-    "bio bio bio bio bio bio bio . dl dl dl dl"
-    "intro intro intro intro intro intro intro . shots shots shots shots"
-    "intro intro intro intro intro intro intro . av av av av"; }
+    "bio bio bio bio bio bio bio shots shots shots shots shots"
+    "intro intro intro intro intro intro intro av av av av av"; }
 .spk-pl--bio { grid-area: bio; }
 .spk-pl--intro { grid-area: intro; }
-.spk-pl--dl { grid-area: dl; }
 .spk-pl--shots { grid-area: shots; }
 .spk-pl--av { grid-area: av; }
-.spk-pl { min-width: 0; }
 
 .spk-pl__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   gap: .8rem 1.2rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line-inv); margin-bottom: 1.4rem; }
@@ -304,31 +352,22 @@ html.js .spk-pl__texts[data-bio-ready] .spk-pl__text:not(.is-on) { display: none
   .spk-dl__a:hover .spk-dl__ic { transform: translateY(2px); }
 }
 
-/* headshots: three portraits, each a link to its full-size JPG */
-.spk-shots { list-style: none; padding: 0; margin: 0; display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(.7rem, 1.2vw, 1rem); }
-.spk-shots__a { display: block; color: var(--tx-inv); }
-.spk-shots__media { display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); background: var(--plum); }
-.spk-shots__media img { object-position: 50% 18%; transition: transform 400ms var(--ease-out); }
-.spk-shots__name { display: block; margin-top: .6rem; font-size: var(--step--1); font-weight: 500; line-height: 1.3; }
-.spk-shots__meta { display: block; font-size: .78rem; color: var(--tx-inv-soft); font-variant-numeric: tabular-nums; }
-.spk-shots__a:focus-visible { outline: 2px solid var(--violet-300); outline-offset: 3px; }
-@media (hover: hover) and (pointer: fine) {
-  .spk-shots__a:hover .spk-shots__media img { transform: scale(1.03); }
-  .spk-shots__a:hover .spk-shots__name { color: var(--violet-300); }
-}
-
 /* AV at a glance */
 .spk-av { list-style: none; padding: 0; margin: 0; }
 .spk-av li { padding-block: .85rem; border-bottom: 1px solid var(--line-inv);
   font-size: var(--step--1); line-height: 1.55; color: var(--tx-inv-soft); }
 .spk-av__link { margin-top: 1.4rem; color: var(--tx-inv); }
 
+@media (max-width: 1100px) {
+  .spk-kit .spk-planners__grid { grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "bio" "intro" "shots" "av"; }
+}
 @media (max-width: 960px) {
   .spk-planners__head { grid-template-columns: minmax(0, 1fr); row-gap: 1.2rem; }
   .spk-planners__h, .spk-planners__lead { grid-column: 1; }
-  .spk-planners__grid { grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "bio" "intro" "dl" "shots" "av"; }
+}
+@media (max-width: 700px) {
+  .spk-pl--dl .spk-dl { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
   .spk-planners__h { font-size: var(--step-3); }

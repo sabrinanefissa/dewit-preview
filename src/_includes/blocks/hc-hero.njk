@@ -1,5 +1,7 @@
-  {# Healthcare: the opening. Plum, a teal accent, one real photo of
-       Stephen in a room. Static: no entrance, no scroll work. #}
+  {# Healthcare: the opening. The page's indigo ground, a teal accent,
+       one real photo of Stephen in a room: the h1, who it is for, the
+       years behind it (proof, with **20+** set in the display face) and
+       the booking button. Static: no entrance, no scroll work. #}
   <section class="hc-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
     <div class="hc-hero__media media">
       <img src="{{ block.image.src | root(r) }}"
@@ -9,6 +11,9 @@
     <div class="hc-hero__copy">
       <h1 class="hc-hero__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h1>
       <p class="hc-hero__lead">{{ block.lead | inline() }}</p>
+      {%- if block.proof %}
+      <p class="hc-hero__proof">{{ block.proof | inline() }}</p>
+      {%- endif %}
       <div class="hc-hero__actions">
         <a class="btn btn--lg" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
         {%- if block.link and block.link.label %}

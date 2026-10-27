@@ -121,7 +121,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -165,7 +165,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -212,7 +212,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -249,7 +249,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: ink" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: ink" }
 
           # --------------------------------------------------------- bleed
           - name: bleed
@@ -275,7 +275,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
 
           # ----------------------------------------------------------- why
           - name: why
@@ -306,7 +306,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: ink" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: ink" }
 
           # --------------------------------------------------------- stats
           - name: stats
@@ -333,7 +333,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -381,7 +381,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -424,7 +424,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -457,6 +457,13 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
+              - label: "Link on to the next page (optional)"
+                name: next
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string, hint: "e.g. keynotes/" }
               - label: "Route line under the button (optional)"
                 name: route
                 widget: object
@@ -471,7 +478,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
 
           # --------------------------------------------------------- steps
           - name: steps
@@ -527,7 +534,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
 
           # ------------------------------------------------------- reelHero
           - name: reelHero
@@ -562,12 +569,33 @@ collections:
                   - { label: Language label, name: label, widget: string, default: English }
               - { label: "Heading (the page's h1, shown under the reel)", name: heading, widget: string, hint: "Allows *emphasis*." }
               - { label: "Line under the heading (optional)", name: line, widget: string, required: false }
-              - label: "Chapters under the reel (optional)"
+              - label: "Button beside the line (optional)"
+                name: cta
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string, default: Book Stephen }
+                  - { label: Link, name: href, widget: string, default: book/ }
+              - label: "Links to the page's sections (optional)"
+                name: index
+                widget: object
+                required: false
+                fields:
+                  - { label: Label (for screen readers), name: label, widget: string, default: On this page }
+                  - label: Links
+                    name: items
+                    widget: list
+                    summary: "{{fields.label}}"
+                    fields:
+                      - { label: Label, name: label, widget: string }
+                      - { label: Link, name: href, widget: string, hint: "A section id on this page, e.g. #planners" }
+              - label: "Chapters under the reel (optional, in a drop-down)"
                 name: chapters
                 widget: object
                 required: false
                 fields:
-                  - { label: Heading, name: heading, widget: string }
+                  - { label: "Heading (the drop-down reads: heading, then the count)", name: heading, widget: string }
+                  - { label: Count word, name: countLabel, widget: string, default: chapters, required: false, hint: "The drop-down reads e.g. In the reel: 7 chapters" }
                   - { label: Note, name: note, widget: string, required: false }
                   - label: Chapters
                     name: items
@@ -658,7 +686,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: transparent" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -715,7 +743,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
                   - { label: "Darken the pictures (0 = none, 0.5 = half)", name: veil, widget: number, value_type: float, min: 0, max: 0.8, step: 0.05, required: false, hint: "A plum veil over the chapter pictures so the words read on bright photos. 0 to 0.8. Default: 0 (none)" }
                   - label: Motion
                     name: motion
@@ -763,7 +791,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: transparent" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -822,7 +850,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: transparent" }
 
           # ------------------------------------------------------------ bio
           - name: bio
@@ -864,7 +892,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: transparent" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: transparent" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -883,6 +911,7 @@ collections:
               - &hcab-enabled { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis* (set in the healthcare teal)." }
               - { label: Lead, name: lead, widget: text }
+              - { label: "Proof line (under the lead)", name: proof, widget: string, required: false, hint: "Set the number in **double asterisks**, e.g. **20+** years as a therapist" }
               - label: Photo
                 name: image
                 widget: object
@@ -933,12 +962,13 @@ collections:
               - *hcab-anchor
               - *hcab-enabled
               - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
-              - label: Image
+              - label: "Image (optional; leave empty for the flat ground)"
                 name: image
                 widget: object
+                required: false
                 fields:
-                  - { label: Image, name: src, widget: image }
-                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - { label: Image, name: src, widget: image, required: false }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw, required: false }
               - label: Words (in the order they light)
                 name: words
                 widget: list
@@ -954,7 +984,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -974,7 +1004,9 @@ collections:
               - { label: Editor note (never shown on the site), name: editorNote, widget: text, required: false }
               - { label: Title, name: title, widget: string }
               - { label: Subtitle, name: subtitle, widget: string, required: false }
-              - { label: Overview, name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: "Overview (in the drop-down)", name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: Drop-down label, name: overviewLabel, widget: string, default: What the session covers, required: false, hint: "The drop-down holds the overview and the footnote." }
+              - { label: "Footnote (small, under a hairline, in the drop-down)", name: footnote, widget: text, required: false }
               - { label: Formats label, name: formatsLabel, widget: string, default: Formats }
               - { label: Formats, name: formats, widget: list, field: { label: Format, name: format, widget: string } }
               - label: Button
@@ -1006,7 +1038,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false, hint: "Default: plum-2" }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false, hint: "Default: plum-2" }
                   - label: Motion
                     name: motion
                     widget: object
@@ -1048,6 +1080,26 @@ collections:
               - { label: Name (page heading), name: name, widget: string }
               - { label: Category line, name: category, widget: string }
               - { label: One line (optional), name: line, widget: text, required: false }
+              - label: "Numbers (beside the portrait, static)"
+                name: numbers
+                widget: object
+                required: false
+                fields:
+                  - { label: Label (for screen readers), name: ariaLabel, widget: string, required: false }
+                  - label: Numbers
+                    name: counters
+                    widget: list
+                    summary: "{{fields.value}} {{fields.label}}"
+                    fields:
+                      - { label: Number, name: value, widget: string, hint: "As it should read, e.g. 7,000+" }
+                      - { label: Words after it, name: label, widget: string }
+              - label: "Button (optional)"
+                name: cta
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string, default: Book Stephen }
+                  - { label: Link, name: href, widget: string, default: book/ }
               - label: Portrait
                 name: portrait
                 widget: object
@@ -1066,14 +1118,15 @@ collections:
               - *hcab-anchor
               - *hcab-enabled
               - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
-              - { label: Paragraphs, name: paragraphs, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
-              - label: Photos (a column beside the text on wide screens)
+              - { label: Drop-down label, name: detailsLabel, widget: string, default: The full story, required: false }
+              - { label: "Opening line (first in the drop-down)", name: line, widget: text, required: false }
+              - { label: "Paragraphs (in the drop-down)", name: paragraphs, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - label: Photos (side by side, above the heading)
                 name: figures
                 widget: list
                 required: false
                 summary: "{{fields.caption}}"
                 fields:
-                  - { label: After paragraph number, name: after, widget: number, value_type: int, hint: "Phones: the photo appears after this paragraph (1 = after the first). Wide screens: photos stack in order beside the text." }
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, required: false }
                   - { label: Alt text, name: alt, widget: string }
@@ -1125,13 +1178,22 @@ collections:
 
           # ------------------------------------------------------ bk-intro
           - name: bk-intro
-            label: "Book: top (heading, phone, email)"
+            label: "Book: top (photo, heading, the steps in brief, phone, email)"
             summary: "Book top — {{fields.heading}}"
             fields:
               - *hcab-id
               - *hcab-anchor
               - *hcab-enabled
               - { label: Heading, name: heading, widget: string }
+              - label: "Photo (the words sit on its dark right side)"
+                name: image
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image, hint: "A photo whose right side is black, clear of the speaker." }
+                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
+                  - { label: Alt text, name: alt, widget: string }
+                  - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the crop centres, across then down, e.g. 50% 0%" }
               - { label: Lead, name: lead, widget: text, required: false }
               - { label: Label before the phone number, name: phoneLabel, widget: string, default: Call, hint: "The number itself is Site > Contact." }
               - { label: Label before the email, name: emailLabel, widget: string, default: Email, hint: "The address itself is Site > Contact." }
@@ -1233,13 +1295,14 @@ collections:
 
           # ------------------------------------------------------ bk-steps
           - name: bk-steps
-            label: "Book: what happens next"
+            label: "Book: what happens next (titles shown at the top, the detail in a drop-down)"
             summary: "Steps — {{fields.heading}}"
             fields:
               - *hcab-id
               - *hcab-anchor
               - *hcab-enabled
-              - { label: Heading, name: heading, widget: string }
+              - { label: "Heading (for screen readers)", name: heading, widget: string }
+              - { label: Drop-down label, name: detailsLabel, widget: string, default: "What happens next, in detail", required: false }
               - label: Steps
                 name: steps
                 widget: list
@@ -1258,20 +1321,25 @@ collections:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
+              - { label: Layout, name: layout, widget: select, options: [split, portrait, photo-left, band, type], default: split, required: false, hint: "split = text left, photo right 60%. portrait = text left, a 4:5 photo in the right third. photo-left = photo on the left two-thirds, text right. band = text across the top, the photo as a full-width landscape band under it. type = no photo. Text never sits on the photo." }
               - label: Image
                 name: image
                 widget: object
+                required: false
                 fields:
-                  - { label: Image, name: src, widget: image }
-                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - { label: Image, name: src, widget: image, required: false }
+                  - { label: Sizes attribute, name: sizes, widget: string, default: 60vw, required: false }
+                  - { label: Alt text (leave empty if decorative), name: alt, widget: string, required: false }
+                  - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the crop centres, across then down, e.g. 50% 30%" }
               - { label: Heading, name: heading, widget: string }
+              - { label: "List this page's talks as links to the enquiry form", name: talks, widget: boolean, default: false, required: false }
+              - { label: Show phone and email, name: contact, widget: boolean, default: false, required: false }
               - label: Call to action
                 name: cta
                 widget: object
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string }
-              - *placement
               - *settings-none
 
           # ================= Speaking and Keynotes pages (spk- / kn- blocks) =================
@@ -1306,8 +1374,10 @@ collections:
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, required: false }
                   - { label: Alt text, name: alt, widget: string }
+                  - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the wide band's crop centres, across then down, e.g. 50% 45%" }
                   - { label: Caption (optional), name: caption, widget: string, required: false }
-              - { label: Paragraph, name: text, widget: text }
+              - { label: Paragraph (in a drop-down), name: text, widget: text }
+              - { label: Drop-down label, name: textLabel, widget: string, default: What he does with them in the room, required: false }
               - label: Link
                 name: link
                 widget: object
@@ -1320,7 +1390,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false }
 
           # -------------------------------------------------- spk-planners
           - name: spk-planners
@@ -1340,6 +1410,7 @@ collections:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string, hint: "e.g. mailto:info@drdewit.com" }
               - { label: '"Copied" state label', name: copiedLabel, widget: string, default: Copied }
+              - { label: "Planner kit drop-down label (bio, introduction, headshots and AV sit in it)", name: kitLabel, widget: string, default: "Planner kit: bios, stage introduction, headshots, AV", required: false }
               - label: Bio in three lengths
                 name: bios
                 widget: object
@@ -1390,8 +1461,7 @@ collections:
                     summary: "{{fields.label}}"
                     fields:
                       - { label: Label, name: label, widget: string }
-                      - { label: Preview image, name: image, widget: image, hint: "A smaller webp for the page" }
-                      - { label: Full-size file, name: file, widget: file, hint: "The full-size JPG visitors download" }
+                      - { label: Full-size file, name: file, widget: file, media_folder: "/assets/downloads", hint: "The full-size JPG visitors download" }
                       - { label: Format, name: format, widget: string, default: JPG }
                       - { label: Size, name: size, widget: string, hint: "e.g. 2.5 MB" }
                       - { label: Alt text, name: alt, widget: string }
@@ -1449,6 +1519,13 @@ collections:
                   - { label: Role titles in the boxes (top to bottom, left to right), name: roles, widget: list, required: false, field: { label: Role, name: role, widget: string } }
                   - { label: Phrases on the lines between people, name: phrases, widget: list, required: false, field: { label: Phrase, name: phrase, widget: string } }
                   - { label: Caption on phones, name: phoneCaption, widget: string, required: false }
+                  - { label: "Phrase kept on phones (1 to 4)", name: phonePhrase, widget: number, value_type: int, default: 1, required: false }
+              - label: "Index of the talks (under the sentences)"
+                name: index
+                widget: object
+                required: false
+                fields:
+                  - { label: Label (for screen readers), name: ariaLabel, widget: string, default: The three keynotes, hint: "The links are built from the talk blocks on this page, in their order." }
               - *spk-settings-tone
 
           # ------------------------------------------------------ kn-index
@@ -1471,15 +1548,17 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Editor note (never shown on the site), name: editorNote, widget: text, required: false, hint: "e.g. Unconfirmed as an official talk." }
               - { label: Title, name: title, widget: string }
+              - { label: Accent colour, name: accent, widget: select, options: [violet, coral, gold], default: violet, required: false, hint: "Marks the talk's number, hairline, outcome bullets and labels (the same accents as the talk cards on Home)." }
               - { label: Trademark ™ after the title, name: trademark, widget: boolean, default: false, required: false }
               - { label: Signature talk (larger title), name: signature, widget: boolean, default: false, required: false }
               - { label: Subtitle (optional), name: subtitle, widget: string, required: false }
               - { label: Index line (under the title in the index), name: indexLine, widget: string, required: false }
               - { label: Premise (one line), name: premise, widget: string, hint: "Allows *emphasis*." }
-              - { label: Overview, name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: "Overview (in the drop-down)", name: overview, widget: list, field: { label: Paragraph, name: paragraph, widget: text } }
+              - { label: Drop-down label, name: detailsLabel, widget: string, default: "The full description and who it’s for", required: false, hint: "The drop-down holds the overview, the note on the outcomes and who it's for." }
               - { label: Outcomes heading, name: outcomesHeading, widget: string, default: What the room leaves with }
               - { label: Outcomes, name: outcomes, widget: list, field: { label: Outcome, name: outcome, widget: string } }
-              - { label: Note under the outcomes (optional), name: outcomesNote, widget: string, required: false }
+              - { label: "Note on the outcomes (optional, in the drop-down)", name: outcomesNote, widget: string, required: false }
               - { label: '"Who it''s for" heading', name: audienceHeading, widget: string, default: "Who it’s for" }
               - { label: Who it's for, name: audience, widget: text }
               - { label: Formats heading, name: formatsHeading, widget: string, default: Formats }
@@ -1491,13 +1570,15 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string, required: false }
                   - { label: Link, name: href, widget: string, required: false, hint: "e.g. healthcare/" }
-              - label: Photo
+              - label: Photo (large, with the number, title and premise)
                 name: image
                 widget: object
                 fields:
                   - { label: Image, name: src, widget: image }
                   - { label: Sizes attribute, name: sizes, widget: string, required: false }
                   - { label: Alt text, name: alt, widget: string }
+                  - { label: "Words on the photo's dark side (optional)", name: textSide, widget: select, options: [right], required: false, hint: "Only for a photo whose right side is black, clear of the speaker. Leave empty to set the words beside the photo." }
+                  - { label: "Photo side, when the words sit beside it", name: side, widget: select, options: [left, right], default: left, required: false }
                   - { label: Focus point (optional), name: position, widget: string, required: false, hint: "Where the crop centres, across then down, e.g. 25% 40%" }
               - { label: Jump row label (for screen readers), name: jumpLabel, widget: string, default: Jump to a keynote, required: false }
               - { label: '"Book this talk" button label', name: bookLabel, widget: string, default: Book this talk, required: false, hint: "Links to the booking form with this talk already chosen." }
@@ -1506,8 +1587,7 @@ collections:
                 widget: object
                 required: false
                 fields:
-                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, paper, transparent], required: false }
-                  - { label: Photo on the left, name: flip, widget: boolean, default: false, required: false }
+                  - { label: Background, name: background, widget: select, options: [plum, plum-2, ink, ink-2, stage-black, indigo, indigo-2, aub, aub-2, violet-deep, paper, transparent], required: false }
           # ================= end Speaking and Keynotes blocks =================
 
   - name: site
@@ -1687,6 +1767,14 @@ collections:
               - { label: Plum (dark section), name: plum, widget: color }
               - { label: Plum 2 (deepest), name: "plum-2", widget: color }
               - { label: Ink (near-black text), name: ink, widget: color }
+              - { label: "Ink 2 (Keynotes, alternate talk)", name: "ink-2", widget: color }
+              - { label: "Stage black (Speaking ground)", name: "stage-black", widget: color }
+              - { label: "Indigo (Healthcare ground)", name: "indigo", widget: color }
+              - { label: "Indigo 2 (Healthcare panels)", name: "indigo-2", widget: color }
+              - { label: "Teal 300 (Healthcare accent text)", name: "teal-300", widget: color }
+              - { label: "Aubergine (About ground)", name: aub, widget: color }
+              - { label: "Aubergine 2 (About credentials band)", name: "aub-2", widget: color }
+              - { label: "Deep violet (Book ground)", name: "violet-deep", widget: color }
               - { label: Text on paper, name: tx, widget: color }
               - { label: "Text on paper, soft", name: "tx-soft", widget: color, hint: "rgba() value" }
               - { label: "Text on paper, faint", name: "tx-faint", widget: color, hint: "rgba() value" }

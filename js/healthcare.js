@@ -3,7 +3,7 @@
    things caregivers carry are stacked as lines over the outcomes. As the
    reader scrolls through the section (progress-driven, nothing pinned,
    about half a screen: data-span), the lines lift away one at a time,
-   top first; when the last has gone, the outcomes come up in the same
+   top first, and the rest close up under the label; when the last has gone, the outcomes come up in the same
    place (the two lists share one grid cell while armed, so the page
    never changes height). It runs once and never reverses.
    Motion is CSS transitions on transform, opacity and filter (see
@@ -57,11 +57,19 @@
       stop();
     }
 
-    /* lines lift strictly in order; a burst of due lines is spaced GAP apart */
+    /* lines lift strictly in order; a burst of due lines is spaced GAP apart.
+       The lines still to go close up under the label by the height of
+       those already lifted (--hc-shift), so the stack never shows a gap
+       above it; a lifting line leaves from where it stood (--hc-from). */
+    var shift = 0;
     function pump() {
       pumping = false;
       if (lifted >= queued) return;
-      lines[lifted++].classList.add("is-lifted");
+      var ln = lines[lifted++];
+      ln.style.setProperty("--hc-from", shift + "px");
+      ln.classList.add("is-lifted");
+      shift += ln.offsetHeight;
+      root.style.setProperty("--hc-shift", shift + "px");
       if (lifted >= n) { setTimeout(clear, Math.round(LIFT * 0.55)); return; }
       if (lifted < queued) { pumping = true; setTimeout(pump, GAP); }
     }

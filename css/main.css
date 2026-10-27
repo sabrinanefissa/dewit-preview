@@ -2073,21 +2073,92 @@ html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba
 .spk-foot { padding-top:0; }
 /* --spk-close-h: module 9 shortens the panel so the whole lifted footer
    fits the screen; 70svh wherever it is not set */
-.spk-close { position:relative; min-height: var(--spk-close-h, 70svh); display:grid; place-items:center start;
-  text-align:left; overflow:hidden; margin-bottom: 3.5rem; }
-.spk-close__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  object-position: 72% 0%; }
-.spk-close__veil { position:absolute; inset:0;
-  background:
-    radial-gradient(60% 50% at 50% 60%, rgba(169,133,230,.22), rgba(169,133,230,0) 70%),
-    linear-gradient(180deg, rgba(18,10,28,.55), rgba(18,10,28,.25) 40%, rgba(18,10,28,.7) 100%); }
-/* 30ch is measured in the heading's own size (on the wrapper it resolved
-   to the body size and broke the line in three) */
-.spk-close__inner { position:relative; z-index:1; width: var(--wrap); margin-inline:auto; }
+.spk-close { position:relative; min-height: var(--spk-close-h, 70svh); display:grid; overflow:hidden;
+  margin-bottom: 3.5rem; color: var(--tx-inv); }
+/* the text always sits on the panel's own solid colour, never on the photo */
+.spk-close__inner { position:relative; z-index:1; align-self:center; min-width:0;
+  padding: clamp(3rem, 6vw, 6rem) clamp(1.5rem, 4vw, 4rem); }
 .spk-close__h { max-width: 16ch; margin-inline:0;
   font-size: var(--step-3); font-weight:340; letter-spacing:-0.025em;
   color: var(--tx-inv); text-wrap:balance; }
 .spk-close__cta { margin-top: clamp(1.4rem, 3vh, 2.2rem); display:inline-block; }
+.spk-close__media { position:relative; overflow:hidden; min-height: 100%; }
+.spk-close__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  object-position: 50% 30%; }
+/* the outer text edge lines up with the page's wrap */
+.spk-close { --edge: calc((100vw - var(--wrap)) / 2); }
+
+/* split: text on the left 40%, the photo on the right 60%, to the edge */
+.spk-close--split { grid-template-columns: 2fr 3fr; }
+.spk-close--split .spk-close__inner { padding-left: var(--edge); }
+/* portrait: text on the left, a 4:5 photo in the right third */
+.spk-close--portrait { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: center;
+  min-height: 0; padding-block: clamp(3rem, 6vw, 5.5rem); padding-right: var(--edge); }
+.spk-close--portrait .spk-close__inner { padding-block: 0; }
+.spk-close--portrait .spk-close__inner { padding-left: var(--edge); }
+.spk-close--portrait .spk-close__media { min-height: 0; aspect-ratio: 4 / 5; }
+/* photo-left: the photo on the left two-thirds, text in the right third */
+.spk-close--photo-left { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.spk-close--photo-left .spk-close__media { grid-column: 1; grid-row: 1; }
+.spk-close--photo-left .spk-close__inner { grid-column: 2; grid-row: 1; padding-right: var(--edge); }
+/* type: no photo, the words carry it */
+.spk-close--type { min-height: 0; }
+.spk-close--type .spk-close__inner { width: var(--wrap); margin-inline: auto; padding-inline: 0;
+  padding-block: clamp(4.5rem, 9vw, 8rem); }
+.spk-close--noimg:not(.spk-close--type) { grid-template-columns: minmax(0, 1fr); }
+/* band: the words across the top on the panel's colour, the photo under
+   them as a full-width landscape band */
+.spk-close--band { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+.spk-close--band .spk-close__inner { width: var(--wrap); margin-inline: auto; padding-inline: 0;
+  padding-block: clamp(3.5rem, 7vw, 6rem) clamp(2.2rem, 4vw, 3.4rem); }
+.spk-close--band .spk-close__h { max-width: 24ch; }
+.spk-close--band .spk-close__media { min-height: 0; aspect-ratio: 2 / 1; max-height: 78svh; }
+/* the way on to the next page, under the button */
+.spk-close__next { display: flex; width: max-content; margin-top: clamp(1.2rem, 2.4vh, 1.8rem); min-height: 44px;
+  color: var(--tx-inv); }
+
+/* the page's talks, stacked as links to the enquiry form */
+.spk-close__talks { list-style:none; margin: clamp(1.8rem, 3.5vw, 2.8rem) 0 0; padding:0;
+  border-top: 1px solid var(--line-inv); max-width: 46rem; }
+.spk-close__talks li { border-bottom: 1px solid var(--line-inv); }
+.spk-close__talk { display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  min-height: 44px; padding-block: clamp(.9rem, 1.6vw, 1.25rem);
+  font-family: var(--f-display); font-style: italic; font-weight: 340; font-size: var(--step-2);
+  line-height: 1.1; letter-spacing: -0.02em; color: var(--tx-inv); transition: color var(--dur-fast) ease; }
+.spk-close__talk .arrow { flex:none; width: 1.2rem; height: 1.2rem; color: var(--acc, var(--violet-300)); }
+.spk-close__talk .tm { font-size: .4em; vertical-align: super; line-height: 0; color: var(--tx-inv-faint); }
+.spk-close__talk:focus-visible { outline: 2px solid var(--acc, var(--violet-300)); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .spk-close__talk:hover { color: var(--acc, var(--violet-300)); } }
+
+/* phone and email, set as large as a line of the heading's family */
+.spk-close__contact { list-style:none; margin: clamp(1.4rem, 3vw, 2.2rem) 0 0; padding:0;
+  display:flex; flex-direction:column; gap:.2rem; }
+.spk-close__contact a { display:inline-flex; align-items:center; min-height: 44px; font-family: var(--f-display);
+  font-weight: 340; font-size: var(--step-2); line-height: 1.1; letter-spacing: -0.02em; color: var(--tx-inv);
+  overflow-wrap: anywhere; text-decoration: underline; text-decoration-thickness: 1px;
+  text-decoration-color: rgba(227,169,60,.55); text-underline-offset: .2em;
+  transition: text-decoration-color var(--dur-fast) ease; }
+.spk-close__contact a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .spk-close__contact a:hover { text-decoration-color: var(--gold); } }
+
+@media (max-width: 1100px) {
+  .spk-close__contact a { font-size: var(--step-1); }
+}
+/* phones: every layout stacks, the text first on its solid colour, then
+   the photo */
+@media (max-width: 768px) {
+  .spk-close, .spk-close--split, .spk-close--portrait, .spk-close--photo-left { grid-template-columns: minmax(0, 1fr);
+    padding: 0; min-height: 0; }
+  .spk-close__inner, .spk-close--split .spk-close__inner, .spk-close--portrait .spk-close__inner,
+  .spk-close--photo-left .spk-close__inner { grid-column: 1; grid-row: 1;
+    padding: clamp(3.5rem, 12vw, 5rem) var(--gutter) clamp(2.5rem, 8vw, 3.5rem); }
+  .spk-close__media, .spk-close--photo-left .spk-close__media { grid-column: 1; grid-row: 2; min-height: 0;
+    aspect-ratio: 4 / 3; }
+  .spk-close--band .spk-close__inner { width: auto; padding-inline: var(--gutter); }
+  .spk-close--band .spk-close__media { aspect-ratio: 3 / 2; }
+  .spk-close--portrait .spk-close__media { aspect-ratio: 4 / 5; margin: 0 var(--gutter) clamp(2.5rem, 8vw, 3.5rem); }
+  .spk-close--type .spk-close__inner { width: auto; padding-inline: var(--gutter); }
+}
 
 /* =====================================================================
    Section tones: a block's background setting, written as data-tone on
@@ -2098,6 +2169,16 @@ html.no-js .spk-chap--strike .spk-chap__word { display:inline-block; color: rgba
 section[data-tone="plum"]        { background-color: var(--plum); }
 section[data-tone="plum-2"]      { background-color: var(--plum-2); }
 section[data-tone="ink"]         { background-color: var(--ink); }
+section[data-tone="ink-2"], .spk-close[data-tone="ink-2"]             { background-color: var(--ink-2); }
+section[data-tone="stage-black"], .spk-close[data-tone="stage-black"] { background-color: var(--stage-black); }
+section[data-tone="indigo"], .spk-close[data-tone="indigo"]           { background-color: var(--indigo); }
+section[data-tone="indigo-2"], .spk-close[data-tone="indigo-2"]       { background-color: var(--indigo-2); }
+section[data-tone="aub"], .spk-close[data-tone="aub"]                 { background-color: var(--aub); }
+section[data-tone="aub-2"], .spk-close[data-tone="aub-2"]             { background-color: var(--aub-2); }
+section[data-tone="violet-deep"], .spk-close[data-tone="violet-deep"] { background-color: var(--violet-deep); }
+.spk-close[data-tone="plum"]   { background-color: var(--plum); }
+.spk-close[data-tone="plum-2"] { background-color: var(--plum-2); }
+.spk-close[data-tone="ink"]    { background-color: var(--ink); }
 section[data-tone="paper"]       { background-color: var(--paper); color: var(--tx); }
 section[data-tone="transparent"] { background-color: transparent; }
 
@@ -2242,8 +2323,6 @@ html.no-js .spk-formats__stage > .place, html.no-js .spk-formats__stage > .place
   .spk-formats__stage > .place, .spk-formats__stage > .place > .place__inner { display:contents; }
 }
 /* close: heading and button as one group; today left, middle */
-.spk-close > .place { --pdx:0%; --pdy:50%; z-index:1; }
-.spk-close > .place .spk-close__inner { width:auto; margin:0; }
 
 /* =====================================================================
    Phone pass, part 1 (brief 24)
@@ -2318,3 +2397,9 @@ body { --fill-stagger: 0.12; }
   transition: max-height .3s var(--ease-out), opacity .3s var(--ease-out), margin .3s var(--ease-out); }
 .pinskip.is-intent .pinskip__label { max-height:1.4em; opacity:1; margin-bottom:-.3rem; }
 @media (prefers-reduced-motion: reduce) { .pinskip { display:none; } }
+
+/* close and text links: full-strength button label, 44px tap targets */
+.spk-close a.btn.spk-close__cta { color: #fff; }
+.spk-close .textlink.spk-close__next,
+.spk-unsaid .textlink.spk-unsaid__link,
+.textlink.spk-av__link { min-height: 44px; }

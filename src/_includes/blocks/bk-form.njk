@@ -80,7 +80,7 @@
       <div class="bk-form__side">
         <div class="bk-form__who">
           {%- if block.portrait and block.portrait.src %}
-          <img class="bk-form__face" src="{{ block.portrait.src | root(r) }}" width="72" height="72" alt="{{ block.portrait.alt | plain }}" loading="lazy" decoding="async">
+          <img class="bk-form__face" src="{{ block.portrait.src | root(r) }}" width="80" height="80" alt="{{ block.portrait.alt | plain }}" loading="lazy" decoding="async">
           {%- endif %}
           <h2 class="bk-form__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h2>
         </div>

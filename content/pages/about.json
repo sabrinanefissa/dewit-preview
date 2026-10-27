@@ -2,12 +2,12 @@
   "slug": "about",
   "permalink": "/about/",
   "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
-  "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
+  "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years as a therapist, researcher and speaker.",
   "canonical": "https://drdewit.com/about/",
   "profilePage": true,
   "og": {
     "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
-    "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years in practice.",
+    "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years as a therapist, researcher and speaker.",
     "url": "https://drdewit.com/about/",
     "image": "https://drdewit.com/assets/img/headshot-blue-suit-1365.webp"
   },
@@ -18,9 +18,12 @@
   "jsonld": false,
   "lightbox": false,
   "styles": [
+    "css/dd.css",
     "css/about.css"
   ],
-  "scripts": [],
+  "scripts": [
+    "js/dd.js"
+  ],
   "comments": {
     "loader": "Loader",
     "nav": "Nav"
@@ -33,13 +36,35 @@
       "enabled": true,
       "name": "Dr. Stephen de Wit",
       "category": "Human connection and relational intelligence",
-      "line": "Dr. Stephen de Wit has spent years in rooms where silence spoke louder than titles. Today he helps leaders turn human tension into high-trust cultures where people stay.",
+      "numbers": {
+        "ariaLabel": "Stephen in numbers",
+        "counters": [
+          {
+            "value": "170",
+            "label": "keynotes delivered."
+          },
+          {
+            "value": "7,000+",
+            "label": "leaders in the room."
+          },
+          {
+            "value": "20+",
+            "label": "years in the field."
+          }
+        ]
+      },
+      "cta": {
+        "label": "Book Stephen",
+        "href": "book/"
+      },
       "portrait": {
         "src": "assets/img/headshot-blue-suit-960.webp",
         "sizes": "(max-width: 900px) 100vw, 42vw",
         "alt": "Portrait of Dr. Stephen de Wit in a blue suit, smiling"
       },
-      "settings": {}
+      "settings": {
+        "background": "plum-2"
+      }
     },
     {
       "type": "ab-story",
@@ -47,6 +72,8 @@
       "anchor": false,
       "enabled": true,
       "heading": "Built in the rooms where *trust was fragile*.",
+      "detailsLabel": "The full story",
+      "line": "Dr. Stephen de Wit has spent years in rooms where silence spoke louder than titles. Today he helps leaders turn human tension into high-trust cultures where people stay.",
       "paragraphs": [
         "For more than 20 years Stephen’s work has lived at the frontlines of vulnerability, conflict and connection: in transformational retreats and in research with homeless veterans and people living with dementia.",
         "Along the way he saw what most leadership playbooks miss. When people don't feel seen, safe or heard, performance erodes.",
@@ -55,21 +82,21 @@
       ],
       "figures": [
         {
-          "after": 1,
           "src": "assets/img/ctv-interview-960.webp",
-          "sizes": "(max-width: 900px) 100vw, 36vw",
+          "sizes": "(max-width: 900px) 100vw, 58vw",
           "alt": "Stephen in a blue suit being interviewed on the CTV Your Morning set",
           "caption": "On CTV's Your Morning."
         },
         {
-          "after": 3,
           "src": "assets/img/panel-live-640.webp",
-          "sizes": "(max-width: 900px) 100vw, 30vw",
+          "sizes": "(max-width: 900px) 100vw, 40vw",
           "alt": "Stephen with a microphone on a live panel, seated between three other speakers",
           "caption": "Speaking on a live panel."
         }
       ],
-      "settings": {}
+      "settings": {
+        "background": "aub"
+      }
     },
     {
       "type": "ab-creds",
@@ -80,23 +107,12 @@
       "items": [
         "Doctorate",
         "Master of Public Health",
-        "20+ years in practice",
+        "20+ years as a therapist, researcher and speaker",
         "Research Associate, Ontario Tech University"
       ],
-      "settings": {}
-    },
-    {
-      "type": "ab-numbers",
-      "id": "numbers",
-      "anchor": false,
-      "enabled": true,
-      "ariaLabel": "Stephen in numbers",
-      "counters": [
-        { "value": "170", "label": "keynotes delivered." },
-        { "value": "7,000+", "label": "leaders in the room." },
-        { "value": "20+", "label": "years in practice." }
-      ],
-      "settings": {}
+      "settings": {
+        "background": "aub-2"
+      }
     },
     {
       "type": "ab-media",
@@ -105,30 +121,65 @@
       "enabled": true,
       "heading": "As seen on",
       "logos": [
-        { "src": "assets/logos/CBC-ko.png", "alt": "CBC", "scale": "0.85" },
-        { "src": "assets/logos/GMA-mark.png", "alt": "Good Morning America", "scale": "1.4" },
-        { "src": "assets/logos/Showtime.svg.png", "alt": "Showtime", "scale": "0.7" },
-        { "src": "assets/logos/Men_s_Health.svg.png", "alt": "Men's Health", "scale": "0.6" },
-        { "src": "assets/logos/TGAM-wordmark-mark.png", "alt": "The Globe and Mail", "scale": "1.25" },
-        { "src": "assets/logos/1200px-Marilyn_Logo.svg.png", "alt": "Marilyn", "scale": "0.55" }
+        {
+          "src": "assets/logos/CBC-ko.png",
+          "alt": "CBC",
+          "scale": "0.85"
+        },
+        {
+          "src": "assets/logos/GMA-mark.png",
+          "alt": "Good Morning America",
+          "scale": "1.4"
+        },
+        {
+          "src": "assets/logos/Showtime.svg.png",
+          "alt": "Showtime",
+          "scale": "0.7"
+        },
+        {
+          "src": "assets/logos/Men_s_Health.svg.png",
+          "alt": "Men's Health",
+          "scale": "0.6"
+        },
+        {
+          "src": "assets/logos/TGAM-wordmark-mark.png",
+          "alt": "The Globe and Mail",
+          "scale": "1.25"
+        },
+        {
+          "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
+          "alt": "Marilyn",
+          "scale": "0.55"
+        }
       ],
-      "settings": {}
+      "settings": {
+        "background": "aub"
+      }
     },
     {
       "type": "close",
       "id": "close",
       "enabled": true,
       "anchor": false,
-      "heading": "Bring him into your room.",
+      "heading": "Talk to Stephen.",
       "cta": {
         "label": "Book Stephen",
         "href": "book/"
       },
       "image": {
-        "src": "assets/img/keynote-1920.webp",
-        "sizes": "100vw"
+        "src": "assets/img/contact-1280.webp",
+        "sizes": "(max-width: 768px) 100vw, 66vw",
+        "position": "50% 34%"
       },
-      "settings": null
+      "settings": {
+        "background": "aub-2"
+      },
+      "layout": "photo-left",
+      "contact": true,
+      "next": {
+        "label": "See him speak",
+        "href": "speaking/"
+      }
     }
   ]
 }
