@@ -1,0 +1,21 @@
+  {# What people say: each row strikes the spoken line and raises the one underneath #}
+  <section class="hm hm-truth"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <div class="hm-media">
+      <img class="hm-focus" src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy">
+    </div>
+    <div class="hm-truth__inner">
+      <div class="hm-truth__head hm-reveal">
+        <h2>{{ block.heading | inline() }}</h2>
+      </div>
+      <div class="hm-trows">
+      {%- for row in block.rows %}
+        <button class="hm-trow" type="button" aria-pressed="false">
+          <span class="hm-trow__surface"><span class="hm-trow__strike" aria-hidden="true"></span>{{ row.surface | inline() }}</span>
+          <span class="hm-trow__under">{{ row.under | inline() }}</span>
+        </button>
+      {%- endfor %}
+      </div>
+    </div>
+  </section>

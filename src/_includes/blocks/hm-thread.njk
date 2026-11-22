@@ -1,0 +1,37 @@
+  {# The through-line: one line through the stations, drawn by the scroll (js/home-sections.js) #}
+  <section class="hm hm-thread"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}">
+    <div class="hm-thread__bg" aria-hidden="true">
+    {%- for src in block.bg %}
+      <img src="{{ src | root(r) }}" alt="" loading="lazy" decoding="async">
+    {%- endfor %}
+    </div>
+    <div class="hm-thread__veil" aria-hidden="true"></div>
+    <div class="hm-thread__glow" aria-hidden="true"></div>
+    <svg class="hm-thread__svg" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="hm-thread__guide" d=""></path>
+      <path class="hm-thread__drawn" d=""></path>
+    </svg>
+    <div class="hm-thread__pulse" aria-hidden="true"></div>
+    <div class="hm-thread__rail" aria-hidden="true"><i></i><b></b></div>
+
+    <div class="hm-thread__inner">
+      <p class="hm-thread__eyebrow">{{ block.eyebrow | inline() }}</p>
+      <div class="hm-thread__stations">
+      {%- for s in block.stations %}
+        <article class="hm-station {{ 'is-odd' if loop.index % 2 else 'is-even' }}{% if s.pillar %} is-pillar{% endif %}">
+          <figure class="hm-station__still">
+            <img src="{{ s.image.src | root(r) }}"{% if s.image.width %} width="{{ s.image.width }}"{% endif %}
+                 {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+                 sizes="{{ s.image.sizes or '(max-width: 720px) 100vw, 520px' }}" alt="{{ s.image.alt | inline() }}" loading="eager" decoding="async">
+          </figure>
+          <div class="hm-station__knot"><span class="hm-station__dot"></span></div>
+          <div class="hm-station__body">
+            <p class="hm-station__idx"><span>{{ loop.index | pad2 }}</span></p>
+            <h2 class="hm-station__label"><span>{{ s.label | inline() }}</span></h2>
+            <p class="hm-station__gloss">{{ s.gloss | inline() }}</p>
+          </div>
+        </article>
+      {%- endfor %}
+      </div>
+    </div>
+  </section>

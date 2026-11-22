@@ -1,0 +1,22 @@
+  {# Why Stephen: portrait down the left side, the credentials beside it #}
+  <section class="hm hm-why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <div class="hm-media hm-media--plum">
+      <img class="hm-clip" src="{{ block.portrait.src | root(r) }}"
+           {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.portrait.sizes or '(max-width:1024px) 100vw, 46vw' }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
+    </div>
+    <div class="hm-why__grid">
+      <div class="hm-why__body hm-reveal">
+        <h2>{{ block.heading | inline() }}</h2>
+        <p class="hm-lead">{{ block.lead | inline() }}</p>
+        <div class="hm-creds">
+        {%- for c in block.creds %}
+          <div class="hm-cred"><span>{{ c | inline() }}</span></div>
+        {%- endfor %}
+        </div>
+        {%- if block.link %}
+        <p class="hm-why__link"><a class="hm-link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }} <svg class="hm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+        {%- endif %}
+      </div>
+    </div>
+  </section>

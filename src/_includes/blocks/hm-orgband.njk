@@ -1,0 +1,15 @@
+  {# Credibility ribbon: each lane drifts sideways and lights one mark at a time #}
+  <section class="hm hm-orgband"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}">
+  {%- for lane in block.lanes %}
+    <div class="hm-cred__lane{% if not loop.first %} hm-cred__lane--sm{% endif %}" data-speed="{{ lane.speed }}">
+      <p class="hm-cred__label">{{ lane.label | inline() }}</p>
+      <div class="hm-cred__viewport">
+        <div class="hm-cred__track">
+        {%- for logo in lane.logos %}
+          <img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}"{% if logo.scale %} style="--s:{{ logo.scale | plain }}"{% endif %} decoding="async">
+        {%- endfor %}
+        </div>
+      </div>
+    </div>
+  {%- endfor %}
+  </section>

@@ -1,0 +1,25 @@
+  {# Final call to action #}
+  <section class="hm hm-final"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <div class="hm-final__inner hm-reveal">
+      <h2>{{ block.heading | inline() }}</h2>
+      <p class="hm-lead"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | inline() }}</p>
+      <div class="hm-final__actions">
+      {%- for btn in block.buttons %}
+        {%- if btn.video %}
+        <button class="hm-btn hm-btn--inv hm-btn--lg" type="button" data-video="{{ btn.video | root(r) }}">{{ btn.label | inline() }}</button>
+        {%- else %}
+        <a class="hm-btn hm-btn--lg" href="{{ btn.href | root(r) }}">{{ btn.label | inline() }}</a>
+        {%- endif %}
+      {%- endfor %}
+      </div>
+      {%- if block.contacts %}
+      <div class="hm-final__contact">
+        <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a>
+        <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>
+        {%- for s in site.socials %}
+        <a href="{{ s.href }}" target="_blank" rel="noopener">{{ s.label }}</a>
+        {%- endfor %}
+      </div>
+      {%- endif %}
+    </div>
+  </section>

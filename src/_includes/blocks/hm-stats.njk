@@ -1,0 +1,7 @@
+  {# Proof in numbers, as one sentence; the figures count up once in view #}
+  <section class="hm hm-stats"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <p class="hm-eyebrow hm-stats__eyebrow hm-reveal">{{ block.eyebrow | inline() }}</p>
+    <p class="hm-stats__line hm-reveal">
+      {% for c in block.counters %}{% if not loop.first %} {% endif %}<span class="hm-stats__n"><span data-hm-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> {{ c.label | inline() }}{% endfor %}
+    </p>
+  </section>

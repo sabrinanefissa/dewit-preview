@@ -1,0 +1,27 @@
+  {# What happens when you book: the scene holds while the scroll steps through the list #}
+  <section class="hm hm-steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}">
+    <div class="hm-steps__track">
+      <div class="hm-steps__sticky">
+        <div class="hm-steps__media" aria-hidden="true">
+        {%- for s in block.steps %}
+          <img class="hm-steps__still{% if loop.first %} is-on{% endif %}" src="{{ s.image.src | root(r) }}"{% if s.image.position %} style="--pos:{{ s.image.position | plain }}"{% endif %}
+               {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+               sizes="{{ s.image.sizes or '100vw' }}" alt=""{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
+        {%- endfor %}
+        </div>
+        <div class="hm-steps__grade" aria-hidden="true"></div>
+        <div class="hm-steps__copy">
+          <p class="hm-eyebrow">{{ block.eyebrow | inline() }}</p>
+          <h2>{{ block.heading | inline() }}</h2>
+          <ol class="hm-steps__list">
+          {%- for s in block.steps %}
+            <li{% if loop.first %} class="is-on"{% endif %}><span class="hm-steps__n">{{ loop.index | pad2 }}</span><span class="hm-steps__t">{{ s.title | inline() }}</span><span class="hm-steps__d">{{ s.text | inline() }}</span></li>
+          {%- endfor %}
+          </ol>
+          {%- if block.link %}
+          <a class="hm-link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }} <svg class="hm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          {%- endif %}
+        </div>
+      </div>
+    </div>
+  </section>

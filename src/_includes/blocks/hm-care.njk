@@ -1,0 +1,23 @@
+  {# Healthcare: photo down the right side, the offer beside it #}
+  <section class="hm hm-care"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <div class="hm-media hm-media--warm">
+      <img class="hm-clip" src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '(max-width:1024px) 100vw, 48vw' }}" alt="{{ block.image.alt | inline() }}" decoding="async">
+    </div>
+    <div class="hm-care__inner">
+      <div class="hm-care__body hm-reveal">
+        <h2>{{ block.heading | inline() }}</h2>
+        <p class="hm-lead"{% if block.leadStyle %} style="{{ block.leadStyle }}"{% endif %}>{{ block.lead | inline() }}</p>
+        <ul class="hm-care__list">
+          {% for it in block.items %}<li>{{ it | inline() }}</li>{% endfor %}
+        </ul>
+        {%- if block.cta %}
+        <div class="hm-care__cta"><a class="hm-btn hm-btn--inv" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a></div>
+        {%- endif %}
+        {%- if block.route and block.route.href %}
+        <p class="hm-care__route">{{ block.route.text | inline() }} <a class="hm-care__route-link" href="{{ block.route.href | root(r) }}">{{ block.route.label | inline() }}<svg class="hm-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+        {%- endif %}
+      </div>
+    </div>
+  </section>

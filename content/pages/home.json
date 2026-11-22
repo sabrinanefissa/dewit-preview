@@ -17,11 +17,13 @@
   "loader": true,
   "lightbox": true,
   "scripts": [
-    "js/home-rooms.js"
+    "js/home-rooms.js",
+    "js/home-sections.js"
   ],
   "styles": [
     "css/quote.css",
-    "css/home-rooms.css"
+    "css/home-rooms.css",
+    "css/home-sections.css"
   ],
   "comments": {
     "loader": "Loader",
@@ -57,150 +59,7 @@
       "settings": {}
     },
     {
-      "type": "room",
-      "id": "room",
-      "anchor": false,
-      "enabled": true,
-      "lead": "For the people in your",
-      "words": [
-        "team",
-        "boardroom",
-        "ward",
-        "conference floor",
-        "room"
-      ],
-      "end": ".",
-      "settings": {
-        "background": "plum"
-      }
-    },
-    {
-      "type": "orgband",
-      "id": "trusted",
-      "anchor": false,
-      "enabled": true,
-      "ariaLabel": "Organizations Stephen has worked with, and media features",
-      "lanes": [
-        {
-          "label": "Where Stephen has spoken",
-          "logos": [
-            {
-              "src": "assets/logos/Reckitt-Logo-ko.png",
-              "alt": "Reckitt",
-              "scale": "1.03"
-            },
-            {
-              "src": "assets/logos/mdrt-logo-ko.png",
-              "alt": "MDRT",
-              "scale": "0.76"
-            },
-            {
-              "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
-              "alt": "University of Toronto",
-              "scale": "0.93"
-            },
-            {
-              "src": "assets/logos/tmu-mark-white.png",
-              "alt": "Toronto Metropolitan University",
-              "scale": "1.18"
-            },
-            {
-              "src": "assets/logos/george-brown-mark-white.png",
-              "alt": "George Brown College",
-              "scale": "1.22"
-            },
-            {
-              "src": "assets/logos/laurentian-university-vector-logo-ko.png",
-              "alt": "Laurentian University",
-              "scale": "0.63"
-            },
-            {
-              "src": "assets/logos/Lakeridge-mark.png",
-              "alt": "Lakeridge Health",
-              "scale": "1.09"
-            },
-            {
-              "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
-              "alt": "Toronto Academy of Dentistry",
-              "scale": "1.12"
-            },
-            {
-              "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
-              "alt": "NESO",
-              "scale": "1.02"
-            },
-            {
-              "src": "assets/logos/OSOT-mark.png",
-              "alt": "Ontario Society of Occupational Therapists",
-              "scale": "0.66"
-            }
-          ]
-        },
-        {
-          "label": "As seen on",
-          "logos": [
-            {
-              "src": "assets/logos/CBC-ko.png",
-              "alt": "CBC",
-              "scale": "0.81"
-            },
-            {
-              "src": "assets/logos/GMA-mark.png",
-              "alt": "Good Morning America",
-              "scale": "1.76"
-            },
-            {
-              "src": "assets/logos/Showtime.svg.png",
-              "alt": "Showtime",
-              "scale": "0.81"
-            },
-            {
-              "src": "assets/logos/Men_s_Health.svg.png",
-              "alt": "Men's Health",
-              "scale": "0.80"
-            },
-            {
-              "src": "assets/logos/TGAM-wordmark-mark.png",
-              "alt": "The Globe and Mail",
-              "scale": "1.35"
-            },
-            {
-              "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
-              "alt": "Marilyn",
-              "scale": "0.67"
-            }
-          ]
-        }
-      ],
-      "settings": {
-        "background": "deep"
-      }
-    },
-    {
-      "type": "quote",
-      "id": "quote",
-      "anchor": false,
-      "enabled": true,
-      "quote": "What a refreshing approach to a challenging topic, and one that should be shared with all! You presented in a manner that was both professional, comfortable and creative, while still getting your message across to the entire audience. That's a hard combination to achieve, but you did it with style and ease. You would be a huge asset to ANY group who is looking for an amazing, one-of-a-kind speaker.",
-      "name": "John Machido",
-      "role": "Director",
-      "organization": "OCDSB",
-      "settings": {
-        "background": "aubergine"
-      },
-      "lines": [
-        "What a refreshing approach to a challenging topic, and one that should be shared with all!",
-        "You presented in a manner that was both professional, comfortable and creative, while still getting your message across to the entire audience.",
-        "That's a hard combination to achieve, but you did it with style and ease.",
-        "You would be a huge asset to ANY group who is looking for an amazing, one-of-a-kind speaker."
-      ],
-      "bg": {
-        "src": "assets/img/q-home-room-1536.webp",
-        "alt": ""
-      }
-    },
-    {
-      "type": "thread",
+      "type": "hm-thread",
       "id": "thread",
       "enabled": true,
       "ariaLabel": "What the work is about",
@@ -265,9 +124,7 @@
           "gloss": "Clear what quietly slows a team down."
         }
       ],
-      "settings": {
-        "background": "indigo"
-      }
+      "settings": {}
     },
     {
       "type": "patterns",
@@ -348,66 +205,16 @@
       }
     },
     {
-      "type": "chap",
+      "type": "hm-truth",
       "id": "truth",
       "anchor": false,
       "enabled": true,
-      "strike": true,
-      "heading": "What people say, and what they’re carrying.",
-      "railLabel": "What people say",
-      "chapters": [
-        {
-          "word": "“I’m fine.”",
-          "text": "I’m carrying all of it.",
-          "tone": "violet",
-          "spot": "ul",
-          "still": {
-            "src": "assets/img/permission-1280.webp",
-            "sizes": "(max-width: 768px) 100vw, 62vw",
-            "position": "30% 40%"
-          }
-        },
-        {
-          "word": "“We’re aligned.”",
-          "text": "No one has said the real thing.",
-          "tone": "bone",
-          "spot": "ul",
-          "still": {
-            "src": "assets/img/home-aligned-1536.webp",
-            "sizes": "(max-width: 768px) 100vw, 62vw",
-            "position": "22% 50%"
-          }
-        },
-        {
-          "word": "“It’s handled.”",
-          "text": "We’re running on empty.",
-          "tone": "violet",
-          "spot": "ul",
-          "still": {
-            "src": "assets/img/home-handled-1536.webp",
-            "sizes": "(max-width: 768px) 100vw, 62vw",
-            "position": "40% 50%"
-          }
-        }
-      ],
-      "settings": {
-        "motion": {
-          "beat": 60
-        },
-        "background": "deep"
-      }
-    },
-    {
-      "type": "truth",
-      "id": "truth",
-      "anchor": false,
-      "enabled": false,
       "image": {
         "src": "assets/img/permission-1280.webp",
         "sizes": "100vw",
         "alt": "Stephen connecting closely with workshop participants"
       },
-      "heading": "What people say, and what they're carrying.",
+      "heading": "What people say, and what they’re carrying.",
       "rows": [
         {
           "surface": "“I’m fine.”",
@@ -420,36 +227,6 @@
         {
           "surface": "“It’s handled.”",
           "under": "We’re running on empty."
-        }
-      ],
-      "settings": {}
-    },
-    {
-      "type": "out",
-      "id": "idea",
-      "anchor": false,
-      "enabled": false,
-      "label": "Relationships are the operating system.",
-      "words": [
-        {
-          "text": "Relationships",
-          "x": "26%",
-          "y": "36%",
-          "layer": "back",
-          "size": "xl"
-        },
-        {
-          "text": "are the",
-          "x": "50%",
-          "y": "52%",
-          "layer": "front"
-        },
-        {
-          "text": "*operating system.*",
-          "x": "70%",
-          "y": "68%",
-          "layer": "back",
-          "size": "xl"
         }
       ],
       "settings": {}
@@ -469,12 +246,12 @@
       "settings": {}
     },
     {
-      "type": "why",
+      "type": "hm-why",
       "id": "about",
       "enabled": true,
       "portrait": {
-        "src": "assets/img/why-wide-1920.webp",
-        "sizes": "100vw",
+        "src": "assets/img/headshot-formal-860.webp",
+        "sizes": "(max-width:1024px) 100vw, 46vw",
         "alt": "Portrait of Dr. Stephen de Wit"
       },
       "heading": "Twenty years in the room before the stage.",
@@ -489,16 +266,13 @@
         "label": "Read Stephen's story",
         "href": "about/"
       },
-      "settings": {
-        "background": "violet"
-      }
+      "settings": {}
     },
     {
-      "type": "stats",
+      "type": "hm-stats",
       "id": "numbers",
       "anchor": false,
       "enabled": true,
-      "note": "Proof in numbers, as a sentence",
       "eyebrow": "The results are human.",
       "counters": [
         {
@@ -517,9 +291,109 @@
           "label": "years learning how people connect."
         }
       ],
-      "settings": {
-        "background": "deep"
-      }
+      "settings": {}
+    },
+    {
+      "type": "hm-orgband",
+      "id": "trusted",
+      "anchor": false,
+      "enabled": true,
+      "ariaLabel": "Organizations Stephen has worked with, and media features",
+      "lanes": [
+        {
+          "label": "Where Stephen has spoken",
+          "speed": 0.35,
+          "logos": [
+            {
+              "src": "assets/logos/Reckitt-Logo-ko.png",
+              "alt": "Reckitt",
+              "scale": "1.03"
+            },
+            {
+              "src": "assets/logos/mdrt-logo-ko.png",
+              "alt": "MDRT",
+              "scale": "0.76"
+            },
+            {
+              "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
+              "alt": "University of Toronto",
+              "scale": "0.93"
+            },
+            {
+              "src": "assets/logos/tmu-mark-white.png",
+              "alt": "Toronto Metropolitan University",
+              "scale": "1.18"
+            },
+            {
+              "src": "assets/logos/george-brown-mark-white.png",
+              "alt": "George Brown College",
+              "scale": "1.22"
+            },
+            {
+              "src": "assets/logos/laurentian-university-vector-logo-ko.png",
+              "alt": "Laurentian University",
+              "scale": "0.63"
+            },
+            {
+              "src": "assets/logos/Lakeridge-mark.png",
+              "alt": "Lakeridge Health",
+              "scale": "1.09"
+            },
+            {
+              "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
+              "alt": "Toronto Academy of Dentistry",
+              "scale": "1.12"
+            },
+            {
+              "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
+              "alt": "NESO",
+              "scale": "1.02"
+            },
+            {
+              "src": "assets/logos/OSOT-mark.png",
+              "alt": "Ontario Society of Occupational Therapists",
+              "scale": "0.66"
+            }
+          ]
+        },
+        {
+          "label": "As seen on",
+          "speed": -0.28,
+          "logos": [
+            {
+              "src": "assets/logos/CBC-ko.png",
+              "alt": "CBC",
+              "scale": "0.81"
+            },
+            {
+              "src": "assets/logos/GMA-mark.png",
+              "alt": "Good Morning America",
+              "scale": "1.76"
+            },
+            {
+              "src": "assets/logos/Showtime.svg.png",
+              "alt": "Showtime",
+              "scale": "0.81"
+            },
+            {
+              "src": "assets/logos/Men_s_Health.svg.png",
+              "alt": "Men's Health",
+              "scale": "0.80"
+            },
+            {
+              "src": "assets/logos/TGAM-wordmark-mark.png",
+              "alt": "The Globe and Mail",
+              "scale": "1.35"
+            },
+            {
+              "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
+              "alt": "Marilyn",
+              "scale": "0.67"
+            }
+          ]
+        }
+      ],
+      "settings": {}
     },
     {
       "type": "keynotes",
@@ -580,7 +454,67 @@
       "layout": "strip"
     },
     {
-      "type": "care",
+      "type": "hm-steps",
+      "id": "how",
+      "enabled": true,
+      "ariaLabel": "What happens when you book",
+      "eyebrow": "How it works",
+      "heading": "From the first email to the last question in the room.",
+      "steps": [
+        {
+          "title": "Reach out.",
+          "text": "Tell us the date, the room and what your people are facing.",
+          "image": {
+            "src": "assets/img/home-step-reach-1365.webp",
+            "sizes": "100vw",
+            "position": "50% 30%"
+          }
+        },
+        {
+          "title": "A planning call.",
+          "text": "Stephen learns the culture, the pressure points and what has to be true when he walks off stage.",
+          "image": {
+            "src": "assets/img/home-step-call-1536.webp",
+            "sizes": "100vw",
+            "position": "62% 40%"
+          }
+        },
+        {
+          "title": "The talk is shaped to the room.",
+          "text": "Same core ideas, tuned to your industry and your people.",
+          "image": {
+            "src": "assets/img/home-step-shaped-1536.webp",
+            "sizes": "100vw",
+            "position": "40% 45%"
+          }
+        },
+        {
+          "title": "The day.",
+          "text": "Stage intro, AV list and timing are handled in advance. He arrives early.",
+          "image": {
+            "src": "assets/img/home-step-day-1536.webp",
+            "sizes": "100vw",
+            "position": "58% 50%"
+          }
+        },
+        {
+          "title": "Afterward.",
+          "text": "The conversation keeps going: resources for your team and a follow-up if you want it.",
+          "image": {
+            "src": "assets/img/home-step-after-1536.webp",
+            "sizes": "100vw",
+            "position": "38% 40%"
+          }
+        }
+      ],
+      "link": {
+        "label": "Start with an email",
+        "href": "book/"
+      },
+      "settings": {}
+    },
+    {
+      "type": "hm-care",
       "id": "healthcare",
       "enabled": true,
       "image": {
@@ -607,120 +541,27 @@
         "label": "See speaking",
         "href": "speaking/"
       },
-      "settings": {
-        "background": "indigo"
-      }
+      "settings": {}
     },
     {
-      "type": "steps",
-      "id": "how",
+      "type": "hm-final",
+      "id": "contact",
       "enabled": true,
-      "ariaLabel": "What happens when you book",
-      "eyebrow": "How it works",
-      "heading": "From the first email to the last question in the room.",
-      "steps": [
+      "heading": "Every room has *something unsaid*.",
+      "lead": "Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.",
+      "leadStyle": "margin-top:1.4rem;max-width:52ch;margin-inline:auto",
+      "buttons": [
         {
-          "title": "Reach out.",
-          "text": "Tell us the date, the room and what your people are facing.",
-          "image": {
-            "src": "assets/img/home-step-reach-1365.webp",
-            "sizes": "(max-width: 720px) 100vw, 58vw",
-            "position": "50% 30%"
-          }
+          "label": "Bring Stephen to your event",
+          "href": "book/"
         },
         {
-          "title": "A planning call.",
-          "text": "Stephen learns the culture, the pressure points and what has to be true when he walks off stage.",
-          "image": {
-            "src": "assets/img/home-step-call-1536.webp",
-            "sizes": "(max-width: 720px) 100vw, 58vw",
-            "position": "62% 40%"
-          }
-        },
-        {
-          "title": "The talk is shaped to the room.",
-          "text": "Same core ideas, tuned to your industry and your people.",
-          "image": {
-            "src": "assets/img/home-step-shaped-1536.webp",
-            "sizes": "(max-width: 720px) 100vw, 58vw",
-            "position": "40% 45%"
-          }
-        },
-        {
-          "title": "The day.",
-          "text": "Stage intro, AV list and timing are handled in advance. He arrives early.",
-          "image": {
-            "src": "assets/img/home-step-day-1536.webp",
-            "sizes": "(max-width: 720px) 100vw, 58vw",
-            "position": "58% 50%"
-          }
-        },
-        {
-          "title": "Afterward.",
-          "text": "The conversation keeps going: resources for your team and a follow-up if you want it.",
-          "image": {
-            "src": "assets/img/home-step-after-1536.webp",
-            "sizes": "(max-width: 720px) 100vw, 58vw",
-            "position": "38% 40%"
-          }
+          "label": "Watch Stephen speak",
+          "video": "assets/video/reel-720.mp4"
         }
       ],
-      "link": {
-        "label": "Start with an email",
-        "href": "book/"
-      },
-      "final": {
-        "id": "contact",
-        "heading": "Every room has *something unsaid*.",
-        "lead": "Keynotes, workshops and half-day sessions for teams, conferences, associations and healthcare organizations.",
-        "leadStyle": "margin-top:1.4rem;max-width:52ch;margin-inline:auto",
-        "buttons": [
-          {
-            "label": "Bring Stephen to your event",
-            "href": "book/"
-          },
-          {
-            "label": "Watch Stephen speak",
-            "video": "assets/video/reel-720.mp4"
-          }
-        ],
-        "contacts": true
-      },
-      "settings": {
-        "background": "stage"
-      }
-    },
-    {
-      "type": "close",
-      "id": "close",
-      "anchor": false,
-      "enabled": true,
-      "layout": "route",
-      "routesLabel": "Where to go next",
-      "routes": [
-        {
-          "label": "Keynotes",
-          "line": "Three talks. Each one runs as a keynote, a workshop or a half-day session.",
-          "href": "keynotes/"
-        },
-        {
-          "label": "Healthcare",
-          "line": "Care deeply, without carrying it all.",
-          "href": "healthcare/"
-        },
-        {
-          "label": "Book",
-          "line": "Tell us about your room.",
-          "href": "book/",
-          "image": {
-            "src": "assets/img/home-route-book-1152.webp",
-            "position": "45% 30%"
-          }
-        }
-      ],
-      "settings": {
-        "background": "plum"
-      }
+      "contacts": true,
+      "settings": {}
     }
   ]
 }
