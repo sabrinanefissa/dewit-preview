@@ -1,36 +1,37 @@
 {%- from "dd.njk" import dd %}
   {# ==============================================================
-       What he talks about: the unsaid lines as a centred credit roll,
-       one hairline row per line, each "Answered in: <talk>" link set to
-       the right of its row. Under the roll, one audience photo as a
-       full-width band with nothing on it; then the paragraph in a
-       drop-down and the link to the keynotes. No motion.
+       What the room is carrying: the unsaid lines with five frames from
+       the reel. The first line leads, its frame beside it at full size;
+       three frames follow in a row; the line without a frame is set
+       large beside the last frame, the turn. A frame is a button that
+       plays the reel from the chapter it was taken from ([data-seek],
+       js/main.js module 1); with no script it shows as a plain picture.
+       js/speaking.js develops the frames as they arrive. Under them, the
+       paragraph in a drop-down and the link to the keynotes.
        ============================================================== #}
-  <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+  {%- set chs = [] %}
+  {%- for b in page.blocks %}{% if b.type == 'reelHero' and b.enabled !== false and b.chapters %}{% set chs = b.chapters.items %}{% endif %}{% endfor %}
+  <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h">
     <div class="spk-unsaid__roll">
       <h2 class="spk-unsaid__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
       <ul class="spk-unsaid__lines">
       {%- for l in block.lines %}
         {%- set lt = l.text if l.text else l %}
-        <li><span class="spk-unsaid__t">{{ lt | inline('spk-em') }}</span>
+        {%- set st = l.still if (l.still and l.still.src) else null %}
+        <li class="{{ 'has-still' if st else 'no-still' }}">
+        {%- if st %}
+          {%- set chl = '' %}
+          {%- for c in chs %}{% if c.time == st.time %}{% set chl = c.label %}{% endif %}{% endfor %}
+          {%- set ss1 = st.src | srcset(r) %}
+          <button type="button" class="spk-still" data-scheme="dark" data-seek="{{ st.time }}"><span class="spk-sr">{{ (block.stillLabel or 'Play the reel from') | plain }} </span><span class="spk-sr spk-chapters__t">{{ (chl or st.alt) | plain }}</span><span class="spk-sr">: </span><img class="spk-still__img" src="{{ st.src | root(r) }}"{% if ss1 %} srcset="{{ ss1 }}" sizes="(max-width: 700px) 92vw, 480px"{% endif %} width="480" height="360" alt="{{ st.alt | plain }}" loading="lazy" decoding="async"><span class="spk-still__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>
+        {%- endif %}
+          <span class="spk-unsaid__t">{{ lt | inline('spk-em') }}</span>
         {%- if l.talk and l.talk.href %}
           <span class="spk-unsaid__ans">{{ (block.answeredLabel or 'Answered in:') | inline() }} <a class="spk-unsaid__talk" href="{{ l.talk.href | root(r) }}">{{ l.talk.label | inline() }}</a></span>
         {%- endif %}</li>
       {%- endfor %}
       </ul>
     </div>
-    {%- if block.image and block.image.src %}
-    <figure class="spk-unsaid__fig">
-      <div class="media spk-unsaid__media">
-        <img src="{{ block.image.src | root(r) }}"
-             {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-             sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
-      </div>
-      {%- if block.image.caption %}
-      <figcaption class="spk-unsaid__cap">{{ block.image.caption | inline() }}</figcaption>
-      {%- endif %}
-    </figure>
-    {%- endif %}
     <div class="spk-unsaid__after">
       {%- if block.text %}
       {%- call dd(block.textLabel or 'What he does with them in the room', block.id ~ '-room', 'spk-unsaid__dd') %}

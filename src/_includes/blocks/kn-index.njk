@@ -5,7 +5,7 @@
        accent, the title, the one-line description. A plain list: it does
        not stick.
        ============================================================== #}
-  <nav class="kn-index"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | plain }}" data-tone="{{ block | tone('plum-2') }}">
+  <nav class="kn-index"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | plain }}" data-tone="{{ block | tone('deep') }}">
     <ol class="kn-index__list">
     {%- for t in page.blocks | talks %}
       <li style="--acc: var(--{{ t.accent | accentVar }})"><a class="kn-index__a" href="#{{ t.id }}">

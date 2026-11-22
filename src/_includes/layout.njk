@@ -2,7 +2,7 @@
 {%- set slug = page.slug -%}
 {{- page | assertUniqueIds -}}
 <!doctype html>
-<html lang="{{ site.lang }}" class="no-js">
+<html lang="{{ site.lang }}" class="no-js" data-page="{{ slug }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="{{ site.head.viewport }}">
@@ -32,13 +32,38 @@
 <link rel="preload" as="image" imagesrcset="{{ pp1 }}" imagesizes="100vw" media="(max-width: 768px) and (orientation: portrait)" fetchpriority="high">
 {%- endif %}
 {%- endif %}
-<link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ build.v }}">
-{% for s in page.styles %}<link rel="stylesheet" href="{{ s | root(r) }}?v={{ build.v }}">
+<link rel="stylesheet" href="{{ 'css/tokens.css' | root(r) }}?v={{ 'css/tokens.css' | stamp }}">
+<link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ site.head.stylesheet | stamp }}">
+{% for s in page.styles %}<link rel="stylesheet" href="{{ s | root(r) }}?v={{ s | stamp }}">
 {% endfor %}<script>document.documentElement.className = document.documentElement.className.replace('no-js','js');
 /* failsafe: main.js sets window.dwMainOk as its last line. Deferred scripts run
    before DOMContentLoaded, so if it is still unset here the script failed to
    load or threw, and the page falls back to its no-script state (everything
    visible, nothing waiting on an entrance). */
+/* an IntersectionObserver that never reports (blocked or broken) hands its
+   targets to its callback as in view after 2.5s of visible time, so nothing
+   that waits on an entrance stays hidden */
+(function (W, D) {
+  var IO = W.IntersectionObserver;
+  if (!IO) return;
+  function Watched(cb, opts) {
+    var heard = false, list = [], t = 0;
+    var io = new IO(function (es, o) { heard = true; cb(es, o); }, opts);
+    var ob = io.observe, un = io.unobserve, dc = io.disconnect;
+    function check() {
+      if (heard || !list.length) return;
+      if (D.hidden) { D.addEventListener('visibilitychange', function f() { D.removeEventListener('visibilitychange', f); t = setTimeout(check, 2500); }); return; }
+      cb(list.slice().map(function (el) { var r = el.getBoundingClientRect();
+        return { target: el, isIntersecting: true, intersectionRatio: 1, boundingClientRect: r, intersectionRect: r, rootBounds: null, time: 0 }; }), io);
+    }
+    io.observe = function (el) { list.push(el); ob.call(io, el); if (!t) t = setTimeout(check, 2500); };
+    io.unobserve = function (el) { var i = list.indexOf(el); if (i > -1) list.splice(i, 1); un.call(io, el); };
+    io.disconnect = function () { list = []; dc.call(io); };
+    return io;
+  }
+  Watched.prototype = IO.prototype;
+  W.IntersectionObserver = Watched;
+})(window, document);
 document.addEventListener('DOMContentLoaded', function () { setTimeout(function () { if (!window.dwMainOk) { var h = document.documentElement; h.className = h.className.replace(/(^|\s)js(\s|$)/, '$1no-js$2'); } }, 0); });</script>
 {%- set ps = site.person %}
 {%- if page.jsonld %}
@@ -96,7 +121,8 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 {# {{ page.comments.nav | safe }} #}
 {# phones: the brand large under the nav, moving into the nav as the hero scrolls (js module 13) #}
 <span class="hero__name" aria-hidden="true">{{ site.brand }}</span>
-<header class="nav" id="nav">
+{%- set firstType = (page.blocks | first).type if page.blocks else "" %}
+<header class="nav" id="nav" data-scheme="{{ 'dark' if firstType == 'hero' or firstType == 'reelHero' else 'light' }}">
   {%- set bl = site.brandLink | navlink(slug, r) %}
   <a class="brand" href="{{ bl.href }}">{{ site.brand }}</a>
   <div class="nav-right">
@@ -110,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
   </div>
 </header>
 
-<div class="drawer" id="drawer" aria-hidden="true">
+<div class="drawer" id="drawer" aria-hidden="true" data-scheme="dark">
   <button class="drawer__close" aria-label="{{ site.ui.drawerCloseLabel }}">{{ site.ui.drawerClose }}</button>
   <nav aria-label="{{ site.ui.drawerLabel }}">
     {% for l in site.nav %}{% set nl = l | navlink(slug, r) %}<a href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ l.label | inline() }}</a>{% endfor %}<a href="{{ site.cta.href | root(r) }}">{{ site.cta.label | inline() }}</a>
@@ -118,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
   <div class="drawer__foot"><a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a><a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></div>
 </div>
 
-<main id="main"{% if page.mainTabindex %} tabindex="{{ page.mainTabindex }}"{% endif %}>
+<main id="main"{% if theme.gradientSplit[slug] %} data-split="{{ theme.gradientSplit[slug] }}"{% endif %}{% if page.mainTabindex %} tabindex="{{ page.mainTabindex }}"{% endif %}>
 {%- if page.ground %}
   {# The ground. One room under the whole page (a theatre from the back
        row) and a colour veil over it whose tone the scroll spine warms and
@@ -142,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 {%- endif %}
 </main>
 
-<footer class="foot{% if page.footer and page.footer.class %} {{ page.footer.class }}{% endif %}"{% if page.footer and page.footer.id %} id="{{ page.footer.id }}"{% endif %}>
+<footer class="foot{% if page.footer and page.footer.class %} {{ page.footer.class }}{% endif %}" data-scheme="dark"{% if page.footer and page.footer.id %} id="{{ page.footer.id }}"{% endif %}>
 {%- for b in page.blocks %}{% if b.enabled !== false and b.type == "close" %}{% set block = b %}
 {% include "blocks/close.njk" %}
 {%- endif %}{% endfor %}
@@ -177,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 </div>
 
 {% endif -%}
-{% for s in page.scripts %}<script src="{{ s | root(r) }}?v={{ build.v }}" defer></script>
-{% endfor %}<script src="{{ site.head.script | root(r) }}?v={{ build.v }}" defer></script>
+{% for s in page.scripts %}<script src="{{ s | root(r) }}?v={{ s | stamp }}" defer></script>
+{% endfor %}<script src="{{ site.head.script | root(r) }}?v={{ site.head.script | stamp }}" defer></script>
 </body>
 </html>

@@ -33,17 +33,21 @@
         "srcMobile": "assets/video/reel-mobile.mp4",
         "mobileAutoplay": "true"
       },
-      "heading": "The part people don’t say out loud.",
+      "heading": "The part people *don’t say out loud*.",
       "line": "170 keynotes for teams, conferences, associations and health care.",
       "cta": {
         "label": "Book Stephen",
         "href": "book/"
       },
+      "cta2": {
+        "label": "The three keynotes",
+        "href": "keynotes/"
+      },
       "index": {
         "label": "On this page",
         "items": [
           {
-            "label": "What he talks about",
+            "label": "What the room is carrying",
             "href": "#talks-about"
           },
           {
@@ -96,7 +100,7 @@
         "countLabel": "chapters"
       },
       "settings": {
-        "background": "stage-black"
+        "background": "stage"
       },
       "captions": {
         "src": "assets/video/reel-en.vtt",
@@ -114,17 +118,31 @@
       "type": "spk-unsaid",
       "id": "talks-about",
       "enabled": true,
-      "heading": "What he talks about.",
+      "heading": "What the room is carrying.",
       "answeredLabel": "Answered in:",
       "lines": [
         {
-          "text": "You can be surrounded by colleagues and still on your own."
+          "text": "You can be surrounded by colleagues and still on your own.",
+          "talk": {
+            "label": "The Hidden Multiplier",
+            "href": "keynotes/#hidden-multiplier"
+          },
+          "still": {
+            "src": "assets/img/reel-still-disengagement-480.webp",
+            "alt": "Stephen on stage in a black jacket, speaking to the room",
+            "time": 42
+          }
         },
         {
           "text": "You’re doing the job well and struggling quietly underneath it.",
           "talk": {
             "label": "The Hidden Multiplier",
             "href": "keynotes/#hidden-multiplier"
+          },
+          "still": {
+            "src": "assets/img/reel-still-connection-480.webp",
+            "alt": "Stephen in a blue blazer, explaining with both hands in an interview",
+            "time": 87
           }
         },
         {
@@ -132,6 +150,11 @@
           "talk": {
             "label": "Lead Human™",
             "href": "keynotes/#lead-human"
+          },
+          "still": {
+            "src": "assets/img/reel-still-leading-480.webp",
+            "alt": "Stephen on stage in front of a dark curtain, one arm raised",
+            "time": 62
           }
         },
         {
@@ -139,6 +162,11 @@
           "talk": {
             "label": "Invisible Friction",
             "href": "keynotes/#invisible-friction"
+          },
+          "still": {
+            "src": "assets/img/reel-still-saying-480.webp",
+            "alt": "Stephen in a burgundy blazer with a microphone, gesturing to the audience",
+            "time": 0
           }
         },
         {
@@ -149,16 +177,14 @@
           }
         },
         {
-          "text": "Left unsaid long enough, this becomes what the organization calls a *performance problem*."
+          "text": "Left unsaid long enough, this becomes what the organization calls a *performance problem*.",
+          "still": {
+            "src": "assets/img/reel-still-close-480.webp",
+            "alt": "Stephen on stage in a black jacket, mid-sentence",
+            "time": 145
+          }
         }
       ],
-      "image": {
-        "src": "assets/img/line-listen-1280.webp",
-        "sizes": "100vw",
-        "alt": "An audience listening closely in a darkened conference room",
-        "caption": "",
-        "position": "50% 45%"
-      },
       "text": "In the room, Stephen says these things out loud, so people recognize them in their own team. Then he gives leaders a practical, research-informed way to work with them: clear the silent friction, strengthen trust, and rebuild it quickly after a breakdown.",
       "textLabel": "What he does with them in the room",
       "link": {
@@ -166,24 +192,25 @@
         "href": "keynotes/"
       },
       "settings": {
-        "background": "plum-2"
-      }
+        "background": "plum"
+      },
+      "stillLabel": "Play the reel from"
     },
     {
       "type": "stats",
       "id": "proof",
       "enabled": true,
       "settings": {
-        "background": "plum-2",
+        "background": "ivory",
         "motion": {
-          "countUp": false
+          "countUp": true
         }
       },
       "ariaLabel": "Speaking record",
       "eyebrow": "",
       "anchor": false,
       "extraClass": "spk-proof",
-      "note": "==============================================================\n       PROOF LINE - the stats block with the count-up off (static\n       numbers; the count-up belongs to the homepage)\n       ==============================================================",
+      "note": "Proof line: the three figures large, counting up once as they arrive",
       "counters": [
         {
           "value": 170,
@@ -208,10 +235,10 @@
       "enabled": true,
       "heading": "Rooms he speaks to.",
       "settings": {
-        "background": "plum-2"
+        "background": "deep"
       },
       "ariaLabel": "Rooms he speaks to",
-      "sentence": "Available as a *keynote*, a *workshop* or a *half-day session*.",
+      "sentence": "Available as a keynote, a workshop or a half-day session.",
       "usuallyLabel": "usually:",
       "eventsLabel": "Event",
       "talkLabel": "Talk",
@@ -258,8 +285,7 @@
             "href": "healthcare/"
           }
         }
-      ],
-      "seats": true
+      ]
     },
     {
       "type": "spk-planners",
@@ -270,6 +296,11 @@
       "contact": {
         "label": "info@drdewit.com",
         "href": "mailto:info@drdewit.com"
+      },
+      "art": {
+        "src": "assets/img/pl-room-1536.webp",
+        "sizes": "(max-width: 1100px) 92vw, 54vw",
+        "alt": ""
       },
       "kitLabel": "Planner kit: bios, stage introduction, headshots, AV",
       "copiedLabel": "Copied",
@@ -357,21 +388,24 @@
             "file": "assets/downloads/headshot-blue-suit.jpg",
             "format": "JPG",
             "size": "2.5 MB",
-            "alt": "Dr. Stephen de Wit in a blue suit and patterned tie, smiling"
+            "alt": "Dr. Stephen de Wit in a blue suit and patterned tie, smiling",
+            "thumb": "assets/img/pl-shot-blue-suit-640.webp"
           },
           {
             "label": "Dark jacket, smiling",
             "file": "assets/downloads/headshot-light-smile.jpg",
             "format": "JPG",
             "size": "1.2 MB",
-            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt, smiling"
+            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt, smiling",
+            "thumb": "assets/img/pl-shot-light-smile-640.webp"
           },
           {
             "label": "Dark jacket",
             "file": "assets/downloads/headshot-light.jpg",
             "format": "JPG",
             "size": "1.2 MB",
-            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt"
+            "alt": "Dr. Stephen de Wit in a dark jacket and white T-shirt",
+            "thumb": "assets/img/pl-shot-light-640.webp"
           }
         ]
       },
@@ -390,7 +424,7 @@
         }
       },
       "settings": {
-        "background": "plum-2"
+        "background": "plum"
       }
     },
     {
@@ -401,48 +435,84 @@
       "logos": [
         {
           "src": "assets/logos/Reckitt-Logo-ko.png",
-          "alt": "Reckitt"
+          "alt": "Reckitt",
+          "scale": "1.01"
         },
         {
           "src": "assets/logos/mdrt-logo-ko.png",
-          "alt": "MDRT"
+          "alt": "MDRT",
+          "scale": "0.76"
         },
         {
           "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
-          "alt": "University of Toronto"
+          "alt": "University of Toronto",
+          "scale": "0.88"
         },
         {
           "src": "assets/logos/tmu-mark-white.png",
-          "alt": "Toronto Metropolitan University"
+          "alt": "Toronto Metropolitan University",
+          "scale": "1.09"
         },
         {
           "src": "assets/logos/george-brown-mark-white.png",
-          "alt": "George Brown College"
+          "alt": "George Brown College",
+          "scale": "1.2"
         },
         {
           "src": "assets/logos/laurentian-university-vector-logo-ko.png",
-          "alt": "Laurentian University"
+          "alt": "Laurentian University",
+          "scale": "0.66",
+          "wide": true
         },
         {
           "src": "assets/logos/Lakeridge-mark.png",
-          "alt": "Lakeridge Health"
+          "alt": "Lakeridge Health",
+          "scale": "1.06"
         },
         {
           "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
-          "alt": "Toronto Academy of Dentistry"
+          "alt": "Toronto Academy of Dentistry",
+          "scale": "1.08"
         },
         {
           "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
-          "alt": "NESO"
+          "alt": "NESO",
+          "scale": "1.02"
         },
         {
           "src": "assets/logos/OSOT-mark.png",
           "alt": "Ontario Society of Occupational Therapists",
-          "scale": "0.6"
+          "scale": "0.67",
+          "wide": true
         }
       ],
       "settings": {
-        "background": "plum-2"
+        "background": "cream"
+      }
+    },
+    {
+      "type": "quote",
+      "id": "quote",
+      "anchor": false,
+      "enabled": true,
+      "quote": "Your participation was instrumental in making the Annual Meeting a wonderful experience for our members. The Program Development Committee spent a great deal of time selecting the right people for our program. We are so grateful they selected YOU!",
+      "name": "Michelle L. Hoesly",
+      "role": "President",
+      "organization": "Million Dollar Round Table",
+      "settings": {
+        "background": "plum"
+      },
+      "portrait": {
+        "src": "assets/img/q-hoesly-480.webp",
+        "alt": "Michelle L. Hoesly"
+      },
+      "side": "left",
+      "logo": {
+        "src": "assets/logos/mdrt-logo-ko.png"
+      },
+      "bg": {
+        "src": "assets/img/spk-quote-1536.webp",
+        "alt": ""
       }
     },
     {
@@ -451,7 +521,7 @@
       "enabled": true,
       "heading": "Bring him into your room.",
       "settings": {
-        "background": "stage-black"
+        "background": "deep"
       },
       "cta": {
         "label": "Book Stephen",
@@ -459,10 +529,21 @@
       },
       "anchor": false,
       "image": {
-        "src": "assets/img/line-room-1280.webp",
-        "sizes": "(max-width: 768px) 100vw, 60vw"
+        "src": "assets/img/spk-close-1920.webp",
+        "sizes": "100vw",
+        "alt": "",
+        "position": "50% 13%",
+        "mobilePosition": "86% 50%",
+        "headingPlace": {
+          "x": "12%",
+          "y": "14%",
+          "width": "40%",
+          "mobileX": "8%",
+          "mobileY": "14%",
+          "mobileWidth": "60%"
+        }
       },
-      "layout": "split",
+      "layout": "over",
       "next": {
         "label": "The three keynotes",
         "href": "keynotes/"
@@ -494,6 +575,7 @@
   "slug": "speaking",
   "styles": [
     "css/dd.css",
-    "css/speaking.css"
+    "css/speaking.css",
+    "css/quote.css"
   ]
 }

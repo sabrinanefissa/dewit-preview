@@ -1,11 +1,26 @@
-  {# About: as seen on. A static row of media marks on plum. #}
-  <section class="ab-media"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
-    <div class="ab-media__inner">
-      <h2 class="ab-media__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
-      <ul class="ab-media__row">
-      {%- for l in block.logos %}
-        <li><img src="{{ l.src | root(r) }}" alt="{{ l.alt | inline() }}" class="logo-mark{% if l.treatment == 'plate' %} logo-mark--plate{% endif %}" loading="lazy" decoding="async"{% if l.scale %} style="--s:{{ l.scale }}"{% endif %}></li>
-      {%- endfor %}
-      </ul>
+  {# About: as seen on. The interview photo on the left, to the page
+       edge, with the heading and its caption beside it; under them the
+       media marks, one per equal cell across the full width, each painted
+       in the section's text colour and sized to the same visual weight
+       (logo.h: its height against the others). #}
+  <section class="ab-media"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
+    <div class="ab-media__top">
+      {%- if block.image and block.image.src %}
+      <div class="ab-media__photo">
+        <img src="{{ block.image.src | root(r) }}"
+             {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async">
+      </div>
+      {%- endif %}
+      <div class="ab-media__head">
+        <h2 class="ab-media__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
+        {%- if block.image and block.image.caption %}<p class="ab-media__cap">{{ block.image.caption | inline() }}</p>{% endif %}
+      </div>
     </div>
+    <ul class="ab-media__row">
+    {%- for l in block.logos %}
+      {%- set la = l.src | aspect %}
+      <li style="--i:{{ loop.index0 }}"><span class="ab-media__logo logo-tint" role="img" aria-label="{{ l.alt | plain }}" style="--logo-src:url('{{ l.src | root(r) }}');aspect-ratio:{{ la or 3 }};--h:{{ l.h or 0.7 }}"></span></li>
+    {%- endfor %}
+    </ul>
   </section>

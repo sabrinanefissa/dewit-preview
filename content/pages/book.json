@@ -14,7 +14,8 @@
   "lightbox": false,
   "styles": [
     "css/dd.css",
-    "css/book.css"
+    "css/book.css",
+    "css/quote.css"
   ],
   "scripts": [
     "js/dd.js",
@@ -32,23 +33,72 @@
       "enabled": true,
       "heading": "Book Stephen",
       "image": {
-        "src": "assets/img/stage-dark-1440.webp",
-        "sizes": "(max-width: 1100px) 100vw, 58vw",
-        "alt": "Dr. Stephen de Wit on a dark stage, speaking to the front rows with open hands",
-        "position": "50% 0%"
+        "src": "assets/img/contact-1280.webp",
+        "sizes": "(max-width: 600px) 100vw, (max-width: 1100px) 46vw, 58vw",
+        "alt": "Dr. Stephen de Wit smiling at a café table on a city street, his phone in his hands",
+        "position": "56% 30%"
       },
-      "lead": "Tell us about your event and the people in the room. Stephen's team will come back to you about the date and the fit.",
+      "lead": "Tell us about your event and the people in the room.",
       "phoneLabel": "Call",
       "emailLabel": "Email",
+      "logos": {
+        "label": "Where Stephen has spoken.",
+        "items": [
+          {
+            "src": "assets/logos/Reckitt-Logo-ko.png",
+            "alt": "Reckitt",
+            "scale": "1.0"
+          },
+          {
+            "src": "assets/logos/mdrt-logo-ko.png",
+            "alt": "MDRT",
+            "scale": "0.7"
+          },
+          {
+            "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
+            "alt": "University of Toronto",
+            "scale": "0.85"
+          },
+          {
+            "src": "assets/logos/tmu-mark-white.png",
+            "alt": "Toronto Metropolitan University",
+            "scale": "1.08"
+          },
+          {
+            "src": "assets/logos/george-brown-mark-white.png",
+            "alt": "George Brown College",
+            "scale": "1.2"
+          },
+          {
+            "src": "assets/logos/Lakeridge-mark.png",
+            "alt": "Lakeridge Health",
+            "scale": "1.06"
+          },
+          {
+            "src": "assets/logos/OSOT-mark.png",
+            "alt": "Ontario Society of Occupational Therapists",
+            "scale": "0.64"
+          },
+          {
+            "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
+            "alt": "Toronto Academy of Dentistry",
+            "scale": "1.1"
+          }
+        ],
+        "invite": {
+          "label": "Tell us about your room.",
+          "href": "#enquiry"
+        }
+      },
       "settings": {
-        "background": "violet-deep"
+        "background": "plum"
       }
     },
     {
       "type": "bk-form",
       "id": "enquiry",
       "enabled": true,
-      "heading": "Your event",
+      "heading": "Tell us about *your room*.",
       "requiredNote": "Only your name and work email are required. The rest helps us reply with something useful.",
       "requiredWord": "(required)",
       "portrait": {
@@ -58,6 +108,10 @@
       "bureau": {
         "lead": "Bureaus: write to",
         "tail": "for an unbranded kit."
+      },
+      "contact": {
+        "phoneLabel": "Call",
+        "emailLabel": "Email"
       },
       "steps": [
         {
@@ -107,7 +161,7 @@
           "label": "Event date or window",
           "type": "text",
           "autocomplete": "off",
-          "hint": "A date, or a rough window if it isn’t set yet."
+          "hint": "A date, or a rough window."
         },
         {
           "step": 1,
@@ -321,7 +375,7 @@
         "empty": "(not given)"
       },
       "settings": {
-        "background": "violet-deep"
+        "background": "deep"
       }
     },
     {
@@ -331,6 +385,7 @@
       "enabled": true,
       "heading": "What happens next",
       "detailsLabel": "What happens next, in detail",
+      "intro": "Stephen's team will come back to you about the date and the fit.",
       "steps": [
         {
           "title": "Reach out.",
@@ -354,12 +409,50 @@
         }
       ],
       "settings": {
-        "background": "violet-deep"
+        "background": "deep"
+      }
+    },
+    {
+      "type": "quote",
+      "id": "quote",
+      "anchor": false,
+      "enabled": true,
+      "quote": "Dr. de Wit is a gifted professional speaker who knows how to educate and move crowds of all stripes. Stephen managed to be entertaining, funny and informative while always maintaining appropriateness. There should be no hesitation in booking him for your future events.",
+      "name": "Dr. Anthony Mair",
+      "role": "Orthodontic Specialist",
+      "organization": "Canadian Association of Orthodontists",
+      "settings": {
+        "background": "plum"
+      },
+      "portrait": {
+        "src": "assets/img/q-mair-480.webp",
+        "alt": "Dr. Anthony Mair"
+      },
+      "side": "left",
+      "logo": {
+        "src": "assets/logos/CAO-ACO-logo.png"
+      },
+      "bg": {
+        "src": "assets/img/q-kn-room-1536.webp",
+        "alt": ""
+      }
+    },
+    {
+      "type": "bk-photo",
+      "id": "ending",
+      "anchor": false,
+      "enabled": true,
+      "image": {
+        "src": "assets/img/bk-seated-1536.webp",
+        "sizes": "100vw",
+        "alt": "Dr. Stephen de Wit seated on a stage, talking with open hands",
+        "position": "72% 40%",
+        "mobilePosition": "50% 40%"
       }
     }
   ],
   "preload": {
-    "href": "assets/img/stage-dark-1440.webp",
-    "sizes": "(max-width: 1100px) 100vw, 58vw"
+    "href": "assets/img/contact-1280.webp",
+    "sizes": "(max-width: 600px) 100vw, (max-width: 1100px) 46vw, 58vw"
   }
 }

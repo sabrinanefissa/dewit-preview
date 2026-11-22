@@ -9,20 +9,22 @@
     "title": "About Dr. Stephen de Wit, Speaker on Human Connection",
     "description": "Dr. Stephen de Wit is a speaker and researcher on human connection and relational intelligence, with 20+ years as a therapist, researcher and speaker.",
     "url": "https://drdewit.com/about/",
-    "image": "https://drdewit.com/assets/img/headshot-blue-suit-1365.webp"
+    "image": "https://drdewit.com/assets/img/ab-top-1536.webp"
   },
   "preload": {
-    "href": "assets/img/headshot-blue-suit-960.webp",
-    "sizes": "(max-width: 900px) 100vw, 42vw"
+    "href": "assets/img/ab-top-1152.webp",
+    "sizes": "(max-width: 900px) 100vw, 46vw"
   },
   "jsonld": false,
   "lightbox": false,
   "styles": [
     "css/dd.css",
-    "css/about.css"
+    "css/about.css",
+    "css/quote.css"
   ],
   "scripts": [
-    "js/dd.js"
+    "js/dd.js",
+    "js/about.js"
   ],
   "comments": {
     "loader": "Loader",
@@ -58,12 +60,120 @@
         "href": "book/"
       },
       "portrait": {
-        "src": "assets/img/headshot-blue-suit-960.webp",
-        "sizes": "(max-width: 900px) 100vw, 42vw",
-        "alt": "Portrait of Dr. Stephen de Wit in a blue suit, smiling"
+        "src": "assets/img/ab-top-1152.webp",
+        "sizes": "(max-width: 900px) 100vw, 46vw",
+        "alt": "Dr. Stephen de Wit in a dark red jacket, leaning against a wall and smiling"
       },
       "settings": {
-        "background": "plum-2"
+        "background": "aubergine"
+      }
+    },
+    {
+      "type": "ab-creds",
+      "id": "credentials",
+      "anchor": false,
+      "enabled": true,
+      "heading": "Credentials",
+      "items": [
+        "Doctorate",
+        "Master of Public Health",
+        "20+ years as a therapist, researcher and speaker",
+        "Research Associate, Ontario Tech University"
+      ],
+      "settings": {
+        "background": "deep"
+      },
+      "image": {
+        "src": "assets/img/ab-creds-1152.webp",
+        "sizes": "100vw",
+        "alt": "Stephen laughing at a desk in front of a chalkboard, a stack of books beside him"
+      }
+    },
+    {
+      "type": "ab-media",
+      "id": "media",
+      "anchor": false,
+      "enabled": true,
+      "heading": "As seen on",
+      "logos": [
+        {
+          "src": "assets/logos/CBC-ko.png",
+          "alt": "CBC",
+          "h": "0.58"
+        },
+        {
+          "src": "assets/logos/GMA-mark.png",
+          "alt": "Good Morning America",
+          "h": "1.31"
+        },
+        {
+          "src": "assets/logos/Showtime.svg.png",
+          "alt": "Showtime",
+          "h": "0.6"
+        },
+        {
+          "src": "assets/logos/Men_s_Health.svg.png",
+          "alt": "Men's Health",
+          "h": "0.6"
+        },
+        {
+          "src": "assets/logos/TGAM-wordmark-mark.png",
+          "alt": "The Globe and Mail",
+          "h": "1.05"
+        },
+        {
+          "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
+          "alt": "Marilyn",
+          "h": "0.46"
+        }
+      ],
+      "settings": {
+        "background": "mauve"
+      },
+      "image": {
+        "src": "assets/img/ctv-interview-1440.webp",
+        "sizes": "(max-width: 900px) 100vw, 58vw",
+        "alt": "Stephen in a blue suit being interviewed on the CTV Your Morning set",
+        "caption": "On CTV's Your Morning."
+      }
+    },
+    {
+      "type": "ab-ways",
+      "id": "ways",
+      "anchor": true,
+      "enabled": true,
+      "heading": "Ways to work with Stephen",
+      "ways": [
+        {
+          "label": "Keynote",
+          "line": "Lead Human, Invisible Friction or The Hidden Multiplier.",
+          "href": "keynotes/",
+          "image": {
+            "src": "assets/img/ab-way-keynote-768.webp",
+            "alt": "Stephen on stage with a headset microphone, mid-stride in front of a large screen"
+          }
+        },
+        {
+          "label": "Workshop or half-day session",
+          "line": "Each keynote also runs as a workshop or a half-day session.",
+          "href": "book/",
+          "image": {
+            "src": "assets/img/ab-way-workshop-491.webp",
+            "alt": "Stephen laughing with workshop participants around a table"
+          }
+        },
+        {
+          "label": "Healthcare session",
+          "line": "For hospitals, long-term care and the teams who look after other people for a living.",
+          "href": "healthcare/",
+          "image": {
+            "src": "assets/img/ab-way-health-544.webp",
+            "alt": "Stephen in a blue shirt speaking to a full conference room"
+          }
+        }
+      ],
+      "settings": {
+        "background": "deep"
       }
     },
     {
@@ -80,80 +190,35 @@
         "Today he brings that lens to the stage. His Lead Human™ framework shows leaders how to clear silent friction, rebuild trust and build cultures where people lean in, step up and stay, even under pressure.",
         "He works with executive teams and senior leaders, managers and emerging leaders, associations and professional organizations, healthcare teams, and teams working through change, growth or cultural strain."
       ],
-      "figures": [
-        {
-          "src": "assets/img/ctv-interview-960.webp",
-          "sizes": "(max-width: 900px) 100vw, 58vw",
-          "alt": "Stephen in a blue suit being interviewed on the CTV Your Morning set",
-          "caption": "On CTV's Your Morning."
-        },
-        {
-          "src": "assets/img/panel-live-640.webp",
-          "sizes": "(max-width: 900px) 100vw, 40vw",
-          "alt": "Stephen with a microphone on a live panel, seated between three other speakers",
-          "caption": "Speaking on a live panel."
-        }
-      ],
       "settings": {
-        "background": "aub"
+        "background": "mauve"
+      },
+      "portrait": {
+        "src": "assets/img/ab-story-1152.webp",
+        "sizes": "(max-width: 900px) 100vw, 40vw",
+        "alt": "Head and shoulders portrait of Stephen smiling, in a dark red jacket and a flowered shirt"
       }
     },
     {
-      "type": "ab-creds",
-      "id": "credentials",
+      "type": "quote",
+      "id": "quote",
       "anchor": false,
       "enabled": true,
-      "heading": "Credentials",
-      "items": [
-        "Doctorate",
-        "Master of Public Health",
-        "20+ years as a therapist, researcher and speaker",
-        "Research Associate, Ontario Tech University"
-      ],
+      "quote": "You challenge people to ask themselves questions and you inspire and encourage people to lean into their own self-worth and believe that they are not only capable but deserving of a great life. You offer them a safe place to be themselves, open their hearts to new possibilities, and give them permission to prioritize their own lives and their own happiness.",
+      "name": "Nicole Byrom",
+      "role": "Health Promotions Manager",
+      "organization": "Canadian Celiac Association",
       "settings": {
-        "background": "aub-2"
-      }
-    },
-    {
-      "type": "ab-media",
-      "id": "media",
-      "anchor": false,
-      "enabled": true,
-      "heading": "As seen on",
-      "logos": [
-        {
-          "src": "assets/logos/CBC-ko.png",
-          "alt": "CBC",
-          "scale": "0.85"
-        },
-        {
-          "src": "assets/logos/GMA-mark.png",
-          "alt": "Good Morning America",
-          "scale": "1.4"
-        },
-        {
-          "src": "assets/logos/Showtime.svg.png",
-          "alt": "Showtime",
-          "scale": "0.7"
-        },
-        {
-          "src": "assets/logos/Men_s_Health.svg.png",
-          "alt": "Men's Health",
-          "scale": "0.6"
-        },
-        {
-          "src": "assets/logos/TGAM-wordmark-mark.png",
-          "alt": "The Globe and Mail",
-          "scale": "1.25"
-        },
-        {
-          "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
-          "alt": "Marilyn",
-          "scale": "0.55"
-        }
-      ],
-      "settings": {
-        "background": "aub"
+        "background": "aubergine"
+      },
+      "portrait": {
+        "src": "assets/img/q-byrom-480.webp",
+        "alt": "Nicole Byrom"
+      },
+      "side": "right",
+      "bg": {
+        "src": "assets/img/q-about-room-1536.webp",
+        "alt": ""
       }
     },
     {
@@ -166,15 +231,10 @@
         "label": "Book Stephen",
         "href": "book/"
       },
-      "image": {
-        "src": "assets/img/contact-1280.webp",
-        "sizes": "(max-width: 768px) 100vw, 66vw",
-        "position": "50% 34%"
-      },
       "settings": {
-        "background": "aub-2"
+        "background": "aubergine"
       },
-      "layout": "photo-left",
+      "layout": "type",
       "contact": true,
       "next": {
         "label": "See him speak",

@@ -62,6 +62,172 @@ var UI = (function () {
     syncNav();
   }
 
+  /* ---- Page gradient and text schemes ----
+     The gradient is painted on <main> (main.css) with fixed stops. A page
+     that opens on a dark media hero starts it under the hero: --grad-top
+     is the hero's height, --grad-h the painted height. Each section takes
+     the text scheme that reads over its whole height, worked out from the
+     real gradient colour at its top and bottom: ink if ink passes AA down
+     to its bottom, cream if cream passes from its top. A section that
+     crosses the middle, where neither does, gets data-band and a clamp of
+     the gradient to the nearest colour its text reads on (main.css),
+     whichever side asks the smaller shift. The nav takes the
+     gradient colour under it as its ground and the text that reads on it.
+     Measured at start, on resize, after fonts and images settle, and
+     whenever main changes height. */
+  (function () {
+    var main = document.getElementById("main");
+    if (!main) return;
+    var LOCK = ".hero, .spk-hero";
+    var STOPS = [0, 0.35, 0.65, 1];
+    var INK = [36, 26, 42], CREAM = [244, 237, 225], AA = 4.8;
+    var bands = [], mainEnd = Infinity, mainTop = 0, gradTop = 0, gradH = 1;
+    var stops = null, inkTo = 0.36, creamFrom = 0.54;
+    function hex(v) {
+      v = (v || "").trim().replace("#", "");
+      if (v.length === 3) v = v.charAt(0) + v.charAt(0) + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2);
+      return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
+    }
+    function colorAt(f) {
+      f = Math.max(0, Math.min(1, f));
+      for (var i = 0; i < 3; i++) {
+        if (f <= STOPS[i + 1]) {
+          var k = (f - STOPS[i]) / (STOPS[i + 1] - STOPS[i]), a = stops[i], b = stops[i + 1];
+          return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+        }
+      }
+      return stops[3];
+    }
+    function lum(c) {
+      var r = c.map(function (v) { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * r[0] + 0.7152 * r[1] + 0.0722 * r[2];
+    }
+    function ratio(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+    function rgb(c) { return "rgb(" + c.map(Math.round).join(",") + ")"; }
+    function readStops() {
+      var cs = getComputedStyle(document.documentElement);
+      stops = ["--g0", "--g1", "--g2", "--g3"].map(function (n) { return hex(cs.getPropertyValue(n)); });
+      inkTo = 0; creamFrom = 1;
+      for (var i = 0; i <= 1000; i++) {
+        var c = colorAt(i / 1000);
+        if (ratio(INK, c) >= AA) inkTo = i / 1000;
+        if (creamFrom === 1 && ratio(CREAM, c) >= AA) creamFrom = i / 1000;
+      }
+    }
+    function docTop(el) { var y = 0; while (el) { y += el.offsetTop; el = el.offsetParent; } return y; }
+    function shown(el) { return el.offsetHeight > 0 && el.getAttribute("aria-hidden") !== "true"; }
+    function pad(el, side) { return parseFloat(getComputedStyle(el)["padding" + side]) || 0; }
+    function measure() {
+      if (!stops) readStops();
+      var kids = [].slice.call(main.children).filter(shown);
+      var mTop = docTop(main), mH = main.offsetHeight;
+      var first = kids[0], gTop = 0;
+      if (first && first.matches(".hero, .spk-hero, [data-gradient-under]")) gTop = first.offsetHeight;
+      var gH = Math.max(1, mH - gTop);
+      main.style.setProperty("--grad-top", gTop + "px");
+      main.style.setProperty("--grad-h", gH + "px");
+      mainTop = mTop; gradTop = gTop; gradH = gH;
+      bands = [];
+      mainEnd = mTop + mH;
+      var rows = kids.map(function (el) {
+        var top = docTop(el) - mTop, h = el.offsetHeight, sc, band = null, f = 0, c = null;
+        var t = (top - gTop) / gH, b = (top - gTop + h) / gH;
+        if (el.matches(LOCK)) sc = "dark";
+        else if (b <= inkTo) sc = "light";
+        else if (t >= creamFrom) sc = "dark";
+        else {
+          /* the clamp starts once the section's padding is spent, so the
+             padding carries the fade and the text sits on the clamped colour */
+          var pt = Math.max(48, pad(el, "Top") * 0.9), pb = Math.max(48, pad(el, "Bottom") * 0.9);
+          var tIn = (top - gTop + pt) / gH, bIn = (top - gTop + h - pb) / gH;
+          if (Math.max(0, creamFrom - tIn) <= Math.max(0, bIn - inkTo)) { sc = "dark"; band = "dark"; f = pt; c = colorAt(creamFrom); }
+          else { sc = "light"; band = "light"; f = pb; c = colorAt(inkTo); }
+        }
+        return { el: el, top: top, h: h, sc: sc, band: band, f: f, c: c };
+      });
+      rows.forEach(function (r, i) {
+        var el = r.el;
+        /* two clamped neighbours on the same side join without a fade */
+        if (r.band === "dark" && i > 0 && rows[i - 1].band === "dark") r.f = 0;
+        if (r.band === "light" && i < rows.length - 1 && rows[i + 1].band === "light") r.f = 0;
+        if (el.getAttribute("data-scheme") !== r.sc) el.setAttribute("data-scheme", r.sc);
+        if (r.band) { if (el.getAttribute("data-band") !== r.band) el.setAttribute("data-band", r.band); }
+        else if (el.hasAttribute("data-band")) el.removeAttribute("data-band");
+        el.style.setProperty("--sec-y", (r.top - gTop) + "px");
+        bands.push({ top: r.top + mTop, bottom: r.top + mTop + r.h, scheme: r.sc, band: r.band, c: r.c });
+      });
+      /* the clamps, painted by <main> over the gradient as two layers (one
+         darkens, one lightens) in the gradient's own coordinates */
+      var dk = [], lt = [], cF = creamFrom * gH, iT = inkTo * gH;
+      rows.forEach(function (r) {
+        var y0 = r.top - gTop, y1 = y0 + r.h, c = r.band ? rgb(r.c) : "";
+        if (r.band === "dark") dk.push("transparent " + Math.round(y0) + "px", c + " " + Math.round(y0 + r.f) + "px", c + " " + Math.round(Math.max(y1, cF)) + "px", "transparent " + Math.round(Math.max(y1, cF)) + "px");
+        if (r.band === "light") lt.push("transparent " + Math.round(Math.min(y0, iT)) + "px", c + " " + Math.round(Math.min(y0, iT)) + "px", c + " " + Math.round(y1 - r.f) + "px", "transparent " + Math.round(y1) + "px");
+      });
+      function layer(st) { return st.length ? "linear-gradient(180deg, transparent 0, " + st.join(", ") + ", transparent 100%)" : ""; }
+      if (dk.length) main.style.setProperty("--clamp-d", layer(dk)); else main.style.removeProperty("--clamp-d");
+      if (lt.length) main.style.setProperty("--clamp-l", layer(lt)); else main.style.removeProperty("--clamp-l");
+      main.classList.add("is-measured");
+      chrome();
+    }
+    function at(y) {
+      if (y >= mainEnd) return "dark";
+      for (var i = bands.length - 1; i >= 0; i--) if (y >= bands[i].top) return bands[i].scheme;
+      return bands.length ? bands[0].scheme : "light";
+    }
+    /* the ground colour at a page position: the gradient there, or a
+       banded section's clamped colour where it is clamped */
+    function groundAt(y) {
+      if (!stops) return null;
+      if (y >= mainEnd) return stops[3];
+      var g = colorAt((y - mainTop - gradTop) / gradH);
+      for (var i = bands.length - 1; i >= 0; i--) {
+        var bd = bands[i];
+        if (y >= bd.top && y < bd.bottom) {
+          if (bd.band === "dark" && lum(bd.c) < lum(g)) g = bd.c;
+          if (bd.band === "light" && lum(bd.c) > lum(g)) g = bd.c;
+          break;
+        }
+      }
+      return g;
+    }
+    function schemeOn(g) { return ratio(INK, g) >= ratio(CREAM, g) ? "light" : "dark"; }
+    var nav = document.querySelector(".nav");
+    function chrome() {
+      var y = window.scrollY;
+      if (nav) {
+        var ny = y + nav.offsetHeight / 2, sc = at(ny);
+        var g = ny < mainTop + gradTop ? null : groundAt(y + nav.offsetHeight);
+        if (g && ratio(INK, g) < AA && ratio(CREAM, g) < AA) {
+          /* the nav over the middle stretch takes the nearer readable colour */
+          var f = (y + nav.offsetHeight - mainTop - gradTop) / gradH;
+          g = colorAt(f - inkTo < creamFrom - f ? inkTo : creamFrom);
+        }
+        if (g) { sc = schemeOn(g); nav.style.setProperty("--nav-ground", rgb(g)); }
+        else nav.style.removeProperty("--nav-ground");
+        if (nav.getAttribute("data-scheme") !== sc) nav.setAttribute("data-scheme", sc);
+        nav.classList.remove("is-mixed");
+      }
+      var skip = document.querySelector(".pinskip");
+      if (skip) {
+        var sy = y + window.innerHeight - 40, sg = sy < mainTop + gradTop ? null : groundAt(sy);
+        var sk = sg ? schemeOn(sg) : at(sy);
+        if (skip.getAttribute("data-scheme") !== sk) skip.setAttribute("data-scheme", sk);
+      }
+    }
+    var mTick = false, cTick = false;
+    function remeasure() { if (mTick) return; mTick = true; requestAnimationFrame(function () { mTick = false; measure(); }); }
+    addEventListener("scroll", function () {
+      if (cTick) return; cTick = true;
+      requestAnimationFrame(function () { cTick = false; chrome(); });
+    }, { passive: true });
+    addEventListener("resize", remeasure);
+    addEventListener("load", remeasure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+    if ("ResizeObserver" in window) new ResizeObserver(remeasure).observe(main);
+    measure();
+  })();
+
   /* ---- Reveals (.reveal + .lines) ---- */
   var revealEls = document.querySelectorAll(".reveal, .lines");
   if (reduce || !("IntersectionObserver" in window)) {
@@ -71,6 +237,22 @@ var UI = (function () {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); obs.unobserve(e.target); } });
     }, { threshold: 0.05, rootMargin: "0px 0px 10% 0px" });
     revealEls.forEach(function (el) { ro.observe(el); });
+    /* timed fallback: if the observer never reports, a plain scroll check
+       reveals whatever has reached the screen */
+    setTimeout(function () {
+      var left = [].slice.call(revealEls);
+      function check() {
+        var vh = window.innerHeight;
+        left = left.filter(function (el) {
+          if (el.classList.contains("in")) return false;
+          if (el.getBoundingClientRect().top < vh * 1.1) { el.classList.add("in"); ro.unobserve(el); return false; }
+          return true;
+        });
+        if (!left.length) window.removeEventListener("scroll", check);
+      }
+      window.addEventListener("scroll", check, { passive: true });
+      check();
+    }, 2500);
   }
 
   /* ---- Stat odometer ----
@@ -546,343 +728,6 @@ var UI = (function () {
   "use strict";
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* --- Same patterns: one rolling word, two cards that hide a photo ---
-     The words roll on a 5s period (the section's data-period); the gold
-     underline is the timer.
-     An arrow steps to the previous or next word and pins it (the
-     underline freezes full); a click on the word pins the word showing.
-     A pin holds until the visitor selects the word again; nothing
-     releases it on a timer. The
-     roll holds while the pointer is
-     on the stage (cards included), while keyboard focus is in the
-     section, while the section is off screen and while the tab is hidden.
-     Each card hides a still of Stephen: the pointer lights it through a
-     soft mask; on touch a tap reveals it whole. Every word change makes
-     both card borders bloom once. One instance per section.patterns. */
-  [].slice.call(document.querySelectorAll("section.patterns")).forEach(function (pat) {
-    var btn   = pat.querySelector(".patterns__word");
-    var title = pat.querySelector(".patterns__title");
-    var stage = pat.querySelector(".patterns__stage");
-    var prev  = pat.querySelector(".patterns__arrow--prev");
-    var nxt   = pat.querySelector(".patterns__arrow--next");
-    var count = pat.querySelector(".patterns__count");
-    var hint  = pat.querySelector("span.patterns__sr");
-    var live  = pat.querySelector("[aria-live]");
-    if (!btn || !stage || !prev || !nxt || !count) return;
-
-    var spot   = pat.querySelector(".patterns__spot");
-    var bar    = pat.querySelector(".ctx__bar");
-    var slot   = btn.parentNode;           /* .ctx: the word's slot in the line */
-    var glyphs = [].slice.call(btn.querySelectorAll(".patterns__glyphs"));
-    var homeL  = [].slice.call(pat.querySelectorAll(".patterns__room--home .patterns__lines > span"));
-    var workL  = [].slice.call(pat.querySelectorAll(".patterns__room--work .patterns__lines > span"));
-    var cards  = [].slice.call(pat.querySelectorAll(".patterns__card"));
-    var N = glyphs.length;
-    if (!N) return;
-    /* The stills: one per word and room, named on the word itself
-       (data-home-srcset / data-work-srcset: the 560w and 1120w files). */
-    var PHOTOS = glyphs.map(function (g) {
-      return { home: g.getAttribute("data-home-srcset"), work: g.getAttribute("data-work-srcset") };
-    });
-
-    /* ms between automatic word changes */
-    var PERIOD = parseFloat(pat.getAttribute("data-period")) || 5000;
-    var cur = 0, pinned = false, hover = false, focus = false;
-    var inView = false, onScreen = false, auto = 0, outT = 0;
-
-    /* the heading's two fixed halves, from the markup */
-    var howEl = pat.querySelector(".patterns__how"), tailEl = pat.querySelector(".patterns__tail");
-    var howT = howEl ? howEl.textContent.trim() : "", tailT = tailEl ? tailEl.textContent.trim() : "";
-    function pad(n) { return (n < 10 ? "0" : "") + n; }
-    function name(i) { return glyphs[i].textContent.replace(/\u00ad/g, ""); }
-    function wrap(i) { return ((i % N) + N) % N; }
-
-    /* --- card stills ----------------------------------------------
-       One <img> per card and word, cross-faded. The current and
-       next pattern load when the section is close; the rest decode once
-       the section has been seen. */
-    var near = false;
-    /* Each card has two photo layers (dark, and the bright one the light
-       reveals); both carry the same stills, so the files load once. */
-    var stills = [];
-    cards.forEach(function (card) {
-      var room = card.classList.contains("patterns__room--work") ? "work" : "home";
-      Array.prototype.forEach.call(card.querySelectorAll(".patterns__photo"), function (box) {
-        stills.push(PHOTOS.map(function (p, k) {
-          var img = document.createElement("img");
-          img.alt = ""; img.decoding = "async";
-          if (p[room]) img.setAttribute("data-srcset", p[room]);
-          if (k === 0) img.className = "is-on";
-          box.appendChild(img);
-          return img;
-        }));
-      });
-    });
-    function loadStill(i) {
-      stills.forEach(function (set) {
-        var img = set[wrap(i)];
-        if (!img || img.getAttribute("src")) return;
-        var b = img.getAttribute("data-srcset");
-        if (!b) return;
-        img.sizes = "(max-width: 767px) 94vw, 560px";
-        img.srcset = b;
-        img.src = b.split(" ")[0];
-      });
-    }
-    function loadNear() { if (!near) return; loadStill(cur); loadStill(cur + 1); }
-    function loadAll() { for (var k = 0; k < N; k++) loadStill(k); }
-
-    function say(i) {
-      if (!live) return;
-      live.setAttribute("aria-live", "polite");
-      var text = name(i) + ". At home: " + homeL[i].textContent + " At work: " + workL[i].textContent;
-      setTimeout(function () { live.textContent = text; }, 60);
-    }
-
-    /* Lines: the outgoing one lifts away, the incoming one rises in. */
-    function swapLines(list, i) {
-      list.forEach(function (s, k) {
-        var was = s.classList.contains("is-on");
-        s.classList.toggle("is-on", k === i);
-        s.classList.toggle("is-out", was && k !== i);
-      });
-    }
-
-    /* Both borders bloom once per word change. */
-    function pulse() {
-      if (reduce) return;
-      cards.forEach(function (c) {
-        c.classList.remove("is-pulse");
-        void c.offsetWidth;
-        c.classList.add("is-pulse");
-      });
-    }
-    cards.forEach(function (c) {
-      c.addEventListener("animationend", function () { c.classList.remove("is-pulse"); });
-    });
-
-    /* --- render ------------------------------------------------- */
-    /* The slot takes the new word's width, in em so it holds on resize;
-       CSS eases it, so "How" and "shows up." glide. */
-    function fitSlot(instant) {
-      var g = glyphs[cur]; if (!g || !slot) return;
-      var fs = parseFloat(getComputedStyle(slot).fontSize) || 16;
-      var w = g.getBoundingClientRect().width / fs;
-      if (instant) slot.style.transition = "none";
-      slot.style.width = w.toFixed(4) + "em";
-      if (instant) { void slot.offsetWidth; slot.style.transition = ""; }
-    }
-
-    function render(i, byUser) {
-      var changed = cur !== -1 && i !== cur;   /* the first paint does not pulse */
-      cur = i;
-      glyphs.forEach(function (g, k) {
-        var on = k === i;
-        g.classList.toggle("is-on", on);
-        if (on) g.removeAttribute("aria-hidden"); else g.setAttribute("aria-hidden", "true");
-      });
-      swapLines(homeL, i); swapLines(workL, i);
-      clearTimeout(outT);
-      outT = setTimeout(function () {
-        homeL.concat(workL).forEach(function (s) { s.classList.remove("is-out"); });
-      }, 400);
-      loadNear();
-      stills.forEach(function (set) {
-        set.forEach(function (img, k) { img.classList.toggle("is-on", k === i); });
-      });
-      if (changed) pulse();
-
-      count.textContent = pad(i + 1) + " / " + pad(N);
-      btn.setAttribute("aria-pressed", pinned ? "true" : "false");
-      pat.classList.toggle("is-pinned", pinned);
-      fitSlot(!changed);
-      /* the heading's name follows the word on a visitor's change only,
-         in step with the live region */
-      if (title) title.setAttribute("aria-label", howT + " " + name(i) + " " + tailT);
-      if (byUser) say(i);
-      else if (live) live.setAttribute("aria-live", "off");
-    }
-
-    /* --- the loop ------------------------------------------------ */
-    function restartTimer() {
-      if (reduce || !bar) return;
-      pat.classList.remove("is-cycling");
-      void bar.offsetWidth;                /* reflow so the fill restarts */
-      if (auto) pat.classList.add("is-cycling");
-    }
-    function next() { render((cur + 1) % N, false); restartTimer(); }
-
-    /* One place decides whether the loop runs. Held (pointer or keyboard
-       focus) freezes the underline where it is; off screen, hidden tab or
-       pinned clears it. */
-    function sync() {
-      var run  = !reduce && !pinned && inView && !document.hidden;
-      var held = hover || focus;
-      if (run && !held) {
-        if (!auto) {
-          pat.classList.remove("is-paused");
-          auto = setInterval(next, PERIOD);
-          restartTimer();
-        }
-        return;
-      }
-      if (auto) { clearInterval(auto); auto = 0; }
-      if (run && held) pat.classList.add("is-paused");
-      else pat.classList.remove("is-cycling", "is-paused");
-    }
-
-    /* A pin is the visitor's; only the visitor lets it go. */
-    function pin(i) { pinned = true; render(wrap(i), true); sync(); }
-    function unpin() {
-      pinned = false; render(cur, false); sync();
-      if (live) {                          /* one polite line on resume */
-        /* while pointer or keyboard focus still holds the roll, it has not
-           started yet, so the message says so */
-        var msg = (hover || focus) ? "Rolling will resume." : (UI.rollingResumed || "Rolling resumed.");
-        live.setAttribute("aria-live", "polite");
-        setTimeout(function () { live.textContent = msg; }, 60);
-      }
-    }
-
-    prev.addEventListener("click", function () { pin(cur - 1); });
-    nxt.addEventListener("click", function () { pin(cur + 1); });
-    btn.addEventListener("click", function () { if (pinned) unpin(); else pin(cur); });
-    /* Nothing rolls under reduced motion: the hint keeps only its first
-       sentence. */
-    if (reduce && hint) hint.textContent = "Holds this pattern.";
-
-    stage.addEventListener("pointerenter", function (e) {
-      if (e.pointerType === "touch") return;
-      hover = true; sync();
-    });
-    stage.addEventListener("pointerleave", function (e) {
-      if (e.pointerType === "touch") return;
-      hover = false; sync();
-    });
-    /* Keyboard focus holds the loop; a mouse click on a button does not. */
-    pat.addEventListener("focusin", function (e) {
-      var fv = false;
-      try { fv = e.target.matches(":focus-visible"); } catch (err) { fv = true; }
-      focus = fv; sync();
-    });
-    pat.addEventListener("focusout", function (e) {
-      if (!pat.contains(e.relatedTarget)) { focus = false; sync(); }
-    });
-    document.addEventListener("visibilitychange", function () { sync(); drift(); });
-
-    cur = -1; render(0, false);
-    /* the web font changes the word's width once it arrives */
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitSlot(true); });
-
-    /* --- the pointer light in the cards ---------------------------
-       Mouse and pen: the light follows the pointer inside the card it is
-       on, easing 0.14 per frame, fading in on enter and out on leave (the
-       CSS transitions carry the fade; the light parks where it was). One
-       shared loop runs only while a card is hovered or still settling.
-       Touch: a tap reveals the whole still; a second tap, or a tap on the
-       other card, puts it back. */
-    var lights = cards.map(function (c) { return { el: c, tx: 50, ty: 50, x: 50, y: 50, on: false }; });
-    var lraf = 0;
-    function lstep() {
-      lraf = 0;
-      var busy = false;
-      lights.forEach(function (l) {
-        l.x += (l.tx - l.x) * 0.14; l.y += (l.ty - l.y) * 0.14;
-        var settling = Math.abs(l.tx - l.x) > 0.05 || Math.abs(l.ty - l.y) > 0.05;
-        l.el.style.setProperty("--x", l.x.toFixed(2) + "%");
-        l.el.style.setProperty("--y", l.y.toFixed(2) + "%");
-        if (l.on || settling) busy = true;
-      });
-      if (busy) lraf = requestAnimationFrame(lstep);
-    }
-    function lwake() { if (!lraf) lraf = requestAnimationFrame(lstep); }
-
-    var touchOnly = window.matchMedia("(hover: none)").matches;
-    lights.forEach(function (l) {
-      var c = l.el;
-      function aim(e) {
-        var r = c.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-        l.tx = ((e.clientX - r.left) / r.width) * 100;
-        l.ty = ((e.clientY - r.top) / r.height) * 100;
-      }
-      if (!reduce) {
-        c.addEventListener("pointerenter", function (e) {
-          if (e.pointerType === "touch") return;
-          aim(e); l.x = l.tx; l.y = l.ty;          /* the light starts under the pointer */
-          l.on = true; c.classList.add("is-lit"); lwake();
-        });
-        c.addEventListener("pointermove", function (e) {
-          if (e.pointerType === "touch") return;
-          aim(e); lwake();
-        }, { passive: true });
-        c.addEventListener("pointerleave", function (e) {
-          if (e.pointerType === "touch") return;
-          l.on = false; c.classList.remove("is-lit"); lwake();
-        });
-      }
-      c.addEventListener("click", function (e) {
-        if (!(touchOnly || e.pointerType === "touch")) return;
-        var full = !c.classList.contains("is-full");
-        cards.forEach(function (o) { o.classList.remove("is-full"); });
-        c.classList.toggle("is-full", full);
-      });
-    });
-
-    /* --- the section glow: a slow idle drift, nothing else ---------- */
-    var raf = 0, sw = 1, sh = 1;
-    function measure() { var r = pat.getBoundingClientRect(); sw = r.width || 1; sh = r.height || 1; }
-    function place(cx, cy) {
-      if (spot) spot.style.transform = "translate3d(" + (cx / 100 * sw).toFixed(1) + "px," +
-                                       (cy / 100 * sh).toFixed(1) + "px,0)";
-    }
-    function frame(now) {
-      raf = 0;
-      var a = (now % 18000) / 18000 * Math.PI * 2;
-      place(50 - 25 * Math.cos(a), 45 - 15 * Math.cos(a));
-      if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
-    }
-    function drift() {
-      if (reduce) return;
-      if (onScreen && !document.hidden && !raf) raf = requestAnimationFrame(frame);
-    }
-
-    measure();
-    if (reduce) place(50, 40);             /* static: the glow parked */
-    addEventListener("resize", function () { measure(); if (reduce) place(50, 40); }, { passive: true });
-
-    /* --- visibility ---------------------------------------------- */
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (e) {
-        if (!e[0].isIntersecting) return;
-        near = true; loadNear();
-      }, { rootMargin: "800px 0px" }).observe(pat);
-      var seen = false;
-      new IntersectionObserver(function (e) {
-        onScreen = e[0].isIntersecting;
-        inView = e[0].intersectionRatio >= 0.25;
-        if (inView && !seen) { seen = true; setTimeout(loadAll, 1200); }
-        measure(); sync(); drift();
-      }, { threshold: [0, 0.25] }).observe(pat);
-    } else {
-      near = true; loadNear(); loadAll();
-      onScreen = inView = true; sync(); drift();
-    }
-
-    /* exposed for verification: the first instance */
-    if (!window.__patterns) window.__patterns = {
-      current: function () { return cur; },
-      pinned:  function () { return pinned; },
-      cycling: function () { return !!auto; },
-      held:    function () { return hover || focus; },
-      lightLoop: function () { return !!lraf; },
-      period:  PERIOD,
-      pin:     pin,
-      unpin:   unpin,
-      next:    next
-    };
-  });
-
   /* --- Truth rows: the strike draws, the line underneath rises ---
      One IntersectionObserver trigger per row, one way. Hover, focus and
      press replay the same reveal from zero. */
@@ -925,7 +770,7 @@ var UI = (function () {
   })();
 
   /* --- Constellation ---
-     The pointer is a gold node that joins the network. At rest (and on touch,
+     The pointer is a bright node that joins the network. At rest (and on touch,
      unless a finger is down) a ghost pointer wanders and links nodes, so the
      behaviour is shown before anyone touches it. One per .bleed__canvas.
      Touch: a tap (or a finger held and dragged) pulls the nodes within reach
@@ -943,7 +788,7 @@ var UI = (function () {
      loop while on screen, re-seeds on resize, and the pointer is always
      live. opts.fixed (the through-line): the caller drives step() and
      draw() from its own loop, a resize keeps the field, opts.hotspots are
-     fixed stars (x, y in field units, gold, glow 0..1, reach 0..1: how far
+     fixed stars (x, y in field units, pillar, glow 0..1, reach 0..1: how far
      the line from the previous star has been drawn, found: the star the
      view is on), the pointer only joins after setLive(true), and only while
      opts.gate() says so. window.spkConstellation exposes it. */
@@ -971,7 +816,7 @@ var UI = (function () {
       g.addColorStop(0, "rgba(232,187,104,.18)"); g.addColorStop(1, "rgba(232,187,104,0)");
       h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
     })();
-    /* the hotspots' bloom: a bright core in a wide soft light (lilac; gold for pillars) */
+    /* the hotspots' bloom: a bright core in a wide soft light (lilac; deeper for pillars) */
     function bloomOf(core, mid, edge) {
       var b = document.createElement("canvas"), R = 64;
       b.width = b.height = R * 2 * dpr;
@@ -983,7 +828,7 @@ var UI = (function () {
       h.fillStyle = g; h.fillRect(0, 0, R * 2, R * 2);
       return b;
     }
-    /* golden champagne, all of them; the pillars a touch deeper */
+    /* warm champagne, all of them; the pillars a touch deeper */
     var bloomL = bloomOf("255,250,238", "246,224,178", "214,168,88");
     var bloomG = bloomOf("255,246,226", "240,206,140", "201,146,56");
 
@@ -1154,7 +999,7 @@ var UI = (function () {
         ctx.beginPath(); ctx.arc(kx, ky, (2 + 1.5 * kk) * iz, 0, 6.2832); ctx.fill();
       }
 
-      /* the stars: halo, the ring while lit, the core (pillars gold) */
+      /* the stars: halo, the ring while lit, the core (pillars deeper) */
       for (k = 0; k < spots.length; k++) {
         if (!V[n + k]) continue;
         var s = spots[k], g = s.glow || 0, x = X[n + k], y = Y[n + k];
@@ -1164,17 +1009,17 @@ var UI = (function () {
         var hs = (16 + 26 * g + 30 * cl * beat + 24 * hv);
         ctx.globalCompositeOperation = "lighter";
         ctx.globalAlpha = Math.min(1, 0.18 + 0.82 * g);
-        ctx.drawImage(s.gold ? bloomG : bloomL, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
+        ctx.drawImage(s.pillar ? bloomG : bloomL, x - hs * iz, y - hs * iz, 2 * hs * iz, 2 * hs * iz);
         if (g > 0.5) {
           var hw2 = hs * 2.6;
           ctx.globalAlpha = Math.min(1, 0.3 * (g - 0.5) * 2 * (1 + 0.5 * cl * beat) + 0.35 * hv);
-          ctx.drawImage(s.gold ? bloomG : bloomL, x - hw2 * iz, y - hw2 * iz, 2 * hw2 * iz, 2 * hw2 * iz);
+          ctx.drawImage(s.pillar ? bloomG : bloomL, x - hw2 * iz, y - hw2 * iz, 2 * hw2 * iz, 2 * hw2 * iz);
         }
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = "source-over";
         ctx.globalAlpha = 0.35 + 0.65 * Math.min(1, g * 1.4);
-        ctx.fillStyle = s.gold ? "#F3D08A" : "#FBEBC8";
-        ctx.beginPath(); ctx.arc(x, y, (s.gold ? 4 : 3.2) * iz, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = s.pillar ? "#F3D08A" : "#FBEBC8";
+        ctx.beginPath(); ctx.arc(x, y, (s.pillar ? 4 : 3.2) * iz, 0, 6.2832); ctx.fill();
         ctx.globalAlpha = 1;
       }
 
@@ -1382,225 +1227,17 @@ var UI = (function () {
   }
   window.addEventListener("scroll", check, { passive: true });
   check();
-})();
-
-/* ===== Credibility ribbon: drifting lanes, timed spotlight =====
-   The lane keeps drifting. The highlight is no longer "whatever is nearest
-   the centre this frame" - it is a timed tick with two slots, so a logo
-   ignites, holds, and fades on its own clock and two ignitions are never
-   simultaneous. Lane two runs half a tick out of phase with lane one. */
-(function () {
-  "use strict";
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var lanes = [].slice.call(document.querySelectorAll("[data-cred-lane]"));
-  if (!lanes.length) return;
-
-  var small = window.matchMedia("(max-width: 700px)").matches;
-  /* ms between ignitions on a lane, and ms a logo stays lit (in 900, hold,
-     out 1100): the band's data-tick / data-tick-sm and data-spell */
-  function num(el, name, d) { var v = el ? parseFloat(el.getAttribute(name)) : NaN; return v > 0 ? v : d; }
-  /* Small screens hold two or three logos in view at once, so the neighbour
-     rule starves a narrow window: the candidate band opens to the inner 92%
-     and the tick runs a little quicker. Desktop is unchanged. */
-  var INNER = small ? 0.92 : 0.76;   /* candidates must sit inside this much of the viewport */
-  var HISTORY = 3;                   /* never re-light one of the last 3 */
-  var FADE  = 1100;                  /* ms a logo takes to fall back to rest */
-
-  lanes.forEach(function (lane) {
-    var band  = lane.closest("section");
-    /* the lane's place inside its own band: odd lanes run half a tick late */
-    var laneIndex = band ? [].indexOf.call(band.querySelectorAll("[data-cred-lane]"), lane) : 0;
-    var TICK  = small ? num(band, "data-tick-sm", 2400) : num(band, "data-tick", 2600);
-    var SPELL = num(band, "data-spell", 4200);
-    var vp = lane.querySelector(".cred__viewport");
-    var track = lane.querySelector(".cred__track");
-    if (!vp || !track) return;
-    var speed = parseFloat(lane.getAttribute("data-speed"));
-    if (isNaN(speed)) speed = 0.3;
-
-    // Repeat the set until it covers the viewport twice over, so the wrap
-    // never opens a gap on a short lane.
-    var originalCount = track.children.length;
-    var originals = [].slice.call(track.children);
-    function addSet() {
-      for (var k = 0; k < originalCount; k++) {
-        var c = originals[k].cloneNode(true);
-        c.setAttribute("aria-hidden", "true");
-        track.appendChild(c);
-      }
-    }
-    addSet();
-    var guard = 0;
-    while (track.scrollWidth < vp.clientWidth * 2 + 40 && guard++ < 8) addSet();
-    var imgs = [].slice.call(track.children);
-    var setW = 0, pos = 0, rafId = null, vpW = 0;
-    /* the glow: --near 0..1 per logo, 1 at the lane's centre and 0 at
-       data-reach (35%) of the lane's width either side; written only when
-       it moves by more than 0.02. Reduced motion: every logo at 1 (the
-       CSS fallback), since the strip is static. */
-    var REACH = num(band, "data-reach", 0.35);
-
-    function measure() {
-      setW = imgs[originalCount].offsetLeft - imgs[0].offsetLeft;
-      vpW = vp.clientWidth;
-      for (var i = 0; i < imgs.length; i++) imgs[i]._cx = imgs[i].offsetLeft + imgs[i].offsetWidth / 2;
-    }
-    function glow() {
-      var c = vpW / 2, reach = REACH * vpW;
-      if (!(reach > 0)) return;
-      for (var i = 0; i < imgs.length; i++) {
-        var el = imgs[i];
-        var n = 1 - Math.abs(pos + el._cx - c) / reach;
-        n = n < 0 ? 0 : (n > 1 ? 1 : n);
-        var last = el._near;
-        if (last === undefined || Math.abs(n - last) > 0.02 || (n !== last && (n === 0 || n === 1))) {
-          el._near = n;
-          el.style.setProperty("--near", n.toFixed(3));
-        }
-      }
-    }
-    function frame() {
-      pos -= speed;
-      if (setW > 0) { if (pos <= -setW) pos += setW; else if (pos > 0) pos -= setW; }
-      track.style.transform = "translate3d(" + pos.toFixed(2) + "px,0,0)";
-      glow();
-      rafId = requestAnimationFrame(frame);
-    }
-
-    measure();
-    window.addEventListener("resize", function () { measure(); });
-
-    if (reduce) return; // static, calm grayscale (CSS handles the look)
-
-    /* ---- the spotlight -------------------------------------------- */
-    var slots = [null, null];        /* A and B */
-    var recent = [];                 /* the last HISTORY lit elements */
-    var timers = [];
-    var tickId = null, phaseId = null, tickCount = 0;
-    var hoverHeld = null;
-
-    function isLit(el) { return el && el.classList.contains("lit"); }
-    /* Lit, held by the pointer, or still on its way back down. At these
-       scales a neighbour that is only half-way home still collides. */
-    function isBusy(el) {
-      if (!el) return false;
-      if (isLit(el) || el === hoverHeld) return true;
-      return !!el._fadeUntil && el._fadeUntil > now();
-    }
-    function now() {
-      return (window.performance && performance.now) ? performance.now() : Date.now();
-    }
-
-    function extinguish(slot) {
-      var el = slots[slot];
-      if (!el) return;
-      slots[slot] = null;
-      if (el === hoverHeld) return;  /* the pointer is still on it */
-      el.classList.remove("lit");
-      el._fadeUntil = now() + FADE;
-      setTimeout(function () {
-        if (!el.classList.contains("lit")) el.classList.remove("next");
-      }, FADE);
-    }
-
-    function pick() {
-      var r = vp.getBoundingClientRect();
-      if (!r.width) return null;
-      var centre = r.width / 2;
-      var lo = r.width * (1 - INNER) / 2, hi = r.width - lo;
-      var best = null, bestD = Infinity;
-      for (var i = 0; i < imgs.length; i++) {
-        var el = imgs[i];
-        if (isBusy(el)) continue;
-        if (recent.indexOf(el) > -1) continue;
-        /* never ignite next to something that is lit or still fading */
-        if (isBusy(imgs[i - 1]) || isBusy(imgs[i + 1])) continue;
-        var x = pos + el._cx;                       /* centre, viewport relative */
-        if (x < lo || x > hi) continue;
-        var d = Math.abs(x - centre);
-        if (d < bestD) { bestD = d; best = el; }
-      }
-      return best;
-    }
-
-    function ignite(slot) {
-      var el = pick();
-      if (!el) return;
-      extinguish(slot);
-      slots[slot] = el;
-      recent.push(el);
-      while (recent.length > HISTORY) recent.shift();
-      /* queued first, so the compositing hint lands a frame before the move */
-      el.classList.add("next");
-      requestAnimationFrame(function () {
-        if (slots[slot] !== el) return;
-        el._fadeUntil = 0;
-        el.classList.add("lit");
-        el.classList.remove("next");
+  /* without scroll events: each comes in 2.5s after it reaches the screen */
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        setTimeout(function () { e.target.classList.add("in"); }, 2500);
       });
-      timers.push(setTimeout(function () {
-        if (slots[slot] === el) extinguish(slot);
-      }, SPELL));
-      if (timers.length > 8) timers.splice(0, timers.length - 8);
-    }
-
-    function tick() { ignite(tickCount++ % 2); }
-
-    function startTicks() {
-      if (tickId || phaseId) return;
-      /* lane two ignites half a tick after lane one */
-      var offset = laneIndex % 2 ? Math.round(TICK / 2) : 0;
-      phaseId = setTimeout(function () {
-        phaseId = null;
-        tick();
-        tickId = setInterval(tick, TICK);
-      }, offset);
-    }
-    function stopTicks() {
-      if (phaseId) { clearTimeout(phaseId); phaseId = null; }
-      if (tickId) { clearInterval(tickId); tickId = null; }
-      timers.forEach(clearTimeout); timers = [];
-      extinguish(0); extinguish(1);
-    }
-
-    /* Hover on a pointer device takes a slot and holds it. */
-    if (window.matchMedia("(hover: hover)").matches) {
-      imgs.forEach(function (el) {
-        el.addEventListener("pointerenter", function (e) {
-          if (e.pointerType === "touch") return;
-          hoverHeld = el;
-          el.classList.add("lit");
-        });
-        el.addEventListener("pointerleave", function () {
-          if (hoverHeld !== el) return;
-          hoverHeld = null;
-          if (slots[0] !== el && slots[1] !== el) {
-            el.classList.remove("lit");
-            el._fadeUntil = now() + FADE;
-          }
-        });
-      });
-    }
-
-    var inView = false;
-    function sync() {
-      var run = inView && !document.hidden;
-      if (run) {
-        if (rafId == null) { measure(); rafId = requestAnimationFrame(frame); }
-        startTicks();
-      } else {
-        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
-        stopTicks();
-      }
-    }
-
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (e) {
-        inView = e[0].isIntersecting; sync();
-      }, { threshold: 0 }).observe(lane);
-    } else { inView = true; sync(); }
-    document.addEventListener("visibilitychange", sync);
-  });
+    });
+    armed.forEach(function (e) { io.observe(e); });
+  }
 })();
 
 /* =====================================================================
@@ -2268,7 +1905,7 @@ var UI = (function () {
    toward it; with no pointer a slow wave travels front to back every 7–11 s
    and the loop sleeps between waves. After the rows are drawn, a feathered
    destination-out ellipse clears the dot layer around the measured sentence,
-   so the type keeps clean ground with no scrim and no text-shadow.
+   so the type keeps clean ground with no scrim.
    One instance per canvas.spk-room: inside the formats sentence's own
    section (.spk-avail: the room names in .spk-avail__rooms sit on their
    seats), or inside a .spk-formats section (the older markup, labels from
@@ -2687,6 +2324,8 @@ var UI = (function () {
     /* strike mode (said-vs-meant): a chapter's word stays when its line
        arrives, struck through; both leave together */
     var STRIKE = sec.classList.contains("spk-chap--strike");
+    /* drawn rooms on a dark ground: the outgoing room leaves before the next arrives */
+    var ROOMS = sec.classList.contains("spk-chap--rooms");
     var STRIKE_MS = num("data-strike-ms", 420);
     if (STRIKE) sec.style.setProperty("--strike-ms", STRIKE_MS + "ms");
     var rmq      = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -2775,7 +2414,7 @@ var UI = (function () {
        on, the heading shown, every beat element at rest */
     function clearState() {
       tabs.forEach(function (t) { t.classList.remove("is-on", "is-lit"); });
-      chapters.forEach(function (c) { c.classList.remove("is-live", "is-lit"); });
+      chapters.forEach(function (c) { c.classList.remove("is-live", "is-lit"); c.inert = false; c.removeAttribute("aria-hidden"); });
       beatEls.concat(wordsEl, turnsEl).forEach(function (e) { if (e) e.classList.remove("is-in", "is-leaving", "is-struck"); });
       heading.classList.remove("is-gone");
       stills.forEach(function (st, k) {
@@ -2911,14 +2550,18 @@ var UI = (function () {
           return;
         }
         st.style.zIndex = "1";
-        if (first) { st.classList.remove("is-on"); return; }
+        if (first || ROOMS) { st.classList.remove("is-on"); return; }
         if (!st.classList.contains("is-on") || offTs[k]) return;
         offTs[k] = setTimeout(function () { offTs[k] = 0; st.classList.remove("is-on"); }, CROSS);
       });
     }
     function setChapter(idx, first) {
       if (!TURN) fadeTo(stillOf(idx), first);
-      chapters.forEach(function (c, n) { c.classList.toggle("is-live", n === idx); });
+      chapters.forEach(function (c, n) {
+        c.classList.toggle("is-live", n === idx);
+        /* only the chapter on screen can take focus */
+        c.inert = n !== idx; if (n !== idx) c.setAttribute("aria-hidden", "true"); else c.removeAttribute("aria-hidden");
+      });
       tabs.forEach(function (t, n) {
         t.setAttribute("aria-selected", n === idx ? "true" : "false");
         t.tabIndex = n === idx ? 0 : -1;
@@ -3122,7 +2765,11 @@ var UI = (function () {
       if (idx === phIdx) return;
       var first = phIdx === -1;
       phIdx = idx;
-      chapters.forEach(function (c, n) { c.classList.toggle("is-live", n === idx); });
+      chapters.forEach(function (c, n) {
+        c.classList.toggle("is-live", n === idx);
+        /* only the chapter on screen can take focus */
+        c.inert = n !== idx; if (n !== idx) c.setAttribute("aria-hidden", "true"); else c.removeAttribute("aria-hidden");
+      });
       tabs.forEach(function (t, n) {
         t.setAttribute("aria-selected", n === idx ? "true" : "false");
         /* roving tabindex follows the scroll unless focus is in the dots */
@@ -3144,7 +2791,10 @@ var UI = (function () {
         var s = (P - k * BEATP) / BEATP;
         var st = stillOf(k);
         if (st) {
-          phPut(st, "o" + k, "--o", k === 0 ? 1 : smooth(clamp(s / 0.25)));
+          var rise = k === 0 ? 1 : smooth(clamp(s / 0.25));
+          /* rooms: the room hands over to the next one instead of staying under it */
+          if (ROOMS && k < N - 1) rise *= 1 - smooth(clamp((s - 1) / 0.25));
+          phPut(st, "o" + k, "--o", rise);
           phPut(st, "d" + k, "--dolly", 1 + (DOLLY - 1) * clamp(s));
         }
         var out = smooth(clamp((s - 0.9) / 0.1));
@@ -3353,13 +3003,16 @@ var UI = (function () {
     /* The whole footer has to fit the screen for the lift to show the close
        and the footer grid together: the panel takes min(70svh, what the
        grid leaves). Where that is under 40% of the screen (phones, short
-       windows) there is no lift: .is-flow, a normal footer. */
+       windows) there is no lift: .is-flow, a normal footer. An "over"
+       close is never shortened: its photo keeps its full band, so it only
+       lifts where the whole footer fits the screen at its own height. */
     var vh = window.innerHeight;
+    var over = close.classList.contains("spk-close--over");
+    f.style.removeProperty("--spk-close-h");
     var rest = f.offsetHeight - close.offsetHeight;
     var avail = vh - rest;
-    var flow = avail < 0.4 * vh;
-    if (flow) f.style.removeProperty("--spk-close-h");
-    else f.style.setProperty("--spk-close-h", Math.floor(Math.min(0.7 * vh, avail)) + "px");
+    var flow = over ? f.offsetHeight > vh : avail < 0.4 * vh;
+    if (!flow && !over) f.style.setProperty("--spk-close-h", Math.floor(Math.min(0.7 * vh, avail)) + "px");
     var val = flow ? "0px" : f.offsetHeight + "px";
     f.classList.toggle("is-flow", flow);
     if (val === lastFoot) return false;
@@ -3697,10 +3350,20 @@ var UI = (function () {
     else if (!live.length && listening) { window.removeEventListener("scroll", onScroll); listening = false; }
     if (live.length) frame();
   }
+  /* no scroll at all for 6s after a heading comes on screen: it fills */
+  var lastScroll = 0;
+  window.addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true });
+  function settleLater(h) {
+    var t0 = Date.now();
+    setTimeout(function () {
+      if (lastScroll >= t0 || seen.indexOf(h) < 0 || !h.classList.contains("is-filling")) return;
+      h.style.setProperty("--fp", "1"); h.__fp = "1.000";
+    }, 6000);
+  }
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) {
       var i = seen.indexOf(e.target);
-      if (e.isIntersecting && i < 0) seen.push(e.target);
+      if (e.isIntersecting && i < 0) { seen.push(e.target); settleLater(e.target); }
       else if (!e.isIntersecting && i >= 0) seen.splice(i, 1);
     });
     sync();
@@ -3948,6 +3611,55 @@ var UI = (function () {
   });
 
   onScroll();
+})();
+
+/* ===== 15. Home: the room line, once =====
+   The line under the hero ends on a word for the visitor's room. The
+   markup shows the last word. Here the first word is put in place before
+   the line is seen; when it is first half in view (and the loader has
+   gone), each word holds data-hold ms, then gives way to the next with a
+   short rise (data-swap ms, CSS), until the last word, which stays. It
+   runs once per page load and never loops. Screen readers get the full
+   sentence with the last word only; the visible words are aria-hidden.
+   Reduced motion: nothing changes, the last word is already there. */
+(function () {
+  "use strict";
+  var line = document.querySelector("[data-roomline]");
+  if (!line) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!("IntersectionObserver" in window)) return;
+  var words = [].slice.call(line.querySelectorAll(".roomline__w"));
+  if (words.length < 2) return;
+  function num(name, d) { var v = parseFloat(line.getAttribute(name)); return v > 0 ? v : d; }
+  var HOLD = num("data-hold", 1400), SWAP = num("data-swap", 360);
+  line.style.setProperty("--rl-swap", SWAP + "ms");
+
+  /* the opening word, set with no transition so nothing is seen to change */
+  words[words.length - 1].classList.remove("is-on");
+  words[0].classList.add("is-on");
+  void line.offsetWidth;
+  line.classList.add("is-run");
+
+  var i = 0, started = false, inView = false;
+  function next() {
+    words[i].classList.remove("is-on");
+    words[i].classList.add("is-gone");
+    i++;
+    words[i].classList.add("is-on");
+    if (i < words.length - 1) setTimeout(next, HOLD);
+  }
+  function maybeStart() {
+    if (started || !inView) return;
+    if (document.getElementById("loader") && !window.dwLoaded) return;
+    started = true;
+    io.disconnect();
+    setTimeout(next, HOLD);
+  }
+  var io = new IntersectionObserver(function (e) {
+    inView = e[0].isIntersecting; maybeStart();
+  }, { threshold: 0.5 });
+  io.observe(line);
+  document.addEventListener("dw:loaded", maybeStart);
 })();
 
 /* The layout's failsafe reads this: the whole script ran. Keep it last. */

@@ -1,198 +1,365 @@
 /* =====================================================================
-   HEALTHCARE PAGE (/healthcare/) — loaded only on this page.
-   The indigo room: a cool plum-indigo for the ground (--indigo), a
-   lighter one for the panels (--indigo-2), in the site's violet family.
-   Teal is a small accent only, as on Home's health care card: hairlines,
-   bullets and the italic words, --teal-300 for text.
-   Animations owned here: the five words lighting once (js/main.js
-   module 3, bound to .spk-out) and the lifting stack (js/healthcare.js;
-   its kept line does not move).
-   Nothing is pinned or sticky.
+   HEALTHCARE PAGE (/healthcare/), loaded only on this page.
+   Everything sits on the page's harbor-blue gradient and takes its
+   colours from the section's text scheme (--tx, --line, --accent ...),
+   so ink on the light upper part and cream on the dark lower part.
+   The rooms drawings appear only in the two hubs: the four rooms this
+   is for, and the five small rooms of what the room walks out with.
+   Every hidden starting state belongs to a class the script adds, so
+   with no script or reduced motion everything shows at once.
    ===================================================================== */
-:root { --hc-teal-ink: var(--teal-300); --hc-teal-line: rgba(143,199,194,.30); }
-body { background: var(--indigo); --dd-page-acc: var(--teal-300); }
-
-.hc-em { font-style: italic; color: var(--hc-teal-ink); }
-.hc-hero ::selection, .hc-who ::selection, .hc-talk ::selection, .hc-logos ::selection,
-.hc-out ::selection, .spk-close ::selection { background: rgba(30,143,130,.55); color: #fff; }
+.hc-em { font-style: italic; color: var(--accent); }
+#main ::selection { background: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--tx); }
 
 /* ---------------------------------------------------------------- hero
-   Desktop: copy on the left on the ground, the photo filling the right half
-   to the edge, clean. Phones: the photo first (a 4:5 crop), the copy
-   under it on the solid ground. */
-.hc-hero { position: relative; color: var(--tx-inv); display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 100svh; overflow: hidden; }
-.hc-hero__media { grid-column: 2; grid-row: 1; position: relative; min-height: 100%; }
-.hc-hero__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.hc-hero__copy { grid-column: 1; grid-row: 1; align-self: center;
-  padding: clamp(7rem, 14vh, 10rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 10vh, 7rem) calc((100vw - var(--wrap)) / 2); }
-.hc-hero__h { font-size: var(--step-4); font-weight: 330; line-height: .98; letter-spacing: -0.035em;
-  max-width: 11ch; text-wrap: balance; }
-.hc-hero__lead { margin-top: clamp(1.4rem, 3vh, 2rem); max-width: 44ch; font-size: var(--step-0);
-  line-height: 1.6; color: var(--tx-inv-soft); text-wrap: pretty; }
+   Desktop: the copy on the left on the light top of the gradient, the
+   photo of Stephen in the room across the right seven twelfths to the
+   edge, framed so he stands whole, its inner, top and lower edges
+   dissolving into the ground. Phones: the photo first, the copy under it. */
+.hc-hero { position: relative; color: var(--tx); display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); min-height: 100svh; overflow: hidden; }
+.hc-hero__media { grid-column: 2; grid-row: 1; position: relative; min-height: 100%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 18%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 18%), linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect; }
+.hc-hero__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  object-position: var(--pos, 47% 50%); }
+.hc-hero__copy { grid-column: 1; grid-row: 1; align-self: center; position: relative; z-index: 1;
+  padding: clamp(7rem, 14vh, 10rem) clamp(1rem, 2vw, 2rem) clamp(4rem, 10vh, 7rem) calc((100vw - var(--wrap)) / 2); }
+.hc-hero__h { font-size: clamp(3rem, 1.6rem + 4.6vw, 6.6rem); font-weight: 330; line-height: .98; letter-spacing: -0.035em;
+  max-width: 11ch; text-wrap: balance; color: var(--tx); }
+.hc-hero__lead { margin-top: clamp(1.4rem, 3vh, 2rem); max-width: 40ch; font-size: var(--step-0);
+  line-height: 1.6; color: var(--tx-soft); text-wrap: pretty; }
 /* the years behind it: the number set in the display face, in the accent */
-.hc-hero__proof { margin-top: clamp(1rem, 2vh, 1.4rem); padding-top: clamp(1rem, 2vh, 1.3rem); max-width: 44ch;
-  border-top: 1px solid var(--hc-teal-line); font-size: var(--step-0); line-height: 1.55; color: var(--tx-inv); text-wrap: pretty; }
+.hc-hero__proof { margin-top: clamp(1rem, 2vh, 1.4rem); padding-top: clamp(1rem, 2vh, 1.3rem); max-width: 40ch;
+  border-top: 1px solid var(--line); font-size: var(--step-0); line-height: 1.55; color: var(--tx); text-wrap: pretty; }
 .hc-hero__proof b { font-family: var(--f-display); font-style: italic; font-weight: 340; font-size: 1.9em; line-height: 1;
-  letter-spacing: -0.02em; color: var(--hc-teal-ink); margin-right: .12em; vertical-align: -0.08em; }
+  letter-spacing: -0.02em; color: var(--accent); margin-right: .12em; vertical-align: -0.08em; }
 .hc-hero__actions { margin-top: clamp(2rem, 4vh, 2.8rem); display: flex; flex-wrap: wrap;
   align-items: center; gap: 1rem 2rem; }
-.hc-hero__link { min-height: 44px; }
+.hc-hero__link { min-height: 44px; color: var(--tx); }
 
 @media (max-width: 900px) {
-  .hc-hero { grid-template-columns: 1fr; min-height: 0; }
-  .hc-hero__media { grid-column: 1; grid-row: 1; aspect-ratio: 1 / 1; max-height: 50svh; width: 100%; }
-  .hc-hero__copy { grid-row: 2; position: relative; z-index: 1;
-    padding: clamp(1.6rem, 6vw, 2.4rem) var(--gutter) clamp(3.5rem, 12vw, 5rem); }
-  .hc-hero__h { font-size: clamp(2.6rem, 11vw, 3.6rem); }
+  .hc-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .hc-hero__media { grid-column: 1; grid-row: 1; aspect-ratio: 4 / 5; max-height: 72svh; width: 100%; min-height: 0;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 86%, transparent); -webkit-mask-composite: source-over;
+    mask-image: linear-gradient(to bottom, transparent, #000 9%, #000 86%, transparent); mask-composite: add; }
+  .hc-hero__media img { object-position: var(--pos-m, var(--pos, 46% 50%)); }
+  .hc-hero__copy { grid-column: 1; grid-row: 2;
+    padding: 0 var(--gutter) clamp(3.5rem, 12vw, 5rem); }
+  .hc-hero__h { font-size: clamp(2.7rem, 12vw, 4.4rem); }
 }
 
 /* ------------------------------------------------------- who it's for
-   On the panel tone: the heading above, then the four items in one row, each
-   a tall column under a teal hairline. Tablet: two by two. Phones: one
-   column. */
-.hc-who { color: var(--tx-inv); padding-block: var(--section-y); }
+   With a photo: the photo (4:5) in the left five columns, the heading
+   and the four items two by two beside it. Without one: the heading
+   above, then the four items in one row. Tablet: two by two. Phones:
+   one column. */
+.hc-who { color: var(--tx); padding-block: var(--section-y); }
 .hc-who__grid { width: var(--wrap); margin-inline: auto; }
+.hc-who__grid--photo { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto 1fr;
+  column-gap: clamp(1.25rem, 3vw, 3rem); align-items: start; }
+.hc-who__media { grid-column: 1 / span 5; grid-row: 1 / span 2; aspect-ratio: 4 / 5; max-height: 86svh;
+  border-radius: var(--radius); }
+.hc-who__media img { object-position: var(--pos, 50% 40%); }
+.hc-who__grid--photo .hc-who__h { grid-column: 7 / span 6; grid-row: 1; }
+.hc-who__grid--photo .hc-who__list { grid-column: 7 / span 6; grid-row: 2;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: clamp(2rem, 4vw, 3rem); }
+.hc-who__grid--photo .hc-who__text { max-width: 26ch; }
 .hc-who__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.025em; text-wrap: balance;
-  margin-bottom: clamp(2.4rem, 5vw, 4rem); }
+  margin-bottom: clamp(2.4rem, 5vw, 4rem); color: var(--tx); }
 .hc-who__list { list-style: none; margin: 0; padding: 0; display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem); }
-.hc-who__item { padding-top: clamp(1.2rem, 2.2vw, 1.8rem);
-  border-top: 1px solid var(--teal-300); }
+.hc-who__item { padding-top: clamp(1.2rem, 2.2vw, 1.8rem); border-top: 1px solid var(--line); }
 .hc-who__name { font-size: var(--step-1); font-weight: 380; letter-spacing: -0.015em; line-height: 1.15;
   text-wrap: balance; }
-.hc-who__text { margin-top: .8rem; font-size: var(--step--1); line-height: 1.6; color: var(--tx-inv-soft);
+.hc-who__text { margin-top: .8rem; font-size: var(--step--1); line-height: 1.6; color: var(--tx-soft);
   max-width: 30ch; text-wrap: pretty; }
 @media (max-width: 1000px) {
   .hc-who__list { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: clamp(2rem, 5vw, 3rem); }
-  .hc-who__item { min-height: 0; padding-bottom: 1rem; }
+}
+@media (max-width: 900px) {
+  .hc-who__grid--photo { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; row-gap: clamp(1.6rem, 5vw, 2.4rem); }
+  .hc-who__media { grid-column: 1; grid-row: 1; aspect-ratio: 4 / 3; max-height: none; }
+  .hc-who__media img { object-position: var(--pos-m, var(--pos, 50% 40%)); }
+  .hc-who__grid--photo .hc-who__h, .hc-who__grid--photo .hc-who__list { grid-column: 1; grid-row: auto; }
 }
 @media (max-width: 560px) {
-  .hc-who__list { grid-template-columns: minmax(0, 1fr); row-gap: 1.6rem; }
+  .hc-who__list, .hc-who__grid--photo .hc-who__list { grid-template-columns: minmax(0, 1fr); row-gap: 1.6rem; }
+}
+
+/* ---------------------------------------------------------------------
+   The rooms this is for: the four rooms as a cluster of cut-outs on the
+   ground, two by two in the middle, each title level with its room on
+   the room's own side.
+   On arrival (js/healthcare.js) the rooms start pale and grey, a small
+   light travels room to room and each lights with its title, once.
+   Then each room opens on hover, on a tap, or on its title button
+   (Enter or Space): it grows toward the middle and comes forward, its
+   neighbours ease back, its line shows, and the people in it move (the
+   second drawing of the same room fades in over the first, once).
+   Tablet and phones: the cluster across the column, the titles under it
+   as a list; an open room's line unfolds under its title.
+   --------------------------------------------------------------------- */
+.hc-who--hub { padding-block: clamp(3.5rem, 6vw, 6rem) clamp(3rem, 5vw, 5rem); }
+.hc-who--hub .hc-who__h { margin-bottom: clamp(1.6rem, 3vw, 2.8rem); }
+.hc-who__hub { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 4fr) minmax(0, 1fr);
+  grid-template-rows: 1fr 1fr; column-gap: clamp(1.25rem, 2.4vw, 2.4rem); }
+.hc-who__art { position: relative; grid-column: 2; grid-row: 1 / 3; display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center;
+  gap: clamp(1rem, 2.4vw, 2.6rem) clamp(1.2rem, 3vw, 3.2rem); }
+.hc-who__room { position: relative; z-index: 1; width: 100%;
+  transition: transform .7s var(--ease-out), filter .9s var(--ease-out), opacity .7s var(--ease-out); }
+.hc-who__room--1, .hc-who__room--3 { transform-origin: 0 50%; }
+.hc-who__room--2, .hc-who__room--4 { transform-origin: 100% 50%; }
+.hc-who__pose { display: block; width: 100%; height: 100%; }
+.hc-who__pose--b { position: absolute; inset: 0; opacity: 0; transition: opacity .9s var(--ease-out); }
+.hc-who__dot { position: absolute; z-index: 3; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  opacity: 0; pointer-events: none; }
+
+.hc-who--hub .hc-who__list { grid-column: 1 / -1; grid-row: 1 / 3; display: grid; pointer-events: none;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 4fr) minmax(0, 1fr); grid-template-rows: 1fr 1fr;
+  column-gap: clamp(1.25rem, 2.4vw, 2.4rem); }
+.hc-who--hub .hc-who__item { align-self: center; padding: 0; border: 0; pointer-events: auto;
+  transition: opacity .6s var(--ease-out); }
+.hc-who--hub .hc-who__item:nth-child(1) { grid-column: 1; grid-row: 1; text-align: right; }
+.hc-who--hub .hc-who__item:nth-child(2) { grid-column: 3; grid-row: 1; }
+.hc-who--hub .hc-who__item:nth-child(3) { grid-column: 1; grid-row: 2; text-align: right; }
+.hc-who--hub .hc-who__item:nth-child(4) { grid-column: 3; grid-row: 2; }
+.hc-who--hub .hc-who__name { font-size: clamp(1.4rem, 0.95rem + 1vw, 2.15rem); font-weight: 360; line-height: 1.08;
+  letter-spacing: -0.02em; }
+.hc-who--hub .hc-who__item:nth-child(odd) .hc-who__text { margin-left: auto; }
+.hc-who--hub .hc-who__text { max-width: 22ch; font-size: var(--step-0); line-height: 1.5; }
+
+/* the title as the room's button (made by the script) */
+.hc-who__btn { display: inline-block; min-height: 44px; padding: .2rem 0; margin: 0; border: 0; background: none;
+  font: inherit; color: inherit; letter-spacing: inherit; text-align: inherit; cursor: pointer; }
+.hc-who__btn .hc-who__nt { background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 100% / 0 1px;
+  transition: background-size .5s var(--ease-out); padding-bottom: .08em; }
+.hc-who__item:nth-child(odd) .hc-who__btn .hc-who__nt { background-position: 100% 100%; }
+.hc-who__item.is-open .hc-who__btn .hc-who__nt { background-size: 100% 1px; }
+.hc-who__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 2px; }
+.hc-who__hub.is-live .hc-who__room { cursor: pointer; }
+
+/* the rooms asleep, the titles quiet, until the light reaches them */
+.hc-who__hub.is-armed .hc-who__room { filter: grayscale(1) contrast(.8) brightness(1.08); opacity: .45; }
+.hc-who__hub.is-armed .hc-who__item { opacity: .35; }
+.hc-who__hub .hc-who__room.is-lit { filter: none; opacity: 1; }
+.hc-who__hub .hc-who__item.is-lit { opacity: 1; }
+
+/* a room open: it grows and comes forward, the others ease back */
+.hc-who__hub.is-live .hc-who__more { opacity: 0; transform: translateY(8px);
+  transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+.hc-who__hub.is-live .hc-who__item.is-open .hc-who__more { opacity: 1; transform: none; }
+.hc-who__hub.has-open .hc-who__item.is-lit:not(.is-open) { opacity: .68; }
+.hc-who__hub .hc-who__room.is-open { z-index: 2; transform: scale(1.12);
+  filter: drop-shadow(0 22px 26px color-mix(in srgb, var(--ink) 26%, transparent)); }
+.hc-who__hub.has-open .hc-who__room.is-lit:not(.is-open) { transform: scale(.96); opacity: .5; filter: saturate(.7); }
+.hc-who__room.is-open .hc-who__pose--b { opacity: 1; }
+
+@media (max-width: 1180px) {
+  .hc-who__hub { display: block; }
+  .hc-who__art { width: min(100%, 48rem); margin-inline: auto; }
+  .hc-who__hub .hc-who__room.is-open { transform: scale(1.06); }
+  .hc-who--hub .hc-who__list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto;
+    column-gap: clamp(1.25rem, 4vw, 2.4rem); row-gap: 0; margin-top: clamp(1.8rem, 5vw, 2.6rem); align-items: start; }
+  .hc-who--hub .hc-who__item:nth-child(n) { grid-column: auto; grid-row: auto; text-align: left; align-self: start;
+    border-top: 1px solid var(--line); padding-block: .5rem; }
+  .hc-who--hub .hc-who__item:nth-child(odd) .hc-who__text { margin-left: 0; }
+  .hc-who--hub .hc-who__text { max-width: 34ch; margin-top: .3rem; padding-bottom: .5rem; }
+  .hc-who__btn { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; text-align: left; }
+  .hc-who__item:nth-child(odd) .hc-who__btn .hc-who__nt { background-position: 0 100%; }
+  .hc-who__btn::after { content: ""; flex: none; width: 14px; height: 14px; opacity: .8;
+    background: linear-gradient(var(--accent), var(--accent)) center / 14px 1.5px no-repeat,
+                linear-gradient(var(--accent), var(--accent)) center / 1.5px 14px no-repeat;
+    transition: transform .4s var(--ease-out); }
+  .hc-who__item.is-open .hc-who__btn::after { transform: rotate(45deg); }
+  /* the line unfolds under its title */
+  .hc-who__hub.is-live .hc-who__more { display: grid; grid-template-rows: 0fr; transform: none;
+    transition: grid-template-rows .5s var(--ease-out), opacity .5s var(--ease-out); }
+  .hc-who__hub.is-live .hc-who__item.is-open .hc-who__more { grid-template-rows: 1fr; }
+  .hc-who__hub.is-live .hc-who__more > .hc-who__text { min-height: 0; overflow: hidden; }
+}
+@media (max-width: 560px) {
+  .hc-who__art { column-gap: .9rem; row-gap: 1rem; }
+  .hc-who--hub .hc-who__list { grid-template-columns: minmax(0, 1fr); }
+  .hc-who--hub .hc-who__name { font-size: clamp(1.3rem, 5.6vw, 1.6rem); }
 }
 
 /* ------------------------------------------- what the room walks out with
-   The shared .spk-out rules (main.css) lay it out; here only the page's
-   own colour: no photo, the words light on the flat ground, each with a
-   soft pool of the page's violet light behind it (never a green fill). */
-.hc-out .spk-out__word::before {
-  background: radial-gradient(closest-side, rgba(169,133,230,.20), transparent 62%); }
-.hc-out .spk-out__h { color: var(--tx-inv); }
-
-/* ------------------------------- what a session covers (no talk named)
-   The heading across the top. Under it: the lifting stack on the left,
-   and on the right the formats, the booking button and the drop-down.
-   Phones: the heading, the stack with its label directly above it, then
-   the rest. */
-.hc-talk { color: var(--tx-inv); padding-block: clamp(4rem, 8vw, 7rem) clamp(3rem, 6vw, 5rem); }
-.hc-talk__grid { width: var(--wrap); margin-inline: auto; display: grid;
-  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); column-gap: clamp(2.5rem, 7vw, 8rem);
-  row-gap: clamp(2rem, 4vw, 3rem); align-items: start; }
-.hc-talk__head { grid-column: 1 / -1; }
-.hc-talk__grid > .hc-lift { grid-column: 1; grid-row: 2; }
-.hc-talk__grid > .hc-talk__main { grid-column: 2; grid-row: 2; padding-top: .4rem; }
-.hc-talk__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.028em; line-height: 1.02;
-  max-width: 22ch; text-wrap: balance; }
-.hc-talk__sub { margin-top: 1.1rem; font-family: var(--f-display); font-style: italic; font-weight: 360;
-  font-size: var(--step-1); line-height: 1.3; color: var(--hc-teal-ink); max-width: 30ch; text-wrap: balance; }
-/* the source, as a small footnote under a teal hairline */
-.hc-talk__foot { margin-top: clamp(1.2rem, 2.4vw, 1.6rem); padding-top: .9rem; max-width: 60ch;
-  border-top: 1px solid var(--hc-teal-line); font-size: var(--step--1) !important; line-height: 1.55;
-  color: var(--tx-inv-soft); text-wrap: pretty; }
-.hc-talk__formats { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .7rem;
-  font-size: var(--step--1); color: var(--tx-inv); }
-.hc-talk__fl { color: var(--tx-inv-soft); margin-right: .4rem; }
-.hc-talk__f { font-weight: 600; letter-spacing: .02em; }
-.hc-talk__sep { color: var(--teal-300); }
-.hc-talk__actions { margin-top: 1.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
-.hc-talk__actions .textlink { min-height: 44px; }
-.hc-talk__dd { margin-top: clamp(2rem, 4vw, 2.8rem); }
-
-/* the lifting stack */
-.hc-lift { position: relative; padding-top: .4rem; }
-.hc-lift__carry .hc-lift__label { color: var(--hc-teal-ink); }
-.hc-lift__label { font-family: var(--f-display); font-style: italic; font-weight: 360;
-  font-size: var(--step-0); letter-spacing: -0.005em; color: var(--tx-inv-soft); }
-.hc-lift__stack { list-style: none; margin: 1rem 0 0; padding: 0; }
-.hc-lift__line { font-family: var(--f-display); font-weight: 340; font-size: var(--step-2);
-  line-height: 1.12; letter-spacing: -0.02em; color: var(--tx-inv); padding-block: .45rem; text-wrap: balance; }
-.hc-lift__keep { font-family: var(--f-display); font-weight: 340; font-size: var(--step-2);
-  line-height: 1.12; letter-spacing: -0.02em; color: var(--tx-inv); text-wrap: balance; }
-/* the line that stays: under the stack, a hairline above it and a short
-   static note under it. It never lifts, with or without motion. */
-.hc-lift__kept { margin-top: clamp(1.2rem, 2.4vw, 1.7rem); padding-top: clamp(1rem, 2vw, 1.4rem);
-  border-top: 1px solid var(--hc-teal-line); }
-.hc-lift__note { margin-top: .55rem; font-size: var(--step--1); line-height: 1.5; color: var(--hc-teal-ink); }
-.hc-lift__out { margin-top: clamp(2.2rem, 4vw, 3rem); padding-top: clamp(1.6rem, 3vw, 2.2rem);
-  border-top: 1px solid var(--hc-teal-line); }
-.hc-lift__outs { list-style: none; margin: 1rem 0 0; padding: 0; }
-.hc-lift__outs li { position: relative; padding: .7rem 0 .7rem 1.4rem; font-size: var(--step-0);
-  line-height: 1.5; color: var(--tx-inv); text-wrap: pretty; }
-.hc-lift__outs li + li { border-top: 1px solid var(--hc-teal-line); }
-.hc-lift__outs li::before { content: ""; position: absolute; left: 0; top: 1.32rem; width: 7px; height: 7px;
-  border-radius: 50%; background: var(--teal-300); }
-
-/* Armed by js/healthcare.js only (motion allowed, script running): the
-   two lists share one grid cell, so the page height never changes. The
-   carried lines show; the outcomes wait unseen beneath (still in the page
-   for screen readers). Each line lifts once (--hc-lift ms, the codebase's
-   --ease-out): up by its own height and out of focus, top line first.
-   When the last has gone (.is-clear) the outcomes come up in the space
-   the stack held, 60ms apart (--hc-settle ms, ease-out: an entrance). */
-.hc-lift.is-armed { display: grid; }
-.hc-lift.is-armed > .hc-lift__carry, .hc-lift.is-armed > .hc-lift__out { grid-area: 1 / 1; align-self: start; }
-.hc-lift.is-armed > .hc-lift__out { margin-top: 0; padding-top: 0; border-top: 0; }
-/* the kept line sits in its own row under the shared cell, so it stays
-   put while the others lift and the outcomes come up above it */
-.hc-lift.is-armed > .hc-lift__kept { grid-area: 2 / 1; }
-.hc-lift.is-armed .hc-lift__line,
-.hc-lift.is-armed .hc-lift__carry .hc-lift__label {
-  transition: opacity var(--hc-lift, 640ms) var(--ease-out),
-              transform var(--hc-lift, 640ms) var(--ease-out),
-              filter var(--hc-lift, 640ms) var(--ease-out); }
-.hc-lift.is-armed .hc-lift__line:not(.is-lifted) { transform: translateY(calc(-1 * var(--hc-shift, 0px))); }
-.hc-lift.is-armed .hc-lift__line.is-lifted {
-  opacity: 0; transform: translateY(calc(-1 * var(--hc-from, 0px) - 110%)); filter: blur(6px); }
-.hc-lift.is-armed.is-clear .hc-lift__carry .hc-lift__label { opacity: 0; transform: translateY(-60%); }
-.hc-lift.is-armed .hc-lift__out .hc-lift__label,
-.hc-lift.is-armed .hc-lift__outs li { opacity: 0; transform: translateY(14px);
-  transition: opacity var(--hc-settle, 520ms) var(--ease-out), transform var(--hc-settle, 520ms) var(--ease-out);
-  transition-delay: calc(var(--k, 0) * 60ms); }
-.hc-lift.is-armed.is-clear .hc-lift__out .hc-lift__label,
-.hc-lift.is-armed.is-clear .hc-lift__outs li { opacity: 1; transform: none; }
-/* gone from the eye: out of pointer reach too */
-.hc-lift.is-clear .hc-lift__carry { pointer-events: none; }
+   On a light veil inset from the edges: the heading, then the five
+   outcomes as one row of small rooms, each word under its room, the row
+   stepping down and up. Armed by js/healthcare.js: the rooms start pale
+   and grey and light one after another, left to right, as the row comes
+   up the screen, each word coming up with its room, once. A room lifts
+   on hover. Tablet and phones: two by two, the last room centred. */
+.hc-out { color: var(--tx); padding-block: clamp(1.5rem, 3vw, 3rem) clamp(3rem, 6vw, 6rem); }
+.hc-out__inner { width: var(--wrap); margin-inline: auto;
+  padding: clamp(2.2rem, 4vw, 4rem) clamp(1.25rem, 3.4vw, 4rem) clamp(2.4rem, 4.4vw, 4.4rem); }
+.hc-out__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.028em; line-height: 1.02; color: var(--tx);
+  max-width: 16ch; text-wrap: balance; }
+.hc-out__hub { list-style: none; margin: clamp(1.8rem, 3.6vw, 3.4rem) 0 0; padding: 0; display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: clamp(.8rem, 2vw, 2.2rem); align-items: start; }
+.hc-out__room { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hc-out__room:nth-child(even) { margin-top: clamp(2.5rem, 6vw, 6.5rem); }
+.hc-out__pic { display: flex; align-items: flex-end; justify-content: center; width: 100%;
+  height: clamp(7.5rem, 13.5vw, 14.5rem); }
+.hc-out__pic img { display: block; width: auto; height: auto; max-width: 112%; max-height: 100%;
+  transition: transform .6s var(--ease-out), filter .9s var(--ease-out), opacity .9s var(--ease-out); }
+.hc-out__word { margin: clamp(.9rem, 1.6vw, 1.4rem) 0 0; padding-top: clamp(.7rem, 1.2vw, 1rem); max-width: 13ch;
+  border-top: 1px solid var(--line-strong);
+  font-family: var(--f-display); font-weight: 340; font-size: clamp(1.3rem, .85rem + 1.05vw, 2.1rem);
+  line-height: 1.08; letter-spacing: -0.02em; color: var(--tx); text-wrap: balance;
+  transition: opacity .8s var(--ease-out), transform .8s var(--ease-out), border-color .5s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .hc-out__room:hover .hc-out__pic img { transform: translateY(-10px) scale(1.07); }
+  .hc-out__room:hover .hc-out__word { border-color: var(--accent); }
+}
+.hc-out__hub.is-armed .hc-out__pic img { filter: grayscale(1) contrast(.8) brightness(1.08); opacity: .4; }
+.hc-out__hub.is-armed .hc-out__word { opacity: .3; transform: translateY(10px); }
+.hc-out__hub.is-armed .hc-out__room.is-lit .hc-out__pic img { filter: none; opacity: 1; }
+.hc-out__hub.is-armed .hc-out__room.is-lit .hc-out__word { opacity: 1; transform: none; }
 
 @media (max-width: 900px) {
-  .hc-talk__grid { grid-template-columns: minmax(0, 1fr); }
-  .hc-talk__grid > .hc-lift, .hc-talk__grid > .hc-talk__main { grid-column: 1; grid-row: auto; }
-  .hc-talk__grid > .hc-talk__main { padding-top: 0; }
-  .hc-lift__line, .hc-lift__keep { font-size: clamp(1.5rem, 6.4vw, 2rem); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hc-lift .hc-lift__line, .hc-lift .hc-lift__out, .hc-lift .hc-lift__label { transition: none !important;
-    transform: none !important; filter: none !important; opacity: 1 !important; }
+  .hc-out__hub { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(1rem, 4vw, 2rem); row-gap: clamp(1.6rem, 6vw, 2.6rem); }
+  .hc-out__room:nth-child(even) { margin-top: clamp(2rem, 9vw, 3.5rem); }
+  .hc-out__room:last-child { grid-column: 1 / -1; width: 52%; justify-self: center; }
+  .hc-out__pic { height: clamp(7rem, 30vw, 12rem); }
+  .hc-out__pic img { max-width: 100%; }
 }
 
-/* ------------------------------------------------------ healthcare clients */
-.hc-logos { color: var(--tx-inv); padding-block: clamp(3rem, 5vw, 4.5rem) clamp(3.5rem, 6vw, 5.5rem); border-top: 1px solid var(--line-inv); }
+/* ------------------------------- what a session covers (no talk named)
+   Type-led. The heading across the top; under it what caregivers carry
+   in, set large in the left seven columns with the line that stays under
+   it, and what they walk out with in the right five. When a carried line
+   lifts (js/healthcare.js) it fades back a step and rises a little, and the
+   outcome across from it comes up. Then the formats and the booking
+   button on the left, the drop-down on the right. Phones: one column. */
+.hc-talk { color: var(--tx); padding-block: clamp(5rem, 9vw, 9rem) clamp(3.5rem, 7vw, 6rem); }
+.hc-talk__grid { width: var(--wrap); margin-inline: auto; }
+.hc-talk__h { font-size: var(--step-3); font-weight: 340; letter-spacing: -0.028em; line-height: 1.02;
+  max-width: 18ch; text-wrap: balance; color: var(--tx); }
+.hc-talk__sub { margin-top: 1.1rem; font-family: var(--f-display); font-style: italic; font-weight: 360;
+  font-size: var(--step-1); line-height: 1.3; color: var(--accent); max-width: 30ch; text-wrap: balance; }
+
+.hc-lift { position: relative; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  grid-template-rows: auto 1fr; column-gap: clamp(2.5rem, 6vw, 7rem); margin-top: clamp(2.6rem, 5vw, 4.4rem); }
+.hc-lift__carry { grid-column: 1; grid-row: 1; }
+.hc-lift__kept { grid-column: 1; grid-row: 2; align-self: start; }
+.hc-lift__out { grid-column: 2; grid-row: 1 / span 2; align-self: start; padding-left: clamp(1.4rem, 2.6vw, 2.6rem);
+  border-left: 1px solid var(--line); }
+.hc-lift__label { font-family: var(--f-display); font-style: italic; font-weight: 360;
+  font-size: var(--step-1); letter-spacing: -0.005em; color: var(--tx); }
+.hc-lift__stack { list-style: none; margin: clamp(.8rem, 1.6vw, 1.3rem) 0 0; padding: 0; }
+.hc-lift__line { font-family: var(--f-display); font-weight: 330; font-size: clamp(2rem, 1.1rem + 2.7vw, 4.4rem);
+  line-height: 1.04; letter-spacing: -0.028em; color: var(--tx); padding-block: .2em; text-wrap: balance; }
+/* the line that stays: a hairline above it and a short note under it;
+   it never lifts, with or without motion */
+.hc-lift__kept { margin-top: clamp(1.4rem, 2.6vw, 2rem); padding-top: clamp(1.1rem, 2vw, 1.5rem);
+  border-top: 1px solid var(--line-strong); }
+.hc-lift__keep { font-family: var(--f-display); font-weight: 330; font-size: var(--step-2);
+  line-height: 1.1; letter-spacing: -0.02em; color: var(--tx); text-wrap: balance; }
+.hc-lift__note { margin-top: .55rem; font-size: var(--step-0); line-height: 1.5; color: var(--tx-soft); }
+.hc-lift__outs { list-style: none; margin: clamp(.8rem, 1.6vw, 1.3rem) 0 0; padding: 0; }
+.hc-lift__outs li { padding: clamp(.8rem, 1.4vw, 1.15rem) 0; font-family: var(--f-display); font-weight: 340;
+  font-size: var(--step-1); line-height: 1.22; letter-spacing: -0.01em; color: var(--tx); text-wrap: pretty; }
+.hc-lift__outs li + li { border-top: 1px solid var(--line); }
+
+/* Armed by js/healthcare.js only. Each carried line lifts once, top
+   first: it fades back a step and rises a little. Each lift brings up
+   the outcome across from it; the last outcome comes with the last. */
+.hc-lift.is-armed .hc-lift__line { transition: opacity var(--hc-lift, 640ms) var(--ease-out), transform var(--hc-lift, 640ms) var(--ease-out); }
+.hc-lift.is-armed .hc-lift__line.is-lifted { opacity: .74; transform: translateY(-.14em); }
+/* once every outcome is up, the lifted lines come back to full strength */
+.hc-lift.is-armed.is-done .hc-lift__line.is-lifted { opacity: 1; }
+.hc-lift.is-armed .hc-lift__outs li { opacity: 0; transform: translateY(18px);
+  transition: opacity var(--hc-settle, 520ms) var(--ease-out), transform var(--hc-settle, 520ms) var(--ease-out); }
+.hc-lift.is-armed .hc-lift__outs li.is-on { opacity: 1; transform: none; }
+
+.hc-talk__main { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: clamp(2.5rem, 6vw, 7rem);
+  align-items: start; margin-top: clamp(3rem, 6vw, 5rem); padding-top: clamp(1.6rem, 3vw, 2.2rem);
+  border-top: 1px solid var(--line); }
+.hc-talk__formats { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .7rem;
+  font-size: var(--step-0); color: var(--tx); }
+.hc-talk__fl { color: var(--tx-soft); margin-right: .4rem; }
+.hc-talk__f { font-weight: 600; letter-spacing: .02em; }
+.hc-talk__sep { color: var(--tx-soft); }
+.hc-talk__actions { margin-top: 1.4rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2rem; }
+.hc-talk__actions .textlink { min-height: 44px; }
+.hc-talk__dd { margin-top: 0; }
+.hc-talk__foot { margin-top: clamp(1.2rem, 2.4vw, 1.6rem); padding-top: .9rem; max-width: 60ch;
+  border-top: 1px solid var(--line); font-size: var(--step--1) !important; line-height: 1.55;
+  color: var(--tx-soft); text-wrap: pretty; }
+
+@media (max-width: 900px) {
+  .hc-lift, .hc-talk__main { grid-template-columns: minmax(0, 1fr); }
+  .hc-lift__carry, .hc-lift__kept, .hc-lift__out { grid-column: 1; grid-row: auto; }
+  .hc-lift__out { margin-top: clamp(2.2rem, 7vw, 3rem); padding-left: 0; padding-top: clamp(1.4rem, 5vw, 2rem);
+    border-left: 0; border-top: 1px solid var(--line); }
+  .hc-lift__line { font-size: clamp(1.9rem, 8.4vw, 2.8rem); }
+  .hc-lift__label { font-size: 1.5rem; }
+  .hc-talk__dd { margin-top: clamp(2rem, 6vw, 2.6rem); }
+}
+
+/* ------------------------------------------------------------- the quote
+   Layout in quote.css. Armed by js/healthcare.js: the words are laid
+   down top to bottom as the quote arrives, then the name. */
+.quote.is-armed .quote__q { clip-path: inset(0 -3rem 100% -3rem); transform: translateY(18px);
+  transition: clip-path 1.8s var(--ease-out), transform 1.4s var(--ease-out); }
+.quote.is-armed .quote__by { opacity: 0; transition: opacity .8s var(--ease-out) 1.1s; }
+.quote.is-armed.is-in .quote__q { clip-path: inset(0 -3rem -0.3em -3rem); transform: none; }
+.quote.is-armed.is-in .quote__by { opacity: 1; }
+
+/* ------------------------------------------------------ healthcare clients
+   The heading, then the marks in six even cells, silhouettes in the text
+   colour at one strength: one height (--logo-h) times each mark's own
+   scale (--s, from the block) so the marks read at an even weight.
+   Armed by js/healthcare.js: the marks land one after another, once. */
+.hc-logos { --logo-h: clamp(54px, 4.6vw, 80px); color: var(--tx);
+  padding-block: clamp(3.5rem, 6vw, 6rem) clamp(4.5rem, 8vw, 7rem); }
 .hc-logos__inner { width: var(--wrap); margin-inline: auto; }
-.hc-logos__h { font-size: var(--step-1); font-weight: 360; letter-spacing: -0.015em; color: var(--tx-inv-soft);
-  max-width: 30ch; }
-.hc-logos__row { list-style: none; margin: clamp(2rem, 4vw, 3rem) 0 0; padding: 0; display: flex; flex-wrap: wrap;
-  align-items: center; gap: clamp(2rem, 4vw, 4.2rem) clamp(2.4rem, 5vw, 5rem); }
-/* every mark one colour: the knockouts and transparent marks become cream
-   silhouettes; a mark that IS its coloured plate is greyed instead */
-.logo-mark { display: block; height: calc(clamp(40px, 4.4vw, 64px) * var(--s, 1)); width: auto; max-width: 220px;
-  object-fit: contain; filter: brightness(0) invert(1); opacity: .8; }
+.hc-logos__h { font-size: var(--step-2); font-weight: 340; letter-spacing: -0.02em; line-height: 1.08; color: var(--tx);
+  max-width: 26ch; text-wrap: balance; }
+.hc-logos__row { list-style: none; margin: clamp(2.4rem, 5vw, 4rem) 0 0; padding: clamp(1.6rem, 3vw, 2.4rem) 0 0;
+  border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: center; justify-items: center; gap: clamp(2rem, 4vw, 3rem) clamp(1.2rem, 3vw, 3rem); }
+.hc-logos__row li { display: flex; align-items: center; justify-content: center; min-width: 0; max-width: 100%; }
+.logo-mark { display: block; height: calc(var(--logo-h) * var(--s, 1)); width: auto; max-width: 100%;
+  object-fit: contain; filter: var(--logo-filter); opacity: 1; }
 .logo-mark--plate { filter: grayscale(1) brightness(1.35) contrast(1.15); opacity: .85; }
-@media (max-width: 560px) {
-  .hc-logos__row { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem 1.5rem; justify-items: start; }
-  .logo-mark { height: calc(40px * var(--s, 1)); max-width: 100%; }
+.hc-logos__row.is-armed li { opacity: 0; transform: translateY(22px);
+  transition: opacity .7s var(--ease-out), transform .9s var(--ease-out); }
+.hc-logos__row.is-armed li.is-in { opacity: 1; transform: none; }
+@media (max-width: 1000px) {
+  .hc-logos__row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .hc-logos { --logo-h: 50px; }
+  .hc-logos__row { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.6rem; }
 }
 
 /* ------------------------------------------------- the close (in the footer)
-   The heading on the panel tone, then the photo as a full-width
-   landscape band. The footer's own top padding sits under the close
-   panel on this page. */
+   The shared "photo-left" layout (main.css): the photo on the left two
+   thirds, the line beside it on the footer ground, in cream.
+   Armed by js/healthcare.js: as the page lifts off it the photo comes up
+   from a dim, slightly close frame to its full light, and the line
+   rises, once. */
 main:has(> .hc-hero) + .foot { padding-top: 0; }
+.foot .spk-close a.btn.spk-close__cta { color: var(--_fg); }
+.spk-close.is-armed .spk-close__img { transform: scale(1.07); filter: brightness(.5) saturate(.85);
+  transition: transform 2.2s var(--ease-out), filter 1.8s var(--ease-out); }
+.spk-close.is-armed .spk-close__h { opacity: 0; transform: translateY(16px);
+  transition: opacity .9s var(--ease-out) .7s, transform 1.1s var(--ease-out) .7s; }
+.spk-close.is-armed.is-in .spk-close__img { transform: none; filter: none; }
+.spk-close.is-armed.is-in .spk-close__h { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-who__room, .hc-who__hub .hc-who__room.is-open,
+  .hc-who__hub.has-open .hc-who__room.is-lit:not(.is-open) { transform: none !important; }
+  .hc-who__pose--b, .hc-out__pic img { transition: none; }
+  .hc-out__room:hover .hc-out__pic img { transform: none; }
+  .hc-lift .hc-lift__line, .hc-lift .hc-lift__outs li { transition: none !important;
+    transform: none !important; opacity: 1 !important; }
+}

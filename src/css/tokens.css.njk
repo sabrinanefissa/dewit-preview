@@ -12,54 +12,63 @@ eleventyExcludeFromCollections: true
 {%- set m = theme.motion -%}
 /* =====================================================================
    Dr. Stephen de Wit — Design System Tokens
-   Brand anchor: royal violet {{ c.violet }} (sampled from logo wordmark)
-   Canvas: warm paper + deep plum ink (editorial / cinematic)
+   Neutral plum, cream and ivory, with one lavender-mauve accent
    ===================================================================== */
 
 :root {
-  /* --- Brand ------------------------------------------------------- */
-  --violet:        {{ c.violet }};   /* primary brand (logo) */
+  /* --- Accent: one desaturated lavender-mauve, for hairlines, small
+     labels and link underlines only. --accent on light grounds,
+     --accent-2 (the lighter tint) on dark grounds. ------------------- */
+  --accent:        {{ c.accent }};
+  --accent-2:      {{ c["accent-2"] }};
+
+  /* The violet names are kept for the homepage's own rules; they map onto
+     the same neutral plum family and the one accent. */
+  --violet:        {{ c.violet }};
   --violet-600:    {{ c["violet-600"] }};
-  --violet-500:    {{ c["violet-500"] }};   /* interactive on dark */
+  --violet-500:    {{ c["violet-500"] }};
   --violet-300:    {{ c["violet-300"] }};
+  --violet-200:    {{ c["violet-200"] }};
   --violet-100:    {{ c["violet-100"] }};
 
-  /* Expressive secondary palette (from brand palette sheet) — used
-     sparingly, one accent per section/keynote, never all at once. */
-  --magenta:       {{ c.magenta }};
-  --coral:         {{ c.coral }};
-  --gold:          {{ c.gold }};
-  --teal:          {{ c.teal }};
-  --blue:          {{ c.blue }};
-
-  /* --- Canvas ------------------------------------------------------ */
-  --paper:         {{ c.paper }};   /* default light background (warm bone) */
-  --paper-2:       {{ c["paper-2"] }};   /* sectional shift */
+  /* --- Neutrals ---------------------------------------------------- */
+  --ivory:         {{ c.ivory }};
+  --cream:         {{ c.cream }};
+  --mist:          {{ c.mist }};
+  --paper:         {{ c.paper }};
+  --paper-2:       {{ c["paper-2"] }};
   --paper-3:       {{ c["paper-3"] }};
 
-  --plum:          {{ c.plum }};   /* deep dark section */
-  --plum-2:        {{ c["plum-2"] }};   /* deepest */
-  --ink:           {{ c.ink }};   /* warm near-black text */
+  --plum:          {{ c.plum }};
+  --plum-2:        {{ c["plum-2"] }};
+  --ink:           {{ c.ink }};
+  --ink-2:         {{ c["ink-2"] }};
+  --stage-black:   {{ c["stage-black"] }};
+  --indigo:        {{ c.indigo }};
+  --indigo-2:      {{ c["indigo-2"] }};
+  --aub:           {{ c.aub }};
+  --aub-2:         {{ c["aub-2"] }};
+  --violet-deep:   {{ c["violet-deep"] }};
 
-  /* Page grounds: each inner page has its own dark room in the same family */
-  --ink-2:         {{ c["ink-2"] }};   /* keynotes, alternate talk */
-  --stage-black:   {{ c["stage-black"] }};   /* speaking */
-  --indigo:        {{ c["indigo"] }};   /* healthcare */
-  --indigo-2:      {{ c["indigo-2"] }};   /* healthcare panels */
-  --teal-300:      {{ c["teal-300"] }};   /* healthcare accent text */
-  --aub:           {{ c.aub }};   /* about */
-  --aub-2:         {{ c["aub-2"] }};   /* about, credentials band */
-  --violet-deep:   {{ c["violet-deep"] }};   /* book */
+  /* Dark section grounds: calm, deep and desaturated. Each inner page
+     takes one of the mid-tones for its accent band. */
+  --ground-plum:      {{ c["ground-plum"] }};
+  --ground-aubergine: {{ c["ground-aubergine"] }};
+  --ground-violet:    {{ c["ground-violet"] }};
+  --ground-indigo:    {{ c["ground-indigo"] }};
+  --ground-damson:    {{ c["ground-damson"] }};
+  --ground-deep:      {{ c["ground-deep"] }};
+  --ground-stage:     {{ c["stage-black"] }};
 
   /* --- Text -------------------------------------------------------- */
-  --tx:            {{ c.tx }};              /* text on paper */
-  --tx-soft:       {{ c["tx-soft"] }};  /* muted on paper */
+  --tx:            {{ c.tx }};
+  --tx-soft:       {{ c["tx-soft"] }};
   --tx-faint:      {{ c["tx-faint"] }};
-  --tx-inv:        {{ c["tx-inv"] }};              /* text on plum */
+  --tx-inv:        {{ c["tx-inv"] }};
   --tx-inv-soft:   {{ c["tx-inv-soft"] }};
   --tx-inv-faint:  {{ c["tx-inv-faint"] }};
 
-  /* --- Lines / surfaces ------------------------------------------- */
+  /* --- Lines ------------------------------------------------------- */
   --line:          {{ c.line }};
   --line-strong:   {{ c["line-strong"] }};
   --line-inv:      {{ c["line-inv"] }};
@@ -107,4 +116,54 @@ eleventyExcludeFromCollections: true
   --dur-slow:   {{ m.durSlow }};
 
   --shadow-soft: {{ theme.shadow.soft }};
+}
+
+/* =====================================================================
+   Page gradient: each page is one ground colour (--g3) running down from
+   a pale tint of itself. The light half darkens from --g0 to --g1, a short
+   dusk turns --g1 into --g2 in the gap between two sections, and the dark
+   half darkens from --g2 to --g3. html carries data-page, so the footer
+   and the canvas use the bottom stop too.
+   ===================================================================== */
+{%- set pg0 = theme.pageGradients.home %}
+:root { --g0: {{ pg0[0] }}; --g1: {{ pg0[1] }}; --g2: {{ pg0[2] }}; --g3: {{ pg0[3] }}; }
+{%- for slug, stops in theme.pageGradients %}
+[data-page="{{ slug }}"] { --g0: {{ stops[0] }}; --g1: {{ stops[1] }}; --g2: {{ stops[2] }}; --g3: {{ stops[3] }}; }
+{%- endfor %}
+
+/* =====================================================================
+   Text schemes. Every colour that sits on the gradient comes from these
+   variables, so one attribute (data-scheme="light" | "dark") sets a
+   section's text, hairlines, buttons, links, focus ring and logos.
+   Sections above the page's split section take the light scheme and the
+   split section and everything after it take the dark one, so no section
+   straddles the dusk. The rule below sets this without script too.
+   The older names (--tx-inv, --line-inv, --violet-300 ...) follow too.
+   ===================================================================== */
+{%- macro scheme(s) %}
+  --tx: {{ s.tx }}; --tx-soft: {{ s["tx-soft"] }}; --tx-faint: {{ s["tx-faint"] }}; --tx-dim: {{ s["tx-dim"] }};
+  --line: {{ s.line }}; --line-strong: {{ s["line-strong"] }};
+  --accent: {{ s.accent }}; --focus: {{ s.focus }}; --logo: {{ s.tx }};
+  --btn-bg: {{ s["btn-bg"] }}; --btn-fg: {{ s["btn-fg"] }}; --btn-hover: {{ s["btn-hover"] }};
+  --veil-bg: {{ s["veil-bg"] }}; --veil-line: {{ s["veil-line"] }};
+  --tx-inv: {{ s.tx }}; --tx-inv-soft: {{ s["tx-soft"] }}; --tx-inv-faint: {{ s["tx-faint"] }};
+  --line-inv: {{ s.line }}; --line-inv-strong: {{ s["line-strong"] }};
+  --violet: {{ s.accent }}; --violet-300: {{ s.accent }}; --violet-400: {{ s.accent }}; --violet-500: {{ s.accent }};
+  --accent-2: {{ s.accent }}; --dd-page-acc: {{ s.accent }};
+  --ground: transparent;
+  color: var(--tx);
+{%- endmacro %}
+[data-scheme="light"], #main > :not([data-scheme]) {
+{{- scheme(theme.schemes.light) }}
+  --nav-ground: color-mix(in srgb, var(--g0) 94%, transparent);
+  --logo-filter: brightness(0) invert(.11);
+}
+[data-scheme="dark"]
+{%- for slug, sel in theme.gradientSplit %},
+html[data-page="{{ slug }}"] #main > {{ sel }}:not([data-scheme]),
+html[data-page="{{ slug }}"] #main > {{ sel }} ~ :not([data-scheme])
+{%- endfor %} {
+{{- scheme(theme.schemes.dark) }}
+  --nav-ground: color-mix(in srgb, var(--g3) 94%, transparent);
+  --logo-filter: brightness(0) invert(1);
 }

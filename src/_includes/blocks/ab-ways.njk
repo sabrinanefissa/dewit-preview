@@ -1,0 +1,21 @@
+  {# About: ways to work with Stephen. Three photo cards in a row, each a
+       link on to its page: the photo, the name on it, and its line, which
+       rises into view on hover (always shown where there is no hover). #}
+  <section class="ab-ways"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
+    <div class="ab-ways__inner">
+      <h2 class="ab-ways__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
+      <ul class="ab-ways__list">
+      {%- for w in block.ways %}
+        <li style="--i:{{ loop.index0 }}"><a class="ab-way" href="{{ w.href | root(r) }}">
+          {%- if w.image and w.image.src %}
+          <span class="ab-way__media"><img src="{{ w.image.src | root(r) }}"
+               {%- set ss1 = w.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="(max-width: 760px) 100vw, 32vw"{% endif %} alt="{{ (w.image.alt or '') | inline() }}" loading="lazy" decoding="async"></span>
+          {%- endif %}
+          <span class="ab-way__cap" data-scheme="dark">
+            <span class="ab-way__t">{{ w.label | inline() }}<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            {%- if w.line %}<span class="ab-way__l"><span>{{ w.line | inline() }}</span></span>{% endif %}
+          </span></a></li>
+      {%- endfor %}
+      </ul>
+    </div>
+  </section>

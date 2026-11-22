@@ -1,10 +1,12 @@
 {%- from "place.njk" import placeStyle %}
   <section class="spk-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}{% if block.heading %} aria-labelledby="{{ block.id }}-h"{% else %} aria-label="{% if block.label %}{{ block.label | plain }}{% else %}{% for w in block.words %}{{ w.text | plain }}{% if not loop.last %} {% endif %}{% endfor %}{% endif %}"{% endif %} data-tone="{{ block | tone('transparent') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
+    {%- if block.image and block.image.src %}
     <div class="media media--plum spk-out__media" aria-hidden="true">
       {%- set pp = block.image.src | portrait(r) %}{% if pp %}<picture class="pic"><source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}<img class="spk-lights" src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
            sizes="{{ block.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">{% if pp %}</picture>{% endif %}
     </div>
+    {%- endif %}
     <div class="spk-out__inner">
       {%- if block.heading %}
       {%- set ph = placeStyle(block.headingPlacement) | trim %}

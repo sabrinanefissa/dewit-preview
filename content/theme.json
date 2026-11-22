@@ -1,39 +1,45 @@
 {
   "colors": {
-    "violet": "#552B9D",
-    "violet-600": "#6A38BF",
-    "violet-500": "#7C4DE0",
-    "violet-300": "#A985E6",
-    "violet-100": "#E7DCF6",
-    "magenta": "#C2208C",
-    "coral": "#F0544F",
-    "gold": "#E3A93C",
-    "teal": "#1E8F82",
-    "blue": "#2F60C4",
-    "paper": "#F5F0E7",
-    "paper-2": "#ECE3D5",
-    "paper-3": "#E2D6C4",
-    "plum": "#1A1026",
-    "plum-2": "#120A1C",
-    "ink": "#191320",
-    "ink-2": "#211830",
-    "stage-black": "#0B0711",
-    "indigo": "#16132E",
-    "indigo-2": "#221C42",
-    "teal-300": "#8FC7C2",
-    "aub": "#2A1620",
-    "aub-2": "#331A2B",
-    "violet-deep": "#2E1758",
-    "tx": "#191320",
-    "tx-soft": "rgba(25,19,32,0.64)",
-    "tx-faint": "rgba(25,19,32,0.40)",
-    "tx-inv": "#F4ECDE",
-    "tx-inv-soft": "rgba(244,236,222,0.66)",
-    "tx-inv-faint": "rgba(244,236,222,0.40)",
-    "line": "rgba(25,19,32,0.14)",
-    "line-strong": "rgba(25,19,32,0.28)",
-    "line-inv": "rgba(244,236,222,0.16)",
-    "line-inv-strong": "rgba(244,236,222,0.30)"
+    "violet": "#4A3D55",
+    "violet-600": "#3A2F44",
+    "violet-500": "#7A6884",
+    "violet-300": "#C3B5CA",
+    "violet-200": "#D6CCDB",
+    "violet-100": "#ECE7EF",
+    "accent": "#7A6884",
+    "accent-2": "#C3B5CA",
+    "paper": "#FAF7F2",
+    "paper-2": "#F3ECE2",
+    "paper-3": "#E6DED3",
+    "ivory": "#FAF7F2",
+    "cream": "#F3ECE2",
+    "mist": "#EEEAF0",
+    "plum": "#1A1220",
+    "plum-2": "#140E18",
+    "ink": "#22182A",
+    "ink-2": "#221A2C",
+    "stage-black": "#120C16",
+    "indigo": "#1C1F30",
+    "indigo-2": "#232638",
+    "aub": "#2A1D2A",
+    "aub-2": "#2F2230",
+    "violet-deep": "#272033",
+    "ground-plum": "#2A2030",
+    "ground-aubergine": "#2A1D2A",
+    "ground-violet": "#25213A",
+    "ground-indigo": "#1C1F30",
+    "ground-damson": "#272033",
+    "ground-deep": "#1A1220",
+    "tx": "#22182A",
+    "tx-soft": "#564A5C",
+    "tx-faint": "rgba(34,24,42,0.62)",
+    "tx-inv": "#F3ECE2",
+    "tx-inv-soft": "rgba(243,236,226,0.82)",
+    "tx-inv-faint": "rgba(243,236,226,0.66)",
+    "line": "rgba(34,24,42,0.14)",
+    "line-strong": "rgba(34,24,42,0.30)",
+    "line-inv": "rgba(243,236,226,0.16)",
+    "line-inv-strong": "rgba(243,236,226,0.34)"
   },
   "fonts": {
     "display": "\"Fraunces\", \"Georgia\", \"Times New Roman\", serif",
@@ -73,9 +79,9 @@
     "radius": "2px"
   },
   "grade": {
-    "filter": "contrast(1.06) saturate(0.9) brightness(0.97)",
-    "plum": "linear-gradient(180deg, rgba(26,16,38,0.10), rgba(18,10,28,0.42))",
-    "warm": "linear-gradient(200deg, rgba(120,60,30,0.14), rgba(26,16,38,0.30))"
+    "filter": "none",
+    "plum": "none",
+    "warm": "none"
   },
   "motion": {
     "easeOut": "cubic-bezier(0.22, 1, 0.36, 1)",
@@ -86,5 +92,83 @@
   },
   "shadow": {
     "soft": "0 24px 60px -30px rgba(20,10,40,0.45)"
+  },
+  "pageGradients": {
+    "home": [
+      "#3A2147",
+      "#2A1836",
+      "#1F1229",
+      "#1A1220"
+    ],
+    "about": [
+      "#3A1F3F",
+      "#2C1731",
+      "#231427",
+      "#1E1023"
+    ],
+    "keynotes": [
+      "#33224F",
+      "#271A40",
+      "#1F1534",
+      "#1B1230"
+    ],
+    "book": [
+      "#2C2756",
+      "#221F46",
+      "#1C1A3B",
+      "#181634"
+    ],
+    "speaking": [
+      "#2A2A5A",
+      "#20214A",
+      "#1A1B3E",
+      "#171738"
+    ],
+    "healthcare": [
+      "#26325E",
+      "#1E284D",
+      "#182040",
+      "#121830"
+    ]
+  },
+  "schemes": {
+    "light": {
+      "tx": "#241A2A",
+      "tx-soft": "#241A2A",
+      "tx-faint": "#2A1F31",
+      "tx-dim": "rgba(36,26,42,0.26)",
+      "line": "rgba(36,26,42,0.22)",
+      "line-strong": "rgba(36,26,42,0.42)",
+      "accent": "#241A2A",
+      "btn-bg": "#241A2A",
+      "btn-fg": "#F4EDE1",
+      "btn-hover": "#3A2D41",
+      "focus": "#241A2A",
+      "veil-bg": "transparent",
+      "veil-line": "rgba(36,26,42,0.14)"
+    },
+    "dark": {
+      "tx": "#F4EDE1",
+      "tx-soft": "#F4EDE1",
+      "tx-faint": "#EFE7DD",
+      "tx-dim": "rgba(244,237,225,0.28)",
+      "line": "rgba(244,237,225,0.22)",
+      "line-strong": "rgba(244,237,225,0.42)",
+      "accent": "#F4EDE1",
+      "btn-bg": "#F4EDE1",
+      "btn-fg": "#241A2A",
+      "btn-hover": "#E6DCCF",
+      "focus": "#F4EDE1",
+      "veil-bg": "transparent",
+      "veil-line": "rgba(244,237,225,0.16)"
+    }
+  },
+  "gradientSplit": {
+    "home": ".bleed",
+    "about": ".ab-ways",
+    "keynotes": ".quote",
+    "book": ".bk-steps",
+    "speaking": ".spk-fmt-line",
+    "healthcare": ".hc-talk"
   }
 }

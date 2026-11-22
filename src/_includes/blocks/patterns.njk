@@ -1,56 +1,54 @@
-{%- from "place.njk" import placeStyle %}
-  {# Same patterns: "How [Word] shows up." on one line, the word rolling, its
-       controls under the headline, two cards. Auto-rolls on 5s; an arrow or the word pins it. #}
-  <section class="patterns"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum') }}" data-period="{{ block | motion('period', 5000) }}">
-    <div class="patterns__spot" aria-hidden="true"></div>
+  {# Same patterns: "How [Word] shows up." with the word as the live part;
+       under it a rail of the seven words, then the word's two rooms side by
+       side (phones: stacked), each with its label and line. js/home-rooms.js
+       lights the home room, carries a light across, then lights the work
+       room. Without the script the first word shows, both rooms lit. #}
+  {%- set n = block.words.length %}
+  <section class="patterns"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="patterns__inner">
+      <h2 class="patterns__h" id="{{ block.id }}-h"><span class="patterns__how">{{ block.how | inline() }}</span> <span class="patterns__slot">
+        {%- for w in block.words %}<span class="patterns__word{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>{{ w.name | plain }}</span>{% endfor -%}
+      </span> <span class="patterns__tail">{{ block.tail | inline() }}</span></h2>
 
-    <div class="patterns__inner reveal">
-
-      <div class="patterns__stage">
-        {%- set ps = placeStyle(block.placement) | trim %}
-        {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
-        <h2 class="patterns__title" aria-label="{{ block.how }} {{ block.words[0].name }} {{ block.tail }}"><span class="patterns__how">{{ block.how | inline() }}</span> <span class="ctx"><button type="button" class="patterns__word" aria-pressed="false" aria-describedby="{{ block.id }}-hint">
-          {%- for w in block.words %}<span class="patterns__glyphs{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if w.homeImg %}{% set hb = w.homeImg | root(r) %} data-home-srcset="{{ hb }}-560.webp 560w, {{ hb }}-1120.webp 1120w"{% endif %}{% if w.workImg %}{% set wb = w.workImg | root(r) %} data-work-srcset="{{ wb }}-560.webp 560w, {{ wb }}-1120.webp 1120w"{% endif %}{% if not loop.first %} aria-hidden="true"{% endif %}>{{ w.word | inline() }}</span>{% endfor -%}
-        </button><i class="ctx__bar" aria-hidden="true"></i></span> <span class="patterns__tail">{{ block.tail | inline() }}</span></h2>
-        <span class="patterns__sr" id="{{ block.id }}-hint">{{ block.hint | inline() }}</span>
-
-        <div class="patterns__ctrl">
-          <button type="button" class="patterns__arrow patterns__arrow--prev" aria-label="{{ block.prevLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-          <span class="patterns__count">01 / {{ block.words.length | pad2 }}</span>
-          <button type="button" class="patterns__arrow patterns__arrow--next" aria-label="{{ block.nextLabel }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-        </div>
-        {% if ps | length %}</div></div>{% endif %}
-
-        {# Every word and both rooms, for screen readers, all the time #}
-        <dl class="patterns__sr">
+      <div class="patterns__nav">
+        <button type="button" class="patterns__arrow patterns__arrow--prev" aria-label="{{ block.prevLabel }}" aria-controls="{{ block.id }}-rooms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <div class="patterns__rail" role="group" aria-label="{{ block.ariaLabel | plain }}">
         {%- for w in block.words %}
-          <dt>{{ w.name | inline() }}</dt><dd>{{ block.homeLabel }}: {{ w.home | inline() }}</dd><dd>{{ block.workLabel }}: {{ w.work | inline() }}</dd>
-        {%- endfor %}
-        </dl>
-        {# Two cards, decorative (the sr-only list above carries the words).
-             Each hides a still of Stephen that the pointer lights; the
-             photos are mapped in main.js, PHOTOS ("Replace photos here"). #}
-        <div class="patterns__cards" aria-hidden="true">
-        {%- for room in [["home", block.homeLabel], ["work", block.workLabel]] %}
-          <div class="patterns__card patterns__room--{{ room[0] }}">
-            <div class="patterns__photo"></div>
-            <div class="patterns__photo patterns__photo--lit"></div>
-            <p class="patterns__text">
-              <span class="patterns__label">{{ room[1] }}</span>
-              <span class="patterns__lines">
-              {%- for w in block.words %}
-                <span data-i="{{ loop.index0 }}"{% if loop.first %} class="is-on"{% endif %}>{{ w[room[0]] | inline() }}</span>
-              {%- endfor %}
-              </span>
-            </p>
-          </div>
+          <button type="button" class="patterns__pick{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" aria-controls="{{ block.id }}-rooms">{{ w.name | plain }}</button>
         {%- endfor %}
         </div>
+        <button type="button" class="patterns__arrow patterns__arrow--next" aria-label="{{ block.nextLabel }}" aria-controls="{{ block.id }}-rooms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+
+      <div class="patterns__rooms" id="{{ block.id }}-rooms">
+      {%- for room in [["home", block.homeLabel], ["work", block.workLabel]] %}
+        <figure class="patterns__room patterns__room--{{ room[0] }}">
+          <div class="patterns__art" aria-hidden="true">
+          {%- for w in block.words %}
+            {%- set src = w[room[0] + 'Img'] %}
+            {%- set ss = src | srcset(r) %}
+            <div class="patterns__pic{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}">
+              <img class="patterns__dim" src="{{ src | root(r) }}"{% if ss %} srcset="{{ ss }}"{% endif %} sizes="(max-width: 760px) 92vw, 42vw" alt="" width="1152" height="847"{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
+              <img class="patterns__lit" src="{{ src | root(r) }}"{% if ss %} srcset="{{ ss }}"{% endif %} sizes="(max-width: 760px) 92vw, 42vw" alt="" width="1152" height="847"{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
+            </div>
+          {%- endfor %}
+          </div>
+          <figcaption class="patterns__cap">
+            <span class="patterns__label">{{ room[1] }}</span>
+            <span class="patterns__lines">
+            {%- for w in block.words %}
+              <span class="patterns__line{% if loop.first %} is-on{% endif %}" data-i="{{ loop.index0 }}"{% if not loop.first %} hidden{% endif %}>{{ w[room[0]] | inline() }}</span>
+            {%- endfor %}
+            </span>
+          </figcaption>
+        </figure>
+      {%- endfor %}
+        <i class="patterns__dot" aria-hidden="true"></i>
       </div>
 
       <p class="patterns__cta"><span class="patterns__cta-lead">{{ block.cta.lead | inline() }}</span>
         <a class="patterns__cta-link" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
 
-      <p class="patterns__sr" id="{{ block.id }}-live" aria-live="off" aria-atomic="true"></p>
+      <p class="patterns__sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
     </div>
   </section>

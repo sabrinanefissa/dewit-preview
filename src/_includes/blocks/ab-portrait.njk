@@ -1,30 +1,29 @@
-  {# About: the portrait, and the portrait's lights. The section carries
-       .spk-bio and the photo .spk-lights inside a .media, the markup js/main.js
-       module 6 binds to: the house is dark until the section arrives, then
-       the lights come up on the portrait, once. Beside it: the name, the
-       category line, the numbers (static: the count-up belongs to Home)
-       and the booking button. #}
+  {# About: the opening. The name (written once by js/about.js), the
+       category line, the three figures and the booking button on the
+       left; the portrait on the right, running to the page edge and
+       fading into the ground on its inner edge. Phones: the portrait
+       first, then the words. #}
   <section class="spk-bio ab-portrait"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    <div class="ab-portrait__media">
+      <img src="{{ block.portrait.src | root(r) }}"
+           {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.portrait.sizes or '100vw' }}" alt="{{ block.portrait.alt | inline() }}" fetchpriority="high" decoding="async">
+    </div>
     <div class="ab-portrait__grid">
       <div class="ab-portrait__copy">
         <h1 class="ab-portrait__h" id="{{ block.id }}-h">{{ block.name | inline('ab-em') }}</h1>
         <p class="ab-portrait__cat">{{ block.category | inline() }}</p>
         {%- if block.line %}<p class="ab-portrait__line">{{ block.line | inline() }}</p>{% endif %}
         {%- if block.numbers and block.numbers.counters and block.numbers.counters.length %}
-        <p class="ab-numbers__line ab-portrait__nums"{% if block.numbers.ariaLabel %} aria-label="{{ block.numbers.ariaLabel | plain }}"{% endif %}>
+        <p class="ab-portrait__nums"{% if block.numbers.ariaLabel %} aria-label="{{ block.numbers.ariaLabel | plain }}"{% endif %}>
         {%- for c in block.numbers.counters %}
-          <span class="ab-numbers__item"><span class="ab-numbers__n">{{ c.value }}</span> {{ c.label | inline() }}</span>{% if not loop.last %} {% endif %}
+          <span class="ab-portrait__num" style="--i:{{ loop.index0 }}"><span class="ab-portrait__n">{{ c.value }}</span> {{ c.label | inline() }}</span>{% if not loop.last %} {% endif %}
         {%- endfor %}
         </p>
         {%- endif %}
         {%- if block.cta and block.cta.href %}
         <a class="btn btn--lg ab-portrait__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
         {%- endif %}
-      </div>
-      <div class="media ab-portrait__media">
-        <img class="spk-lights" src="{{ block.portrait.src | root(r) }}"
-             {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-             sizes="{{ block.portrait.sizes or '100vw' }}" alt="{{ block.portrait.alt | inline() }}" fetchpriority="high" decoding="async">
       </div>
     </div>
   </section>

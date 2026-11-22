@@ -1,12 +1,12 @@
 {%- from "place.njk" import placeStyle %}
   {# What happens when you book: sticky step list; a sixth stage turns the
        scene into the final call to action #}
-  <section class="steps"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('plum-2') }}">
+  <section class="steps steps--photos"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}" data-tone="{{ block | tone('deep') }}">
     <div class="steps__track" data-steps>
       <div class="steps__sticky">
         <div class="steps__media" aria-hidden="true">
         {%- for s in block.steps %}
-          <img class="steps__still{% if loop.first %} is-on{% endif %}" src="{{ s.image.src | root(r) }}"
+          <img class="steps__still{% if loop.first %} is-on{% endif %}" src="{{ s.image.src | root(r) }}"{% if s.image.position %} style="--pos:{{ s.image.position | plain }}"{% endif %}
                {%- set ss1 = s.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
                sizes="{{ s.image.sizes or '100vw' }}" alt=""{% if not loop.first %} loading="lazy"{% endif %} decoding="async">
         {%- endfor %}
@@ -28,7 +28,7 @@
       </div>
       {%- set f = block.final %}
       {%- if f %}
-      {# Stage 6: the scene becomes the final call to action (was section.final) #}
+      {# Stage 6: the scene becomes the final call to action #}
       <div class="final steps__final"{% if f.id %} id="{{ f.id }}"{% endif %}>
         {%- set pf = placeStyle(f.placement) | trim %}
         {% if pf | length %}<div class="place" style="{{ pf }}"><div class="place__inner">{% endif %}

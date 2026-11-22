@@ -1,31 +1,29 @@
 {%- from "dd.njk" import dd %}
-  {# About: the story. The real photographs lead, side by side with their
-       captions (phones: one under the other); then the heading, and the
-       story itself in a drop-down: the opening line, then the paragraphs. #}
-  <section class="ab-story"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
-    <div class="ab-story__inner">
-      {%- if block.figures and block.figures.length %}
-      <div class="ab-story__figs">
-      {%- for f in block.figures %}
-        <figure class="ab-fig">
-          <div class="ab-fig__media"><img src="{{ f.src | root(r) }}"
-               {%- set ss1 = f.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-               sizes="{{ f.sizes or '(max-width: 900px) 100vw, 50vw' }}" alt="{{ f.alt | inline() }}" loading="lazy" decoding="async"{% if f.position %} style="object-position:{{ f.position }}"{% endif %}></div>
-          {%- if f.caption %}<figcaption>{{ f.caption | inline() }}</figcaption>{% endif %}
-        </figure>
-      {%- endfor %}
+  {# About: the story. The portrait on the left, held in view while the
+       story is read; beside it the heading, the opening line and the rest
+       of the story in a drop-down, all in a reading measure. Phones: the
+       portrait first, then the words. #}
+  <section class="ab-story"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
+    <div class="ab-story__grid">
+      {%- if block.portrait and block.portrait.src %}
+      <div class="ab-story__photo">
+        <img src="{{ block.portrait.src | root(r) }}"
+             {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.portrait.sizes or '(max-width: 900px) 100vw, 40vw' }}" alt="{{ block.portrait.alt | inline() }}" loading="lazy" decoding="async">
       </div>
       {%- endif %}
-      <h2 class="ab-story__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
-      {%- call dd(block.detailsLabel or 'The full story', block.id ~ '-full', 'ab-story__dd') %}
-      <div class="ab-story__text">
+      <div class="ab-story__copy">
+        <h2 class="ab-story__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
         {%- if block.line %}
         <p class="ab-story__lede">{{ block.line | inline() }}</p>
         {%- endif %}
-        {%- for p in block.paragraphs %}
-        <p>{{ p | inline() }}</p>
-        {%- endfor %}
+        {%- call dd(block.detailsLabel or 'The full story', block.id ~ '-full', 'ab-story__dd') %}
+        <div class="ab-story__text">
+          {%- for p in block.paragraphs %}
+          <p>{{ p | inline() }}</p>
+          {%- endfor %}
+        </div>
+        {%- endcall %}
       </div>
-      {%- endcall %}
     </div>
   </section>

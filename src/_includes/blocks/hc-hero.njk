@@ -1,12 +1,13 @@
-  {# Healthcare: the opening. The page's indigo ground, a teal accent,
-       one real photo of Stephen in a room: the h1, who it is for, the
+  {# Healthcare: the opening. The copy on the top of the page gradient,
+       one real photo of Stephen in a room beside it, fading into the
+       ground on its inner and lower edges: the h1, who it is for, the
        years behind it (proof, with **20+** set in the display face) and
        the booking button. Static: no entrance, no scroll work. #}
   <section class="hc-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
     <div class="hc-hero__media media">
       <img src="{{ block.image.src | root(r) }}"
            {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes or '50vw' }}" alt="{{ block.image.alt | inline() }}" fetchpriority="high" decoding="async"{% if block.image.position %} style="object-position:{{ block.image.position }}"{% endif %}>
+           sizes="{{ block.image.sizes or '50vw' }}" alt="{{ block.image.alt | inline() }}" fetchpriority="high" decoding="async"{% if block.image.position %} style="--pos:{{ block.image.position | plain }};--pos-m:{{ (block.image.mobilePosition or block.image.position) | plain }}"{% endif %}>
     </div>
     <div class="hc-hero__copy">
       <h1 class="hc-hero__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h1>

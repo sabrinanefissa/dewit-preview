@@ -85,33 +85,14 @@
     <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>
   </section>
   {%- if band %}
-  {# Under the reel: the page's h1 with its one line and the booking
-       button, the row of links to the page's sections, and the reel's
-       chapters in a drop-down. Each chapter is a button that plays the
-       reel from that second with sound (js module 1, [data-seek]); with no
-       script the list still reads as the reel's contents. #}
-  <section class="spk-intro" aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+  {# Under the reel: the reel's chapters in a drop-down, full width,
+       directly under the picture; then the page's h1 with its one line
+       and the two buttons; then the row of links to the page's sections
+       on its own. Each chapter is a button that plays the reel from that
+       second with sound (js module 1, [data-seek]); with no script the
+       list still reads as the reel's contents. #}
+  <section class="spk-intro" aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
     <div class="spk-intro__grid">
-      <div class="spk-intro__head">
-        <h1 class="spk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h1>
-        <div class="spk-intro__row">
-          {%- if block.line %}
-          <p class="spk-intro__line">{{ block.line | inline() }}</p>
-          {%- endif %}
-          {%- if block.cta and block.cta.href %}
-          <a class="btn btn--lg spk-intro__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
-          {%- endif %}
-        </div>
-      </div>
-      {%- if block.index and block.index.items and block.index.items.length %}
-      <nav class="spk-index" aria-label="{{ (block.index.label or 'On this page') | plain }}">
-        <ul class="spk-index__list">
-        {%- for it in block.index.items %}
-          <li><a class="spk-index__a" href="{{ it.href | root(r) }}">{{ it.label | inline() }}</a></li>
-        {%- endfor %}
-        </ul>
-      </nav>
-      {%- endif %}
       {%- set ch = block.chapters %}
       {%- if ch and ch.items and ch.items.length %}
       <div class="spk-chapters">
@@ -127,6 +108,33 @@
         </ol>
         {%- endcall %}
       </div>
+      {%- endif %}
+      <div class="spk-intro__head">
+        <h1 class="spk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h1>
+        <div class="spk-intro__row">
+          {%- if block.line %}
+          <p class="spk-intro__line">{{ block.line | inline() }}</p>
+          {%- endif %}
+          {%- if (block.cta and block.cta.href) or (block.cta2 and block.cta2.href) %}
+          <div class="spk-intro__ctas">
+            {%- if block.cta and block.cta.href %}
+            <a class="btn btn--lg spk-intro__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+            {%- endif %}
+            {%- if block.cta2 and block.cta2.href %}
+            <a class="btn btn--lg btn--inv spk-intro__cta" href="{{ block.cta2.href | root(r) }}">{{ block.cta2.label | inline() }}</a>
+            {%- endif %}
+          </div>
+          {%- endif %}
+        </div>
+      </div>
+      {%- if block.index and block.index.items and block.index.items.length %}
+      <nav class="spk-index" aria-label="{{ (block.index.label or 'On this page') | plain }}">
+        <ul class="spk-index__list">
+        {%- for it in block.index.items %}
+          <li><a class="spk-index__a" href="{{ it.href | root(r) }}">{{ it.label | inline() }}</a></li>
+        {%- endfor %}
+        </ul>
+      </nav>
       {%- endif %}
     </div>
   </section>

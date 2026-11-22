@@ -1,7 +1,7 @@
 {%- from "place.njk" import placeStyle %}
   {# Why Stephen #}
-  <section class="why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('ink') }}">
-    <div class="media media--plum">
+  <section class="why"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum') }}">
+    <div class="media">
       <img data-reveal-clip src="{{ block.portrait.src | root(r) }}"
            {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
            sizes="{{ block.portrait.sizes or '100vw' }}" alt="{{ block.portrait.alt | inline() }}" decoding="async">
@@ -9,7 +9,7 @@
     <div class="why__grid">
       {%- set ps = placeStyle(block.placement) | trim %}
       {% if ps | length %}<div class="place" style="{{ ps }}"><div class="place__inner">{% endif %}
-      <div class="why__body reveal">
+      <div class="why__body veil--light reveal">
         <h2 class="fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
         <p class="lead">{{ block.lead | inline() }}</p>
         <div class="creds">

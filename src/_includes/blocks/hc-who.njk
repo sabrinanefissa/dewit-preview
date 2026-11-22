@@ -1,15 +1,49 @@
-  {# Healthcare: who it is for. The heading, then four plain items in a
-       row, each a tall column under a teal hairline. No icons. #}
-  <section class="hc-who"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
-    <div class="hc-who__grid">
+  {# Healthcare: who it is for. The heading, then four items. With room
+       pictures (item.art, and item.artMove for the same room with the
+       people moved): the four rooms as a cluster of cut-outs on the page
+       ground, each title beside its room (desktop) or the titles under
+       the cluster (tablet and phones). js/healthcare.js lights the rooms
+       in turn, then makes each room open on hover, tap or its title
+       button: the room grows, its line shows, the people move.
+       With a photo: the photo on the left, the heading and the items two
+       by two beside it; with neither, the four items in a row. #}
+  {%- set hasArt = block.items and block.items[0] and block.items[0].art %}
+  {%- set hasImg = not hasArt and block.image and block.image.src %}
+  <section class="hc-who{% if hasArt %} hc-who--hub{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
+    <div class="hc-who__grid{% if hasImg %} hc-who__grid--photo{% endif %}">
+      {%- if hasImg %}
+      <div class="media hc-who__media">
+        <img src="{{ block.image.src | root(r) }}"
+             {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.image.sizes or '(max-width: 900px) 100vw, 44vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async"{% if block.image.position %} style="--pos:{{ block.image.position | plain }};--pos-m:{{ (block.image.mobilePosition or block.image.position) | plain }}"{% endif %}>
+      </div>
+      {%- endif %}
       <h2 class="hc-who__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
+      {%- if hasArt %}
+      <div class="hc-who__hub" data-hc-hub>
+        <div class="hc-who__art" aria-hidden="true">
+          {%- for it in block.items %}{% if loop.index <= 4 %}
+          {%- set ra = it.art | aspect %}
+          <div class="hc-who__room hc-who__room--{{ loop.index }}" data-room="{{ loop.index0 }}"{% if ra %} style="aspect-ratio:{{ ra }}"{% endif %}>
+            <img class="hc-who__pose" src="{{ it.art | root(r) }}"{% set ssA = it.art | srcset(r) %}{% if ssA %} srcset="{{ ssA }}"{% endif %} sizes="(max-width: 1180px) 46vw, 24vw" alt="" loading="lazy" decoding="async">
+            {%- if it.artMove %}
+            <img class="hc-who__pose hc-who__pose--b" src="{{ it.artMove | root(r) }}"{% set ssB = it.artMove | srcset(r) %}{% if ssB %} srcset="{{ ssB }}"{% endif %} sizes="(max-width: 1180px) 46vw, 24vw" alt="" loading="lazy" decoding="async">
+            {%- endif %}
+          </div>
+          {%- endif %}{% endfor %}
+          <i class="hc-who__dot"></i>
+        </div>
+      {%- endif %}
       <ul class="hc-who__list">
       {%- for it in block.items %}
-        <li class="hc-who__item">
-          <h3 class="hc-who__name">{{ it.title | inline() }}</h3>
-          {%- if it.text %}<p class="hc-who__text">{{ it.text | inline() }}</p>{% endif %}
+        <li class="hc-who__item"{% if hasArt %} data-item="{{ loop.index0 }}"{% endif %}>
+          <h3 class="hc-who__name"><span class="hc-who__nt">{{ it.title | inline() }}</span></h3>
+          {%- if it.text %}<div class="hc-who__more"><p class="hc-who__text" id="{{ block.id }}-t{{ loop.index }}">{{ it.text | inline() }}</p></div>{% endif %}
         </li>
       {%- endfor %}
       </ul>
+      {%- if hasArt %}
+      </div>
+      {%- endif %}
     </div>
   </section>

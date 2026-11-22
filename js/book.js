@@ -1,5 +1,5 @@
-/* Book page (/book/): the enquiry form, in two steps. Functional only, no
-   animation: steps and the confirmation switch instantly.
+/* Book page (/book/): the enquiry form, in two steps. The steps switch
+   instantly; the wall and the five steps below have their own parts.
    Without script the form is one long form whose own action (mailto:,
    text/plain) and the browser's required checks still work.
    With script:
@@ -256,4 +256,75 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
+})();
+
+/* Where Stephen has spoken: the client marks land one at a time in
+   reading order (a fixed order, so it reads as a story), then the
+   invitation card arrives in the last cells and its line and arrow
+   follow. Runs once, when the wall is half in view. Reduced motion, no
+   IntersectionObserver, or already scrolled past: nothing is armed and
+   the full wall shows at once; if the observer never reports, a timer
+   shows it. */
+(function () {
+  "use strict";
+  var grid = document.querySelector("[data-bk-wall]");
+  if (!grid || !("IntersectionObserver" in window)) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (grid.getBoundingClientRect().bottom < 0) return;
+  var cells = [].slice.call(grid.querySelectorAll(".bk-wall__cell"));
+  var STEP = 200, LEAD = 180, PAUSE = 380, heard = false;
+  var io = new IntersectionObserver(function (es) {
+    heard = true;
+    if (!es[0].isIntersecting) return;
+    io.disconnect();
+    var t = LEAD;
+    cells.forEach(function (c) {
+      if (c.classList.contains("bk-wall__cell--invite")) t += PAUSE;
+      setTimeout(function () { c.classList.add("is-in"); }, t);
+      t += STEP;
+    });
+  }, { threshold: 0.4 });
+  grid.classList.add("is-armed");
+  io.observe(grid);
+  setTimeout(function () {
+    if (heard) return;
+    io.disconnect();
+    cells.forEach(function (c) { c.classList.add("is-in"); });
+  }, 2500);
+})();
+
+/* What happens next: each step lights as it comes into view, its numeral
+   going from faint to full and the accent running along its stretch of
+   the hairline. Steps that arrive together light one after another, in
+   order. Runs once per step. Reduced motion, no IntersectionObserver, or
+   the steps already above the screen: nothing is armed, every step shows
+   lit; if the observer never reports, a timer lights them all. */
+(function () {
+  "use strict";
+  var list = document.querySelector("[data-bk-stops]");
+  if (!list || !("IntersectionObserver" in window)) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (list.getBoundingClientRect().bottom < 0) return;
+  var steps = [].slice.call(list.querySelectorAll(".bk-stops__s"));
+  var GAP = 240, next = 0, heard = false;
+  function light(s) {
+    var now = Date.now(), at = Math.max(now, next);
+    next = at + GAP;
+    setTimeout(function () { s.classList.add("is-lit"); }, at - now);
+  }
+  var io = new IntersectionObserver(function (es) {
+    heard = true;
+    es.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      io.unobserve(e.target);
+      light(e.target);
+    });
+  }, { threshold: 0.6, rootMargin: "0px 0px -12% 0px" });
+  list.classList.add("is-armed");
+  steps.forEach(function (s) { io.observe(s); });
+  setTimeout(function () {
+    if (heard) return;
+    io.disconnect();
+    steps.forEach(function (s) { s.classList.add("is-lit"); });
+  }, 2500);
 })();

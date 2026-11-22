@@ -1,0 +1,32 @@
+  {# Keynotes: meet the speaker. The photo from the left edge; beside it the
+       heading, one line, three facts under hairlines (the number in bold
+       is set in the display face) and the way on to About. Static. It sits
+       below the middle of the page, so its text is always the cream set. #}
+  <section class="kn-meet"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
+    <div class="kn-meet__grid">
+      {%- if block.portrait and block.portrait.src %}
+      <div class="media kn-meet__media">
+        <img src="{{ block.portrait.src | root(r) }}"
+             {%- set ss1 = block.portrait.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.portrait.sizes or '(max-width: 900px) 100vw, 34vw' }}" alt="{{ block.portrait.alt | inline() }}" loading="lazy" decoding="async"{% if block.portrait.position %} style="object-position:{{ block.portrait.position | plain }}"{% endif %}>
+      </div>
+      {%- endif %}
+      <div class="kn-meet__copy">
+        <h2 class="kn-meet__h" id="{{ block.id }}-h">{{ block.heading | inline('kn-em') }}</h2>
+        {%- if block.line %}
+        <p class="kn-meet__line">{{ block.line | inline() }}</p>
+        {%- endif %}
+        {%- if block.facts and block.facts.length %}
+        <ul class="kn-meet__facts">
+        {%- for f in block.facts %}
+          <li>{{ f | inline() }}</li>
+        {%- endfor %}
+        </ul>
+        {%- endif %}
+        {%- if block.link and block.link.href %}
+        <a class="textlink kn-meet__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        {%- endif %}
+      </div>
+    </div>
+  </section>

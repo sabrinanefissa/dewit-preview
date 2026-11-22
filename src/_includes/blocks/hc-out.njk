@@ -1,22 +1,23 @@
-{%- from "place.njk" import placeStyle %}
-  {# Healthcare: what the room walks out with. The same markup as the
-       shared out block (js module 3 binds to .spk-out: the five words light
-       once, then the house lights come up on the still), with a plain
-       heading: the scroll-fill heading belongs to Home. With no image the
-       words light against the section's flat ground. #}
-  <section class="spk-out hc-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}" data-step="{{ block | motion('step', 380) }}" data-rise="{{ block | motion('rise', 600) }}">
-    {%- if block.image and block.image.src %}
-    <div class="media media--plum spk-out__media" aria-hidden="true">
-      <img class="spk-lights" src="{{ block.image.src | root(r) }}"
-           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes or '100vw' }}" alt="" loading="lazy" decoding="async">
-    </div>
-    {%- endif %}
-    <div class="spk-out__inner">
-      <h2 class="spk-out__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
-      <ul class="spk-out__list">
+  {# Healthcare: what the room walks out with. On a veil, the heading and
+       then the five outcomes as one row of small rooms (word.art), each
+       outcome under its own room, the row stepping up and down. With
+       js/healthcare.js (and motion allowed) the rooms start dim and light
+       one after another, left to right, as the row scrolls up the screen,
+       each word coming up with its room, once; a room lifts on hover.
+       Without a picture a word stands on its own. #}
+  <section class="hc-out"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('cream') }}">
+    <div class="hc-out__inner veil veil--light">
+      <h2 class="hc-out__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>
+      <ul class="hc-out__hub" data-hc-out>
       {%- for w in block.words %}
-        <li class="spk-out__word spk-out__word--{{ w.layer or 'back' }}{% if w.size == 'xl' %} spk-out__word--xl{% endif %}" style="--x:{{ w.x }};--y:{{ w.y }}"><span class="spk-out__t">{{ w.text | inline() }}</span></li>
+        <li class="hc-out__room" style="--k:{{ loop.index0 }}">
+          {%- if w.art %}{% set oa = w.art | aspect %}
+          <div class="hc-out__pic" aria-hidden="true">
+            <img src="{{ w.art | root(r) }}"{% set ss = w.art | srcset(r) %}{% if ss %} srcset="{{ ss }}"{% endif %} sizes="(max-width: 760px) 44vw, 19vw" alt="" loading="lazy" decoding="async"{% if oa %} style="aspect-ratio:{{ oa }}"{% endif %}>
+          </div>
+          {%- endif %}
+          <p class="hc-out__word">{{ w.text | inline() }}</p>
+        </li>
       {%- endfor %}
       </ul>
     </div>

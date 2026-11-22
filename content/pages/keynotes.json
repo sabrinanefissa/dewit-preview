@@ -27,36 +27,15 @@
       "enabled": true,
       "heading": "Talks that go where the real work is.",
       "lead": [
-        "Three talks about what happens between people at work, and what it costs when nobody says it out loud.",
         "Each one runs as a keynote, a workshop or a half-day session."
       ],
-      "chart": {
-        "label": "An org chart of boxes and reporting lines loosens into people joined by lines between them.",
-        "caption": "",
-        "roles": [
-          "CEO",
-          "VP",
-          "VP",
-          "Director",
-          "Manager",
-          "Director",
-          "Manager"
-        ],
-        "phrases": [
-          "Manager and team trust",
-          "Friction between departments",
-          "Conversations that keep slipping",
-          "Belonging on the team"
-        ],
-        "phoneCaption": "Trust, friction and belonging live in the lines between people.",
-        "phonePhrase": 1
-      },
+      "more": [
+        "Three talks about what happens between people at work, and what it costs when nobody says it out loud."
+      ],
       "settings": {
-        "background": "ink"
+        "background": "deep"
       },
-      "index": {
-        "ariaLabel": "The three keynotes"
-      }
+      "roomsLabel": "The three keynotes"
     },
     {
       "type": "kn-talk",
@@ -89,25 +68,33 @@
         "This keynote introduces a practical, research-informed framework for clearing silent friction, strengthening trust, and leading through influence."
       ],
       "outcomes": [
-        "Diagnose the hidden relational dynamics that affect retention and engagement.",
-        "Apply a clear framework for high-trust leadership.",
-        "Reduce tension and misalignment before performance declines.",
-        "Rebuild trust quickly after breakdowns.",
-        "Lead with presence and emotional credibility under pressure."
+        "**Diagnose the hidden relational dynamics** that affect retention and engagement.",
+        "**Apply a clear framework** for high-trust leadership.",
+        "**Reduce tension and misalignment** before performance declines.",
+        "**Rebuild trust quickly** after breakdowns.",
+        "**Lead with presence** and emotional credibility under pressure."
       ],
       "audience": "Executive teams and senior leaders, managers and emerging leaders, and human-centered organizations.",
+      "closeLine": "Executive teams and senior leaders.",
       "image": {
-        "src": "assets/img/line-stage-1280.webp",
+        "src": "assets/img/kn-talk-lead-1152.webp",
         "sizes": "(max-width: 900px) 100vw, 94vw",
-        "alt": "Stephen on stage in a black blazer, speaking with both hands open",
-        "position": "30% 30%",
+        "alt": "Stephen on stage in a grey suit, arms spread wide, his shadow on the wall behind him",
+        "position": "50% 40%",
         "textSide": "right"
       },
       "settings": {
-        "background": "ink"
+        "background": "violet"
       },
       "bookLabel": "Book this talk",
-      "detailsLabel": "The full description and who it’s for"
+      "detailsLabel": "The full description and who it’s for",
+      "groupLabel": "The three keynotes",
+      "room": {
+        "src": "assets/img/kn-room-lead-768.webp",
+        "width": 768,
+        "height": 541,
+        "alt": ""
+      }
     },
     {
       "type": "kn-talk",
@@ -133,30 +120,37 @@
       "jumpLabel": "Jump to a keynote",
       "id": "invisible-friction",
       "title": "Invisible Friction",
-      "accent": "coral",
+      "accent": "violet",
       "premise": "Why teams break down, and how to clear the *hidden barriers* to performance.",
       "overview": [
         "A lot of what wears a team down never gets said out loud. This talk looks at the quiet breakdowns that affect culture and collaboration, and shows leaders how to bring difficult conversations into the open and turn avoidance into alignment."
       ],
       "outcomes": [
-        "Identify silent breakdowns affecting culture and collaboration.",
-        "Surface difficult conversations productively.",
-        "Replace avoidance with alignment.",
-        "Embed accountability without eroding trust."
+        "**Identify silent breakdowns** affecting culture and collaboration.",
+        "**Surface difficult conversations** productively.",
+        "**Replace avoidance** with alignment.",
+        "**Embed accountability** without eroding trust."
       ],
       "audience": "Teams navigating change, growth or cultural strain, and the managers who lead them.",
+      "closeLine": "Teams navigating change, growth or cultural strain.",
       "image": {
-        "src": "assets/img/permission-1280.webp",
+        "src": "assets/img/kn-talk-friction-1152.webp",
         "sizes": "(max-width: 900px) 100vw, 56vw",
-        "alt": "Stephen in a patterned shirt, leaning in to talk with a small group of workshop participants",
-        "position": "50% 40%",
+        "alt": "Stephen on stage in a navy blazer, laughing, a microphone in his hand",
+        "position": "50% 22%",
         "side": "left"
       },
       "settings": {
-        "background": "ink-2"
+        "background": "damson"
       },
       "bookLabel": "Book this talk",
-      "detailsLabel": "The full description and who it’s for"
+      "detailsLabel": "The full description and who it’s for",
+      "room": {
+        "src": "assets/img/kn-room-friction-768.webp",
+        "width": 768,
+        "height": 511,
+        "alt": ""
+      }
     },
     {
       "type": "kn-talk",
@@ -182,30 +176,85 @@
       "jumpLabel": "Jump to a keynote",
       "id": "hidden-multiplier",
       "title": "The Hidden Multiplier",
-      "accent": "gold",
+      "accent": "violet",
       "premise": "How relational intelligence drives *retention, safety and results*.",
       "overview": [
         "Trust shows up in the numbers an organization already tracks. This talk connects everyday relational patterns to performance outcomes, and gives leaders daily habits that keep engagement up and protect culture through growth and change."
       ],
       "outcomes": [
-        "Connect relational patterns to measurable performance outcomes.",
-        "Build the kind of trust that helps people stay.",
-        "Increase engagement through daily relational rituals.",
-        "Protect culture during growth and change."
+        "**Connect relational patterns** to measurable performance outcomes.",
+        "**Build the kind of trust** that helps people stay.",
+        "**Increase engagement** through daily relational rituals.",
+        "**Protect culture** during growth and change."
       ],
       "audience": "Executive teams, people and culture leaders, and associations and professional membership organizations.",
+      "closeLine": "People and culture leaders, and associations.",
       "image": {
-        "src": "assets/img/stage-forward-1440.webp",
+        "src": "assets/img/kn-talk-multiplier-1152.webp",
         "sizes": "(max-width: 900px) 100vw, 40vw",
-        "alt": "Stephen on stage in a grey suit, mid-stride, speaking to the room with a headset microphone",
-        "position": "50% 32%",
+        "alt": "Stephen, seen from behind, pointing across a room of women standing between the tables at a workshop",
+        "position": "34% 50%",
         "side": "right"
       },
       "settings": {
-        "background": "ink"
+        "background": "violet"
       },
       "bookLabel": "Book this talk",
-      "detailsLabel": "The full description and who it’s for"
+      "detailsLabel": "The full description and who it’s for",
+      "room": {
+        "src": "assets/img/kn-room-multiplier-768.webp",
+        "width": 768,
+        "height": 518,
+        "alt": ""
+      }
+    },
+    {
+      "type": "quote",
+      "id": "quote",
+      "anchor": false,
+      "enabled": true,
+      "quote": "Dr. de Wit’s presentation featured a unique blend of professional expertise/knowledge, illuminating personal anecdotes, and a captivating sense of good humour that not only endeared him to his audience but demonstrated his ability to create a space in which people felt comfortable talking.",
+      "name": "Kathleen Gamble, B.A., M.A., PhD.",
+      "role": "Sessional Lecturer/Course Director",
+      "organization": "Trent University",
+      "settings": {
+        "background": "cream"
+      },
+      "lines": [
+        "Dr. de Wit’s presentation featured a unique blend of professional expertise/knowledge,",
+        "illuminating personal anecdotes, and a captivating sense of good humour",
+        "that not only endeared him to his audience but demonstrated his ability to create a space in which people felt comfortable talking."
+      ],
+      "bg": {
+        "src": "assets/img/q-ab-room-1536.webp",
+        "alt": ""
+      }
+    },
+    {
+      "type": "kn-meet",
+      "id": "speaker",
+      "anchor": true,
+      "enabled": true,
+      "heading": "Meet the speaker",
+      "line": "Dr. Stephen de Wit has spent years in rooms where silence spoke louder than titles. Today he helps leaders turn human tension into high-trust cultures where people stay.",
+      "facts": [
+        "**170** keynotes",
+        "**7,000+** leaders in the room",
+        "**20+** years as a therapist, researcher and speaker"
+      ],
+      "portrait": {
+        "src": "assets/img/kn-meet-1152.webp",
+        "sizes": "(max-width: 900px) 100vw, 56vw",
+        "alt": "Dr. Stephen de Wit in a navy shirt with small pink flowers, smiling, both hands raised to frame his face",
+        "position": "50% 14%"
+      },
+      "link": {
+        "label": "About Stephen",
+        "href": "about/"
+      },
+      "settings": {
+        "background": "plum"
+      }
     },
     {
       "type": "close",
@@ -218,18 +267,34 @@
         "href": "book/"
       },
       "settings": {
-        "background": "ink-2"
+        "background": "deep"
       },
-      "layout": "type",
-      "talks": true,
+      "layout": "over",
+      "talks": false,
       "next": {
         "label": "Sessions for health care teams",
         "href": "healthcare/"
+      },
+      "image": {
+        "src": "assets/img/kn-close-1536.webp",
+        "sizes": "100vw",
+        "alt": "Stephen on a dark stage in a navy blazer, microphone in hand, pointing out to the audience",
+        "position": "50% 42%",
+        "mobilePosition": "50% 30%",
+        "headingPlace": {
+          "x": "71%",
+          "y": "34%",
+          "width": "24%",
+          "mobileX": "54%",
+          "mobileY": "6%",
+          "mobileWidth": "42%"
+        }
       }
     }
   ],
   "styles": [
     "css/dd.css",
-    "css/keynotes.css"
+    "css/keynotes.css",
+    "css/quote.css"
   ]
 }

@@ -1,0 +1,49 @@
+  {# One testimonial, in one of two layouts.
+       With a portrait (block.portrait): the words across seven of twelve
+       columns, the person's portrait in a 4:5 frame in the other five,
+       their name, role and organisation under it, the organisation's
+       logo (block.logo) small in the text colour. block.side puts the
+       portrait on the left or the right (default right).
+       Without one: the words across all twelve columns as display type,
+       each of block.lines a step smaller than the one before (the lines
+       must join, with single spaces, into the quote exactly), the name on
+       a hairline under them.
+       block.scheme (light or dark) fixes the text colours where the quote
+       sits across the page's switch from ink to cream.
+       Renders nothing while the quote is empty. #}
+  {%- if block.quote %}
+  {%- set long = (block.quote | length) > 240 %}
+  {%- set pic = block.portrait and block.portrait.src %}
+  {%- set lines = block | quoteLines %}
+  {%- set steps = [1, 0.8, 0.68, 0.6, 0.54, 0.5] %}
+  <section class="quote {% if pic %}quote--pic quote--{{ 'left' if block.side == 'left' else 'right' }}{% else %}quote--wide{% endif %}{% if long %} quote--long{% endif %}{% if block.bg and block.bg.src %} quote--bg{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('transparent') }}">
+    {%- if block.bg and block.bg.src %}
+    <div class="quote__bg" aria-hidden="true"><img src="{{ block.bg.src | root(r) }}" {%- set bs = block.bg.src | srcset(r) %}{% if bs %} srcset="{{ bs }}" sizes="100vw"{% endif %} alt="" loading="lazy" decoding="async"></div>
+    {%- endif %}
+    <figure class="quote__fig">
+      <blockquote class="quote__q"><p>
+        {%- if lines.length -%}
+        {%- for l in lines %}<span class="quote__l" style="--s:{{ steps[loop.index0] if loop.index0 < steps.length else 0.5 }}">{% if loop.first %}“{% endif %}{{ l | inline() }}{% if loop.last %}”{% endif %}</span>{% if not loop.last %} {% endif %}{% endfor %}
+        {%- else %}“{{ block.quote | inline() }}”{% endif -%}
+      </p></blockquote>
+      {%- if block.name %}
+      <figcaption class="quote__by">
+        {%- if pic %}
+        <span class="quote__pic"><img src="{{ block.portrait.src | root(r) }}" {%- set qs = block.portrait.src | srcset(r) %}{% if qs %} srcset="{{ qs }}" sizes="(max-width: 760px) 40vw, 24rem"{% endif %} alt="{{ (block.portrait.alt or '') | plain }}" width="480" height="600" loading="lazy" decoding="async"></span>
+        {%- endif %}
+        <span class="quote__who">
+          <span class="quote__name">{{ block.name | inline() }}</span>
+          {%- if block.role %}
+          <span class="quote__role">{{ block.role | inline() }}</span>
+          {%- endif %}
+          {%- if block.organization %}
+          <span class="quote__org">
+            {%- if block.logo and block.logo.src %}{% set la = block.logo.src | aspect %}<span class="quote__logo logo-tint" aria-hidden="true" style="--logo-src:url('{{ block.logo.src | root(r) }}');aspect-ratio:{{ la or 3 }}"></span>{% endif -%}
+            <span class="quote__orgname">{{ block.organization | inline() }}</span></span>
+          {%- endif %}
+        </span>
+      </figcaption>
+      {%- endif %}
+    </figure>
+  </section>
+  {%- endif %}

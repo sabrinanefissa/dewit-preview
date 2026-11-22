@@ -174,10 +174,25 @@ module.exports = function (eleventyConfig) {
     return v === undefined || v === null || v === '' ? dflt : v;
   });
 
-  // A talk's accent name -> its colour token (the accents Home's talk
-  // cards use): violet (the default), coral or gold.
-  const ACCENTS = { violet: 'violet-300', coral: 'coral', gold: 'gold' };
-  eleventyConfig.addFilter('accentVar', a => ACCENTS[a] || ACCENTS.violet);
+  // Home's talk cards share the one accent.
+  eleventyConfig.addFilter('accentVar', () => 'violet-300');
+
+  // An image's aspect ratio (width / height), read from the file's header
+  // (PNG or WebP). Used to size logos to one optical area. 0 when unknown.
+  eleventyConfig.addFilter('aspect', src => {
+    if (!src) return 0;
+    let b;
+    try { b = fs.readFileSync(path.join(__dirname, src)); } catch (e) { return 0; }
+    let w = 0, h = 0;
+    if (b.toString('ascii', 1, 4) === 'PNG') { w = b.readUInt32BE(16); h = b.readUInt32BE(20); }
+    else if (b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP') {
+      const k = b.toString('ascii', 12, 16);
+      if (k === 'VP8X') { w = 1 + b.readUIntLE(24, 3); h = 1 + b.readUIntLE(27, 3); }
+      else if (k === 'VP8L') { const n = b.readUInt32LE(21); w = 1 + (n & 0x3FFF); h = 1 + ((n >> 14) & 0x3FFF); }
+      else if (k === 'VP8 ') { w = b.readUInt16LE(26) & 0x3FFF; h = b.readUInt16LE(28) & 0x3FFF; }
+    }
+    return w && h ? Math.round((w / h) * 1000) / 1000 : 0;
+  });
 
   // The page's talks: its shown kn-talk blocks, in page order.
   eleventyConfig.addFilter('talks', blocks => (blocks || []).filter(b => b && b.type === 'kn-talk' && b.enabled !== false));
@@ -187,10 +202,47 @@ module.exports = function (eleventyConfig) {
 
   // A block's background tone (data-tone): block.settings.background or the
   // type's own tone today.
-  const TONES = ['plum', 'plum-2', 'ink', 'ink-2', 'stage-black', 'indigo', 'indigo-2', 'aub', 'aub-2', 'violet-deep', 'paper', 'transparent'];
+  // Sections no longer paint a colour (the page gradient shows through);
+  // the value is still written so page JSON keeps building, and an
+  // unknown value falls back to the default instead of failing the build.
+  const TONES = ['plum', 'damson', 'aubergine', 'violet', 'indigo', 'deep', 'stage', 'ivory', 'cream', 'mist', 'mauve', 'transparent'];
   eleventyConfig.addFilter('tone', (block, dflt) => {
     const v = (block && block.settings && block.settings.background) || dflt;
-    if (!TONES.includes(v)) throw new Error(`Block "${block && block.id}": unknown background "${v}" (one of ${TONES.join(', ')})`);
+    return TONES.includes(v) ? v : (dflt || 'transparent');
+  });
+
+  // A quote's display lines: block.lines when they join (single spaces)
+  // into the quote exactly; a build error when they do not, so the words
+  // on the page are always the approved words. [] when there are none.
+  eleventyConfig.addFilter('quoteLines', block => {
+    const ls = block && block.lines;
+    if (!Array.isArray(ls) || !ls.length) return [];
+    if (ls.join(' ') !== block.quote) throw new Error(`Quote "${block.id}": lines do not join into the quote word for word`);
+    return ls;
+  });
+
+  // The no-script text scheme: the 1-based place of the first shown block
+  // (the close excluded, it sits in the footer) at or past the switch
+  // share of the page's blocks; from there on sections take cream text.
+  // A cache-busting stamp for a local css or js file: a short hash of its
+  // contents, so a changed file always gets a new URL. tokens.css is built
+  // from theme.json, its template and the page data, so it hashes those.
+  const crypto = require('crypto');
+  const stampCache = new Map();
+  const TOKEN_SOURCES = ['content/theme.json', 'src/css/tokens.css.njk'];
+  eleventyConfig.on('eleventy.before', () => stampCache.clear());
+  eleventyConfig.addFilter('stamp', file => {
+    if (!file) return '';
+    if (stampCache.has(file)) return stampCache.get(file);
+    const h = crypto.createHash('sha1');
+    let srcs = [file];
+    if (/(^|\/)tokens\.css$/.test(file)) {
+      const pd = path.join(__dirname, 'content/pages');
+      srcs = TOKEN_SOURCES.concat(fs.readdirSync(pd).filter(f => f.endsWith('.json')).sort().map(f => `content/pages/${f}`));
+    }
+    srcs.forEach(f => { try { h.update(fs.readFileSync(path.join(__dirname, f))); } catch (e) { h.update(f); } });
+    const v = h.digest('hex').slice(0, 10);
+    stampCache.set(file, v);
     return v;
   });
 

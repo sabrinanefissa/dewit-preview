@@ -1,0 +1,15 @@
+  {# Book: the photo that ends the page. Full width, its top and bottom
+       edges dissolving into the gradient, so it runs on into the footer.
+       Phones held upright get the portrait crop when one exists. No words
+       on it. #}
+  {%- if block.image and block.image.src %}
+  {%- set pp = block.image.src | portrait(r) %}
+  <figure class="bk-photo"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %}>
+    <picture>
+      {%- if pp %}<source media="(max-width: 768px) and (orientation: portrait)" srcset="{{ pp }}" sizes="100vw">{% endif %}
+      <img src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ (block.image.alt or '') | plain }}" loading="lazy" decoding="async"{% if block.image.position %} style="--pos:{{ block.image.position | plain }};--pos-m:{{ (block.image.mobilePosition or block.image.position) | plain }}"{% endif %}>
+    </picture>
+  </figure>
+  {%- endif %}

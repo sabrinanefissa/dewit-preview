@@ -96,6 +96,10 @@
       "slug": "healthcare"
     },
     {
+      "label": "For planners",
+      "href": "speaking/#planners"
+    },
+    {
       "label": "About",
       "href": "about/",
       "slug": "about"

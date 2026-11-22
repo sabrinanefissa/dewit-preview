@@ -1,0 +1,16 @@
+  {# One line under the hero that ends on the visitor's room. The last
+       word in the list is the one that stays; without script, under
+       reduced motion and for screen readers it is the only one. With
+       script the words swap once, in order, when the line first comes
+       into view (js module 15), then the last one holds. Every word sits
+       in the same grid cell, so the slot is as wide as the longest word
+       and nothing around it moves. #}
+  {%- set last = block.words | last %}
+  <section class="roomline"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum') }}">
+    <h2 class="roomline__line" data-roomline data-hold="{{ block | motion('hold', 1400) }}" data-swap="{{ block | motion('swap', 360) }}">
+      <span class="spk-sr">{{ block.lead | plain }} {{ last | plain }}{{ block.end | plain }}</span>
+      <span class="roomline__show" aria-hidden="true">{{ block.lead | inline() }} <span class="roomline__slot">
+      {%- for w in block.words %}<em class="roomline__w{% if loop.last %} is-on{% endif %}">{{ w | plain }}{{ block.end | plain }}</em>{% endfor -%}
+      </span></span>
+    </h2>
+  </section>

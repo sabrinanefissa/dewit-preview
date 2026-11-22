@@ -1,14 +1,61 @@
-  {# The close, at the top of the footer. Text always sits on solid
-       colour, never on the photo. Layouts:
+  {# The close, at the top of the footer. Text sits on solid colour,
+       except in "over", where the heading sits on the photo's own dark
+       area. Layouts:
          split       text on the left 40%, the photo on the right 60%, to the edge
          portrait    text on the left, a 4:5 photo in the right third
          photo-left  the photo on the left two-thirds, text in the right third
+         band        text across the top, the photo as a full-width band under it
+         over        the photo as a full-width band with the heading placed on
+                     its darkest area (image.headingPlace, in % of the band;
+                     the mobile* keys for phones), the button under it
+         bands       no photo; one full-width band per talk on the page, in
+                     the talk's accent, each linking to its talk; then the text
          type        no photo; the page's talks as links to the enquiry form
+         route       no photo; block.routes as a row of links on to other
+                     pages (a name and one line each), then the text
        contact: true adds the phone and email above the button; next adds
        a link on to the next page under it. #}
   {%- set lay = block.layout or 'split' %}
-  {%- set hasImg = lay != 'type' and block.image and block.image.src %}
-  <div class="spk-close spk-close--{{ lay }}{% if not hasImg %} spk-close--noimg{% endif %}" data-tone="{{ block | tone('plum-2') }}">
+  {%- set hasImg = lay != 'type' and lay != 'bands' and lay != 'route' and block.image and block.image.src %}
+  {%- if lay == 'over' and hasImg %}
+  {%- set hp = block.image.headingPlace or {} %}
+  <div class="spk-close spk-close--over" data-tone="{{ block | tone('deep') }}">
+    <div class="spk-close__media" style="--hx:{{ (hp.x or '60%') | plain }};--hy:{{ (hp.y or '50%') | plain }};--hw:{{ (hp.width or '30%') | plain }};--hx-m:{{ (hp.mobileX or hp.x or '50%') | plain }};--hy-m:{{ (hp.mobileY or hp.y or '50%') | plain }};--hw-m:{{ (hp.mobileWidth or hp.width or '46%') | plain }}">
+      <img class="spk-close__img" src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.image.sizes or '100vw' }}" alt="{{ (block.image.alt or '') | plain }}" loading="lazy" decoding="async" style="--pos:{{ (block.image.position or '50% 30%') | plain }};--pos-m:{{ (block.image.mobilePosition or block.image.position or '50% 30%') | plain }}">
+      <h2 class="spk-close__h">{{ block.heading | inline('spk-close__em') }}</h2>
+    </div>
+    <div class="spk-close__inner">
+      <a class="btn spk-close__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+      {%- if block.next and block.next.href %}
+      <a class="textlink spk-close__next" href="{{ block.next.href | root(r) }}">{{ block.next.label | inline() }}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      {%- endif %}
+    </div>
+  </div>
+  {%- else %}
+  <div class="spk-close spk-close--{{ lay }}{% if not hasImg %} spk-close--noimg{% endif %}" data-tone="{{ block | tone('deep') }}">
+    {%- if lay == 'bands' %}
+    <ul class="spk-close__bands">
+    {%- for t in page.blocks | talks %}
+      <li><a class="spk-close__band" href="#{{ t.id }}" style="--acc: var(--{{ t.accent | accentVar }}); --band: var(--ground-{{ t | tone('violet') }})"><span class="spk-close__band-t">{{ t.title | inline() }}{% if t.trademark %}<span class="tm">™</span>{% endif %}</span>
+        {%- if t.closeLine %}<span class="spk-close__band-l">{{ t.closeLine | inline() }}</span>{% endif %}
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></li>
+    {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- if lay == 'route' and block.routes %}
+    <nav class="spk-close__route" aria-label="{{ (block.routesLabel or block.heading) | plain }}">
+      <ul>
+      {%- for rt in block.routes %}
+        <li><a class="spk-close__stop{% if rt.image and rt.image.src %} has-img{% endif %}" href="{{ rt.href | root(r) }}">
+          {%- if rt.image and rt.image.src %}<img class="spk-close__stop-img" src="{{ rt.image.src | root(r) }}" {%- set rs = rt.image.src | srcset(r) %}{% if rs %} srcset="{{ rs }}"{% endif %} sizes="(max-width: 768px) 92vw, 30vw" alt="" loading="lazy" decoding="async"{% if rt.image.position %} style="object-position:{{ rt.image.position | plain }}"{% endif %}>{% endif %}<span class="spk-close__stop-t">{{ rt.label | inline() }}</span>
+          {%- if rt.line %}<span class="spk-close__stop-l">{{ rt.line | inline() }}</span>{% endif %}
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></li>
+      {%- endfor %}
+      </ul>
+    </nav>
+    {%- endif %}
+    {%- if block.heading %}
     <div class="spk-close__inner">
       <h2 class="spk-close__h">{{ block.heading | inline('spk-close__em') }}</h2>
       {%- if block.talks %}
@@ -31,9 +78,11 @@
         <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       {%- endif %}
     </div>
+    {%- endif %}
     {%- if hasImg %}
     <div class="spk-close__media">
       <img class="spk-close__img" src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="{{ block.image.sizes or '60vw' }}" alt="{{ (block.image.alt or '') | plain }}" loading="lazy" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
     </div>
     {%- endif %}
   </div>
+  {%- endif %}

@@ -3,15 +3,15 @@
        talk in a row the scroll moves sideways while the stage is pinned
        (js module 9.B, as the speaking page's rooms; on phones too). Each
        card is a link: its picture, number, tag, title, line and CTA. #}
-  <section class="tstrip"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum-2') }}">
+  <section class="tstrip"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('deep') }}">
     <div class="tstrip__track">
       <div class="tstrip__stage">
         <h2 class="tstrip__h h-md fill" id="{{ block.id }}-h"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
         <ul class="tstrip__strip">
         {%- for k in block.cards %}
           <li class="tstrip__card" style="--_acc:var(--{{ k.accent }})">
-            <a class="tstrip__link" href="{{ k.href | root(r) }}">
-              <img src="{{ k.image.src | root(r) }}" {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="(max-width: 768px) 84vw, 70vw" alt="" loading="lazy" decoding="async">
+            <a class="tstrip__link" href="{{ k.href | root(r) }}" data-scheme="dark">
+              <img src="{{ k.image.src | root(r) }}"{% if k.image.position %} style="object-position:{{ k.image.position | plain }}"{% endif %} {%- set ss1 = k.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %} sizes="(max-width: 768px) 84vw, 70vw" alt="" loading="lazy" decoding="async">
               <span class="tstrip__cap">
                 <span class="tstrip__no">{{ loop.index | pad2 }}{% if k.tag %}<span class="tstrip__tag">{{ k.tag | inline() }}</span>{% endif %}</span>
                 <span class="tstrip__title">{% if k.titleHtml %}{{ k.titleHtml | safe }}{% else %}{{ k.title | inline() }}{% endif %}</span>
@@ -27,7 +27,7 @@
   </section>
 {%- else %}
   {# Keynotes #}
-  <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('plum-2') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
+  <section class="keynotes-sec"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-tone="{{ block | tone('deep') }}" data-follow="{{ block | motion('follow', 0.18) }}" data-fade="{{ block | motion('fade', 220) }}">
     <div class="keynotes-head reveal">
       <h2 class="h-md fill"{{ block.heading | fillAttrs }}>{{ block.heading | fillWords }}</h2>
     </div>

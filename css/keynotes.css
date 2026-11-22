@@ -1,253 +1,248 @@
 /* =====================================================================
    KEYNOTES PAGE (/keynotes/). Loaded after main.css on this page only
    (keynotes.json "styles").
-   The programme: the intro with the numbered index of the talks and the
-   org chart (js/keynotes.js, the page's one animation), one section per
-   talk, then a type-only close. Nothing pins or sticks. Beyond the chart
-   only the shared drop-down opens and closes; nothing else moves except
-   hover, focus and press feedback.
-   The room: ink, alternating with ink-2 talk by talk. Each talk carries
-   the accent its card has on Home (--acc, from the talk's block):
-   violet-300, coral or gold, on hairlines, numerals, italic words,
-   bullets and labels only.
+   The opening: the heading, then the three talks as three isometric
+   rooms in a row, each the button for its talk, and the open talk under
+   them (js/keynotes.js). Then meet the speaker, the testimonial, whose
+   words come to full strength in reading order, and the close. Every
+   section sits on the page gradient and takes its colours from the
+   scheme it lands in. Nothing pins or sticks.
+   One lavender-mauve accent on hairlines, numerals, italic words and
+   bullets.
    ===================================================================== */
 
-body { background: var(--ink); --dd-page-acc: var(--violet-300); }
-.kn-em { font-style: italic; color: var(--acc, var(--violet-300)); }
-.kn-intro ::selection, .kn-index ::selection, .kn-talk ::selection, .spk-close ::selection {
-  background: rgba(124,77,224,.55); color: #fff; }
+.kn-em { font-style: italic; color: var(--accent); }
+.kn-intro ::selection, .kn-meet ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--tx); }
 
-.kn-intro, .kn-index, .kn-talk { position: relative; z-index: 1; color: var(--tx-inv); }
-.kn-index[data-tone] { background: var(--plum-2); }
-.kn-index[data-tone="plum"] { background: var(--plum); }
-.kn-index[data-tone="ink"] { background: var(--ink); }
-.kn-index[data-tone="ink-2"] { background: var(--ink-2); }
-
-/* visually hidden, still read (the talk name after "Book this talk") */
+/* visually hidden, still read */
 .kn-vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
   clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 .tm { font-size: .42em; vertical-align: super; line-height: 0; margin-left: .04em;
-  color: var(--tx-inv-faint); letter-spacing: 0; }
+  color: var(--tx-faint); letter-spacing: 0; }
 
 /* ---------------------------------------------------------------------
-   Intro. Wide desktop (1101px and up): the heading and two sentences on
-   the left, the chart beside them on the right. Tablet: the chart below
-   and to the right, set low so the scroll through the section is what
-   plays it. Phones: the copy, then the chart full width.
+   Opening. Desktop: the heading on the left, its two lines beside it on
+   the right, set on the heading's last baseline. The rooms under them in
+   one row, each as wide as its own picture so all three share one scale,
+   the row capped so it never runs taller than about 40% of the screen.
+   Under the row a hairline whose lit stretch sits under the open room,
+   then the open talk: the photo, the premise with the formats and the
+   booking button, and what the room leaves with with the drop-down.
    --------------------------------------------------------------------- */
-.kn-intro { padding-block: clamp(6.5rem, 13svh, 8.5rem) clamp(3rem, 6vw, 5rem); overflow: hidden; }
-.kn-intro__grid { width: var(--wrap); margin-inline: auto; display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem); }
-.kn-intro__copy { grid-column: 1 / span 7; grid-row: 1; }
-.kn-intro__h { font-size: clamp(2.6rem, 1.4rem + 3.2vw, 4.6rem); font-weight: 330; line-height: .98; letter-spacing: -0.035em;
-  text-wrap: balance; max-width: 14ch; }
-.kn-intro__lead { margin-top: .8rem; font-size: var(--step-0); line-height: 1.55;
-  color: var(--tx-inv-soft); max-width: 46ch; }
-.kn-intro__lead:first-of-type { margin-top: clamp(1.2rem, 2.4vw, 1.8rem); }
-/* the second sentence is the one that answers "how": keynote, workshop or half-day */
-.kn-intro__lead:last-of-type { color: var(--tx-inv); }
-/* the chart rides up beside the two sentences: on a 1440 x 900 screen its
-   top sits at about 55% of the first screen, so the org chart is in view
-   as the page opens and the scroll that follows dissolves it */
-.kn-chart { grid-column: 7 / span 6; grid-row: 2; width: 100%; max-width: 720px; justify-self: end;
-  margin: calc(-1 * clamp(3rem, 14vh, 10rem)) 0 0; }
-.kn-chart__svg { display: block; width: 100%; height: auto; overflow: visible; }
-.kn-chart__cap { margin-top: .8rem; font-size: var(--step--1); color: var(--tx-inv-soft); }
-/* the one-sentence caption stands in for the phrases on phones only */
-.kn-chart__cap--phone { display: none; max-width: 40ch; line-height: 1.5; }
+.kn-intro { position: relative; z-index: 1; color: var(--tx);
+  padding-block: clamp(6rem, 12svh, 7.5rem) clamp(3rem, 6vw, 5rem); overflow: clip; }
+.kn-intro__in { width: var(--wrap); margin-inline: auto; }
+.kn-intro__head { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1.25rem, 3vw, 3rem); align-items: end; }
+.kn-intro__h { grid-column: 1 / span 7; font-size: clamp(2.5rem, 1.5rem + 2.9vw, 4.4rem); font-weight: 330; line-height: .98;
+  letter-spacing: -0.035em; text-wrap: balance; max-width: 15ch; }
+.kn-intro__copy { grid-column: 9 / span 4; padding-bottom: .3rem; }
+.kn-intro__lead { font-size: var(--step-0); line-height: 1.55; color: var(--tx); max-width: 40ch; text-wrap: pretty; }
+.kn-intro__more { margin-top: .6rem; font-size: var(--step-0); line-height: 1.55; color: var(--tx-soft);
+  max-width: 40ch; text-wrap: pretty; }
 
-/* beside the heading on wide screens: copy on six columns, the chart on
-   the other six, both on the first row (the scroll that follows the
-   opening plays it, js/keynotes.js measures wherever it sits) */
-@media (min-width: 1101px) {
-  .kn-intro__copy { grid-column: 1 / span 6; align-self: center; }
-  .kn-chart { grid-column: 7 / span 6; grid-row: 1; align-self: center; margin: 0; }
-}
+/* the rooms */
+/* The columns follow each picture's own width to height, so all three
+   rooms stand at one height; the row is capped so the rooms never run
+   taller than about a third of the screen. */
+.kn-rooms { --gap: clamp(1rem, 2.6vw, 3rem); position: relative; margin-top: clamp(1.6rem, 3.6vh, 2.6rem); }
+.kn-rooms__row { list-style: none; margin: 0 auto; padding: 0; display: grid;
+  grid-template-columns: 1420fr 1503fr 1483fr; column-gap: var(--gap); align-items: start;
+  width: min(100%, calc(35svh * 4.41 + 2 * var(--gap))); }
+.kn-room { min-width: 0; display: flex; }
+.kn-room__btn { all: unset; box-sizing: border-box; display: flex; flex-direction: column; width: 100%; cursor: pointer;
+  border-radius: var(--radius); -webkit-tap-highlight-color: transparent; }
+.kn-room__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 6px; }
+/* each room is a cut-out standing on the page's own gradient */
+.kn-room__art { position: relative; display: block; aspect-ratio: var(--w) / var(--h);
+  transform-origin: 50% 78%; transition: transform 520ms var(--ease-out), filter 520ms var(--ease-out); }
+.kn-room__art img { position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+  object-fit: contain; object-position: 50% 100%; }
+.kn-room__lit { clip-path: inset(0 0 0 0); }
+.kn-room__label { display: flex; align-items: baseline; gap: .6rem; margin-top: clamp(.6rem, 1.4vh, 1rem);
+  padding-top: .1rem; }
+.kn-room__n { font-family: var(--f-display); font-style: italic; font-weight: 340; font-size: var(--step-1);
+  line-height: 1; color: var(--accent); font-variant-numeric: lining-nums; }
+.kn-room__t { font-family: var(--f-display); font-weight: 360; font-size: clamp(1.3rem, .9rem + 1vw, 1.9rem); line-height: 1.1;
+  letter-spacing: -0.02em; color: var(--tx); text-wrap: balance; }
+.kn-room__s { display: block; margin-top: .35rem; padding-left: calc(var(--step-1) * 1.1 + .6rem);
+  font-size: var(--step--1); line-height: 1.4; color: var(--tx-soft); }
+.kn-room__label, .kn-room__s { transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
 
-/* the chart's marks */
-.kn-chart__reports path { fill: none; stroke: var(--tx-inv-faint); stroke-width: 1.5; stroke-linejoin: round; }
-.kn-chart__box > rect:first-child { fill: var(--ink-2); stroke: var(--line-inv-strong); stroke-width: 1.5; }
-/* the role in each box: it fades and shrinks with its box */
-.kn-chart__role { font-family: var(--f-text); font-size: 15px; font-weight: 500; letter-spacing: .02em;
-  fill: var(--tx-inv); fill-opacity: .82; }
-/* the four named lines: upright along the line, a little off it */
-.kn-chart__phrase { font-family: var(--f-text); font-size: 13.5px; font-weight: 500; letter-spacing: .01em;
-  fill: var(--tx-inv); fill-opacity: .9; }
-.kn-chart__dot { fill: var(--violet-300); }
-.kn-chart__links path { fill: none; stroke: var(--violet-300); stroke-opacity: .55; stroke-width: 1.5;
-  stroke-linecap: round; }
+/* the light that travels the row on arrival (js/keynotes.js) */
+.kn-rooms__dot { position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 14px 5px color-mix(in srgb, var(--accent) 45%, transparent); opacity: 0; pointer-events: none; z-index: 2; }
 
-@media (max-width: 1100px) and (min-width: 769px) {
-  .kn-chart { grid-column: 5 / span 8; margin-top: clamp(1rem, 3vh, 2rem); }
-  /* the chart is narrower here: the phrases grow in its own units to stay legible */
-  .kn-chart__phrase { font-size: 15.5px; }
-  .kn-chart__role { font-size: 17px; }
-}
-@media (max-width: 767px) {
-  /* phones: one named line keeps its phrase, set larger in the chart's units */
-  .kn-chart__phrase:not(.kn-chart__phrase--phone) { display: none; }
-  /* set down off the line it names, so the words never sit on it */
-  .kn-chart__phrase--phone { font-size: 20px; font-weight: 600; fill-opacity: 1; baseline-shift: -12px; }
-  /* the figure bleeds 2% past the gutter; the sentence comes back to it */
-  .kn-chart__cap--phone { display: block; padding-inline: 2%; }
-  .kn-chart__role { font-size: 21px; }
-}
-@media (max-width: 768px) {
-  .kn-intro { padding-top: clamp(7rem, 22vw, 8.5rem); }
-  .kn-intro__grid { grid-template-columns: minmax(0, 1fr); }
-  .kn-intro__copy, .kn-chart { grid-column: 1; }
-  .kn-chart { margin: 2.2rem -2% 0; width: auto; max-width: none; justify-self: stretch; }
-  .kn-chart__reports path, .kn-chart__box > rect:first-child, .kn-chart__links path { stroke-width: 2.2; }
-}
+/* the hairline under the row; its lit stretch sits under the open room */
+.kn-rooms__rail { position: relative; height: 1px; margin-top: clamp(1rem, 2.2vh, 1.4rem); background: var(--line); display: none; }
+.kn-rooms__mark { position: absolute; left: var(--mx, 0); top: -1px; width: var(--mw, 0); height: 3px; border-radius: 2px;
+  background: var(--accent); transition: left 560ms var(--ease-out), width 560ms var(--ease-out); }
+.js .kn-rooms__rail { display: block; }
 
-/* ---------------------------------------------------------------------
-   Index, in the intro under the two sentences: three rows under one
-   hairline, each the talk's number in its accent, the title, its
-   one-line description and an arrow down to the talk.
-   --------------------------------------------------------------------- */
-.kn-index { margin-top: clamp(1.6rem, 3.2vw, 2.4rem); }
-.kn-index__list { padding: 0; margin: 0; list-style: none; border-top: 1px solid var(--line-inv-strong); }
-.kn-index__list li { border-bottom: 1px solid var(--line-inv); }
-.kn-index__a { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 1.3rem; grid-template-rows: auto auto;
-  align-items: baseline; column-gap: 1rem; padding-block: .8rem; min-height: 48px; color: var(--tx-inv); }
-.kn-index__n { grid-row: 1 / span 2; font-family: var(--f-display); font-style: italic; font-weight: 300;
-  font-size: var(--step-2); line-height: .9; letter-spacing: -0.03em; color: var(--acc, var(--violet-300));
-  font-variant-numeric: lining-nums tabular-nums; }
-.kn-index__t { grid-column: 2; font-family: var(--f-display); font-weight: 360; font-size: var(--step-1);
-  line-height: 1.15; letter-spacing: -0.015em; }
-.kn-index__s { grid-column: 2; margin-top: .2rem; font-size: var(--step--1); line-height: 1.45; color: var(--tx-inv-soft); }
-.kn-index__ic { grid-column: 3; grid-row: 1 / span 2; align-self: center; width: 1.2rem; height: 1.2rem;
-  color: var(--acc, var(--violet-300)); transition: transform 200ms var(--ease-out); }
-.kn-index__a:focus-visible { outline: 2px solid var(--acc, var(--violet-300)); outline-offset: 3px; }
-.kn-index__a:active .kn-index__ic { transform: translateY(3px); }
+/* script running: the label quiet until its room lights, the line
+   under each title only for the open room or under the pointer */
+.js .kn-room__s { opacity: 0; transform: translateY(-4px); }
+.js .kn-room__btn[aria-expanded="true"] .kn-room__s { opacity: 1; transform: none; }
+.js .kn-room__btn[aria-expanded="false"] .kn-room__art { filter: saturate(.55) opacity(.72); }
 @media (hover: hover) and (pointer: fine) {
-  .kn-index__t { transition: color var(--dur-fast) ease; }
-  .kn-index__a:hover .kn-index__t { color: var(--acc, var(--violet-300)); }
-  .kn-index__a:hover .kn-index__ic { transform: translateY(3px); }
+  .kn-room__btn:hover .kn-room__art { transform: scale(1.045); filter: none; }
+  .kn-room__btn:hover .kn-room__s { opacity: 1; transform: none; }
 }
 
-/* ---------------------------------------------------------------------
-   One talk. The stage: the photo, large, and the talk's number, title
-   and premise. Three ways to hang them:
-     over-right   on the photo's own dark side (Lead Human: the curtain)
-     photo-left   the photo on the left, the words beside it on the ground
-     photo-right  the words on the left, the photo on the right
-   Under the stage: what the room leaves with, then the formats and the
-   booking button, then the drop-down with the full description and the
-   audience. Phones: the photo, then everything in one column.
-   --------------------------------------------------------------------- */
-.kn-talk { padding-block: clamp(2.2rem, 4vw, 3.2rem) clamp(4.5rem, 3rem + 5vw, 8rem);
-  scroll-margin-top: 0; border-top: 1px solid var(--line-inv); }
+/* armed: the rooms asleep, grey and dim, until the light reaches them */
+.kn-rooms.is-armed .kn-room__base { filter: grayscale(1) opacity(.34); }
+.kn-rooms.is-armed .kn-room__lit { clip-path: inset(0 100% 0 0); }
+.kn-rooms.is-armed .kn-room__label { opacity: .28; }
+.kn-rooms.is-armed .kn-room.is-lit .kn-room__lit { clip-path: inset(0 0 0 0); }
+.kn-rooms.is-armed .kn-room.is-lit .kn-room__label { opacity: 1; }
+.kn-rooms.is-armed:not(.is-done) .kn-room__btn[aria-expanded] .kn-room__s { opacity: 0; }
+.kn-rooms.is-armed .kn-room__mark { opacity: 0; }
+.kn-rooms.is-armed:not(.is-done) .kn-room__art { filter: none; }
 
-.kn-jump { width: var(--wrap); margin: 0 auto clamp(2rem, 4vw, 3rem); }
-.kn-jump ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.6rem; }
-.kn-jump a { display: inline-block; padding-block: .55rem; font-size: var(--step--1); font-weight: 500;
-  color: var(--tx-inv-soft); border-bottom: 1px solid transparent;
-  transition: color 180ms ease, border-color 180ms ease; }
-.kn-jump a[aria-current] { color: var(--tx-inv); border-bottom-color: var(--acc, var(--violet-300)); }
-.kn-jump a:focus-visible { outline: 2px solid var(--acc, var(--violet-300)); outline-offset: 3px; }
-.kn-jump .tm { color: inherit; }
-@media (hover: hover) and (pointer: fine) {
-  .kn-jump a:not([aria-current]):hover { color: var(--tx-inv); }
-}
-
-.kn-talk__grid { width: var(--wrap); margin-inline: auto; }
-
-/* the stage */
-.kn-talk__stage { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
-  align-items: center; }
-.kn-talk__fig { margin: 0; min-width: 0; }
-.kn-talk__media { border-radius: var(--radius); }
-.kn-talk__head { min-width: 0; padding-top: clamp(1rem, 2vw, 1.5rem); border-top: 1px solid var(--acc, var(--violet-300)); }
-.kn-talk__n { display: block; font-family: var(--f-display); font-style: italic; font-weight: 300;
-  font-size: var(--step-4); line-height: .85; letter-spacing: -0.04em; color: var(--acc, var(--violet-300));
-  font-variant-numeric: lining-nums tabular-nums; }
-.kn-talk__h { margin-top: clamp(.6rem, 1.4vw, 1rem); font-size: var(--step-3); font-weight: 340; line-height: 1;
-  letter-spacing: -0.03em; text-wrap: balance; }
-.kn-talk--sig .kn-talk__h { font-size: var(--step-4); font-weight: 330; letter-spacing: -0.035em; }
-.kn-talk__sub { margin-top: .5rem; font-family: var(--f-display); font-style: italic; font-weight: 340;
-  font-size: var(--step-1); color: var(--tx-inv-soft); }
-.kn-talk__premise { margin-top: clamp(1rem, 2vw, 1.5rem); font-family: var(--f-display); font-weight: 340;
-  font-size: var(--step-1); line-height: 1.32; letter-spacing: -0.01em; color: var(--tx-inv);
-  max-width: 30ch; text-wrap: pretty; }
-
-/* over-right: the photo runs the full width; the words sit on its dark
-   right side, which the crop keeps clear of the speaker */
-.kn-talk--over-right .kn-talk__fig { grid-column: 1 / -1; grid-row: 1; }
-.kn-talk--over-right .kn-talk__media { aspect-ratio: 16 / 9; }
-.kn-talk--over-right .kn-talk__head { grid-column: 8 / span 5; grid-row: 1; position: relative; z-index: 1;
-  align-self: center; margin-right: clamp(1.5rem, 4vw, 3.5rem); }
-.kn-talk--over-right .kn-talk__sub { color: rgba(244,236,222,.78); }
-
-/* photo-left and photo-right */
-.kn-talk--photo-left .kn-talk__fig { grid-column: 1 / span 7; grid-row: 1; }
-.kn-talk--photo-left .kn-talk__head { grid-column: 8 / span 5; grid-row: 1; }
-.kn-talk--photo-left .kn-talk__media { aspect-ratio: 4 / 3; }
-.kn-talk--photo-right .kn-talk__fig { grid-column: 8 / span 5; grid-row: 1; }
-.kn-talk--photo-right .kn-talk__head { grid-column: 1 / span 6; grid-row: 1; }
-.kn-talk--photo-right .kn-talk__media { aspect-ratio: 1 / 1; }
-
-/* under the stage */
-.kn-talk__cols { margin-top: clamp(2.4rem, 4.5vw, 3.6rem); display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem); row-gap: clamp(2rem, 3.5vw, 2.8rem);
-  align-items: start; }
-.kn-talk__col--out { grid-column: 1 / span 7; }
-.kn-talk__col--book { grid-column: 9 / span 4; }
-.kn-talk__more { grid-column: 1 / -1; }
+/* the open talk */
+.kn-talks { margin-top: clamp(1.4rem, 3vh, 2.2rem); padding: clamp(1rem, 2.2vw, 2rem); }
+.kn-talk { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(1.25rem, 3vw, 3rem);
+  align-items: start; scroll-margin-top: 5.5rem; }
+.js .kn-talk:not(.is-open) { display: none; }
+.kn-talk + .kn-talk { margin-top: clamp(3rem, 6vw, 5rem); }
+.js .kn-talk + .kn-talk { margin-top: 0; }
+.kn-talk__h { grid-column: 1 / -1; margin-bottom: 1.4rem; font-size: var(--step-2); font-weight: 340; letter-spacing: -0.02em; }
+.kn-talk__n { font-style: italic; color: var(--accent); }
+.js .kn-talk__h { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.kn-talk__ph { grid-column: 1 / span 4; position: relative; aspect-ratio: 1 / 1; max-height: 56svh; overflow: hidden;
+  border-radius: var(--radius); }
+.kn-talk__ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.kn-talk__main { grid-column: 5 / span 4; padding-top: .2rem; }
+.kn-talk__outs { grid-column: 9 / span 4; padding-top: .2rem; }
+.kn-talk__sub { font-size: var(--step--1); font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--tx-soft); margin-bottom: .8rem; }
+.kn-talk__premise { font-family: var(--f-display); font-weight: 340; font-size: clamp(1.5rem, 1rem + 1.3vw, 2.3rem);
+  line-height: 1.14; letter-spacing: -0.022em; color: var(--tx); text-wrap: pretty; }
 .kn-talk__h3 { font-family: var(--f-text); font-size: var(--step--1); font-weight: 600; letter-spacing: .02em;
-  color: var(--acc, var(--violet-300)); padding-bottom: .7rem; border-bottom: 1px solid var(--line-inv); }
-.kn-talk__out { list-style: none; padding: 0; margin: 0; }
-.kn-talk__out li { position: relative; padding: .75rem 0 .75rem 1.5rem; border-bottom: 1px solid var(--line-inv);
-  font-size: var(--step-0); line-height: 1.5; color: var(--tx-inv); }
-/* each outcome marked with one of the chart's people, in the talk's accent */
-.kn-talk__out li::before { content: ""; position: absolute; left: .1rem; top: 1.38em; width: 7px; height: 7px;
-  border-radius: 50%; background: var(--acc, var(--violet-300)); }
-.kn-talk__formats { list-style: none; padding: 0; margin: .9rem 0 0; display: flex; flex-wrap: wrap; gap: .5rem; }
-.kn-talk__formats li { padding: .35em .9em; border: 1px solid var(--line-inv-strong); border-radius: 999px;
-  font-size: var(--step--1); color: var(--tx-inv); }
-.kn-talk__book { margin-top: clamp(1.4rem, 2.6vw, 2rem); }
-.kn-talk__book:focus-visible { outline: 2px solid var(--acc, var(--violet-300)); outline-offset: 3px; }
-.kn-talk__link { margin-top: 1.2rem; color: var(--tx-inv); }
-/* in the drop-down: the description, then who it is for */
-.kn-talk__more .dd__in { padding-top: .5rem; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: clamp(1.25rem, 3vw, 3rem); row-gap: 1.6rem; }
-.kn-talk__desc { grid-column: 1 / span 7; }
-.kn-talk__more .kn-talk__fact { grid-column: 9 / span 4; }
-.kn-talk__p { font-size: var(--step-0); line-height: 1.65; color: var(--tx-inv-soft); max-width: 62ch; }
-.kn-talk__p + .kn-talk__p { margin-top: 1.1em; }
-.kn-talk__aud { margin-top: .9rem; font-size: var(--step-0); line-height: 1.55; color: var(--tx-inv-soft); }
+  color: var(--tx-soft); }
+.kn-talk__formats { margin-top: clamp(1.4rem, 3vh, 2rem); padding-top: 1rem; border-top: 1px solid var(--line); }
+.kn-talk__fl { list-style: none; margin: .55rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1.1rem;
+  font-size: var(--step-0); color: var(--tx); }
+.kn-talk__fl li + li::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--accent); margin-right: 1.1rem; vertical-align: .22em; }
+.kn-talk__book { margin-top: clamp(1.4rem, 3vh, 2rem); }
+.kn-talk__link { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; margin-left: 1.4rem; }
+.kn-talk__out { list-style: none; margin: .7rem 0 0; padding: 0; border-top: 1px solid var(--accent); }
+.kn-talk__out li { position: relative; padding: .72rem 0 .72rem 1.3rem; border-bottom: 1px solid var(--line);
+  font-size: var(--step-0); line-height: 1.45; color: var(--tx-soft); text-wrap: pretty; }
+.kn-talk__out li::before { content: ""; position: absolute; left: 0; top: 1.25rem; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); }
+.kn-talk__out b, .kn-talk__out strong { color: var(--tx); font-weight: 600; }
+.kn-talk__dd { margin-top: clamp(1rem, 2vh, 1.4rem); }
+.kn-talk__p, .kn-talk__dd .dd__in > .kn-talk__p { font-size: var(--step-0); line-height: 1.65; color: var(--tx); max-width: 62ch; }
+.kn-talk__p + .kn-talk__p { margin-top: 1em; }
+.kn-talk__aud-h { margin-top: 1.4rem; margin-bottom: .4rem; }
 
-@media (max-width: 1100px) {
-  .kn-talk__col--out { grid-column: 1 / span 7; }
-  .kn-talk__col--book { grid-column: 8 / span 5; }
+/* a talk coming in: its parts rise into place, 50ms apart */
+.kn-talk.is-entering > * { animation: kn-in 460ms var(--ease-out) both; }
+.kn-talk.is-entering > .kn-talk__main { animation-delay: 60ms; }
+.kn-talk.is-entering > .kn-talk__outs { animation-delay: 120ms; }
+@keyframes kn-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* tablet: the photo beside the premise, what the room leaves with under both */
+@media (max-width: 1100px) and (min-width: 768px) {
+  .kn-intro__h { grid-column: 1 / span 8; }
+  .kn-intro__copy { grid-column: 9 / span 4; }
+  .kn-talk__ph { grid-column: 1 / span 5; max-height: 52svh; }
+  .kn-talk__main { grid-column: 6 / span 7; }
+  .kn-talk__outs { grid-column: 1 / -1; margin-top: clamp(2rem, 4vw, 2.6rem); }
 }
-@media (max-width: 900px) {
-  .kn-talk__stage, .kn-talk__cols, .kn-talk__more .dd__in { grid-template-columns: minmax(0, 1fr); }
-  .kn-talk__stage > *, .kn-talk__cols > *, .kn-talk__more .dd__in > * { grid-column: 1 !important; grid-row: auto !important; }
-  .kn-talk__head { margin: clamp(1.4rem, 5vw, 2rem) 0 0 !important; }
-  .kn-talk--over-right .kn-talk__media, .kn-talk--photo-left .kn-talk__media { aspect-ratio: 16 / 9; }
-  .kn-talk--photo-right .kn-talk__fig { order: -1; }
-  .kn-talk--photo-right .kn-talk__media { aspect-ratio: 4 / 5; max-height: 74svh; }
+@media (max-width: 1000px) and (min-width: 768px) {
+  .kn-rooms__row { width: 100%; }
+  .kn-room__n { font-size: var(--step-0); }
+  .kn-room__s { padding-left: 0; }
 }
+
+/* Phones: the heading and its lines stacked; the rooms a row to swipe,
+   each most of the screen wide with the next one showing at the edge,
+   every title and line always in view. A tap opens the talk under the
+   row: its title, the photo, then the rest in one column. */
 @media (max-width: 767px) {
-  /* phones: the index in the intro already lists every talk */
-  .kn-jump { display: none; }
-  .kn-talk { padding-top: clamp(2.6rem, 10vw, 3.4rem); }
-  .kn-talk__n { font-size: var(--step-3); }
+  .kn-intro { padding-top: clamp(5.5rem, 22vw, 6.5rem); }
+  .kn-intro__head { display: block; }
+  .kn-intro__h { font-size: clamp(2.3rem, 10vw, 3rem); }
+  .kn-intro__copy { margin-top: 1.1rem; }
+  .kn-rooms { margin-top: 1.8rem; margin-inline: calc(-1 * (100vw - var(--wrap)) / 2); }
+  .kn-rooms__row { display: flex; width: auto; column-gap: 1rem; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: calc((100vw - var(--wrap)) / 2);
+    padding: 0 calc((100vw - var(--wrap)) / 2) .6rem; scrollbar-width: none; }
+  .kn-rooms__row::-webkit-scrollbar { display: none; }
+  .kn-room { flex: 0 0 78vw; scroll-snap-align: start; }
+  .kn-room__s { padding-left: 0; }
+  .js .kn-room__s, .js .kn-room__btn[aria-expanded] .kn-room__s, .kn-rooms.is-armed .kn-room.is-lit .kn-room__s { opacity: 1; transform: none; }
+  .kn-rooms.is-armed .kn-room:not(.is-lit) .kn-room__s { opacity: .28; }
+  .kn-room__btn { padding-bottom: .5rem; border-bottom: 3px solid transparent; border-radius: 0; transition: border-color 400ms var(--ease-out); }
+  .js .kn-room__btn[aria-expanded="true"] { border-bottom-color: var(--accent); }
+  .js .kn-rooms__rail { display: none; }
+  .kn-rooms__dot { display: none; }
+  .kn-talks { margin-top: 1.6rem; padding: 1rem 1rem 1.4rem; }
+  .kn-talk { display: block; }
+  .kn-talk__ph { aspect-ratio: 4 / 3; max-height: none; }
+  .kn-talk__main { margin-top: 1.4rem; }
+  .kn-talk__outs { margin-top: 2rem; }
+  .kn-talk__link { margin-left: 0; }
 }
-@media (max-width: 600px) {
-  .kn-talk__fig { margin-inline: calc(-1 * (100vw - var(--wrap)) / 2); }
-  .kn-talk__media { border-radius: 0; }
-}
-
-/* the close: type only, on ink-2; the footer's own top padding sits
-   under it */
-main:has(> .kn-intro) + .foot { padding-top: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  .kn-index__ic, .kn-index__t, .kn-jump a { transition: none; }
+  .kn-room__art, .kn-room__label, .kn-room__s, .kn-rooms__mark, .kn-room__btn { transition: none; }
+  .kn-room__btn:hover .kn-room__art { transform: none; }
+  .kn-talk.is-entering > * { animation: none; }
 }
+
+/* ---------------------------------------------------------------------
+   The testimonial (layout in quote.css): its words come to full strength
+   in reading order (js/keynotes.js).
+   --------------------------------------------------------------------- */
+.quote__q p.is-reading .kn-w { opacity: .24; transition: opacity 640ms var(--ease-out); }
+.quote__q p.is-reading .kn-w.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .quote__q p .kn-w { opacity: 1 !important; transition: none !important; } }
+
+/* ---------------------------------------------------------------------
+   Meet the speaker. The photo runs from the page's left edge across a
+   little over half the width, fading into the gradient on its inner edge
+   and top and bottom; beside it the heading, one line, three facts under
+   hairlines (the number in the display face) and the way on to About.
+   Phones: the photo full width first, then the words.
+   --------------------------------------------------------------------- */
+.kn-meet { position: relative; z-index: 1; color: var(--tx); padding-block: clamp(2rem, 4vw, 3.5rem); }
+.kn-meet__grid { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  column-gap: clamp(2rem, 5vw, 5.5rem); align-items: center; padding-right: calc((100vw - var(--wrap)) / 2); }
+.kn-meet__media { grid-column: 1; height: min(90svh, 54rem);
+  -webkit-mask-image: linear-gradient(90deg, #000 62%, transparent), linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+          mask-image: linear-gradient(90deg, #000 62%, transparent), linear-gradient(180deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-composite: intersect; }
+.kn-meet__copy { grid-column: 2; min-width: 0; align-self: end; padding-bottom: clamp(1.5rem, 4svh, 3rem); }
+.kn-meet__h { font-size: var(--step-3); font-weight: 330; letter-spacing: -0.032em; line-height: .98; text-wrap: balance; }
+.kn-meet__line { margin-top: clamp(1.1rem, 2.2vw, 1.6rem); max-width: 44ch; font-size: var(--step-0); line-height: 1.6;
+  color: var(--tx); text-wrap: pretty; }
+.kn-meet__facts { list-style: none; margin: clamp(1.6rem, 3vw, 2.2rem) 0 0; padding: 0; max-width: 34rem;
+  border-top: 1px solid var(--accent); }
+.kn-meet__facts li { padding-block: clamp(.8rem, 1.6vw, 1.1rem); border-bottom: 1px solid var(--line);
+  font-family: var(--f-display); font-weight: 360; font-size: var(--step-1); line-height: 1.25; letter-spacing: -0.012em; }
+.kn-meet__facts b { font-weight: 340; font-size: 1.6em; line-height: 1; letter-spacing: -0.03em;
+  color: var(--tx); font-variant-numeric: lining-nums tabular-nums; margin-right: .1em; }
+.kn-meet__link { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px;
+  margin-top: clamp(1.2rem, 2.4vw, 1.8rem); color: var(--tx); }
+@media (max-width: 900px) {
+  .kn-meet__grid { grid-template-columns: minmax(0, 1fr); row-gap: clamp(1.2rem, 4vw, 2rem); padding-right: 0; }
+  .kn-meet__media { grid-column: 1; height: auto; aspect-ratio: 4 / 5; max-height: 86svh;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 86%, transparent 100%);
+            mask-image: linear-gradient(180deg, transparent 0, #000 10%, #000 86%, transparent 100%);
+    -webkit-mask-composite: source-over; mask-composite: add; }
+  .kn-meet__copy { grid-column: 1; width: var(--wrap); margin-inline: auto; padding-bottom: 0; }
+}
+
+/* the close: the footer's own top padding sits under it; the heading on
+   the dark stage curtain, set larger than the band default */
+main:has(> .kn-intro) + .foot { padding-top: 0; }
+main:has(> .kn-intro) + .foot .spk-close--over .spk-close__h { font-size: clamp(1.8rem, 3.4vw, 3.6rem); line-height: 1.02; }
 @media (max-width: 768px) {
-  .kn-index__n { font-size: var(--step-1); }
+  main:has(> .kn-intro) + .foot .spk-close--over .spk-close__h { font-size: clamp(1.5rem, 7vw, 2rem); }
 }

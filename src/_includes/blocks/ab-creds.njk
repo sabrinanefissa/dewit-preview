@@ -1,10 +1,20 @@
-  {# About: credentials, a plain list. #}
-  <section class="ab-creds"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
-    <div class="ab-creds__grid">
+  {# About: credentials. On wide screens the heading and the four lines
+       sit on the page ground beside the photo, each line arriving in turn
+       (js/about.js); below that width the photo comes first and the lines
+       follow it on the page ground. #}
+  <section class="ab-creds{% if block.image and block.image.src %} ab-creds--photo{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
+    {%- if block.image and block.image.src %}
+    <div class="ab-creds__photo">
+      <img src="{{ block.image.src | root(r) }}"
+           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ block.image.alt | inline() }}" loading="lazy" decoding="async">
+    </div>
+    {%- endif %}
+    <div class="ab-creds__board">
       <h2 class="ab-creds__h" id="{{ block.id }}-h">{{ block.heading | inline('ab-em') }}</h2>
       <ul class="ab-creds__list">
       {%- for c in block.items %}
-        <li>{{ c | inline() }}</li>
+        <li style="--i:{{ loop.index0 }}">{{ c | inline() }}</li>
       {%- endfor %}
       </ul>
     </div>

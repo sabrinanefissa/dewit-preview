@@ -1,4 +1,5 @@
-  {# Book: the enquiry form, in two steps. Every label, hint, option and
+  {# Book: the enquiry form, in two steps, always in the ink scheme (it sits
+       on the light top of the page). Every label, hint, option and
        message is in content/pages/book.json.
 
        Without script: one long form. Both steps show as two fieldsets,
@@ -58,7 +59,6 @@
     {%- else %}
         <div class="bk-field{% if fd.wide %} bk-field--wide{% endif %}" data-field="{{ fd.name }}"{{ showIf | safe }}>
           <label class="bk-label" for="{{ fid }}">{{ fd.label | inline() }}{% if fd.required %} <span class="bk-label__req">{{ block.requiredWord }}</span>{% endif %}</label>
-          {%- if fd.hint %}<p class="bk-hint" id="{{ fid }}-hint">{{ fd.hint | inline() }}</p>{% endif %}
           {%- set attrs %} id="{{ fid }}" name="{{ fd.name }}"{% if fd.autocomplete %} autocomplete="{{ fd.autocomplete }}"{% endif %}{% if fd.inputmode %} inputmode="{{ fd.inputmode }}"{% endif %}{% if fd.required %} required aria-required="true"{% endif %}{% if fd.hint %} aria-describedby="{{ fid }}-hint"{% endif %}{% if fd.spellcheck === false %} spellcheck="false"{% endif %}{% if fd.placeholder %} placeholder="{{ fd.placeholder }}"{% endif %}{% if fd.errorMessage %} data-error="{{ fd.errorMessage }}"{% endif %}{% if fd.invalidMessage %} data-invalid="{{ fd.invalidMessage }}"{% endif %}{% if fd.prefill %} data-prefill="{{ fd.prefill }}"{% endif %}{% endset %}
           {%- if fd.type == 'textarea' %}
           <textarea class="bk-input bk-input--area" rows="{{ fd.rows or 5 }}"{{ attrs | safe }}></textarea>
@@ -69,6 +69,9 @@
           </select><svg class="bk-select__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
           {%- else %}
           <input class="bk-input" type="{{ fd.type or 'text' }}"{{ attrs | safe }}>
+          {%- endif %}
+          {%- if fd.hint %}
+          <p class="bk-hint bk-hint--under" id="{{ fid }}-hint">{{ fd.hint | inline() }}</p>
           {%- endif %}
           <p class="bk-error" id="{{ fid }}-error" data-error-for="{{ fd.name }}" role="alert" hidden></p>
         </div>
@@ -85,9 +88,6 @@
           <h2 class="bk-form__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h2>
         </div>
         <p class="bk-form__req">{{ block.requiredNote | inline() }}</p>
-        {%- if block.bureau and block.bureau.lead %}
-        <p class="bk-form__bureau">{{ block.bureau.lead | inline() }} <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a> {{ block.bureau.tail | inline() }}</p>
-        {%- endif %}
       </div>
       <div class="bk-form__main">
       <form class="bk-form__form" data-bk-form action="mailto:{{ site.contact.email }}" method="post" enctype="text/plain"
@@ -106,8 +106,17 @@
           <div class="bk-step__actions">
           {%- if not loop.last %}
             <button type="button" class="btn btn--lg bk-step__next" data-bk-next data-bk-js hidden>{{ (st.next or 'Continue') | inline() }} <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            {%- if loop.first and block.contact %}
+            <ul class="bk-step__contact">
+              <li><span class="bk-step__k">{{ block.contact.phoneLabel | inline() }}</span> <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
+              <li><span class="bk-step__k">{{ block.contact.emailLabel | inline() }}</span> <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
+            </ul>
+            {%- endif %}
             {%- if loop.first and block.privacy %}
             <p class="bk-submit__privacy">{{ block.privacy | inline() }}</p>
+            {%- endif %}
+            {%- if loop.first and block.bureau and block.bureau.lead %}
+            <p class="bk-form__bureau">{{ block.bureau.lead | inline() }} <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a> {{ block.bureau.tail | inline() }}</p>
             {%- endif %}
           {%- else %}
             {%- if not loop.first %}

@@ -1,4 +1,4 @@
-  {# Healthcare clients: a static row of knocked-out logos on plum. #}
+  {# Healthcare clients: a row of knocked-out logos; js/healthcare.js lands them in turn, once. #}
   <section class="hc-logos"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
     <div class="hc-logos__inner">
       <h2 class="hc-logos__h" id="{{ block.id }}-h">{{ block.heading | inline('hc-em') }}</h2>

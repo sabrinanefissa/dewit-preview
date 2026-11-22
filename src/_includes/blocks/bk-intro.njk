@@ -1,31 +1,46 @@
-  {# Book: the top. The stage photo, and on its own dark side "Book
-       Stephen", the lead, the five stops of what happens next (the titles
-       from the page's bk-steps block) and the phone and email (values
-       from site.json contact). Phones: the heading and contact on the
-       photo, the lead and the stops under it on the ground. Static. #}
-  {%- set stepsBlock = null %}
-  {%- for b in page.blocks %}{% if b.type == 'bk-steps' and b.enabled !== false %}{% set stepsBlock = b %}{% endif %}{% endfor %}
+  {# Book: the top. The photo of Stephen, and beside it "Book Stephen",
+       the one-sentence lead and the phone and email (values from
+       site.json contact), on the light top of the page. Wide screens:
+       the photo runs to the left edge, the words beside it, the form to
+       the right. Phones: the words, then the photo. After it, its own
+       section: the wall of client marks under a centred heading, landing
+       one at a time, whose last cell becomes the invitation to the form
+       (js/book.js). #}
   <section class="bk-intro{% if block.image and block.image.src %} bk-intro--photo{% endif %}"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-tone="{{ block | tone('plum') }}">
-    {%- if block.image and block.image.src %}
-    <div class="media bk-intro__media">
-      <img src="{{ block.image.src | root(r) }}"
-           {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
-           sizes="{{ block.image.sizes or '100vw' }}" alt="{{ (block.image.alt or '') | plain }}" fetchpriority="high" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
-    </div>
-    {%- endif %}
     <div class="bk-intro__inner">
-      <h1 class="bk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h1>
-      {%- if block.lead %}<p class="bk-intro__lead">{{ block.lead | inline() }}</p>{% endif %}
-      {%- if stepsBlock and stepsBlock.steps and stepsBlock.steps.length %}
-      <ol class="bk-stops" aria-label="{{ (stepsBlock.heading or 'What happens next') | plain }}">
-      {%- for st in stepsBlock.steps %}
-        <li class="bk-stops__s">{{ st.title | inline() }}</li>
-      {%- endfor %}
-      </ol>
+      {%- if block.image and block.image.src %}
+      <div class="bk-intro__media">
+        <img src="{{ block.image.src | root(r) }}"
+             {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}"{% endif %}
+             sizes="{{ block.image.sizes or '100vw' }}" alt="{{ (block.image.alt or '') | plain }}" width="1280" height="1600" fetchpriority="high" decoding="async"{% if block.image.position %} style="object-position: {{ block.image.position | plain }}"{% endif %}>
+      </div>
       {%- endif %}
-      <ul class="bk-intro__contact">
-        <li><span class="bk-intro__k">{{ block.phoneLabel | inline() }}</span> <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
-        <li><span class="bk-intro__k">{{ block.emailLabel | inline() }}</span> <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
+      <div class="bk-intro__text">
+        <h1 class="bk-intro__h" id="{{ block.id }}-h">{{ block.heading | inline('bk-em') }}</h1>
+        {%- if block.lead %}<p class="bk-intro__lead">{{ block.lead | inline() }}</p>{% endif %}
+        <ul class="bk-intro__contact">
+          <li><span class="bk-intro__k">{{ block.phoneLabel | inline() }}</span> <a href="tel:{{ site.contact.tel }}">{{ site.contact.phone }}</a></li>
+          <li><span class="bk-intro__k">{{ block.emailLabel | inline() }}</span> <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  {%- set lg = block.logos %}
+  {%- if lg and lg.items and lg.items.length %}
+  <section class="bk-wall" aria-labelledby="{{ block.id }}-wall-h" data-tone="{{ block | tone('plum') }}">
+    <div class="bk-wall__inner">
+      {%- if lg.label %}
+      <h2 class="bk-wall__h" id="{{ block.id }}-wall-h">{{ lg.label | inline() }}</h2>
+      {%- endif %}
+      <ul class="bk-wall__grid" data-bk-wall>
+      {%- for logo in lg.items %}
+        <li class="bk-wall__cell"><img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}" loading="lazy" decoding="async"{% if logo.scale %} style="--s:{{ logo.scale | plain }}"{% endif %}></li>
+      {%- endfor %}
+      {%- if lg.invite and lg.invite.label %}
+        {%- set ih = lg.invite.href or '#enquiry' %}
+        <li class="bk-wall__cell bk-wall__cell--invite"><a class="bk-wall__card" href="{{ ih if ih[0] == '#' else (ih | root(r)) }}"><span class="bk-wall__say">{{ lg.invite.label | inline() }}</span><svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></li>
+      {%- endif %}
       </ul>
     </div>
   </section>
+  {%- endif %}
