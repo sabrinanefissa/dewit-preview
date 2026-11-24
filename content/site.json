@@ -4,7 +4,7 @@
   "tagline": "Human Connection & Relational Intelligence",
   "year": "2026",
   "head": {
-    "viewport": "width=device-width, initial-scale=1",
+    "viewport": "width=device-width, initial-scale=1, viewport-fit=cover",
     "ogType": "website",
     "twitterCard": "summary_large_image",
     "favicon": {

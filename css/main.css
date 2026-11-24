@@ -129,7 +129,10 @@ html.no-js .hero.is-enter .hero__w, html.no-js .hero.is-enter .hero__meta > span
    ===================================================================== */
 .nav { position: fixed; inset: 0 0 auto 0; z-index: 90; display:flex; align-items:center;
   justify-content:space-between; padding: clamp(1.1rem,2vw,1.7rem) var(--gutter); color: var(--tx);
-  transition: background var(--dur) var(--ease-amb), box-shadow var(--dur), padding var(--dur) var(--ease-amb), color var(--dur-fast) var(--ease-amb); }
+  transition: background var(--dur) var(--ease-amb), box-shadow var(--dur), padding var(--dur) var(--ease-amb), color var(--dur-fast) var(--ease-amb), transform .3s var(--ease-out); }
+/* tucked out of view on the way down the page; 2px more
+   than its height so the hairline goes too */
+.nav.is-tucked { transform: translateY(calc(-100% - 2px)); }
 .nav.is-solid, .nav.is-mixed { background: var(--nav-ground);
   box-shadow: 0 1px 0 var(--line);
   padding-block: clamp(.7rem,1.4vw,1rem); }
@@ -142,6 +145,11 @@ html.no-js .nav { background: var(--nav-ground); box-shadow: 0 1px 0 var(--line)
 .nav-links a::after { content:""; position:absolute; left:0; bottom:-2px; height:1px; width:0; background:currentColor;
   transition: width var(--dur-fast) var(--ease-out); }
 .nav-links a:hover { opacity:1; } .nav-links a:hover::after { width:100%; }
+/* the current page: a small lavender dot before its link, outside the
+   link's box so nothing moves */
+.nav-links a[aria-current="page"]::before { content:""; position:absolute; left:-.8em; top:50%;
+  width:5px; height:5px; margin-top:-2.5px; border-radius:50%; background:#C3B5CA; }
+.nav[data-scheme="light"] .nav-links a[aria-current="page"]::before { background:#7A6884; }
 /* the booking button is always filled in its scheme: ink with a cream
    label on the light half, cream with an ink label on the dark */
 .nav-cta { font-size:var(--step--1); font-weight:600; letter-spacing:.03em; padding:.6em 1.15em;
@@ -2545,3 +2553,34 @@ body { --fill-stagger: 0.12; }
 .stats:not(.spk-proof) .stats__line, .stats.spk-proof .stats__line { width: auto !important; max-width: 22ch; font-size: clamp(2.2rem, 1.2rem + 3.6vw, 5rem) !important; line-height: 1.05; }
 .stats:not(.spk-proof) .stats__eyebrow, .stats.spk-proof .stats__eyebrow { width: auto !important; }
 @media (max-width: 760px) { .stats:not(.spk-proof), .stats.spk-proof { min-height: 90svh; } .stats:not(.spk-proof) { background-position: 60% center !important; } }
+
+/* The phone bottom bar is styled in phone.css; wider screens never show it. */
+.tabbar { display:none; }
+
+/* With viewport-fit=cover a landscape phone draws under its notch: keep the
+   page and the header clear of it. Both resolve to the usual values where
+   there is no notch. */
+body { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
+.nav { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
+
+/* =====================================================================
+   Page to page: the new page rises from below while the old one steps
+   back and dims (browsers without cross-document view transitions simply
+   change page). The header and the phone bar hold still; the Home loader
+   is the arrival itself, so it shows at once on top of the move.
+   ===================================================================== */
+@view-transition { navigation: auto; }
+.nav { view-transition-name: site-nav; }
+.tabbar { view-transition-name: site-tabbar; }
+.loader { view-transition-name: site-loader; }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+::view-transition-old(root) { animation: vt-back .8s cubic-bezier(.7,0,.25,1) both; }
+::view-transition-new(root) { animation: vt-rise .8s cubic-bezier(.7,0,.25,1) both; }
+::view-transition-group(site-loader), ::view-transition-old(site-loader),
+::view-transition-new(site-loader) { animation: none; }
+@keyframes vt-back { to { transform: scale(.94); opacity: .4; } }
+@keyframes vt-rise { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+}

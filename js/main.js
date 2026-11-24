@@ -407,6 +407,8 @@ var UI = (function () {
     drawer.setAttribute("aria-hidden", open ? "false" : "true");
     if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
     document.body.style.overflow = open ? "hidden" : "";
+    /* Speaking's smooth scroll would keep moving the page behind the menu */
+    if (window.spkLenis && open !== was) window.spkLenis[open ? "stop" : "start"]();
     if (open && !was) {
       inerted = [].slice.call(document.body.children).filter(function (el) {
         return el !== drawer && el.tagName !== "SCRIPT" && !el.inert;
@@ -3660,6 +3662,40 @@ var UI = (function () {
   }, { threshold: 0.5 });
   io.observe(line);
   document.addEventListener("dw:loaded", maybeStart);
+})();
+
+/* ===== 16. The header tucks away on the way down, returns on the way up =====
+   Wider than phones only: phones keep their header and use the bottom bar.
+   After 4px of downward scroll it slides up out of view; any upward scroll
+   brings it back, and it always shows in the top 80px, while the menu is
+   open and while focus is inside it. It stays put where module 13 moves the
+   name into it (768px pages with a hero), since that measures the header.
+   This module writes only .is-tucked; the header's colour and solid state
+   belong to the modules above. Reduced motion: no slide (CSS). */
+(function () {
+  "use strict";
+  var nav = document.querySelector(".nav");
+  if (!nav) return;
+  var wide = window.matchMedia("(min-width: 768px)");
+  var drawer = document.getElementById("drawer");
+  var name = document.querySelector(".hero__name");
+  var lastY = window.scrollY || 0, down = 0, ticking = false;
+  function set(on) { if (nav.classList.contains("is-tucked") !== on) nav.classList.toggle("is-tucked", on); }
+  function held() {
+    return !wide.matches || (drawer && drawer.classList.contains("is-open")) ||
+      nav.contains(document.activeElement) || !!(name && name.classList.contains("is-armed"));
+  }
+  function frame() {
+    ticking = false;
+    var y = window.scrollY || 0, dy = y - lastY;
+    lastY = y;
+    if (y <= 80 || held()) { down = 0; set(false); return; }
+    if (dy > 0) { down += dy; if (down > 4) set(true); }
+    else if (dy < 0) { down = 0; set(false); }
+  }
+  window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, { passive: true });
+  nav.addEventListener("focusin", function () { set(false); });
+  window.addEventListener("resize", function () { down = 0; lastY = window.scrollY || 0; set(false); });
 })();
 
 /* The layout's failsafe reads this: the whole script ran. Keep it last. */

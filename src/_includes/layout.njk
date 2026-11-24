@@ -6,6 +6,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="{{ site.head.viewport }}">
+{%- set tg = theme.pageGradients[slug] or theme.pageGradients.home %}
+<meta name="theme-color" content="{{ tg[3] }}">
+<script>(function (W) { var w = 0; function s() { if (W.innerWidth === w) return; w = W.innerWidth; document.documentElement.style.setProperty('--app-h', W.innerHeight + 'px'); } s(); W.addEventListener('resize', s); })(window);</script>
 <title>{{ page.title | inline() }}</title>
 <meta name="description" content="{{ page.description | inline() }}">
 {%- if page.noindex %}
@@ -35,7 +38,8 @@
 <link rel="stylesheet" href="{{ 'css/tokens.css' | root(r) }}?v={{ 'css/tokens.css' | stamp }}">
 <link rel="stylesheet" href="{{ site.head.stylesheet | root(r) }}?v={{ site.head.stylesheet | stamp }}">
 {% for s in page.styles %}<link rel="stylesheet" href="{{ s | root(r) }}?v={{ s | stamp }}">
-{% endfor %}<script>document.documentElement.className = document.documentElement.className.replace('no-js','js');
+{% endfor %}<link rel="stylesheet" href="{{ 'css/phone.css' | root(r) }}?v={{ 'css/phone.css' | stamp }}" media="(max-width: 767px)">
+<script>document.documentElement.className = document.documentElement.className.replace('no-js','js');
 /* failsafe: main.js sets window.dwMainOk as its last line. Deferred scripts run
    before DOMContentLoaded, so if it is still unset here the script failed to
    load or threw, and the page falls back to its no-script state (everything
@@ -190,6 +194,19 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
   <div class="foot__base"><span>© <span data-year>{{ site.year }}</span> {{ site.brand }}</span><span>{{ site.tagline | inline() }}</span></div>
 </footer>
 
+{%- macro tabIcon(k) %}<svg class="tabbar__ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+{%- if k == 'keynotes' %}<path d="M12 3.2c-1.9 0-3.1 1.3-3.1 3.1v5c0 1.8 1.3 3.2 3.1 3.2s3.1-1.4 3.1-3.2v-5c0-1.8-1.2-3.1-3.1-3.1z"/><path d="M5.9 10.8c.2 3.6 2.7 6.3 6.1 6.3 3.3 0 5.9-2.6 6.1-6.2"/><path d="M12 17.2v3.4M9 20.8c2-.2 4-.2 6.1 0"/>
+{%- elif k == 'speaking' %}<path d="M4.2 6.6c.1-1.4 1.1-2.3 2.6-2.4 3.5-.2 6.9-.2 10.4 0 1.5.1 2.5 1 2.6 2.4.2 2.2.2 4.3 0 6.4-.1 1.4-1.1 2.3-2.6 2.4-2.4.1-4.6.1-6.9.1l-3.7 4.1.4-4.1c-1.6-.1-2.6-1-2.8-2.5-.2-2.1-.2-4.2 0-6.4z"/><path d="M8.4 9.6c2.4-.1 4.9-.1 7.3 0M8.4 12.2c1.5-.1 3-.1 4.6 0"/>
+{%- elif k == 'healthcare' %}<path d="M12 19.6c-3.8-2.6-7.6-5.7-7.9-9.6-.2-2.6 1.6-4.7 4-4.8 1.6-.1 3 .8 3.9 2.3.9-1.5 2.3-2.4 3.9-2.3 2.4.1 4.2 2.2 4 4.8-.3 3.9-4.1 7-7.9 9.6z"/>
+{%- else %}<path d="M4.4 7.2c.1-1.3.9-2.1 2.2-2.2 3.6-.2 7.2-.2 10.8 0 1.3.1 2.1.9 2.2 2.2.2 3.9.2 7.7 0 11.5-.1 1.3-.9 2.1-2.2 2.2-3.6.2-7.2.2-10.8 0-1.3-.1-2.1-.9-2.2-2.2-.2-3.8-.2-7.6 0-11.5z"/><path d="M8.2 3.4v3.3M15.8 3.4v3.3M4.6 9.9c4.9-.2 9.9-.2 14.8 0"/><path d="M9.1 14.6l2 2 3.9-4.3"/>
+{%- endif %}</svg>{% endmacro %}
+<nav class="tabbar" aria-label="{{ site.ui.navLabel }}" data-scheme="dark">
+{%- for s in ['keynotes', 'speaking', 'healthcare'] %}{% for l in site.nav %}{% if l.slug == s %}{% set nl = l | navlink(slug, r) %}
+  <a class="tabbar__tab" href="{{ nl.href }}"{% if nl.current %} aria-current="page"{% endif %}>{{ tabIcon(s) }}<span class="tabbar__label">{{ l.label | inline() }}</span></a>
+{%- endif %}{% endfor %}{% endfor %}
+  <a class="tabbar__tab tabbar__tab--book" href="{{ site.cta.href | root(r) }}"{% if slug == 'book' %} aria-current="page"{% endif %}>{{ tabIcon('book') }}<span class="tabbar__label">{{ site.cta.label | inline() }}</span></a>
+</nav>
+
 {% if page.lightbox -%}
 <div class="lb" aria-hidden="true" role="dialog" aria-modal="true" aria-label="{{ site.lightbox.label }}">
   <button class="lb__close" aria-label="{{ site.lightbox.closeLabel }}">{{ site.lightbox.close }}</button>
@@ -205,5 +222,6 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 {% endif -%}
 {% for s in page.scripts %}<script src="{{ s | root(r) }}?v={{ s | stamp }}" defer></script>
 {% endfor %}<script src="{{ site.head.script | root(r) }}?v={{ site.head.script | stamp }}" defer></script>
+<script src="{{ 'js/phone.js' | root(r) }}?v={{ 'js/phone.js' | stamp }}" defer></script>
 </body>
 </html>

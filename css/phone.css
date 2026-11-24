@@ -1,0 +1,111 @@
+/* =====================================================================
+   Phone layer, under 768px only (loaded with media="(max-width: 767px)").
+   The bottom bar, the menu as a full-height sheet, the footer in two
+   columns with Back to top, controls lifted clear of the bar, tap states
+   and full-height sections that hold still when the browser bar moves.
+   ===================================================================== */
+:root { --tabbar-h: 56px; --safe-b: env(safe-area-inset-bottom, 0px); }
+
+a, button, summary { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+:where(a, button, summary):active { opacity: .7; }
+
+/* ---------------------------------------------------------------------
+   Bottom bar: three places and the booking button, hidden on the way
+   down the page and back on the way up (phone.js writes .is-hidden).
+   --------------------------------------------------------------------- */
+.tabbar { position:fixed; left:0; right:0; bottom:0; z-index:88;
+  display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:4px;
+  padding: 4px max(8px, env(safe-area-inset-right, 0px)) calc(4px + var(--safe-b)) max(8px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--g3) 97%, transparent); box-shadow: 0 -1px 0 var(--line);
+  transition: transform .3s var(--ease-out); }
+.tabbar.is-hidden { transform: translateY(calc(100% + 2px)); }
+.tabbar__tab { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  min-height:48px; padding:4px 2px 3px; border-radius: var(--radius); color: var(--tx);
+  font-size:11px; font-weight:500; line-height:1.2; letter-spacing:.02em; white-space:nowrap;
+  opacity:.8; transition: opacity .2s, transform .12s var(--ease-out), background-color .2s; }
+.tabbar__ic { width:22px; height:22px; flex:none; fill:none; stroke: currentColor; stroke-width:1.4;
+  stroke-linecap:round; stroke-linejoin:round; }
+.tabbar__tab[aria-current="page"] { opacity:1; }
+.tabbar__tab[aria-current="page"] .tabbar__label::before { content:""; display:inline-block;
+  width:5px; height:5px; margin-right:5px; vertical-align:2px; border-radius:50%; background:#C3B5CA; }
+.tabbar__tab--book { background: var(--btn-bg); color: var(--btn-fg); opacity:1; font-weight:600; }
+/* the booking label fills its tab, so its dot sits in the tab's corner */
+.tabbar__tab--book[aria-current="page"] .tabbar__label::before { position:absolute; top:6px; right:6px;
+  margin:0; background:#7A6884; }
+.tabbar__tab:active { opacity:1; transform: scale(.95); }
+.tabbar__tab--book:active { background: var(--btn-hover); }
+.tabbar__tab:focus-visible { outline:2px solid var(--focus); outline-offset:-2px; }
+.tabbar__tab--book:focus-visible { outline-color: var(--btn-fg); outline-offset:-4px; }
+
+/* the page ends clear of the bar and the home bar */
+.foot { padding-bottom: calc(2.5rem + var(--tabbar-h) + var(--safe-b)); }
+
+/* the Home opening screen keeps its last line clear of the bar */
+.hero:not(.spk-hero) { padding-bottom: calc(var(--tabbar-h) + var(--safe-b)); }
+
+/* controls that sit at the foot of the screen move up above the bar */
+.pinskip { bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px); }
+.spk-chap__dots { bottom: calc(var(--tabbar-h) + var(--safe-b) + .6rem); }
+
+/* ---------------------------------------------------------------------
+   Menu: the drawer as a full-height sheet that rises from the bottom.
+   Serif rows with hairlines drawn in one after another, the current page
+   dotted, the booking button pinned full width at the bottom with the
+   phone and email under it. Opens in 0.35s, closes in 0.25s.
+   --------------------------------------------------------------------- */
+.drawer { justify-content:flex-start; transform: translateY(100%);
+  padding: calc(env(safe-area-inset-top, 0px) + 4.75rem) max(var(--gutter), env(safe-area-inset-right, 0px))
+           calc(var(--safe-b) + 1rem) max(var(--gutter), env(safe-area-inset-left, 0px));
+  overflow-y:auto; overscroll-behavior:contain;
+  transition: transform .25s cubic-bezier(.7,0,.25,1), visibility 0s linear .25s; }
+.drawer.is-open { transform:none; transition: transform .35s var(--ease-out), visibility 0s; }
+.drawer__close { top: calc(env(safe-area-inset-top, 0px) + 1.1rem); display:inline-flex; align-items:center;
+  min-height:44px; min-width:44px; }
+.drawer nav { flex: 1 0 auto; gap:0; }
+.drawer nav a { position:relative; display:flex; align-items:center; min-height:56px; padding:.35rem 0;
+  font-size: clamp(1.75rem, 8vw, 2.25rem); line-height:1.15; }
+.drawer nav a:not(:last-child)::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px;
+  background: var(--line); transform: scaleX(0); transform-origin: 0 50%; transition: transform .5s var(--ease-out); }
+.drawer.is-open nav a::after { transform:none; }
+.drawer.is-open nav a:nth-child(1)::after { transition-delay:.12s; }
+.drawer.is-open nav a:nth-child(2)::after { transition-delay:.18s; }
+.drawer.is-open nav a:nth-child(3)::after { transition-delay:.24s; }
+.drawer.is-open nav a:nth-child(4)::after { transition-delay:.30s; }
+.drawer.is-open nav a:nth-child(5)::after { transition-delay:.36s; }
+.drawer nav a[aria-current="page"]::before { content:""; flex:none; width:6px; height:6px; margin-right:.7rem;
+  border-radius:50%; background:#C3B5CA; }
+.drawer nav a:nth-last-child(2) { margin-bottom:1.75rem; }
+.drawer nav a:last-child { margin-top:auto; justify-content:center; min-height:52px;
+  font-family: var(--f-text); font-size: var(--step-0); font-weight:600; letter-spacing:.03em;
+  background: var(--btn-bg); color: var(--btn-fg); border-radius: var(--radius); }
+.drawer nav a:last-child:hover { color: var(--btn-fg); }
+.drawer nav a:last-child:active { opacity:1; background: var(--btn-hover); transform: scale(.98); }
+.drawer__foot { margin-top:.75rem; flex-direction:row; flex-wrap:wrap; justify-content:center; gap:0 1.5rem; }
+.drawer__foot a { display:inline-flex; align-items:center; min-height:44px; }
+
+/* ---------------------------------------------------------------------
+   Footer: the brand across the top, Explore and Connect side by side,
+   and Back to top at the bottom (added by phone.js).
+   --------------------------------------------------------------------- */
+.foot__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem 1.25rem; }
+.foot__grid > :first-child { grid-column: 1 / -1; }
+.foot__grid ul a { white-space:nowrap; }
+.foot__top { display:flex; align-items:center; justify-content:center; gap:.55rem;
+  width: var(--wrap); min-height:48px; margin: 1.75rem auto 0; padding:0 1rem;
+  border:1px solid var(--line-inv); border-radius: var(--radius); color: var(--tx-inv);
+  font-size: var(--step--1); font-weight:600; letter-spacing:.02em; }
+.foot__top svg { width:16px; height:16px; flex:none; fill:none; stroke: currentColor; stroke-width:1.4;
+  stroke-linecap:round; stroke-linejoin:round; }
+.foot__top:active { opacity:1; transform: scale(.97); }
+
+/* full-height sections take the height measured once at load, so they hold
+   still while the browser bar comes and goes */
+.hero { min-height: max(var(--app-h, 100svh), 620px); }
+.spk-formats__stage, .tstrip__stage, .spk-chap__stage { height: var(--app-h, 100svh); }
+
+/* page to page is quicker on a phone */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tabbar, .tabbar__tab, .drawer, .drawer.is-open, .drawer nav a::after, .foot__top { transition:none; }
+}
