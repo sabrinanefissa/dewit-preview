@@ -36,7 +36,6 @@ const FOCAL_Y = 0.42;     // faces sit high
 // base on disk.
 const PORTRAITS = [
   'hero',                    // home hero poster
-  'reel-poster',             // speaking hero poster
   'permission',              // home chap stills
   'keynote',                 // home out ("idea") and the bleed
 ];

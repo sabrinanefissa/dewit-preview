@@ -1,0 +1,20 @@
+  {#- The close on a full-width reel frame of Stephen on stage
+       (block.image): the heading, the booking button and the next link
+       set on the dark curtain beside him. On phones the frame is cropped
+       to him at 4:5 with the heading on the curtain, the button full
+       width under it. Never shortened (spk-close--over). -#}
+  <div class="spk-close spk-close--over spk-close--stage" data-tone="{{ block | tone('deep') }}" data-scheme="dark">
+    <div class="spk-cl">
+      <img class="spk-cl__img" src="{{ block.image.src | root(r) }}" {%- set ss1 = block.image.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="(max-width: 767px) 230vw, 100vw"{% endif %} alt="{{ (block.image.alt or '') | plain }}" loading="lazy" decoding="async">
+      <div class="spk-cl__text">
+        <h2 class="spk-cl__h">{{ block.heading | inline('spk-em') }}</h2>
+        <div class="spk-cl__ctas">
+          <a class="btn btn--lg spk-close__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+          {%- if block.next and block.next.href %}
+          <a class="textlink spk-close__next" href="{{ block.next.href | root(r) }}">{{ block.next.label | inline() }}
+            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          {%- endif %}
+        </div>
+      </div>
+    </div>
+  </div>

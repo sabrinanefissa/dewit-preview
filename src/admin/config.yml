@@ -598,12 +598,13 @@ collections:
             fields:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
-              - label: Poster image
-                name: poster
+              - label: Stage photo
+                name: photo
                 widget: object
+                hint: "Text sits in the photo's dark area, so pick a photo with a dark side. The reel opens over it."
                 fields:
-                  - { label: Image, name: src, widget: image }
-                  - { label: Sizes attribute, name: sizes, widget: string, default: 100vw }
+                  - { label: "Wide photo (with its other widths beside it)", name: src, widget: image }
+                  - { label: "Tall photo for phones and upright tablets", name: phone, widget: image, required: false }
                   - { label: Alt text, name: alt, widget: string }
               - label: Video
                 name: video
@@ -622,7 +623,8 @@ collections:
                   - { label: Captions file (.vtt), name: src, widget: file, media_folder: "/assets/video" }
                   - { label: Language code, name: srclang, widget: string, default: en }
                   - { label: Language label, name: label, widget: string, default: English }
-              - { label: "Heading (the page's h1, shown under the reel)", name: heading, widget: string, hint: "Allows *emphasis*." }
+              - { label: "Small line above the heading (optional)", name: eyebrow, widget: string, required: false }
+              - { label: "Heading (the page's h1)", name: heading, widget: string, hint: "Allows *emphasis*." }
               - { label: "Line under the heading (optional)", name: line, widget: string, required: false }
               - label: "Button beside the line (optional)"
                 name: cta
@@ -874,7 +876,21 @@ collections:
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Aria label, name: ariaLabel, widget: string }
+              - label: "Audience photo behind the section (dark lower half)"
+                name: photo
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt text, name: alt, widget: string }
               - { label: Sentence, name: sentence, widget: text, hint: "Allows *emphasis*." }
+              - label: "Button under the sentence"
+                name: cta
+                widget: object
+                required: false
+                fields:
+                  - { label: Label, name: label, widget: string }
+                  - { label: Link, name: href, widget: string }
               - *placement
               - { label: Heading, name: heading, widget: string }
               - { label: '"usually:" label', name: usuallyLabel, widget: string, required: false }
@@ -1471,7 +1487,7 @@ collections:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
-              - { label: Layout, name: layout, widget: select, options: [split, portrait, photo-left, band, over, bands, type, route], default: split, required: false, hint: "split = text left, photo right 60%. portrait = text left, a 4:5 photo in the right third. photo-left = photo on the left two-thirds, text right. band = text across the top, the photo as a full-width landscape band under it. over = the photo as a full-width band with the heading placed on its darkest area (see Image > Heading position). bands = no photo; one full-width band per talk on the page, then the text. type = no photo. route = no photo; the Ways on links in a row, then the text. Only 'over' puts text on the photo." }
+              - { label: Layout, name: layout, widget: select, options: [split, portrait, photo-left, band, over, bands, type, route, stage], default: split, required: false, hint: "stage = the photo full width with the heading and both links on its dark side. split = text left, photo right 60%. portrait = text left, a 4:5 photo in the right third. photo-left = photo on the left two-thirds, text right. band = text across the top, the photo as a full-width landscape band under it. over = the photo as a full-width band with the heading placed on its darkest area (see Image > Heading position). bands = no photo; one full-width band per talk on the page, then the text. type = no photo. route = no photo; the Ways on links in a row, then the text. Only 'over' and 'stage' put text on the photo." }
               - label: Image
                 name: image
                 widget: object
@@ -1560,12 +1576,23 @@ collections:
                     widget: object
                     required: false
                     fields:
-                      - { label: Image, name: src, widget: image, hint: "A 4:3 frame from the reel, e.g. reel-still-close-480.webp (with a -240 version beside it)." }
+                      - { label: Image, name: src, widget: image, hint: "A 16:9 frame from the reel, e.g. spk-un-alone-1920.webp (with its other widths beside it), with dark curtain to the left of Stephen. A line without one keeps the frame before." }
                       - { label: Alt text, name: alt, widget: string }
                       - { label: "Plays the reel from (seconds)", name: time, widget: number, value_type: int, hint: "Use a chapter's start time from the reel hero, so the button names that chapter." }
+                      - label: "Crop (optional)"
+                        name: crop
+                        widget: object
+                        required: false
+                        hint: "Keeps Stephen and any light clear of the text. x: left edge as a share of the frame's width; z: zoom; y: vertical anchor (0 to 1); tz: zoom on tablets; px, pz: left edge and zoom on phones."
+                        fields:
+                          - { label: x, name: x, widget: number, value_type: float, required: false }
+                          - { label: z, name: z, widget: number, value_type: float, required: false }
+                          - { label: y, name: y, widget: number, value_type: float, required: false }
+                          - { label: tz, name: tz, widget: number, value_type: float, required: false }
+                          - { label: px, name: px, widget: number, value_type: float, required: false }
+                          - { label: pz, name: pz, widget: number, value_type: float, required: false }
               - { label: "Still button label (for screen readers)", name: stillLabel, widget: string, default: Play the reel from, required: false }
-              - { label: Paragraph (in a drop-down), name: text, widget: text }
-              - { label: Drop-down label, name: textLabel, widget: string, default: What he does with them in the room, required: false }
+              - { label: Paragraph (after the lines), name: text, widget: text }
               - label: Link
                 name: link
                 widget: object
@@ -1597,16 +1624,14 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string, hint: "e.g. mailto:info@drdewit.com" }
-              - { label: '"Copied" state label', name: copiedLabel, widget: string, default: Copied }
-              - label: "The planner's room (picture)"
-                name: art
+              - label: "Curtain behind the section"
+                name: photo
                 widget: object
                 required: false
                 fields:
                   - { label: Image, name: src, widget: image }
-                  - { label: Sizes attribute, name: sizes, widget: string, required: false }
-                  - { label: Alt text, name: alt, widget: string, required: false }
-              - { label: "Planner kit drop-down label (bio, introduction, headshots and AV sit in it)", name: kitLabel, widget: string, default: "Planner kit: bios, stage introduction, headshots, AV", required: false }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: '"Copied" state label', name: copiedLabel, widget: string, default: Copied }
               - label: Bio in three lengths
                 name: bios
                 widget: object
@@ -1645,6 +1670,7 @@ collections:
                       - { label: File, name: file, widget: file, media_folder: "/assets/downloads" }
                       - { label: Format, name: format, widget: string, default: PDF }
                       - { label: Size, name: size, widget: string, hint: "e.g. 245 KB or 4.1 MB" }
+                      - { label: "AV at a glance opens under this row", name: av, widget: boolean, default: false, required: false }
               - label: Headshots
                 name: headshots
                 widget: object
@@ -1668,35 +1694,48 @@ collections:
                 fields:
                   - { label: Heading, name: heading, widget: string, default: AV at a glance }
                   - { label: Items, name: items, widget: list, field: { label: Item, name: item, widget: string } }
-                  - label: Link to the full requirements
-                    name: link
-                    widget: object
-                    required: false
-                    fields:
-                      - { label: Label, name: label, widget: string }
-                      - { label: Link, name: href, widget: string }
               - *spk-settings-tone
 
           # ----------------------------------------------------- spk-logos
           - name: spk-logos
-            label: "Speaking: trusted by (still logo wall)"
+            label: "Speaking: where he has spoken (photo, figures, logos by sector)"
             summary: "Logos — {{fields.heading}}"
             fields:
               - { label: Block id, name: id, widget: string, hint: "Anchor for links; must be unique on the page." }
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
-              - label: Logos
-                name: logos
-                widget: list
-                summary: "{{fields.alt}}"
+              - label: "Room photo behind the section (dark above and along the bottom)"
+                name: photo
+                widget: object
+                required: false
                 fields:
-                  - { label: Logo, name: src, widget: image }
-                  - { label: Organization name (alt text), name: alt, widget: string }
-                  - { label: Ink on a white plate (invert it), name: knockout, widget: boolean, default: false, required: false }
-                  - { label: "The mark is its own coloured box (dim, never invert)", name: plate, widget: boolean, default: false, required: false }
-                  - { label: Size (1 = normal), name: scale, widget: string, required: false, hint: "Evens out visual weight: below 1 for a wide or solid mark, above 1 for a light, compact one." }
-                  - { label: "Wide wordmark (takes a full row on phones)", name: wide, widget: boolean, default: false, required: false }
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt text, name: alt, widget: string }
+              - { label: "Figures label (screen readers)", name: ariaLabel, widget: string, required: false }
+              - label: Figures (count up once)
+                name: counters
+                widget: list
+                required: false
+                summary: "{{fields.value}}{{fields.suffix}} {{fields.label}}"
+                fields:
+                  - { label: Value, name: value, widget: number }
+                  - { label: "Suffix (e.g. +)", name: suffix, widget: string, required: false }
+                  - { label: Label, name: label, widget: string }
+              - label: Sectors
+                name: sectors
+                widget: list
+                summary: "{{fields.label}}"
+                fields:
+                  - { label: "Sector label (the organisation's public sector only)", name: label, widget: string }
+                  - label: Logos
+                    name: logos
+                    widget: list
+                    summary: "{{fields.alt}}"
+                    fields:
+                      - { label: Logo, name: src, widget: image }
+                      - { label: Organization name (alt text), name: alt, widget: string }
+                      - { label: Size (1 = normal), name: scale, widget: string, required: false, hint: "Evens out visual weight: below 1 for a wide or solid mark, above 1 for a light, compact one." }
               - *spk-settings-tone
 
           # ------------------------------------------------------ kn-intro
@@ -1824,6 +1863,13 @@ collections:
               - { label: Name, name: name, widget: string, required: false }
               - { label: Role, name: role, widget: string, required: false }
               - { label: Organization, name: organization, widget: string, required: false }
+              - label: "Stage photo with a lit screen (the quote is set on the screen)"
+                name: scene
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt text, name: alt, widget: string, required: false }
               - label: Portrait
                 name: portrait
                 widget: object

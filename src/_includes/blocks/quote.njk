@@ -10,8 +10,11 @@
        a hairline under them.
        block.scheme (light or dark) fixes the text colours where the quote
        sits across the page's switch from ink to cream.
+       With block.scene the words sit on the lit screen of a stage photo
+       instead (quote-screen.njk).
        Renders nothing while the quote is empty. #}
-  {%- if block.quote %}
+  {%- if block.scene and block.scene.src and block.quote %}{% include "quote-screen.njk" %}
+  {%- elif block.quote %}
   {%- set long = (block.quote | length) > 240 %}
   {%- set pic = block.portrait and block.portrait.src %}
   {%- set lines = block | quoteLines %}

@@ -1,22 +1,25 @@
 /* Speaking page (/speaking/). ES5, no dependencies. Loaded on this page
-   only (speaking.json "scripts"). Every module leaves the markup's final
-   state alone when it cannot run (no IntersectionObserver, reduced
+   only (speaking.json "scripts"), after js/main.js, which runs the reel's
+   controls and the figures' count-up. Every module leaves the markup's
+   final state alone when it cannot run (no IntersectionObserver, reduced
    motion, or the section already passed).
    1. The planner tools: the bio in three lengths (a button group shows
       one length at a time, aria-pressed) and the copy buttons (Clipboard
       API with a selection fallback; "Copied" for 2s, said in the live
       region).
-   2. The planner's room: the places are tabs for the panels beside the
-      room (one open at a time, the bio first; arrow keys move between
-      places, Enter or Space opens). When the room arrives a light walks
-      to each place in the order a planner needs them and each lights
-      with its label, once.
-   3. The reel comes into focus.
-   4. Rooms he speaks to: the events light in story order.
-   5. What the room is carrying: the frames develop row by row.
-   6. The logo wall: the marks land in turn.
-   7. The testimonial: the words come up in reading order.
-   8. The close: the room in the photo comes up as the page lifts off it. */
+   2. Sheets: the reel's chapters (a panel on wide screens, a bottom sheet
+      on phones), and on phones the bio, the introduction and AV. Native
+      dialog; Escape, the backdrop, the close button, a swipe down and the
+      phone's Back close it; focus returns to the button that opened it.
+   3. The reel in place: it never plays until it is opened ("Play with
+      sound", a chapter or a frame); Close, Escape or its end bring the
+      photo back.
+   4. What the room is carrying: the frame shows the line in view, and on
+      phones the line tapped.
+   5. The hero heading comes into focus left to right, once.
+   6. The close heading is written in, top to bottom, once.
+   7. Text: the last two words of each paragraph and line stay together. */
+
 /* 1. The planner tools. */
 (function () {
   "use strict";
@@ -24,7 +27,7 @@
   [].slice.call(document.querySelectorAll(".spk-planners")).forEach(planners);
 
   function planners(sec) {
-    var live = sec.querySelector('[aria-live]');
+    var live = sec.querySelector("[aria-live]");
     function say(msg) {
       if (!live) return;
       live.textContent = "";
@@ -58,9 +61,9 @@
     /* ---- B. copy ---- */
     function textOf(el) {
       var ps = el.querySelectorAll("p");
-      if (!ps.length) return (el.textContent || "").trim();
+      if (!ps.length) return (el.textContent || "").replace(/ /g, " ").trim();
       return [].slice.call(ps).map(function (p) {
-        return (p.textContent || "").replace(/\s+/g, " ").trim();
+        return (p.textContent || "").replace(/ /g, " ").replace(/\s+/g, " ").trim();
       }).filter(Boolean).join("\n\n");
     }
     function fallback(txt) {
@@ -114,291 +117,290 @@
   }
 })();
 
-/* 2. The planner's room. */
+/* 2. Sheets. */
 (function () {
   "use strict";
-  var sec = document.querySelector(".spk-planners");
-  var room = sec && sec.querySelector(".pl-room");
-  var wrap = sec && sec.querySelector(".pl-panels");
-  if (!room || !wrap) return;
-  var list = room.querySelector(".pl-room__tabs");
-  var tabs = [].slice.call(room.querySelectorAll(".pl-tab"));
-  var lits = {};
-  [].slice.call(room.querySelectorAll(".pl-room__lit")).forEach(function (im) {
-    var m = /pl-room__lit--(\w+)/.exec(im.className);
-    if (m) lits[m[1]] = im;
-  });
-  var panels = {};
-  tabs.forEach(function (t) {
-    var p = document.getElementById(t.getAttribute("aria-controls"));
-    if (p) panels[t.getAttribute("data-area")] = p;
-  });
-  if (!tabs.length) return;
+  if (typeof HTMLDialogElement !== "function") return;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var phone = window.matchMedia("(max-width: 767px)");
+  var open = null;
 
-  /* ---- the tabs ---- */
-  list.setAttribute("role", "tablist");
-  tabs.forEach(function (t) {
-    var p = panels[t.getAttribute("data-area")];
-    t.setAttribute("role", "tab");
-    if (p) { p.setAttribute("role", "tabpanel"); p.setAttribute("aria-labelledby", t.id); p.setAttribute("tabindex", "-1"); }
+  function sheet(dlg, onClose) {
+    var api = { dlg: dlg, opener: null, onClose: onClose, viaHistory: false };
+    function finish() {
+      if (dlg.open) dlg.close();
+      if (api.onClose) api.onClose();
+      if (window.spkLenis) window.spkLenis.start();
+      if (api.opener && api.opener.focus) api.opener.focus();
+    }
+    api.show = function (opener) {
+      if (open) return;
+      open = api;
+      api.opener = opener || null;
+      dlg.showModal();
+      if (window.spkLenis) window.spkLenis.stop();
+      if (phone.matches) {
+        try { history.pushState({ spkSheet: dlg.id }, ""); api.viaHistory = true; } catch (e) { api.viaHistory = false; }
+      }
+      if (reduce) dlg.classList.add("is-open");
+      else requestAnimationFrame(function () { requestAnimationFrame(function () { dlg.classList.add("is-open"); }); });
+    };
+    api.hide = function (fromHistory) {
+      if (open !== api) return;
+      open = null;
+      if (api.viaHistory && !fromHistory) history.back();
+      api.viaHistory = false;
+      dlg.classList.remove("is-open");
+      if (reduce) { finish(); return; }
+      setTimeout(finish, phone.matches ? 280 : 250);
+    };
+    dlg.addEventListener("cancel", function (e) { e.preventDefault(); api.hide(); });
+    dlg.addEventListener("click", function (e) {
+      if (e.target.closest("[data-sheet-close]")) { api.hide(); return; }
+      if (e.target !== dlg) return;
+      var r = dlg.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) api.hide();
+    });
+    /* a swipe down on the handle or the title closes it */
+    var y0 = null;
+    [dlg.querySelector(".spk-sheet__grab"), dlg.querySelector(".spk-sheet__head")].forEach(function (h) {
+      if (!h) return;
+      h.addEventListener("touchstart", function (e) { y0 = e.touches[0].clientY; }, { passive: true });
+      h.addEventListener("touchmove", function (e) {
+        if (y0 !== null && e.touches[0].clientY - y0 > 60) { y0 = null; api.hide(); }
+      }, { passive: true });
+      h.addEventListener("touchend", function () { y0 = null; }, { passive: true });
+    });
+    return api;
+  }
+  /* the phone's Back closes an open sheet instead of leaving the page */
+  window.addEventListener("popstate", function () {
+    if (open && open.viaHistory) { open.viaHistory = false; open.hide(true); }
   });
-  wrap.classList.add("is-tabbed");
-  var current = null;
-  function select(t, animate) {
-    if (t === current) return;
-    current = t;
-    tabs.forEach(function (o) {
-      var on = o === t, key = o.getAttribute("data-area"), p = panels[key];
-      o.setAttribute("aria-selected", on ? "true" : "false");
-      o.setAttribute("tabindex", on ? "0" : "-1");
-      if (lits[key]) lits[key].classList.toggle("is-open", on);
-      if (!p) return;
-      p.hidden = !on;
-      p.classList.remove("is-entering");
-      if (on && animate && !reduce) { void p.offsetWidth; p.classList.add("is-entering"); }
+
+  /* ---- the reel's chapters ---- */
+  var chBtn = document.querySelector(".spk-bar__chap");
+  var chDlg = chBtn && document.getElementById(chBtn.getAttribute("aria-controls"));
+  if (chBtn && chDlg) {
+    var ch = sheet(chDlg);
+    chBtn.addEventListener("click", function () { ch.show(chBtn); });
+    /* a chapter plays the reel (js/main.js); the sheet gets out of the way */
+    [].slice.call(chDlg.querySelectorAll("[data-seek]")).forEach(function (b) {
+      b.addEventListener("click", function () { ch.opener = null; ch.hide(); });
     });
   }
-  var start = tabs[0];
-  var hash = (location.hash || "").slice(1);
-  tabs.forEach(function (t) { if (hash && t.getAttribute("aria-controls") === hash) start = t; });
-  select(start, false);
-  tabs.forEach(function (t, k) {
-    t.addEventListener("click", function () { select(t, true); });
-    t.addEventListener("keydown", function (e) {
-      var n = -1;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") n = (k + 1) % tabs.length;
-      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") n = (k - 1 + tabs.length) % tabs.length;
-      else if (e.key === "Home") n = 0;
-      else if (e.key === "End") n = tabs.length - 1;
-      if (n < 0) return;
-      e.preventDefault();
-      tabs[n].focus();
-    });
-  });
 
-  /* ---- the light walks the room, once ---- */
-  if (reduce || !("IntersectionObserver" in window) || !Element.prototype.animate) return;
-  if (room.getBoundingClientRect().bottom < 0) return;
-  var art = room.querySelector(".pl-room__art");
-  var dot = room.querySelector(".pl-room__dot");
-  if (!art || !dot) return;
-  /* where the light lands at each place, in % of the picture, in tab order */
-  var AT = { bio: [27, 43], stage: [55.5, 50], headshots: [72, 30], downloads: [29, 74], av: [76, 66] };
-  var FROM = [44, 47];   /* the planner's clipboard */
-  var MOVE = 700, HOLD = 280;
-  room.classList.add("is-armed");
-  function pos(p, o) { return { left: p[0] + "%", top: p[1] + "%", opacity: o }; }
-  function run() {
-    var t = 280, from = FROM;
-    dot.animate([pos(FROM, 0), pos(FROM, 1)], { duration: 280, easing: "ease-out", fill: "forwards" });
-    tabs.forEach(function (tab) {
-      var key = tab.getAttribute("data-area"), to = AT[key] || FROM, a = from;
-      setTimeout(function () {
-        dot.animate([pos(a, 1), pos(to, 1)], { duration: MOVE, easing: "cubic-bezier(.45,0,.3,1)", fill: "forwards" });
-      }, t);
-      setTimeout(function () {
-        if (lits[key]) lits[key].classList.add("is-lit");
-        tab.classList.add("is-lit");
-      }, t + MOVE - 80);
-      t += MOVE + HOLD;
-      from = to;
+  /* ---- the planners' drop-downs: bottom sheets on phones ---- */
+  var pl = document.querySelector(".spk-planners");
+  var plDlg = pl && pl.querySelector("dialog.spk-pl-sheet");
+  if (pl && plDlg) {
+    var body = plDlg.querySelector(".spk-sheet__body");
+    var title = plDlg.querySelector(".spk-sheet__h");
+    var home = null, kids = [];
+    var pls = sheet(plDlg, function () {
+      kids.forEach(function (k) { home.appendChild(k); });
+      kids = []; home = null;
     });
-    setTimeout(function () {
-      dot.animate([pos(from, 1), pos(from, 0)], { duration: 360, easing: "ease-out", fill: "forwards" });
-      room.classList.add("is-done");
-    }, t);
+    [].slice.call(pl.querySelectorAll("details.dd")).forEach(function (d) {
+      var sum = d.querySelector(".dd__sum");
+      var inner = d.querySelector(".dd__in");
+      if (!sum || !inner) return;
+      /* runs before the drop-down's own handler (capture on the details) */
+      d.addEventListener("click", function (e) {
+        if (!phone.matches || !sum.contains(e.target)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        home = inner;
+        kids = [].slice.call(inner.childNodes);
+        kids.forEach(function (k) { body.appendChild(k); });
+        var lab = sum.querySelector(".dd__label");
+        title.textContent = lab ? lab.textContent : sum.textContent;
+        pls.show(sum);
+      }, true);
+    });
   }
-  var io = new IntersectionObserver(function (es) {
-    if (!es[0].isIntersecting) return;
-    io.disconnect();
-    run();
-  }, { threshold: 0.5 });
-  io.observe(art);
 })();
 
-
-/* 3. The reel comes into focus. The page opens on the reel's poster soft
-   and dim (css/speaking.css sets that from the first paint); once the
-   poster has decoded, or after 1.5s, whichever is first, the light comes
-   up and the picture sharpens over 1.4s, like a stage before a talk.
-   Then the headline under the reel settles into place. Only the picture
-   is blurred; no text ever is. Reduced motion: the picture and the
-   headline are shown as they are, at once. */
+/* 3. The reel in place. js/main.js runs the controls; here the reel
+   only opens on a click and gives the photo back when it is closed. */
 (function () {
   "use strict";
   var hero = document.querySelector(".spk-hero");
-  if (!hero) return;
-  var img = hero.querySelector(".hero__poster");
-  var head = document.querySelector(".spk-intro__h");
-  function settle() { if (head) head.classList.add("is-settled"); }
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    hero.classList.add("is-focused"); settle(); return;
+  var video = hero && hero.querySelector(".spk-hero__video");
+  if (!video) return;
+  var big = hero.querySelector(".spk-hero__cta");
+  var bigLabel = big && big.querySelector(".spk-hero__cta-label");
+  var idle = bigLabel ? bigLabel.textContent : "";
+  var closeBtn = hero.querySelector("[data-reel-close]");
+  function isOpen() { return hero.classList.contains("is-reel"); }
+  function openReel() { hero.classList.add("is-reel"); }
+  function closeReel(focus) {
+    if (!video.paused) video.pause();
+    video.muted = true;
+    hero.classList.remove("is-reel");
+    if (big) {
+      big.classList.remove("is-gone");
+      big.setAttribute("data-state", "start");
+      if (bigLabel) bigLabel.textContent = idle;
+      if (focus) big.focus();
+    }
   }
-  var decoded = img && img.decode ? img.decode().catch(function () {}) : Promise.resolve();
-  var cap = new Promise(function (r) { setTimeout(r, 1500); });
-  Promise.race([decoded, cap]).then(function () {
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () {
-        hero.classList.add("is-focused");
-        setTimeout(settle, 1000);
-      });
-    });
+  /* nothing plays at rest: a start the page made by itself is stopped */
+  video.addEventListener("play", function () { if (!isOpen()) video.pause(); });
+  if (big) big.addEventListener("click", openReel);
+  [].slice.call(document.querySelectorAll("[data-seek]")).forEach(function (b) {
+    b.addEventListener("click", openReel);
+  });
+  if (closeBtn) closeBtn.addEventListener("click", function () { closeReel(true); });
+  video.addEventListener("ended", function () { closeReel(false); });
+  document.addEventListener("keydown", function (e) {
+    if ((e.key === "Escape" || e.key === "Esc") && isOpen() && !document.querySelector("dialog[open]")) closeReel(true);
   });
 })();
 
-/* 4. Rooms he speaks to: the events light in story order. When the list is
-   well into view, each row comes up from quiet to full strength in
-   turn; as it lands, the line from the event runs across to its talk,
-   so each room visibly leads to the talk booked for it. Runs once.
-   Reduced motion or no IntersectionObserver: nothing is set quiet. */
-(function () {
-  "use strict";
-  var sec = document.querySelector(".spk-events");
-  if (!sec || !("IntersectionObserver" in window)) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var rows = [].slice.call(sec.querySelectorAll("tbody tr"));
-  if (!rows.length) return;
-  if (sec.getBoundingClientRect().bottom < 0) return;
-  var table = sec.querySelector("table") || sec;
-  /* the rows go quiet only once the observer has reported in */
-  var io = new IntersectionObserver(function (es) {
-    sec.classList.add("is-armed");
-    if (!es[0].isIntersecting || es[0].intersectionRatio < 0.29) return;
-    io.disconnect();
-    rows.forEach(function (tr, i) {
-      setTimeout(function () {
-        tr.classList.add("is-lit");
-      }, 200 + i * 420);
-    });
-  }, { threshold: 0.3 });
-  io.observe(table);
-})();
-
-/* 5. What the room is carrying: each row of frames develops as it
-   arrives, left to right, from dark and soft to sharp, and its lines come
-   up with it. */
+/* 4. What the room is carrying: as each line reaches the middle of the
+   screen (on phones, just under the pinned frame), the frame crossfades
+   to that line's still; a line without one keeps the one before. A tap
+   on a line, or focus in it, shows its frame. With no observer the first
+   frame stands. */
 (function () {
   "use strict";
   var sec = document.querySelector(".spk-unsaid");
-  if (!sec || !("IntersectionObserver" in window)) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (sec.getBoundingClientRect().bottom < 0) return;
-  var items = [].slice.call(sec.querySelectorAll(".spk-unsaid__lines > li"));
-  if (!items.length) return;
-  function stagger() {
-    var top = null, col = 0;
-    items.forEach(function (li) {
-      var y = li.offsetTop;
-      col = (top === null || Math.abs(y - top) > 4) ? 0 : col + 1;
-      top = y;
-      li.style.setProperty("--d", (col * 180) + "ms");
-    });
+  var frame = sec && sec.querySelector(".spk-unsaid__frame");
+  if (!frame) return;
+  var stills = [].slice.call(frame.querySelectorAll(".spk-still"));
+  var rows = [].slice.call(sec.querySelectorAll(".spk-row"));
+  if (!stills.length || !rows.length) return;
+  var byRow = {};
+  stills.forEach(function (s) { byRow[s.getAttribute("data-row")] = s; });
+  var current = null, hold = 0;
+  function show(s, row) {
+    rows.forEach(function (r) { r.classList.toggle("is-on", r === row); });
+    if (!s || s === current) return;
+    current = s;
+    stills.forEach(function (o) { o.classList.toggle("is-on", o === s); });
   }
-  stagger();
-  sec.classList.add("is-armed");
-  var io = new IntersectionObserver(function (es) {
-    es.forEach(function (e) {
-      if (!e.isIntersecting) return;
-      var li = e.target;
-      io.unobserve(li);
-      li.classList.add("is-lit");
-      setTimeout(function () { li.classList.add("is-settled"); }, 1800);
-    });
-  }, { threshold: 0.35 });
-  items.forEach(function (li) { io.observe(li); });
-})();
-
-/* 6. The logo wall: when the wall arrives the marks land one after
-   another, in reading order. 3s after it is armed the wall stands in full
-   whether or not the observer has reported. */
-(function () {
-  "use strict";
-  var sec = document.querySelector(".spk-logos");
-  if (!sec || !("IntersectionObserver" in window)) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (sec.getBoundingClientRect().bottom < 0) return;
-  var wall = sec.querySelector(".spk-logos__wall");
-  var marks = wall ? [].slice.call(wall.children) : [];
-  if (!marks.length) return;
-  marks.forEach(function (li, i) { li.style.setProperty("--d", (i * 110) + "ms"); });
-  sec.classList.add("is-armed");
-  function land() { io.disconnect(); marks.forEach(function (li) { li.classList.add("is-in"); }); }
-  var io = new IntersectionObserver(function (es) {
-    if (es[0].isIntersecting) land();
-  }, { threshold: 0.3 });
-  io.observe(wall);
-  setTimeout(land, 3000);
-})();
-
-/* 7. The testimonial: each word is wrapped in its own span; when the
-   quote arrives the words come up from quiet in reading order, then the
-   name. */
-(function () {
-  "use strict";
-  var sec = document.querySelector("main .quote");
-  if (!sec || !("IntersectionObserver" in window)) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (sec.getBoundingClientRect().bottom < 0) return;
-  var p = sec.querySelector(".quote__q p");
-  if (!p) return;
-  var texts = [], walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT, null, false), n;
-  while ((n = walker.nextNode())) texts.push(n);
-  var words = [];
-  texts.forEach(function (node) {
-    var parts = node.nodeValue.split(/(\s+)/), frag = document.createDocumentFragment();
-    parts.forEach(function (part) {
-      if (!part) return;
-      if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
-      var s = document.createElement("span");
-      s.className = "q-w";
-      s.textContent = part;
-      frag.appendChild(s);
-      words.push(s);
-    });
-    node.parentNode.replaceChild(frag, node);
+  show(stills[0], rows[0]);
+  frame.classList.add("is-live");
+  sec.classList.add("is-live");
+  stills.forEach(function (s) { s.addEventListener("focus", function () { show(s); }); });
+  rows.forEach(function (r) {
+    function pick() { hold = Date.now() + 900; show(byRow[r.getAttribute("data-row")], r); }
+    r.addEventListener("focusin", pick);
+    r.addEventListener("click", function (e) { if (!e.target.closest("a")) pick(); });
   });
-  if (!words.length) return;
-  var step = Math.min(70, 2200 / words.length);
-  words.forEach(function (w, i) { w.style.setProperty("--d", Math.round(i * step) + "ms"); });
-  sec.style.setProperty("--by", Math.round(words.length * step + 200) + "ms");
-  sec.classList.add("is-armed");
+  if (!("IntersectionObserver" in window)) return;
+  var phone = window.matchMedia("(max-width: 1023px)").matches;
   var io = new IntersectionObserver(function (es) {
-    if (!es[0].isIntersecting) return;
-    io.disconnect();
-    sec.classList.add("is-read");
-  }, { threshold: 0.45 });
-  io.observe(p);
+    if (Date.now() < hold) return;
+    es.forEach(function (e) {
+      if (e.isIntersecting) show(byRow[e.target.getAttribute("data-row")], e.target);
+    });
+  }, { rootMargin: phone ? "-50% 0px -40% 0px" : "-46% 0px -46% 0px" });
+  rows.forEach(function (r) { io.observe(r); });
 })();
 
-/* 8. The close: the footer waits under the page, so the room in its photo
-   comes up (from dim and close in to full) as the page first lifts off
-   it, once. */
+/* 7 first, so the joined words are in place before the heading is split.
+   The last two words of each paragraph and line are joined by a no-break
+   space, so no line of copy ends on one word; in the close heading the
+   last three are. */
 (function () {
   "use strict";
-  var close = document.querySelector(".spk-close");
-  var main = document.querySelector("main");
-  if (!close || !main) return;
+  var els = [].slice.call(document.querySelectorAll(".spk-hero__h, .spk-hero__line, .spk-h2, #main p, .spk-row__t, .spk-ev__name, .spk-av li, .spk-cl__h, .spk-spoken__l, .spk-logo__name"));
+  els = els.concat([].slice.call(document.querySelectorAll(".spk-cl__h")));
+  els.forEach(function (el) {
+    var tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false), n, last = null;
+    while ((n = tw.nextNode())) { if (/\S/.test(n.nodeValue)) last = n; }
+    if (!last) return;
+    var v = last.nodeValue, m = /(\S)[ \t\n]+([^ \t\n]+[ \t\n]*)$/.exec(v);
+    if (m) last.nodeValue = v.slice(0, m.index + 1) + " " + m[2];
+  });
+})();
+
+/* 5. The hero heading comes into focus left to right, once: each letter
+   from blur(8px) to sharp over 0.9s, starting in turn by its place along
+   the line, about 1.8s in all. The heading is read by its own label while
+   it is split, and the plain markup returns when it has landed. */
+(function () {
+  "use strict";
+  var h = document.querySelector(".spk-hero__h");
+  if (!h) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var img = close.querySelector(".spk-close__img");
-  if (!img) return;
-  /* the photo counts as seen once half the close is out from under the page */
-  function seen() {
-    var r = close.getBoundingClientRect();
-    return r.top < innerHeight * 0.85 && main.getBoundingClientRect().bottom < r.top + r.height * 0.5;
+  var html = h.innerHTML, SPREAD = 0.9;
+  function split(node) {
+    [].slice.call(node.childNodes).forEach(function (c) {
+      if (c.nodeType === 1) { split(c); return; }
+      if (c.nodeType !== 3) return;
+      var frag = document.createDocumentFragment();
+      c.nodeValue.split(/( +)/).forEach(function (part) {
+        if (!part) return;
+        if (/^ +$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        var w = document.createElement("span");
+        w.className = "spk-sweep__w";
+        for (var i = 0; i < part.length; i++) {
+          var ch = document.createElement("span");
+          ch.className = "spk-sweep__c";
+          ch.textContent = part.charAt(i);
+          w.appendChild(ch);
+        }
+        frag.appendChild(w);
+      });
+      node.replaceChild(frag, c);
+    });
   }
-  if (seen()) return;
-  close.classList.add("is-armed");
-  function up() {
-    window.removeEventListener("scroll", check);
-    if (io) io.disconnect();
-    close.classList.add("is-up");
+  function run() {
+    h.setAttribute("aria-label", h.textContent.replace(/ /g, " "));
+    split(h);
+    h.classList.add("is-split", "is-sweep");
+    var box = h.getBoundingClientRect();
+    var cs = [].slice.call(h.querySelectorAll(".spk-sweep__c"));
+    cs.forEach(function (c) {
+      var r = c.getBoundingClientRect();
+      var x = box.width ? (r.left - box.left) / box.width : 0;
+      c.style.setProperty("--d", (x * SPREAD).toFixed(3) + "s");
+    });
+    void h.offsetWidth;
+    requestAnimationFrame(function () {
+      h.classList.add("is-swept");
+      setTimeout(function () {
+        h.innerHTML = html;
+        h.removeAttribute("aria-label");
+        h.classList.remove("is-split", "is-swept");
+      }, (SPREAD + 1.25) * 1000);
+    });
   }
-  function check() { if (seen()) up(); }
-  window.addEventListener("scroll", check, { passive: true });
-  /* without scroll events: up 2.5s after the close is on screen */
-  var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
-    if (es[0].isIntersecting) setTimeout(up, 2500);
-  }) : null;
-  if (io) io.observe(close); else setTimeout(up, 2500);
+  var cap = new Promise(function (r) { setTimeout(r, 800); });
+  var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : cap;
+  Promise.race([fonts, cap]).then(function () { requestAnimationFrame(run); });
+})();
+
+/* 6. The close heading is written in once as it arrives: a soft edge
+   wipes down through it while it clears from blur(8px), 2.5s. Only a
+   heading still below the screen when the page opens waits for this. */
+(function () {
+  "use strict";
+  var h = document.querySelector(".spk-cl__h");
+  if (!h || !("IntersectionObserver" in window)) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (h.getBoundingClientRect().top < window.innerHeight) return;
+  var DUR = 2500;
+  h.style.setProperty("--p", "0");
+  h.style.setProperty("--b", "8");
+  h.classList.add("is-ink");
+  function ease(t) { return 1 - Math.pow(1 - t, 3); }
+  var io = new IntersectionObserver(function (es, o) {
+    if (!es[0].isIntersecting) return;
+    o.disconnect();
+    var t0 = null;
+    function step(now) {
+      if (t0 === null) t0 = now;
+      var k = Math.min(1, (now - t0) / DUR), e = ease(k);
+      h.style.setProperty("--p", (e * 140).toFixed(1));
+      h.style.setProperty("--b", (8 * (1 - e)).toFixed(2));
+      if (k < 1) requestAnimationFrame(step);
+      else { h.classList.remove("is-ink"); h.style.removeProperty("--p"); h.style.removeProperty("--b"); }
+    }
+    requestAnimationFrame(step);
+  }, { rootMargin: "0px 0px -25% 0px" });
+  io.observe(h);
 })();

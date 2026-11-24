@@ -1,30 +1,44 @@
   {# ==============================================================
-       Rooms he speaks to: the formats sentence set as one large
-       statement in its own short section, then the heading and the
-       event types as full-width rows. Each row is the event, a hairline leader, then "usually:"
-       and the talk booked for it; the whole row is the talk's link.
-       js/speaking.js lights the rows in story order as they arrive.
+       Rooms he speaks to: a full-bleed photo of a seated audience
+       (block.photo). The heading sits in its dark upper corner; the
+       event types run across its dark lower half as a grid, each with a
+       roman numeral in a thin ring, its name and its usual talk (the
+       row is that talk's link); the formats sentence and the booking
+       button follow. On phones the photo holds behind the list.
        ============================================================== #}
-  {%- if block.sentence %}
-  <section class="spk-fmt-line" aria-label="{{ block.sentence | plain }}">
-    <p class="spk-events__line">{{ block.sentence | inline() }}</p>
-  </section>
-  {%- endif %}
   {%- if block.events and block.events.length %}
-  <section class="spk-formats spk-events"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h">
-    <div class="spk-events__wrap">
-      <h2 class="spk-events__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
-      <table class="spk-events__table">
-        <thead class="spk-sr"><tr><th scope="col">{{ (block.eventsLabel or 'Event') | inline() }}</th><th scope="col">{{ (block.talkLabel or 'Talk') | inline() }}</th></tr></thead>
-        <tbody>
-        {%- for e in block.events %}
-          <tr>
-            <th scope="row"><span class="spk-events__name">{{ e.label | inline() }}</span></th>
-            <td><span class="spk-events__usually">{{ (block.usuallyLabel or 'usually:') | inline() }}</span> {% if e.talk.href %}<a class="spk-events__talk" href="{{ e.talk.href | root(r) }}">{{ e.talk.label | inline() }}<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>{% else %}<span class="spk-events__talk">{{ e.talk.label | inline() }}</span>{% endif %}</td>
-          </tr>
-        {%- endfor %}
-        </tbody>
-      </table>
+  {%- set ph = block.photo or {} %}
+  {%- set numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'] %}
+  <section class="spk-rooms"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
+    {%- if ph.src %}
+    <div class="spk-rooms__bg">
+      <img class="spk-bg spk-rooms__img" src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="100vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" loading="lazy" decoding="async">
+    </div>
+    {%- endif %}
+    <div class="spk-rooms__in">
+      <h2 class="spk-h2 spk-rooms__h" id="{{ block.id }}-h">{{ block.heading | inline() }}</h2>
+      <ol class="spk-events" aria-label="{{ (block.ariaLabel or block.heading) | plain }}">
+      {%- for e in block.events %}
+        <li class="spk-ev">
+          {%- if e.talk.href %}<a class="spk-ev__a" href="{{ e.talk.href | root(r) }}">{% else %}<span class="spk-ev__a">{% endif %}
+          <span class="spk-ev__no" aria-hidden="true">{{ numerals[loop.index0] }}</span>
+          <span class="spk-ev__text">
+            <span class="spk-ev__name">{{ e.label | inline() }}</span>
+            {%- set tw = e.talk.label.split(' ') %}{% set k = 2 if tw.length > 2 else 1 %}{% set tl = tw.slice(tw.length - k).join(' ') %}{% set th = tw.slice(0, tw.length - k).join(' ') %}
+            <span class="spk-ev__talk"><span class="spk-ev__usually">{{ (block.usuallyLabel or 'usually:') | inline() }}</span> <span class="spk-ev__tt">{% if th %}{{ th | inline() }} {% endif %}<span class="spk-ev__end">{{ tl | inline() }}{% if e.talk.href %}<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>{% endif %}</span></span></span>
+          </span>
+          {%- if e.talk.href %}</a>{% else %}</span>{% endif %}
+        </li>
+      {%- endfor %}
+      </ol>
+      <div class="spk-rooms__foot">
+        {%- if block.sentence %}
+        <p class="spk-rooms__avail">{{ block.sentence | inline() }}</p>
+        {%- endif %}
+        {%- if block.cta and block.cta.href %}
+        <a class="btn btn--lg spk-rooms__cta" href="{{ block.cta.href | root(r) }}">{{ block.cta.label | inline() }}</a>
+        {%- endif %}
+      </div>
     </div>
   </section>
   {%- endif %}

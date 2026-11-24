@@ -1,0 +1,31 @@
+  {#- The testimonial on a real stage photo (block.scene): the words in
+       dark ink on the lit projection screen, the person, role and
+       organisation in ivory on the dark stage ledge under it. The photo
+       is cut per width so Stephen is whole or out of frame. No caption
+       names the event. -#}
+  <section class="spk-quote"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} data-scheme="dark">
+    <figure class="spk-quote__fig">
+      <div class="spk-quote__stage">
+        <img class="spk-quote__img" src="{{ block.scene.src | root(r) }}" {%- set qs = block.scene.src | srcset(r) %}{% if qs %} srcset="{{ qs }}" sizes="100vw"{% endif %} alt="{{ (block.scene.alt or '') | plain }}" loading="lazy" decoding="async">
+      </div>
+      <div class="spk-quote__text">
+        <blockquote class="spk-quote__q"><p>“{{ block.quote | inline() }}”</p></blockquote>
+        {%- if block.name %}
+        <figcaption class="spk-quote__by">
+          {%- if block.portrait and block.portrait.src %}
+          <img class="spk-quote__pic" src="{{ block.portrait.src | root(r) }}" alt="{{ (block.portrait.alt or '') | plain }}" width="480" height="600" loading="lazy" decoding="async">
+          {%- endif %}
+          <span class="spk-quote__who">
+            <span class="spk-quote__name">{{ block.name | inline() }}</span>
+            {%- if block.role %}<span class="spk-quote__role">{{ block.role | inline() }}</span>{% endif %}
+            {%- if block.organization %}
+            <span class="spk-quote__org">
+              {%- if block.logo and block.logo.src %}{% set la = block.logo.src | aspect %}<span class="spk-quote__logo" aria-hidden="true" style="--logo-src:url('{{ block.logo.src | root(r) }}');aspect-ratio:{{ la or 3 }}"></span>{% endif -%}
+              <span>{{ block.organization | inline() }}</span></span>
+            {%- endif %}
+          </span>
+        </figcaption>
+        {%- endif %}
+      </div>
+    </figure>
+  </section>

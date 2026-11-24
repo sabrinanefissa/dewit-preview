@@ -119,10 +119,10 @@
       "#181634"
     ],
     "speaking": [
-      "#2A2A5A",
-      "#20214A",
-      "#1A1B3E",
-      "#171738"
+      "#33203D",
+      "#2A1833",
+      "#221429",
+      "#1A1220"
     ],
     "healthcare": [
       "#26325E",
@@ -168,7 +168,7 @@
     "about": ".ab-ways",
     "keynotes": ".quote",
     "book": ".bk-steps",
-    "speaking": ".spk-fmt-line",
+    "speaking": ".spk-hero",
     "healthcare": ".hc-talk"
   }
 }

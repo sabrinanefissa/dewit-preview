@@ -13,11 +13,14 @@
          type        no photo; the page's talks as links to the enquiry form
          route       no photo; block.routes as a row of links on to other
                      pages (a name and one line each), then the text
+         stage       the photo full width with the heading and both links
+                     set on its dark side (close-stage.njk)
        contact: true adds the phone and email above the button; next adds
        a link on to the next page under it. #}
   {%- set lay = block.layout or 'split' %}
   {%- set hasImg = lay != 'type' and lay != 'bands' and lay != 'route' and block.image and block.image.src %}
-  {%- if lay == 'over' and hasImg %}
+  {%- if lay == 'stage' and hasImg %}{% include "close-stage.njk" %}
+  {%- elif lay == 'over' and hasImg %}
   {%- set hp = block.image.headingPlace or {} %}
   <div class="spk-close spk-close--over" data-tone="{{ block | tone('deep') }}">
     <div class="spk-close__media" style="--hx:{{ (hp.x or '60%') | plain }};--hy:{{ (hp.y or '50%') | plain }};--hw:{{ (hp.width or '30%') | plain }};--hx-m:{{ (hp.mobileX or hp.x or '50%') | plain }};--hy-m:{{ (hp.mobileY or hp.y or '50%') | plain }};--hw-m:{{ (hp.mobileWidth or hp.width or '46%') | plain }}">

@@ -1,42 +1,45 @@
-{%- from "dd.njk" import dd %}
   {# ==============================================================
-       What the room is carrying: the unsaid lines with five frames from
-       the reel. The first line leads, its frame beside it at full size;
-       three frames follow in a row; the line without a frame is set
-       large beside the last frame, the turn. A frame is a button that
-       plays the reel from the chapter it was taken from ([data-seek],
-       js/main.js module 1); with no script it shows as a plain picture.
-       js/speaking.js develops the frames as they arrive. Under them, the
-       paragraph in a drop-down and the link to the keynotes.
+       What the room is carrying: the reel frame for the line in view
+       fills the screen behind the section and holds while the heading,
+       the lines (each with the talk that answers it), the paragraph and
+       the link to the keynotes scroll over the dark curtain beside
+       Stephen. A line without its own frame keeps the one before. The
+       frame crossfades in 300ms (js/speaking.js) and is a button that
+       plays the reel from its chapter ([data-seek], js/main.js). Each
+       still's crop (x: left edge as a share of its width, z: zoom over
+       a full-height fit, y: vertical anchor; tz: zoom on tablets; px, pz:
+       left edge and zoom on phones) keeps Stephen and any light clear of
+       the text. Tapping a line shows its frame.
        ============================================================== #}
   {%- set chs = [] %}
   {%- for b in page.blocks %}{% if b.type == 'reelHero' and b.enabled !== false and b.chapters %}{% set chs = b.chapters.items %}{% endif %}{% endfor %}
-  <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h">
-    <div class="spk-unsaid__roll">
-      <h2 class="spk-unsaid__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
-      <ul class="spk-unsaid__lines">
+  {%- set rowK = -1 %}
+  <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
+    <div class="spk-unsaid__frame">
+    {%- for l in block.lines %}
+      {%- set st = l.still if (l.still and l.still.src) else null %}
+      {%- if st %}
+        {%- set chl = '' %}
+        {%- for c in chs %}{% if c.time == st.time %}{% set chl = c.label %}{% endif %}{% endfor %}
+        {%- set ss1 = st.src | srcset(r) %}
+        {%- set cr = st.crop or {} %}
+      <button type="button" class="spk-still" data-row="{{ loop.index0 }}" data-seek="{{ st.time }}" style="--x:{{ cr.x or 0 }};--z:{{ cr.z or 1 }};--y:{{ cr.y or 0 }};--tz:{{ cr.tz or 1 }};--px:{{ cr.px or 0 }};--pz:{{ cr.pz or 1 }}"><span class="spk-sr">{{ (block.stillLabel or 'Play the reel from') | plain }} </span><span class="spk-sr spk-chapters__t">{{ (chl or st.alt) | plain }}</span><img class="spk-still__img" src="{{ st.src | root(r) }}"{% if ss1 %} srcset="{{ ss1 }}" sizes="200vw"{% endif %} alt="{{ st.alt | plain }}" loading="lazy" decoding="async"><span class="spk-still__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>
+      {%- endif %}
+    {%- endfor %}
+    </div>
+    <div class="spk-unsaid__body">
+      <h2 class="spk-h2 spk-unsaid__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
+      <ol class="spk-rows">
       {%- for l in block.lines %}
-        {%- set lt = l.text if l.text else l %}
-        {%- set st = l.still if (l.still and l.still.src) else null %}
-        <li class="{{ 'has-still' if st else 'no-still' }}">
-        {%- if st %}
-          {%- set chl = '' %}
-          {%- for c in chs %}{% if c.time == st.time %}{% set chl = c.label %}{% endif %}{% endfor %}
-          {%- set ss1 = st.src | srcset(r) %}
-          <button type="button" class="spk-still" data-scheme="dark" data-seek="{{ st.time }}"><span class="spk-sr">{{ (block.stillLabel or 'Play the reel from') | plain }} </span><span class="spk-sr spk-chapters__t">{{ (chl or st.alt) | plain }}</span><span class="spk-sr">: </span><img class="spk-still__img" src="{{ st.src | root(r) }}"{% if ss1 %} srcset="{{ ss1 }}" sizes="(max-width: 700px) 92vw, 480px"{% endif %} width="480" height="360" alt="{{ st.alt | plain }}" loading="lazy" decoding="async"><span class="spk-still__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>
-        {%- endif %}
-          <span class="spk-unsaid__t">{{ lt | inline('spk-em') }}</span>
+        {%- if l.still and l.still.src %}{% set rowK = loop.index0 %}{% endif %}
+        <li class="spk-row" data-row="{{ rowK }}"><span class="spk-row__t">{{ l.text | inline('spk-em') }}</span>
         {%- if l.talk and l.talk.href %}
-          <span class="spk-unsaid__ans">{{ (block.answeredLabel or 'Answered in:') | inline() }} <a class="spk-unsaid__talk" href="{{ l.talk.href | root(r) }}">{{ l.talk.label | inline() }}</a></span>
+          <span class="spk-row__ans">{{ (block.answeredLabel or 'Answered in:') | inline() }} <a class="spk-row__talk" href="{{ l.talk.href | root(r) }}">{{ l.talk.label | inline() }}</a></span>
         {%- endif %}</li>
       {%- endfor %}
-      </ul>
-    </div>
-    <div class="spk-unsaid__after">
+      </ol>
       {%- if block.text %}
-      {%- call dd(block.textLabel or 'What he does with them in the room', block.id ~ '-room', 'spk-unsaid__dd') %}
-      <p>{{ block.text | inline() }}</p>
-      {%- endcall %}
+      <p class="spk-unsaid__p">{{ block.text | inline() }}</p>
       {%- endif %}
       {%- if block.link and block.link.href %}
       <a class="textlink spk-unsaid__link" href="{{ block.link.href | root(r) }}">{{ block.link.label | inline() }}
