@@ -1,44 +1,46 @@
   {# ==============================================================
-       Where Stephen has spoken: an auditorium (block.photo) behind the
-       section, its audience along the bottom. On its dark wall: the heading, the figures as giant numerals
-       counting up once (js/main.js), then one block of logos on one
-       grid: the first sector's row, then the other sectors sharing a
-       row, each under its small-caps label, each logo in ivory over its
-       organisation's name. scale evens out visual weight.
+       Where Stephen has spoken: a stage photo (block.photo) with the
+       heading and the figures (giant numerals counting up once,
+       js/main.js) in its dark upper right; under it, a band of a lit
+       wall from a real photo (block.band) carrying the logos in their
+       own colours, grouped by sector, each over its organisation's name.
+       A logo without a full-colour file shows its name only. scale
+       evens out visual weight.
        ============================================================== #}
   {%- set ph = block.photo or {} %}
   <section class="spk-spoken"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
-    {%- if ph.src %}
-    <img class="spk-bg spk-spoken__img" src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="100vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" loading="lazy" decoding="async">
-    {%- endif %}
-    <div class="spk-spoken__top">
-      <h2 class="spk-h2" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
-      {%- if block.counters and block.counters.length %}
-      <ul class="spk-spoken__nums"{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | inline() }}"{% endif %}>
-      {%- for c in block.counters %}
-        <li><span class="spk-spoken__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> <span class="spk-spoken__l">{{ c.label | inline() }}</span></li>
-      {%- endfor %}
-      </ul>
+    <div class="spk-spoken__stage">
+      {%- if ph.src %}
+      <img class="spk-bg spk-spoken__img" src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="100vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" loading="lazy" decoding="async">
       {%- endif %}
-    </div>
-    <div class="spk-spoken__band">
-      {%- for s in block.sectors %}
-      {%- if loop.index == 2 %}
-      <div class="spk-spoken__pair">
-      {%- endif %}
-      <div class="spk-sector spk-sector--{{ loop.index }}">
-        <h3 class="spk-sector__h">{{ s.label | inline() }}</h3>
-        <ul class="spk-sector__logos">
-        {%- for logo in s.logos %}
-          <li class="spk-logo">
-            <span class="spk-logo__box"><span class="spk-logo__mark" aria-hidden="true" style="--logo-src:url('{{ logo.src | root(r) }}'){% if logo.scale %};--s:{{ logo.scale | plain }}{% endif %}"></span></span>
-            <span class="spk-logo__name">{{ logo.alt | inline() }}</span></li>
+      <div class="spk-spoken__in">
+        <h2 class="spk-h2" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
+        {%- if block.counters and block.counters.length %}
+        <ul class="spk-spoken__nums"{% if block.ariaLabel %} aria-label="{{ block.ariaLabel | inline() }}"{% endif %}>
+        {%- for c in block.counters %}
+          <li><span class="spk-spoken__n"><span data-count="{{ c.value }}"{% if c.suffix %} data-suffix="{{ c.suffix }}"{% endif %}>{{ c.value | thousands }}{{ c.suffix }}</span></span> <span class="spk-spoken__l">{{ c.label | inline() }}</span></li>
         {%- endfor %}
         </ul>
+        {%- endif %}
       </div>
-      {%- if loop.last and loop.length > 1 %}
-      </div>
+    </div>
+    <div class="spk-spoken__band">
+      {%- if block.band and block.band.src %}
+      <img class="spk-band__img" src="{{ block.band.src | root(r) }}" alt="" loading="lazy" decoding="async">
       {%- endif %}
+      <div class="spk-band__row">
+      {%- for s in block.sectors %}
+        <div class="spk-sector">
+          <h3 class="spk-sector__h">{{ s.label | inline() }}</h3>
+          <ul class="spk-sector__logos">
+          {%- for logo in s.logos %}
+            <li class="spk-logo">
+              <span class="spk-logo__box">{% if logo.src %}<img class="spk-logo__img" src="{{ logo.src | root(r) }}" alt="" loading="lazy" decoding="async"{% if logo.scale %} style="--s:{{ logo.scale | plain }}"{% endif %}>{% endif %}</span>
+              <span class="spk-logo__name">{{ logo.alt | inline() }}</span></li>
+          {%- endfor %}
+          </ul>
+        </div>
       {%- endfor %}
+      </div>
     </div>
   </section>

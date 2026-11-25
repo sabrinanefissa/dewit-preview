@@ -12,13 +12,11 @@
       dialog; Escape, the backdrop, the close button, a swipe down and the
       phone's Back close it; focus returns to the button that opened it.
    3. The reel in place: it never plays until it is opened ("Play with
-      sound", a chapter or a frame); Close, Escape or its end bring the
+      sound" or a chapter button); Close, Escape or its end bring the
       photo back.
-   4. What the room is carrying: the frame shows the line in view, and on
-      phones the line tapped.
-   5. The hero heading comes into focus left to right, once.
-   6. The close heading is written in, top to bottom, once.
-   7. Text: the last two words of each paragraph and line stay together. */
+   4. The hero heading comes into focus left to right, once.
+   5. The close heading is written in, top to bottom, once.
+   6. Text: the last two words of each paragraph and line stay together. */
 
 /* 1. The planner tools. */
 (function () {
@@ -258,49 +256,7 @@
   });
 })();
 
-/* 4. What the room is carrying: as each line reaches the middle of the
-   screen (on phones, just under the pinned frame), the frame crossfades
-   to that line's still; a line without one keeps the one before. A tap
-   on a line, or focus in it, shows its frame. With no observer the first
-   frame stands. */
-(function () {
-  "use strict";
-  var sec = document.querySelector(".spk-unsaid");
-  var frame = sec && sec.querySelector(".spk-unsaid__frame");
-  if (!frame) return;
-  var stills = [].slice.call(frame.querySelectorAll(".spk-still"));
-  var rows = [].slice.call(sec.querySelectorAll(".spk-row"));
-  if (!stills.length || !rows.length) return;
-  var byRow = {};
-  stills.forEach(function (s) { byRow[s.getAttribute("data-row")] = s; });
-  var current = null, hold = 0;
-  function show(s, row) {
-    rows.forEach(function (r) { r.classList.toggle("is-on", r === row); });
-    if (!s || s === current) return;
-    current = s;
-    stills.forEach(function (o) { o.classList.toggle("is-on", o === s); });
-  }
-  show(stills[0], rows[0]);
-  frame.classList.add("is-live");
-  sec.classList.add("is-live");
-  stills.forEach(function (s) { s.addEventListener("focus", function () { show(s); }); });
-  rows.forEach(function (r) {
-    function pick() { hold = Date.now() + 900; show(byRow[r.getAttribute("data-row")], r); }
-    r.addEventListener("focusin", pick);
-    r.addEventListener("click", function (e) { if (!e.target.closest("a")) pick(); });
-  });
-  if (!("IntersectionObserver" in window)) return;
-  var phone = window.matchMedia("(max-width: 1023px)").matches;
-  var io = new IntersectionObserver(function (es) {
-    if (Date.now() < hold) return;
-    es.forEach(function (e) {
-      if (e.isIntersecting) show(byRow[e.target.getAttribute("data-row")], e.target);
-    });
-  }, { rootMargin: phone ? "-50% 0px -40% 0px" : "-46% 0px -46% 0px" });
-  rows.forEach(function (r) { io.observe(r); });
-})();
-
-/* 7 first, so the joined words are in place before the heading is split.
+/* 6 first, so the joined words are in place before the heading is split.
    The last two words of each paragraph and line are joined by a no-break
    space, so no line of copy ends on one word; in the close heading the
    last three are. */
@@ -317,7 +273,7 @@
   });
 })();
 
-/* 5. The hero heading comes into focus left to right, once: each letter
+/* 4. The hero heading comes into focus left to right, once: each letter
    from blur(8px) to sharp over 0.9s, starting in turn by its place along
    the line, about 1.8s in all. The heading is read by its own label while
    it is split, and the plain markup returns when it has landed. */
@@ -374,7 +330,7 @@
   Promise.race([fonts, cap]).then(function () { requestAnimationFrame(run); });
 })();
 
-/* 6. The close heading is written in once as it arrives: a soft edge
+/* 5. The close heading is written in once as it arrives: a soft edge
    wipes down through it while it clears from blur(8px), 2.5s. Only a
    heading still below the screen when the page opens waits for this. */
 (function () {

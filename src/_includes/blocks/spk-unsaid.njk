@@ -1,40 +1,32 @@
   {# ==============================================================
-       What the room is carrying: the reel frame for the line in view
-       fills the screen behind the section and holds while the heading,
-       the lines (each with the talk that answers it), the paragraph and
-       the link to the keynotes scroll over the dark curtain beside
-       Stephen. A line without its own frame keeps the one before. The
-       frame crossfades in 300ms (js/speaking.js) and is a button that
-       plays the reel from its chapter ([data-seek], js/main.js). Each
-       still's crop (x: left edge as a share of its width, z: zoom over
-       a full-height fit, y: vertical anchor; tz: zoom on tablets; px, pz:
-       left edge and zoom on phones) keeps Stephen and any light clear of
-       the text. Tapping a line shows its frame.
+       What the room is carrying: one stage photo (block.photo) held
+       full screen behind the section while the heading, the lines (each
+       with the talk that answers it and a button that plays the reel
+       from its chapter, [data-seek] in js/main.js), the paragraph and the
+       link to the keynotes scroll over the dark curtain on the right.
        ============================================================== #}
   {%- set chs = [] %}
   {%- for b in page.blocks %}{% if b.type == 'reelHero' and b.enabled !== false and b.chapters %}{% set chs = b.chapters.items %}{% endif %}{% endfor %}
-  {%- set rowK = -1 %}
+  {%- set ph = block.photo or {} %}
   <section class="spk-unsaid"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
-    <div class="spk-unsaid__frame">
-    {%- for l in block.lines %}
-      {%- set st = l.still if (l.still and l.still.src) else null %}
-      {%- if st %}
-        {%- set chl = '' %}
-        {%- for c in chs %}{% if c.time == st.time %}{% set chl = c.label %}{% endif %}{% endfor %}
-        {%- set ss1 = st.src | srcset(r) %}
-        {%- set cr = st.crop or {} %}
-      <button type="button" class="spk-still" data-row="{{ loop.index0 }}" data-seek="{{ st.time }}" style="--x:{{ cr.x or 0 }};--z:{{ cr.z or 1 }};--y:{{ cr.y or 0 }};--tz:{{ cr.tz or 1 }};--px:{{ cr.px or 0 }};--pz:{{ cr.pz or 1 }}"><span class="spk-sr">{{ (block.stillLabel or 'Play the reel from') | plain }} </span><span class="spk-sr spk-chapters__t">{{ (chl or st.alt) | plain }}</span><img class="spk-still__img" src="{{ st.src | root(r) }}"{% if ss1 %} srcset="{{ ss1 }}" sizes="200vw"{% endif %} alt="{{ st.alt | plain }}" loading="lazy" decoding="async"><span class="spk-still__play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></button>
-      {%- endif %}
-    {%- endfor %}
+    {%- if ph.src %}
+    <div class="spk-unsaid__bg">
+      <img class="spk-unsaid__img" src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="100vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" loading="lazy" decoding="async">
     </div>
+    {%- endif %}
     <div class="spk-unsaid__body">
       <h2 class="spk-h2 spk-unsaid__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
       <ol class="spk-rows">
       {%- for l in block.lines %}
-        {%- if l.still and l.still.src %}{% set rowK = loop.index0 %}{% endif %}
-        <li class="spk-row" data-row="{{ rowK }}"><span class="spk-row__t">{{ l.text | inline('spk-em') }}</span>
-        {%- if l.talk and l.talk.href %}
-          <span class="spk-row__ans">{{ (block.answeredLabel or 'Answered in:') | inline() }} <a class="spk-row__talk" href="{{ l.talk.href | root(r) }}">{{ l.talk.label | inline() }}</a></span>
+        <li class="spk-row"><span class="spk-row__t">{{ l.text | inline('spk-em') }}</span>
+        {%- if (l.talk and l.talk.href) or (l.time is defined) %}
+          <span class="spk-row__ans">
+          {%- if l.talk and l.talk.href %}{{ (block.answeredLabel or 'Answered in:') | inline() }} <a class="spk-row__talk" href="{{ l.talk.href | root(r) }}">{{ l.talk.label | inline() }}</a>{% endif %}
+          {%- if l.time is defined %}
+            {%- set chl = '' %}
+            {%- for c in chs %}{% if c.time == l.time %}{% set chl = c.label %}{% endif %}{% endfor %}
+            <button type="button" class="spk-row__play" data-seek="{{ l.time }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span class="spk-sr">{{ (block.stillLabel or 'Play the reel from') | plain }} </span><span class="spk-sr spk-chapters__t">{{ chl | plain }}</span></button>
+          {%- endif %}</span>
         {%- endif %}</li>
       {%- endfor %}
       </ol>

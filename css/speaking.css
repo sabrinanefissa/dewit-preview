@@ -4,14 +4,13 @@
    The page reads for busy planners and executives: each section's
    heading and key facts come first, large and high in contrast; the
    photographs sit behind them. Every block of text is set on a real
-   photo or reel frame: into its own dark (the hero, the proof, the
-   lines, the rooms, the close), on the stage curtain (the planners and
-   the sheets), or on a lit surface (the quote on the projection screen).
+   photograph: into its own dark (the hero, the proof, the lines, the
+   rooms, the close), on velvet (the planners and the sheets), or on a
+   lit surface (the quote on the projection screen).
    No veils, tints or solid panels: each crop is chosen so the text holds
    its contrast on the picture itself.
    Motion, each once: the hero heading comes into focus, the figures
-   count up, the reel frame crossfades with the line in view, the close
-   heading is written in. Nothing moves at rest. Reduced motion: final
+   count up, the close heading is written in. Nothing moves at rest. Reduced motion: final
    states at once.
    ===================================================================== */
 
@@ -31,8 +30,8 @@ body { --dd-page-acc: var(--spk-lilac); }
 
 /* ---------------------------------------------------------------------
    Full-bleed pictures. .spk-bg fills its section; a held picture
-   (sticky, 100svh, pulled up under the content: the reel frames, the
-   planners' curtain, the rooms on phones) stays on screen while the
+   (sticky, 100svh, pulled up under the content: the lines' stage, the
+   planners' velvet, the rooms on phones) stays on screen while the
    content scrolls over it. The dark fill shows only while a picture
    loads.
    --------------------------------------------------------------------- */
@@ -120,7 +119,7 @@ html.no-js .spk-hero__reel { display: none; }
 .spk-sheet { position: fixed; inset: auto auto clamp(1.5rem, 6vh, 4rem) var(--spk-edge);
   width: min(34rem, calc(100vw - 2 * var(--gutter))); max-width: none; max-height: min(78svh, 44rem); margin: 0; padding: 0;
   border: 1px solid rgba(244,237,225,.18); border-radius: var(--radius); color: var(--spk-ivory);
-  background: var(--spk-dark) url("../assets/img/spk-curtain-920.webp") 50% 50% / cover no-repeat;
+  background: var(--spk-dark) url("../assets/img/spk-velvet-768.webp") 50% 50% / cover no-repeat;
   flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(12px);
   transition: opacity .25s var(--ease-out), transform .25s var(--ease-out); }
 .spk-sheet[open] { display: flex; }
@@ -152,102 +151,91 @@ html.no-js .spk-sheet { display: none; }
 @media (prefers-reduced-motion: reduce) { .spk-sheet { transition: none; } }
 
 /* ---------------------------------------------------------------------
-   2. Where Stephen has spoken: an auditorium (its top three quarters,
-   cut before the sound desk), the dark wall and ceiling above, the
-   seated audience along the bottom. On the wall: the heading, the giant
-   figures, then the logos as one grid of sector rows. All of it fits
-   the first screen from 1024px.
+   2. Where Stephen has spoken: a stage photo in its own proportions,
+   the heading and the giant figures in its dark upper right, clear of
+   Stephen and the audience (sizes in cqw); under it a band of a lit
+   wall from a real photo with the logos in their own colours, grouped
+   by sector, captions in dark ink. On narrower screens the band's row
+   swipes.
    --------------------------------------------------------------------- */
-.spk-spoken { min-height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;
-  padding: calc(7rem + 1vh) var(--spk-edge) 2rem 35%; }
-.spk-spoken__img { object-position: 50% 0%; }
-@media (max-width: 1279px) { .spk-spoken__img { height: 125%; } }
-.spk-spoken__top, .spk-spoken__band { position: relative; z-index: 1; }
-.spk-spoken__nums { list-style: none; margin: clamp(.8rem, 2vh, 1.4rem) 0 0; padding: 0; display: flex; gap: clamp(2rem, 3.4vw, 3.75rem); }
-.spk-spoken__nums li { display: flex; flex-direction: column; gap: .4rem; }
-.spk-spoken__n { font-family: var(--f-display); font-weight: 300; font-size: clamp(88px, 9vw, 150px); line-height: .86;
+.spk-spoken__stage { position: relative; aspect-ratio: 1920 / 1281; container-type: inline-size; overflow: hidden; }
+.spk-spoken__img { object-position: 50% 50%; }
+.spk-spoken__in { position: absolute; z-index: 1; left: 52%; top: max(8%, 5.5rem); width: 44%; }
+.spk-spoken .spk-h2 { font-size: 3.4cqw; }
+.spk-spoken__nums { list-style: none; margin: 2cqw 0 0; padding: 0; display: flex; gap: 3cqw; }
+.spk-spoken__nums li { display: flex; flex-direction: column; gap: 1cqw; }
+.spk-spoken__n { font-family: var(--f-display); font-weight: 300; font-size: 7.2cqw; line-height: 1; padding-bottom: .12em;
   letter-spacing: -0.04em; color: var(--spk-ivory); font-variant-numeric: lining-nums; white-space: nowrap; }
-.spk-spoken__l { font-size: var(--step--1); line-height: 1.35; color: var(--spk-ivory); }
+.spk-spoken__l { font-size: max(12px, 1cqw); line-height: 1.35; color: var(--spk-ivory); }
 
-.spk-spoken__band { margin-top: clamp(1.2rem, 3vh, 2.2rem); display: flex; flex-direction: column; gap: clamp(.5rem, 1.4vh, .9rem); }
+.spk-spoken__band { position: relative; height: 144px; overflow: hidden; color: var(--spk-ink); }
+.spk-band__img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 0%; }
+.spk-band__row { position: relative; z-index: 1; height: 100%; display: flex; justify-content: space-between; gap: 2rem;
+  padding: 14px var(--gutter) 10px; }
 .spk-sector__h { width: fit-content; font-family: var(--f-text); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps;
-  letter-spacing: .1em; line-height: 1.3; color: var(--spk-ivory); }
-.spk-sector__logos { list-style: none; margin: .35rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 9rem); gap: .3rem .9rem; }
-.spk-spoken__pair { display: grid; grid-template-columns: 9rem repeat(2, 9rem); column-gap: .9rem; align-items: start; }
-.spk-spoken__pair .spk-sector--2 .spk-sector__logos { grid-template-columns: 9rem; }
-.spk-spoken__pair .spk-sector--3 { grid-column: 2 / span 2; }
-.spk-spoken__pair .spk-sector--3 .spk-sector__logos { grid-template-columns: repeat(2, 9rem); }
-@media (min-width: 1400px) {
-  .spk-sector__logos { grid-template-columns: repeat(6, 8.75rem); column-gap: .6rem; }
-  .spk-spoken__pair { grid-template-columns: 8.75rem repeat(4, 8.75rem); column-gap: .6rem; }
-  .spk-spoken__pair .spk-sector--3 { grid-column: 2 / span 4; }
-  .spk-spoken__pair .spk-sector--3 .spk-sector__logos { grid-template-columns: repeat(4, 8.75rem); column-gap: .6rem; }
+  letter-spacing: .1em; line-height: 1.3; color: var(--spk-ink); }
+.spk-sector__logos { list-style: none; margin: 6px 0 0; padding: 0; display: flex; gap: .75rem; }
+.spk-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 8.75rem; min-width: 0; }
+.spk-logo__box { display: flex; align-items: center; width: 100%; height: 2.5rem; }
+.spk-logo__img { display: block; max-width: 100%; width: auto; height: calc(2.1rem * var(--s, 1)); max-height: 100%; object-fit: contain; object-position: 0% 50%; }
+.spk-logo__name { font-size: 12px; line-height: 1.25; color: var(--spk-ink); text-wrap: balance; }
+@media (max-width: 1859px) {
+  .spk-band__row { justify-content: flex-start; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--gutter); scrollbar-width: none; }
+  .spk-band__row::-webkit-scrollbar { display: none; }
+  .spk-sector { flex: none; scroll-snap-align: start; }
+  .spk-band__row::after { content: ""; flex: 0 0 1px; }
 }
-.spk-logo { display: flex; flex-direction: column; align-items: flex-start; gap: .15rem; min-width: 0; }
-.spk-logo__box { display: flex; align-items: center; width: 100%; height: 1.9rem; }
-.spk-logo__mark { display: block; width: 100%; height: calc(1.3rem * var(--s, 1)); max-height: 100%;
-  background-color: var(--spk-ivory); -webkit-mask: var(--logo-src) 0% 50% / contain no-repeat; mask: var(--logo-src) 0% 50% / contain no-repeat; }
-.spk-logo__name { font-size: 12px; line-height: 1.25; color: var(--spk-ivory); text-wrap: balance; }
 
 /* ---------------------------------------------------------------------
-   3. What the room is carrying: the reel frame for the line in view
-   fills the screen and holds; the heading, the lines, the paragraph and
-   the link scroll over the dark curtain in the first five columns. Each
-   still is cropped (--x, --z, --y) so Stephen stands right of the text.
+   3. What the room is carrying: one stage photo held full screen while
+   the heading, the lines, the paragraph and the link scroll over the
+   dark curtain on the right. The photo is drawn wider than the screen
+   and set to the right, so Stephen and his hand stay left of the text.
    --------------------------------------------------------------------- */
-.spk-unsaid__frame { position: sticky; top: 0; z-index: 0; height: 100svh; margin-bottom: -100svh; overflow: hidden; }
-.spk-still { position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 0; border: 0; overflow: hidden;
-  cursor: pointer; opacity: 0; visibility: hidden; transition: opacity 300ms var(--ease-out), visibility 0s linear 300ms; }
-.spk-still:first-child { opacity: 1; visibility: visible; }
-.spk-unsaid__frame.is-live .spk-still { opacity: 0; visibility: hidden; }
-.spk-unsaid__frame.is-live .spk-still.is-on { opacity: 1; visibility: visible; transition: opacity 300ms var(--ease-out), visibility 0s; }
-.spk-still__img { --w: max(calc(100svh * var(--z, 1) * 16 / 9), calc(100vw / (1 - var(--x, 0))));
-  position: absolute; display: block; max-width: none; width: var(--w); height: auto; aspect-ratio: 16 / 9;
-  left: calc(var(--w) * var(--x, 0) * -1); top: calc((100svh - var(--w) * 9 / 16) * var(--y, .2)); }
-.spk-still__play { position: absolute; right: var(--spk-edge); bottom: clamp(1.5rem, 4vh, 2.5rem); width: 3rem; height: 3rem;
-  display: grid; place-items: center; border-radius: 50%; color: var(--spk-ivory);
-  box-shadow: inset 0 0 0 1.5px rgba(244,237,225,.85); transition: transform 240ms var(--ease-out); }
-.spk-still__play svg { width: 1.1rem; height: 1.1rem; margin-left: 2px; fill: currentColor; }
-.spk-still:focus-visible { outline: 3px solid var(--spk-ivory); outline-offset: -6px; }
-.spk-still:active .spk-still__play { transform: scale(.94); }
-@media (hover: hover) and (pointer: fine) { .spk-still:hover .spk-still__play { transform: scale(1.06); } }
-@media (prefers-reduced-motion: reduce) { .spk-still, .spk-unsaid__frame.is-live .spk-still.is-on { transition: none; } }
-
-.spk-unsaid__body { position: relative; z-index: 1; width: calc(var(--wrap) * 5 / 12); margin-left: var(--spk-edge);
+.spk-unsaid__bg { position: sticky; top: 0; z-index: 0; height: 100svh; margin-bottom: -100svh; overflow: hidden; }
+.spk-unsaid__img { position: absolute; top: 0; right: 0; display: block; max-width: none;
+  width: max(100%, min(125vw, 2048px), calc(100svh * 1.6)); height: auto; aspect-ratio: 2048 / 1280; }
+.spk-unsaid__body { position: relative; z-index: 1; width: calc(var(--wrap) * 5 / 12); margin-left: calc(var(--spk-edge) + var(--wrap) * 7 / 12);
   padding: var(--spk-pad) 0 calc(var(--spk-pad) + 10svh); }
 .spk-rows { list-style: none; margin: clamp(1.8rem, 3vw, 2.6rem) 0 0; padding: 0; border-top: 1px solid rgba(244,237,225,.3); }
-.spk-row { padding: clamp(1.1rem, 1.8vw, 1.5rem) 0; border-bottom: 1px solid rgba(244,237,225,.3); cursor: default; }
+.spk-row { padding: clamp(1.1rem, 1.8vw, 1.5rem) 0; border-bottom: 1px solid rgba(244,237,225,.3); }
 .spk-row__t { display: block; font-family: var(--f-display); font-weight: 330; font-size: clamp(1.35rem, 1rem + 1.05vw, 2rem);
   line-height: 1.2; letter-spacing: -0.015em; color: var(--spk-ivory); text-wrap: pretty; }
-.spk-row__ans { display: block; margin-top: .5rem; font-size: var(--step--1); line-height: 1.4; color: var(--spk-ivory); }
+.spk-row__ans { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .9rem; margin-top: .5rem; font-size: var(--step--1); line-height: 1.4; color: var(--spk-ivory); }
 .spk-row__talk { font-weight: 600; color: var(--spk-ivory); text-decoration: underline; text-decoration-thickness: 1px;
   text-underline-offset: .2em; display: inline-flex; align-items: center; min-height: 44px; }
 .spk-row__talk:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 2px; }
+.spk-row__play { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--spk-ivory);
+  box-shadow: inset 0 0 0 1px rgba(244,237,225,.7); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: transform 200ms var(--ease-out); }
+.spk-row__play svg { width: 1rem; height: 1rem; margin-left: 2px; fill: currentColor; }
+.spk-row__play:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 2px; }
+.spk-row__play:active { transform: scale(.94); }
+@media (hover: hover) and (pointer: fine) { .spk-row__play:hover { transform: scale(1.06); } }
 .spk-unsaid__p { margin-top: clamp(1.6rem, 3vw, 2.4rem); max-width: 56ch; font-size: var(--step-0); line-height: 1.6;
   color: var(--spk-ivory); text-wrap: pretty; }
 .spk-unsaid .spk-unsaid__link { margin-top: 1.2rem; color: var(--spk-ivory); font-size: var(--step-0); }
 
 /* ---------------------------------------------------------------------
-   4. Rooms he speaks to: a seated audience, full bleed, at 16:9 so the
-   text keeps to the same dark areas. The heading in its dark upper left;
-   the six rooms in two rows across its dark lower part, each with a
-   roman numeral in a thin ring, its name and its usual talk; the
-   formats sentence and the booking button under them, over the stage
-   floor. Under 1280px the photo holds behind a list of rows.
+   4. Rooms he speaks to: a stage photo in its own proportions. The
+   heading, the six rooms (two across, three down, each with a roman
+   numeral in a thin ring, its name and its usual talk), the formats
+   sentence and the booking button sit in its dark upper right, clear
+   of Stephen and the audience. Under 1024px the photo holds behind a list of rows.
    --------------------------------------------------------------------- */
-.spk-rooms { aspect-ratio: 16 / 9; container-type: inline-size; overflow: hidden; }
+.spk-rooms { aspect-ratio: 1920 / 1282; container-type: inline-size; overflow: hidden; }
 .spk-rooms__bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .spk-rooms__img { object-position: 50% 50%; }
-.spk-rooms__in { position: absolute; inset: 0; z-index: 1; }
-.spk-rooms__h { position: absolute; left: 3%; top: 10%; width: 28%; font-size: 3.6cqw; }
-.spk-events { position: absolute; left: 3%; right: 3%; top: 60%; list-style: none; margin: 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1cqw 2.4cqw; }
+.spk-rooms__in { position: absolute; z-index: 1; left: 54%; top: max(8%, 5.5rem); width: 42%; }
+.spk-rooms__h { font-size: 3cqw; }
+.spk-events { list-style: none; margin: 1.6cqw 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4cqw 2cqw; }
 .spk-ev__a { display: flex; align-items: flex-start; gap: .9rem; min-height: 44px; padding: .2cqw 0; color: var(--spk-ivory); text-decoration: none;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .spk-ev__no { flex: none; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; margin-top: .15rem; border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(244,237,225,.8); font-family: var(--f-display); font-style: italic; font-size: .85rem; letter-spacing: .02em; }
 .spk-ev__text { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
-.spk-ev__name { font-family: var(--f-display); font-weight: 340; font-size: 1.75cqw; line-height: 1.12; letter-spacing: -0.015em; text-wrap: balance; }
+.spk-ev__name { font-family: var(--f-display); font-weight: 340; font-size: max(1.05rem, 1.45cqw); line-height: 1.12; letter-spacing: -0.015em; text-wrap: balance; }
 .spk-ev__talk { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .3em; font-size: var(--step--1); line-height: 1.4; }
 .spk-ev__usually { color: var(--spk-ivory); }
 .spk-ev__tt { font-weight: 600; }
@@ -257,9 +245,18 @@ html.no-js .spk-sheet { display: none; }
 .spk-ev__a:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 2px; }
 .spk-ev__a:active { opacity: .75; }
 @media (hover: hover) and (pointer: fine) { a.spk-ev__a:hover .arrow { transform: translateX(4px); } a.spk-ev__a:hover .spk-ev__tt { text-decoration: underline; text-underline-offset: .2em; } }
-.spk-rooms__foot { position: absolute; left: 3%; bottom: 5%; width: 60%; display: flex; flex-wrap: nowrap; align-items: center; gap: 1.5rem; }
+.spk-rooms__foot { margin-top: 1.6cqw; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
 .spk-rooms__avail { font-size: var(--step-0); line-height: 1.5; color: var(--spk-ivory); text-wrap: pretty; }
 .spk-rooms__cta { white-space: nowrap; }
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .spk-rooms__in { top: 6.5%; }
+  .spk-rooms__h { font-size: 2.8cqw; }
+  .spk-events { margin-top: 1.2cqw; gap: 0 1.6cqw; }
+  .spk-ev__a { min-height: 0; padding: .1rem 0; }
+  .spk-ev__name { font-size: 1rem; }
+  .spk-rooms__foot { margin-top: 1.2cqw; flex-direction: column; align-items: flex-start; gap: .6rem; width: 22cqw; }
+  .spk-rooms__avail { font-size: .875rem; }
+}
 .spk-rooms__cta:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 3px; }
 
 /* ---------------------------------------------------------------------
@@ -384,16 +381,16 @@ html.no-js .spk-sheet { display: none; }
 .spk-sheet .spk-pl__copytext, .spk-sheet .spk-pl__intro p, .spk-sheet .spk-av li { color: var(--spk-ivory); }
 
 /* ---------------------------------------------------------------------
-   7. The close: a reel frame full width, the heading and the two links
-   on the curtain beside Stephen. The heading is written in once.
+   7. The close: a stage photo full width, Stephen seated on the right,
+   the heading and the two links on the dark stage to his left. The
+   heading is written in once.
    --------------------------------------------------------------------- */
 .spk-close--stage { margin-bottom: 3.5rem; }
-.spk-cl { position: relative; overflow: hidden; aspect-ratio: 16 / 9; min-height: 30rem; max-height: 92svh; width: 100%;
+.spk-cl { position: relative; overflow: hidden; aspect-ratio: 1536 / 740; min-height: 26rem; width: 100%;
   background: var(--spk-dark); }
-.spk-cl__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 30% 25%; }
-.spk-cl__text { position: absolute; z-index: 1; left: calc(var(--spk-edge) + var(--wrap) * 7 / 12); top: 50%; transform: translateY(-50%);
+.spk-cl__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }
+.spk-cl__text { position: absolute; z-index: 1; left: var(--spk-edge); top: 50%; transform: translateY(-50%);
   width: calc(var(--wrap) * 5 / 12); }
-@media (min-width: 1024px) { .spk-cl__text { padding-inline-start: 64px; } }
 .spk-cl__h { font-family: var(--f-display); font-weight: 320; font-size: clamp(2.4rem, 1.2rem + 3.6vw, 5rem); line-height: 1;
   letter-spacing: -0.035em; color: var(--spk-ivory); text-wrap: balance; max-width: 12ch; }
 .spk-cl__ctas { margin-top: clamp(1.4rem, 3vh, 2.2rem); display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.5rem; }
@@ -421,24 +418,24 @@ html.no-js .spk-sheet { display: none; }
 }
 
 /* ---------------------------------------------------------------------
-   Under 1024px: the lines run over the frame in a wider column, with
-   every still at its full-height fit and Stephen to the right.
+   Under 1024px: the lines' stage photo is cut to its dark curtain, the
+   lines over it; the close text takes a wider column.
    --------------------------------------------------------------------- */
 @media (max-width: 1023px) {
   .spk-spoken, .spk-unsaid, .spk-rooms, .spk-planners { scroll-margin-top: 4.15rem; }
-  .spk-still { --z: var(--tz) !important; --y: 0 !important; --x: 0 !important; }
-  .spk-unsaid__body { width: 52%; margin-left: var(--gutter); }
+  .spk-unsaid__img { width: 100%; height: 100%; object-fit: cover; object-position: 100% 50%; aspect-ratio: auto; }
+  .spk-unsaid__body { width: auto; margin: 0 var(--gutter) 0 42%; }
   .spk-row { cursor: pointer; }
   .spk-planners__main { grid-template-columns: minmax(0, 1fr); row-gap: 2.5rem; padding: clamp(3rem, 8vw, 4.5rem) var(--gutter); }
-  .spk-cl__text { left: auto; right: var(--gutter); width: 40%; }
+  .spk-cl__text { width: 44%; }
 }
 
-/* Rooms under 1280px: the photo holds behind a list of rows */
-@media (max-width: 1279px) {
+/* Rooms under 1024px: the photo holds behind a list of rows */
+@media (max-width: 1023px) {
   .spk-rooms { aspect-ratio: auto; overflow: visible; container-type: normal; }
   .spk-rooms__bg { position: sticky; inset: auto; top: 0; height: 100svh; margin-bottom: -100svh; }
-  .spk-rooms__img { object-position: 10% 50%; }
-  .spk-rooms__in { position: relative; inset: auto; min-height: 100svh; width: 60%; padding: calc(4.15rem + 2.5rem) 0 4rem var(--gutter); }
+  .spk-rooms__img { object-position: 72% 50%; }
+  .spk-rooms__in { position: relative; inset: auto; left: auto; top: auto; min-height: 100svh; width: auto; padding: calc(4.15rem + 2.5rem) var(--gutter) 4rem 52%; }
   .spk-rooms__h, .spk-events, .spk-rooms__foot { position: static; width: auto; }
   .spk-rooms__h { font-size: clamp(2.1rem, 1.3rem + 2.5vw, 3.9rem); max-width: 8ch; }
   .spk-events { grid-template-columns: minmax(0, 1fr); gap: 0; margin-top: 2rem; }
@@ -448,26 +445,19 @@ html.no-js .spk-sheet { display: none; }
   .spk-rooms__cta { justify-content: center; }
 }
 
-/* Proof under 1024px: a cut from the dark right of the wall;
-   the figures three across, the logos as a swipe row per sector */
+/* Proof under 1024px: a tall cut from the dark right of the stage,
+   the audience at the bottom, the figures three across; the band
+   swipes under it */
 @media (max-width: 1023px) {
-  .spk-spoken { padding: calc(4.15rem + 2rem) 0 2rem; justify-content: flex-start; }
-  .spk-spoken__img { object-position: 77% 0%; }
-  .spk-spoken__top { padding: 0 var(--gutter); }
+  .spk-spoken__stage { aspect-ratio: auto; min-height: calc(100svh - 144px); container-type: normal; }
+  .spk-spoken__img { object-position: 85% 0%; }
+  .spk-spoken__in { position: relative; left: auto; top: auto; width: auto; padding: calc(4.15rem + 2rem) var(--gutter) 2rem; }
   .spk-spoken .spk-h2 { font-size: clamp(2rem, 9vw, 2.5rem); }
-  .spk-spoken__nums { display: flex; justify-content: space-between; gap: .75rem; margin-top: 1.25rem; padding-right: 2%; }
+  .spk-spoken__nums { justify-content: space-between; gap: .75rem; margin-top: 1.25rem; padding-right: 2%; }
+  .spk-spoken__nums li { gap: .35rem; }
   .spk-spoken__n { font-size: clamp(2.3rem, 10.5vw, 4rem); }
   .spk-spoken__l { font-size: 12px; }
-  .spk-spoken__band { margin-top: 2rem; }
-  .spk-sector { display: block; }
-  .spk-spoken__pair { display: flex; flex-direction: column; gap: inherit; }
-  .spk-sector__h { padding: 0 var(--gutter); }
-  .spk-sector__logos, .spk-sector--3 .spk-sector__logos { display: flex; flex-wrap: nowrap; gap: 1.25rem; margin-top: .4rem; overflow-x: auto; overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity; padding: 0 var(--gutter); scroll-padding-inline: var(--gutter); scrollbar-width: none; }
-  .spk-sector__logos::-webkit-scrollbar { display: none; }
-  .spk-logo { flex: none; width: 9rem; scroll-snap-align: start; }
 }
-@media (min-width: 768px) and (max-width: 1023px) { .spk-spoken__img { object-position: 45% 0%; } }
 
 /* ---------------------------------------------------------------------
    Phones (under 768px): composed for the phone, one idea per screen.
@@ -496,13 +486,10 @@ html.no-js .spk-sheet { display: none; }
   .spk-sheet__grab { display: block; flex: none; width: 40px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: rgba(244,237,225,.45); }
 
 
-  .spk-unsaid__body { width: auto; margin: 0 28% 0 var(--gutter); padding-top: calc(4.15rem + 2rem); }
-  .spk-still { --x: var(--px) !important; --z: var(--pz) !important; }
+  .spk-unsaid__body { margin: 0 var(--gutter); padding-top: calc(4.15rem + 2rem); }
   .spk-row__t { font-size: 1.25rem; }
-  .spk-still__play { right: var(--gutter); bottom: calc(var(--tabbar-h, 56px) + var(--safe-b, 0px) + 1rem); width: 2.75rem; height: 2.75rem; }
 
-  .spk-rooms__img { object-position: 8% 50%; }
-  .spk-rooms__in { width: auto; padding: calc(4.15rem + 2rem) 30% calc(var(--tabbar-h, 56px) + 2rem) var(--gutter); }
+  .spk-rooms__in { padding: calc(4.15rem + 2rem) 28% calc(var(--tabbar-h, 56px) + 2rem) var(--gutter); }
   .spk-rooms__h { font-size: clamp(2rem, 9vw, 2.5rem); }
   .spk-ev__name { font-size: 1.2rem; }
   .spk-ev__talk { display: flex; flex-direction: column; align-items: flex-start; gap: .1rem; }
@@ -523,9 +510,9 @@ html.no-js .spk-sheet { display: none; }
   .spk-dl__ic { grid-area: ic; }
 
   .spk-cl { aspect-ratio: auto; min-height: 0; max-height: none; overflow: hidden; background: transparent; }
-  .spk-cl__img { inset: auto; top: 0; left: -108.3vw; width: 405.3vw; height: 228vw; max-width: none; object-fit: fill; clip-path: inset(0 0 103vw 0); }
+  .spk-cl__img { inset: 0 0 auto 0; height: 125vw; object-position: 66% 50%; }
   .spk-cl__text { position: static; transform: none; width: auto; padding: calc(125vw + 1.25rem) var(--gutter) 0; }
-  .spk-cl__h { position: absolute; left: var(--gutter); right: var(--gutter); top: 2.5vw; font-size: clamp(1.9rem, 8.7vw, 2.4rem); line-height: 1; max-width: none; }
+  .spk-cl__h { position: absolute; left: var(--gutter); width: 44%; top: 14vw; font-size: clamp(1.5rem, 7vw, 2rem); line-height: 1.05; max-width: none; }
   .spk-cl__ctas { margin-top: 0; display: grid; gap: .5rem; }
   .spk-close--stage .spk-close__cta { justify-content: center; }
   .spk-close--stage .spk-close__next { justify-self: center; }

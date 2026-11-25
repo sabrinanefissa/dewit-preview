@@ -6,7 +6,7 @@
     "title": "Keynote Speaker on Trust & Human Connection, Canada | Dr. Stephen de Wit",
     "description": "Keynotes on human connection and relational intelligence for teams, conferences, associations and healthcare organizations. 170 keynotes, 7,000+ leaders.",
     "url": "https://drdewit.com/speaking/",
-    "image": "https://drdewit.com/assets/img/reel-poster-1280.webp"
+    "image": "https://drdewit.com/assets/img/keynote-1920.webp"
   },
   "videoSchema": {
     "name": "Dr. Stephen de Wit: speaking reel",
@@ -26,7 +26,7 @@
         "alt": "Dr. Stephen de Wit on stage, speaking to the audience"
       },
       "video": {
-        "poster": "assets/img/reel-poster-1280.webp",
+        "poster": "assets/img/spk-stage-wide-1536.webp",
         "ariaLabel": "Dr. Stephen de Wit speaking: the reel",
         "src1080": "assets/video/reel-1080.mp4",
         "src720": "assets/video/reel-720.mp4",
@@ -117,8 +117,11 @@
       "enabled": true,
       "heading": "Where Stephen has spoken.",
       "photo": {
-        "src": "assets/img/spk-hall-1130.webp",
-        "alt": "A darkened auditorium, the audience seated under the stage lights"
+        "src": "assets/img/keynote-1920.webp",
+        "alt": "Stephen on a dark stage beside a clear lectern, the audience seated below"
+      },
+      "band": {
+        "src": "assets/img/spk-logo-band-2048.webp"
       },
       "ariaLabel": "Speaking record",
       "counters": [
@@ -145,32 +148,32 @@
             {
               "src": "assets/logos/Reckitt-Logo-ko.png",
               "alt": "Reckitt",
-              "scale": "1.3"
+              "scale": "1.15"
             },
             {
               "src": "assets/logos/mdrt-logo-ko.png",
               "alt": "MDRT",
-              "scale": "0.95"
+              "scale": "0.85"
             },
             {
               "src": "assets/logos/CAO-ACO-logo.png",
               "alt": "Canadian Association of Orthodontists",
-              "scale": "1"
+              "scale": "0.9"
             },
             {
-              "src": "assets/logos/OSOT-mark.png",
+              "src": "assets/logos/osot.png",
               "alt": "Ontario Society of Occupational Therapists",
-              "scale": "1.4"
+              "scale": "1"
             },
             {
               "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
               "alt": "Northeastern Society of Orthodontists",
-              "scale": "1.3"
+              "scale": "1.15"
             },
             {
               "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
               "alt": "Toronto Academy of Dentistry",
-              "scale": "1.75"
+              "scale": "1.35"
             }
           ]
         },
@@ -178,7 +181,7 @@
           "label": "Health care",
           "logos": [
             {
-              "src": "assets/logos/Lakeridge-mark.png",
+              "src": "assets/logos/lakeridge-health.png",
               "alt": "Lakeridge Health",
               "scale": "1.5"
             }
@@ -190,22 +193,22 @@
             {
               "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
               "alt": "University of Toronto",
-              "scale": "1.05"
+              "scale": "1"
             },
             {
-              "src": "assets/logos/tmu-wordmark-white.webp",
+              "src": "assets/logos/tmu.png",
               "alt": "Toronto Metropolitan University",
               "scale": "1.15"
             },
             {
-              "src": "assets/logos/george-brown-mark-white.png",
+              "src": "assets/logos/george-brown-college.svg",
               "alt": "George Brown College",
-              "scale": "1.35"
+              "scale": "1.15"
             },
             {
               "src": "assets/logos/laurentian-university-vector-logo-ko.png",
               "alt": "Laurentian University",
-              "scale": "1"
+              "scale": "0.8"
             }
           ]
         }
@@ -220,6 +223,10 @@
       "enabled": true,
       "heading": "What the room is carrying.",
       "answeredLabel": "Answered in:",
+      "photo": {
+        "src": "assets/img/kn-close-2048.webp",
+        "alt": "Stephen on stage in a navy blazer, speaking into a microphone and pointing to the room"
+      },
       "lines": [
         {
           "text": "You can be surrounded by colleagues and still on your own.",
@@ -227,17 +234,7 @@
             "label": "The Hidden Multiplier",
             "href": "keynotes/#hidden-multiplier"
           },
-          "still": {
-            "src": "assets/img/spk-un-alone-1920.webp",
-            "alt": "Stephen on stage in a black jacket, speaking to the room",
-            "time": 42,
-            "crop": {
-              "x": 0,
-              "z": 1.8,
-              "y": 0.15,
-              "px": 0.07
-            }
-          }
+          "time": 42
         },
         {
           "text": "You’re doing the job well and struggling quietly underneath it.",
@@ -245,17 +242,7 @@
             "label": "The Hidden Multiplier",
             "href": "keynotes/#hidden-multiplier"
           },
-          "still": {
-            "src": "assets/img/spk-un-hands-1920.webp",
-            "alt": "Stephen on stage in a black jacket, explaining with both hands",
-            "time": 87,
-            "crop": {
-              "x": 0,
-              "z": 1.3,
-              "y": 0.15,
-              "px": 0.17
-            }
-          }
+          "time": 87
         },
         {
           "text": "You carry everyone else’s feelings and nobody asks about yours.",
@@ -263,17 +250,7 @@
             "label": "Lead Human™",
             "href": "keynotes/#lead-human"
           },
-          "still": {
-            "src": "assets/img/spk-un-reach-1920.webp",
-            "alt": "Stephen on stage in front of a dark curtain, one arm raised",
-            "time": 62,
-            "crop": {
-              "x": 0,
-              "z": 1.95,
-              "y": 0.2,
-              "px": 0.05
-            }
-          }
+          "time": 62
         },
         {
           "text": "There’s a conversation you keep moving to next week.",
@@ -281,17 +258,7 @@
             "label": "Invisible Friction",
             "href": "keynotes/#invisible-friction"
           },
-          "still": {
-            "src": "assets/img/spk-un-step-1920.webp",
-            "alt": "Stephen on stage in a black jacket, in front of a dark curtain",
-            "time": 0,
-            "crop": {
-              "x": 0,
-              "z": 1,
-              "y": 0,
-              "px": 0.36
-            }
-          }
+          "time": 0
         },
         {
           "text": "Small unsaid tensions add up until everyone is tired.",
@@ -299,33 +266,11 @@
             "label": "Invisible Friction",
             "href": "keynotes/#invisible-friction"
           },
-          "still": {
-            "src": "assets/img/spk-un-step-1920.webp",
-            "alt": "Stephen on stage in a black jacket, in front of a dark curtain",
-            "time": 0,
-            "crop": {
-              "x": 0,
-              "z": 1,
-              "y": 0,
-              "px": 0.36
-            }
-          }
+          "time": 0
         },
         {
           "text": "Left unsaid long enough, this becomes what the organization calls a *performance problem*.",
-          "still": {
-            "src": "assets/img/spk-un-connect-1920.webp",
-            "alt": "Stephen in a blue blazer and white T-shirt, speaking in an interview",
-            "time": 104,
-            "crop": {
-              "x": 0,
-              "z": 1.75,
-              "y": 0,
-              "tz": 1.5,
-              "px": 0,
-              "pz": 1.5
-            }
-          }
+          "time": 104
         }
       ],
       "text": "In the room, Stephen says these things out loud, so people recognize them in their own team. Then he gives leaders a practical, research-informed way to work with them: clear the silent friction, strengthen trust, and rebuild it quickly after a breakdown.",
@@ -344,8 +289,8 @@
       "enabled": true,
       "heading": "Rooms he speaks to.",
       "photo": {
-        "src": "assets/img/spk-room-audience-1920.webp",
-        "alt": "Stephen on stage, seen from behind, facing a seated audience"
+        "src": "assets/img/home-bleed-1920.webp",
+        "alt": "Stephen on a dark stage, one arm open toward the lectern, the front rows of the audience below"
       },
       "settings": {
         "background": "deep"
@@ -438,7 +383,7 @@
         "href": "mailto:info@drdewit.com"
       },
       "photo": {
-        "src": "assets/img/spk-curtain-920.webp",
+        "src": "assets/img/spk-velvet-1672.webp",
         "alt": ""
       },
       "copiedLabel": "Copied",
@@ -576,7 +521,7 @@
       },
       "anchor": false,
       "image": {
-        "src": "assets/img/spk-un-close-1920.webp",
+        "src": "assets/img/bk-seated-1536.webp",
         "alt": ""
       },
       "layout": "stage",

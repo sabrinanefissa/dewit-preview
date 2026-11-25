@@ -876,7 +876,7 @@ collections:
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Aria label, name: ariaLabel, widget: string }
-              - label: "Audience photo behind the section (dark lower half)"
+              - label: "Stage photo behind the section (dark upper right)"
                 name: photo
                 widget: object
                 required: false
@@ -1558,6 +1558,13 @@ collections:
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string, hint: "Allows *emphasis*." }
               - { label: '"Answered in:" label', name: answeredLabel, widget: string, required: false }
+              - label: "Stage photo held behind the section (dark curtain on the right)"
+                name: photo
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image }
+                  - { label: Alt text, name: alt, widget: string }
               - label: Lines
                 name: lines
                 widget: list
@@ -1571,27 +1578,8 @@ collections:
                     fields:
                       - { label: Talk, name: label, widget: string }
                       - { label: Link, name: href, widget: string, hint: "e.g. keynotes/#invisible-friction" }
-                  - label: "Still from the reel (optional)"
-                    name: still
-                    widget: object
-                    required: false
-                    fields:
-                      - { label: Image, name: src, widget: image, hint: "A 16:9 frame from the reel, e.g. spk-un-alone-1920.webp (with its other widths beside it), with dark curtain to the left of Stephen. A line without one keeps the frame before." }
-                      - { label: Alt text, name: alt, widget: string }
-                      - { label: "Plays the reel from (seconds)", name: time, widget: number, value_type: int, hint: "Use a chapter's start time from the reel hero, so the button names that chapter." }
-                      - label: "Crop (optional)"
-                        name: crop
-                        widget: object
-                        required: false
-                        hint: "Keeps Stephen and any light clear of the text. x: left edge as a share of the frame's width; z: zoom; y: vertical anchor (0 to 1); tz: zoom on tablets; px, pz: left edge and zoom on phones."
-                        fields:
-                          - { label: x, name: x, widget: number, value_type: float, required: false }
-                          - { label: z, name: z, widget: number, value_type: float, required: false }
-                          - { label: y, name: y, widget: number, value_type: float, required: false }
-                          - { label: tz, name: tz, widget: number, value_type: float, required: false }
-                          - { label: px, name: px, widget: number, value_type: float, required: false }
-                          - { label: pz, name: pz, widget: number, value_type: float, required: false }
-              - { label: "Still button label (for screen readers)", name: stillLabel, widget: string, default: Play the reel from, required: false }
+                  - { label: "Plays the reel from (seconds, optional)", name: time, widget: number, value_type: int, required: false, hint: "A chapter start time from the reel hero, so the play button names that chapter." }
+              - { label: "Play button label (for screen readers)", name: stillLabel, widget: string, default: Play the reel from, required: false }
               - { label: Paragraph (after the lines), name: text, widget: text }
               - label: Link
                 name: link
@@ -1624,7 +1612,7 @@ collections:
                 fields:
                   - { label: Label, name: label, widget: string }
                   - { label: Link, name: href, widget: string, hint: "e.g. mailto:info@drdewit.com" }
-              - label: "Curtain behind the section"
+              - label: "Background photo behind the section"
                 name: photo
                 widget: object
                 required: false
@@ -1705,13 +1693,19 @@ collections:
               - { label: Anchor (uncheck to hide the id), name: anchor, widget: boolean, default: true, required: false }
               - { label: Show on page, name: enabled, widget: boolean, default: true }
               - { label: Heading, name: heading, widget: string }
-              - label: "Room photo behind the section (dark above and along the bottom)"
+              - label: "Stage photo behind the heading and figures (dark upper right)"
                 name: photo
                 widget: object
                 required: false
                 fields:
                   - { label: Image, name: src, widget: image }
                   - { label: Alt text, name: alt, widget: string }
+              - label: "Light photo band behind the logos"
+                name: band
+                widget: object
+                required: false
+                fields:
+                  - { label: Image, name: src, widget: image }
               - { label: "Figures label (screen readers)", name: ariaLabel, widget: string, required: false }
               - label: Figures (count up once)
                 name: counters
@@ -1733,8 +1727,8 @@ collections:
                     widget: list
                     summary: "{{fields.alt}}"
                     fields:
-                      - { label: Logo, name: src, widget: image }
-                      - { label: Organization name (alt text), name: alt, widget: string }
+                      - { label: "Logo, full-colour file (leave empty to show the name only)", name: src, widget: image, required: false }
+                      - { label: Organization name (shown under the logo), name: alt, widget: string }
                       - { label: Size (1 = normal), name: scale, widget: string, required: false, hint: "Evens out visual weight: below 1 for a wide or solid mark, above 1 for a light, compact one." }
               - *spk-settings-tone
 
