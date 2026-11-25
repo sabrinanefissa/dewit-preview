@@ -31,9 +31,9 @@
         "src1080": "assets/video/reel-1080.mp4",
         "src720": "assets/video/reel-720.mp4",
         "srcMobile": "assets/video/reel-mobile.mp4",
-        "mobileAutoplay": "false"
+        "mobileAutoplay": "true",
+        "start": 0.8
       },
-      "eyebrow": "Dr. Stephen de Wit · Human connection and relational intelligence",
       "heading": "The part people *don’t say out loud*.",
       "line": "170 keynotes for teams, conferences, associations and health care.",
       "cta": {

@@ -30,7 +30,7 @@
 .patterns__rail { display:flex; flex-wrap:wrap; justify-content:center; gap: .15rem clamp(.2rem, .8vw, .6rem); min-width:0; }
 .patterns__pick { position:relative; min-height:44px; padding: .55rem .85rem; border:0; background:none; cursor:pointer;
   font-family: var(--f-text); font-size: var(--step--1); font-weight:500; letter-spacing:.02em;
-  color: var(--tx-inv-faint); border-radius:22px;
+  color: var(--tx-inv-faint); border-radius: var(--radius);
   transition: color .3s var(--ease-out), background-color .3s var(--ease-out); }
 .patterns__pick::after { content:""; position:absolute; left:.85rem; right:.85rem; bottom:.45rem; height:1px;
   background: var(--accent-2); transform: scaleX(0); transform-origin: 0 50%; transition: transform .45s var(--ease-out); }

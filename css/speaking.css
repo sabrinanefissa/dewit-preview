@@ -9,9 +9,10 @@
    lit surface (the quote on the projection screen).
    No veils, tints or solid panels: each crop is chosen so the text holds
    its contrast on the picture itself.
-   Motion, each once: the hero heading comes into focus, the figures
-   count up, the close heading is written in. Nothing moves at rest. Reduced motion: final
-   states at once.
+   Motion: the reel plays muted at the top and the scroll carries the
+   hero's pinned stage; once each, the hero heading comes into focus, the
+   figures count up, the close heading is written in. Reduced motion:
+   final states at once, nothing pinned.
    ===================================================================== */
 
 html[data-page="speaking"] {
@@ -40,22 +41,24 @@ body { --dd-page-acc: var(--spk-lilac); }
 .spk-bg { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; }
 
 /* ---------------------------------------------------------------------
-   1. Hero: the stage photo, Stephen at the left of centre; the copy in
-   the stage dark on the right half. The wide photo runs 20% past the
-   left edge so he stands in the third to sixth columns.
+   1. Hero: the reel, then the stage photo, Stephen at the left of
+   centre, the copy in the stage dark on the right half. The wide photo
+   runs 20% past the left edge so he stands in the third to sixth
+   columns. At rest (no script, phones, reduced motion) the reel and the
+   photo stack, each a screen tall. With .is-pin (js/speaking.js) the
+   hero is a pinned track: the reel, the photo and the copy share one
+   stage, and the next section's heading and figures join it there.
    --------------------------------------------------------------------- */
-.spk-hero { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 0; min-height: max(88svh, 38rem); padding: 0 var(--spk-edge); overflow: hidden;
-  background: var(--spk-dark); color: var(--spk-ivory); }
+.spk-hero { position: relative; z-index: 1; background: var(--spk-dark); color: var(--spk-ivory); }
+.spk-hero__main { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 0; min-height: max(88svh, 38rem); padding: 0 var(--spk-edge); overflow: hidden; }
 .spk-hero__photo, .spk-hero__photo img { position: absolute; display: block; }
-.spk-hero__photo { inset: 0; overflow: hidden; transition: opacity .4s var(--ease-out); }
+.spk-hero__photo { inset: 0; overflow: hidden; }
 .spk-hero__photo img { top: 0; left: -20%; width: 120%; max-width: none; height: 100%; object-fit: cover; object-position: 0% 30%; }
 #main > .spk-hero::after { content: none; }
 .spk-hero__copy { position: relative; z-index: 2; grid-column: 7 / span 6; align-self: center;
-  padding: calc(5.5rem + 2vh) 0 clamp(2.5rem, 6vh, 4.5rem); transition: opacity .3s var(--ease-out), visibility 0s; }
-.spk-hero__eyebrow { font-size: var(--step--1); font-weight: 500; letter-spacing: .04em; line-height: 1.45;
-  color: var(--spk-lilac); text-wrap: balance; }
-.spk-hero__h { margin-top: .9rem; font-family: var(--f-display); font-weight: 320;
+  padding: calc(5.5rem + 2vh) 0 clamp(2.5rem, 6vh, 4.5rem); }
+.spk-hero__h { font-family: var(--f-display); font-weight: 320;
   font-size: clamp(2.6rem, 1.2rem + 4.1vw, 5.6rem); line-height: .98; letter-spacing: -0.04em;
   color: var(--spk-ivory); text-wrap: balance; max-width: 12ch; }
 .spk-hero__line { margin-top: 1.2rem; max-width: 34ch; font-size: var(--step-1); line-height: 1.4; color: var(--spk-ivory); text-wrap: pretty; }
@@ -64,11 +67,13 @@ body { --dd-page-acc: var(--spk-lilac); }
   border: 1px solid color-mix(in srgb, var(--spk-ivory) 70%, transparent); color: var(--spk-ivory); }
 .spk-hero .spk-hero__cta .spk-ic { flex: none; width: 1em; height: 1em; }
 .spk-hero .spk-hero__cta-label { font: inherit; letter-spacing: inherit; }
+/* "Play with sound" stays on offer while the reel runs */
+.spk-hero .spk-hero__cta.is-gone { opacity: 1; visibility: visible; pointer-events: auto; }
 .spk-hero__book:focus-visible, .spk-hero .spk-hero__cta:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 3px; }
 
 .spk-index { min-width: 0; margin-top: clamp(2rem, 5vh, 3.25rem); }
 .spk-index__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
-.spk-index__a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.05em; border-radius: 999px;
+.spk-index__a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.05em; border-radius: var(--radius);
   white-space: nowrap; font-size: var(--step--1); font-weight: 600; letter-spacing: .01em;
   color: var(--spk-ivory); background: var(--spk-chip); box-shadow: inset 0 0 0 1px rgba(244,237,225,.28);
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
@@ -88,13 +93,9 @@ body { --dd-page-acc: var(--spk-lilac); }
 .spk-hero__h.is-swept .spk-sweep__c { opacity: 1; filter: none; }
 @media (prefers-reduced-motion: reduce) { .spk-sweep__c { opacity: 1; filter: none; transition: none; } .js .spk-hero__h:not(.is-sweep) { animation: none; } }
 
-/* the reel, in place of the photo once it is opened */
-.spk-hero__reel { position: absolute; inset: 0; z-index: 1; visibility: hidden; opacity: 0;
-  transition: opacity .4s var(--ease-out), visibility 0s linear .4s; background: var(--spk-dark); }
+/* the reel: muted, full frame, its controls in one slim bar at its foot */
+.spk-hero__reel { position: relative; height: max(88svh, 38rem); overflow: hidden; background: var(--spk-dark); }
 .spk-hero .spk-hero__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; opacity: 1; }
-.spk-hero.is-reel .spk-hero__reel { visibility: visible; opacity: 1; z-index: 3; transition: opacity .4s var(--ease-out), visibility 0s; }
-.spk-hero.is-reel .spk-hero__photo { opacity: 0; }
-.spk-hero.is-reel .spk-hero__copy { opacity: 0; visibility: hidden; transition: opacity .3s var(--ease-out), visibility 0s linear .3s; }
 .spk-bar { position: absolute; z-index: 2; left: var(--spk-edge); right: var(--spk-edge); bottom: clamp(1.25rem, 4vh, 2.5rem);
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: .6rem .9rem; border-radius: var(--radius); background: rgba(13,9,15,.72); }
@@ -103,12 +104,30 @@ body { --dd-page-acc: var(--spk-lilac); }
 .spk-bar .spk-ctrl .play__ring { width: 2.75rem; height: 2.75rem; }
 .spk-bar__chap .spk-ic--list { display: block; }
 .spk-bar .spk-ic--sound, .spk-bar .spk-ic--mute, .spk-bar .spk-ic--cc, .spk-bar .spk-ic--cc-off, .spk-bar .spk-ic--replay, .spk-bar .spk-ic--list { fill: none; }
-.spk-bar__close { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 .6rem;
-  font-size: var(--step--1); font-weight: 600; letter-spacing: .02em; color: var(--spk-ivory); }
-.spk-bar__close:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 2px; }
 html.no-js .spk-hero__reel { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  .spk-hero__photo, .spk-hero__reel, .spk-hero__copy, .spk-hero.is-reel .spk-hero__reel, .spk-hero.is-reel .spk-hero__copy { transition: none; }
+
+/* ---- the pinned stage (768px and up, motion allowed) ----
+   js/speaking.js scrubs --a (reel to hero) and --b (hero copy to the
+   figures) on the stage and sets the layers' opacity and lift. */
+.spk-hero.is-pin { overflow: visible; }
+.spk-hero.is-pin .spk-hero__track { height: 340vh; }
+.spk-hero.is-pin .spk-hero__stage { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.spk-hero.is-pin .spk-hero__reel { position: absolute; inset: 0; z-index: 3; height: auto; }
+.spk-hero.is-pin .spk-hero__main { position: absolute; inset: 0; min-height: 0; }
+.spk-hero.is-pin .spk-hero__photo img { will-change: transform; }
+.spk-hero.is-pin .spk-hero__copy { will-change: opacity, transform; }
+.spk-hero .spk-spoken__in { position: absolute; z-index: 2; top: 0; bottom: 0; left: auto; right: var(--spk-edge);
+  width: calc(var(--wrap) * 6 / 12); display: flex; flex-direction: column; justify-content: center;
+  padding: calc(5.5rem + 2vh) 0 clamp(2.5rem, 6vh, 4.5rem); pointer-events: none; }
+.spk-hero .spk-spoken__in .spk-h2 { font-size: clamp(2.4rem, 1rem + 3.2vw, 4.6rem); max-width: 14ch; }
+.spk-hero .spk-spoken__nums { list-style: none; margin: clamp(1.6rem, 4vh, 2.8rem) 0 0; padding: 0; display: flex; gap: clamp(1.5rem, 3vw, 3.5rem); }
+.spk-hero .spk-spoken__nums li { display: flex; flex-direction: column; gap: .6rem; }
+.spk-hero .spk-spoken__n { font-family: var(--f-display); font-weight: 300; font-size: clamp(2.6rem, .5rem + 4.4vw, 7.5rem); line-height: 1;
+  padding-bottom: .12em; letter-spacing: -0.04em; color: var(--spk-ivory); font-variant-numeric: lining-nums; white-space: nowrap; }
+.spk-hero .spk-spoken__l { font-size: var(--step-0); line-height: 1.35; color: var(--spk-ivory); white-space: nowrap; }
+.spk-spoken.is-moved .spk-spoken__stage { display: none; }
+@media (max-width: 1279px) {
+  .spk-hero .spk-spoken__l { font-size: var(--step--1); }
 }
 
 /* ---------------------------------------------------------------------
@@ -172,8 +191,6 @@ html.no-js .spk-sheet { display: none; }
 .spk-band__img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 0%; }
 .spk-band__row { position: relative; z-index: 1; height: 100%; display: flex; justify-content: space-between; gap: 2rem;
   padding: 14px var(--gutter) 10px; }
-.spk-sector__h { width: fit-content; font-family: var(--f-text); font-size: 12px; font-weight: 600; font-variant-caps: all-small-caps;
-  letter-spacing: .1em; line-height: 1.3; color: var(--spk-ink); }
 .spk-sector__logos { list-style: none; margin: 6px 0 0; padding: 0; display: flex; gap: .75rem; }
 .spk-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 8.75rem; min-width: 0; }
 .spk-logo__box { display: flex; align-items: center; width: 100%; height: 2.5rem; }
@@ -316,8 +333,6 @@ html.no-js .spk-sheet { display: none; }
 .spk-planners__mail:focus-visible { outline: 2px solid var(--spk-ivory); outline-offset: 2px; }
 .spk-planners__lead .spk-planners__mail { display: inline; padding-block: 12px; }
 .spk-kit { margin-top: clamp(1.8rem, 3vw, 2.6rem); }
-.spk-kit__h { font-family: var(--f-text); font-size: var(--step--1); font-weight: 600; font-variant-caps: all-small-caps;
-  letter-spacing: .1em; line-height: 1.3; color: var(--spk-lilac); }
 .spk-dl { list-style: none; margin: .7rem 0 0; padding: 0; border-top: 1px solid rgba(244,237,225,.3); }
 .spk-dl__row { border-bottom: 1px solid rgba(244,237,225,.3); }
 .spk-dl__a { display: grid; grid-template-columns: minmax(0, 1fr) auto 1.25rem; align-items: center; gap: 1rem;
@@ -363,7 +378,7 @@ html.no-js .spk-sheet { display: none; }
 .spk-pl__note { font-size: var(--step--1); line-height: 1.5; color: var(--spk-lilac); text-wrap: pretty; }
 .spk-seg { display: inline-flex; gap: .35rem; margin-bottom: .6rem; }
 .spk-seg[hidden] { display: none; }
-.spk-seg__btn { min-height: 44px; padding: 0 1rem; border-radius: 999px; font-size: var(--step--1); font-weight: 600;
+.spk-seg__btn { min-height: 44px; padding: 0 1rem; border-radius: var(--radius); font-size: var(--step--1); font-weight: 600;
   color: var(--spk-ivory); background: transparent; box-shadow: inset 0 0 0 1px rgba(244,237,225,.4);
   -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: background-color 160ms var(--ease-out); }
 .spk-seg__btn[aria-pressed="true"] { background: var(--spk-ivory); color: var(--spk-ink); }
@@ -405,7 +420,11 @@ html.no-js .spk-sheet { display: none; }
    photo, the heading on the upper wall and the buttons at its foot.
    --------------------------------------------------------------------- */
 @media (max-width: 767px), (max-aspect-ratio: 1 / 1) {
-  .spk-hero { display: flex; flex-direction: column; min-height: var(--app-h, 100svh); padding: 0 var(--gutter); }
+  .spk-hero__main { display: flex; flex-direction: column; min-height: var(--app-h, 100svh); padding: 0 var(--gutter); }
+  .spk-hero__reel { height: var(--app-h, 100svh); }
+  .spk-hero .spk-spoken__in { left: var(--gutter); right: var(--gutter); width: auto; justify-content: flex-start; padding-top: calc(4.5rem + 6vh); }
+  .spk-hero .spk-spoken__nums { flex-direction: column; gap: clamp(1.25rem, 3vh, 2rem); }
+  .spk-hero .spk-spoken__nums li { gap: .35rem; }
   .spk-hero__photo img { left: 0; width: 100%; object-position: 40% 100%; }
   .spk-hero__copy { display: flex; flex-direction: column; justify-content: space-between; flex: 1 1 auto; align-self: stretch; min-width: 0; width: 100%;
     padding: calc(4.5rem + env(safe-area-inset-top, 0px)) 0 1.25rem; }
@@ -463,8 +482,7 @@ html.no-js .spk-sheet { display: none; }
    Phones (under 768px): composed for the phone, one idea per screen.
    --------------------------------------------------------------------- */
 @media (max-width: 767px) {
-  .spk-hero__eyebrow { font-size: .8125rem; }
-  .spk-hero__h { margin-top: .6rem; font-size: clamp(2.2rem, 10vw, 2.8rem); }
+  .spk-hero__h { font-size: clamp(2.2rem, 10vw, 2.8rem); }
   .spk-hero__line { margin-top: .8rem; font-size: 1.0625rem; max-width: 26ch; }
   .spk-hero__ctas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; }
   .spk-hero__ctas .btn { justify-content: center; padding: 1em .6em; font-size: .9375rem; min-height: 52px; }
@@ -517,4 +535,43 @@ html.no-js .spk-sheet { display: none; }
   .spk-close--stage .spk-close__cta { justify-content: center; }
   .spk-close--stage .spk-close__next { justify-self: center; }
   .spk-close--stage { margin-bottom: 2rem; }
+}
+
+/* ---------------------------------------------------------------------
+   Phones and upright tablets: the first screen is the reel at its own
+   16:9 under the header, then the hero filling the rest down to a 32px
+   edge of the next section (above the tab bar on phones). The text sits
+   in the photo's dark upper wall; the reel carries three square
+   controls: pause and play, captions, chapters.
+   --------------------------------------------------------------------- */
+@media (max-width: 767px), (orientation: portrait) and (max-width: 1199px) {
+  .spk-hero { padding-top: var(--spk-nav-h, 79px); }
+  .spk-hero__reel { height: auto; aspect-ratio: 16 / 9; }
+  .spk-hero .spk-hero__video { object-fit: contain; object-position: 50% 50%; }
+  .spk-hero__main { min-height: 0;
+    height: max(20rem, calc(100svh - var(--spk-nav-h, 79px) - 56.25vw - var(--tabbar-h, 0px) - var(--safe-b, 0px) - 32px)); }
+  .spk-hero__copy { padding: 1rem 0 .75rem; }
+  .spk-index { margin-top: 8px; }
+
+  .spk-bar { left: auto; right: 8px; bottom: 8px; padding: 0; background: none; }
+  .spk-bar .spk-hero__controls { gap: 8px; flex-wrap: nowrap; }
+  .spk-bar .spk-hero__controls > :not([data-ctrl="play"]):not([data-ctrl="cc"]):not(.spk-bar__chap) { display: none; }
+  .spk-bar .spk-ctrl { justify-content: center; width: 44px; height: 44px; gap: 0; border-radius: var(--radius);
+    background: rgba(13,9,15,.28); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), inset 0 1px 0 rgba(255,255,255,.35); }
+  .spk-bar .spk-ctrl[aria-pressed="true"]:not([data-ctrl="play"]) { box-shadow: inset 0 0 0 2px var(--spk-ivory), inset 0 1px 0 rgba(255,255,255,.35); }
+  .spk-bar .spk-ctrl .play__ring { width: auto; height: auto; border: 0; }
+  .spk-bar .spk-ctrl .play__ring::before { content: none; }
+  .spk-bar .spk-ctrl .spk-ctrl__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 767px) {
+  .spk-hero__photo img { object-position: 50% 58%; }
+  .spk-hero__h { font-size: clamp(28px, 7.6vw, 32px); line-height: 1.02; max-width: none; text-wrap: balance; }
+  .spk-hero__line { margin-top: .5rem; font-size: 16px; line-height: 1.4; max-width: none; }
+  .spk-hero__ctas { gap: 8px; padding-top: 1rem; }
+  .spk-hero__ctas .btn { min-height: 48px; height: 48px; padding-block: 0; }
+}
+@media (orientation: portrait) and (min-width: 768px) and (max-width: 1199px) {
+  .spk-hero__line { max-width: 24ch; }
+  /* Stephen stands right of the copy, which keeps the stage dark */
+  .spk-hero__photo img { left: 0; width: 125%; object-position: 0% 30%; }
 }

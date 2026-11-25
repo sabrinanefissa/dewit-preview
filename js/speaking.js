@@ -11,10 +11,11 @@
       on phones), and on phones the bio, the introduction and AV. Native
       dialog; Escape, the backdrop, the close button, a swipe down and the
       phone's Back close it; focus returns to the button that opened it.
-   3. The reel in place: it never plays until it is opened ("Play with
-      sound" or a chapter button); Close, Escape or its end bring the
-      photo back.
-   4. The hero heading comes into focus left to right, once.
+   3. The reel and the pinned stage: the reel plays muted, then the
+      scroll turns it into the hero, then the hero copy into the next
+      section's heading and figures (768px and up, motion allowed).
+   4. The hero heading comes into focus left to right, once (on the
+      pinned stage, when the copy first arrives).
    5. The close heading is written in, top to bottom, once.
    6. Text: the last two words of each paragraph and line stay together. */
 
@@ -219,41 +220,195 @@
   }
 })();
 
-/* 3. The reel in place. js/main.js runs the controls; here the reel
-   only opens on a click and gives the photo back when it is closed. */
+/* 3. The reel and the pinned stage. js/main.js runs the reel's controls.
+   768px and up with motion, the hero is one pinned stage on the page's
+   scroll spine. The reel plays muted, full screen. Over the first part of
+   the scroll it gives way to the stage photo and the hero copy; over the
+   second the copy gives way to the next section's heading and figures,
+   which are moved onto the stage (that section keeps only its band). The
+   reel pauses while it is covered and picks up again when it returns.
+   "Play with sound" and the chapters bring the reel back first. A
+   keyboard visitor is taken to whichever layer takes focus.
+   Phones and reduced motion: the reel, the hero and the figures stack. */
 (function () {
   "use strict";
   var hero = document.querySelector(".spk-hero");
   var video = hero && hero.querySelector(".spk-hero__video");
   if (!video) return;
+  var track = hero.querySelector(".spk-hero__track");
+  var stage = hero.querySelector(".spk-hero__stage");
+  var reel = hero.querySelector(".spk-hero__reel");
+  var main = hero.querySelector(".spk-hero__main");
+  var copy = hero.querySelector(".spk-hero__copy");
+  var photo = hero.querySelector(".spk-hero__photo img");
   var big = hero.querySelector(".spk-hero__cta");
-  var bigLabel = big && big.querySelector(".spk-hero__cta-label");
-  var idle = bigLabel ? bigLabel.textContent : "";
-  var closeBtn = hero.querySelector("[data-reel-close]");
-  function isOpen() { return hero.classList.contains("is-reel"); }
-  function openReel() { hero.classList.add("is-reel"); }
-  function closeReel(focus) {
-    if (!video.paused) video.pause();
-    video.muted = true;
-    hero.classList.remove("is-reel");
-    if (big) {
-      big.classList.remove("is-gone");
-      big.setAttribute("data-state", "start");
-      if (bigLabel) bigLabel.textContent = idle;
-      if (focus) big.focus();
+  var bPlay = hero.querySelector('[data-ctrl="play"]');
+  var spoken = document.querySelector(".spk-spoken");
+  var proof = spoken && spoken.querySelector(".spk-spoken__in");
+  var proofH = proof && proof.querySelector(".spk-h2");
+  var proofN = proof ? [].slice.call(proof.querySelectorAll(".spk-spoken__nums li")) : [];
+  var proofHome = proof && proof.parentNode, proofNext = proof && proof.nextSibling;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var wide = window.matchMedia("(min-width: 768px)");
+
+  /* the reel can be paused from the start, since it starts by itself */
+  if (bPlay) bPlay.hidden = false;
+
+  /* phones and upright tablets: the reel sits uncropped above the hero
+     and loops from its first lit frame (data-start, in seconds), past the
+     black opening. Reduced motion: it waits paused on that frame. */
+  var phone = window.matchMedia("(max-width: 767px), (orientation: portrait) and (max-width: 1199px)");
+  var start = parseFloat(video.getAttribute("data-start")) || 0;
+  if (phone.matches) video.loop = true;
+  /* the reel sits under the fixed header, so the hero is padded by its height */
+  var navEl = document.querySelector(".nav");
+  function navH() { if (navEl) hero.style.setProperty("--spk-nav-h", navEl.offsetHeight + "px"); }
+  navH();
+  window.addEventListener("resize", navH, { passive: true });
+  video.addEventListener("loadedmetadata", function () {
+    if (phone.matches && start && video.currentTime < start) video.currentTime = start;
+  });
+  video.addEventListener("timeupdate", function () {
+    if (phone.matches && start && !video.paused && video.currentTime < start - 0.05) video.currentTime = start;
+  });
+  if (phone.matches && reduce && !(navigator.connection && navigator.connection.saveData)) {
+    /* js/main.js sets the source without preloading; after it has run,
+       load the metadata so the first lit frame can show */
+    document.addEventListener("DOMContentLoaded", function () {
+      if (video.getAttribute("preload") !== "none" || !video.getAttribute("src")) return;
+      video.setAttribute("preload", "metadata");
+      video.load();
+    });
+  }
+
+  function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+  function seg(p, a, b) { return clamp((p - a) / (b - a)); }
+  function io(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  function out(t) { return 1 - Math.pow(1 - t, 3); }
+  function pageY(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
+  function go(y, now) {
+    if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y, now || reduce ? { immediate: true } : { duration: 0.9 });
+    else window.scrollTo({ top: y, behavior: now || reduce ? "auto" : "smooth" });
+  }
+
+  var pin = false, covered = false, held = false, holdUntil = 0, swept = false;
+  var top = 0, H = 1, vh = 1, q = 0;
+  function at(k) { return top + k * Math.max(1, H - vh); }
+
+  /* nothing plays while the reel is covered, unless a click just asked for it */
+  function hold() { holdUntil = Date.now() + 1800; }
+  video.addEventListener("play", function () {
+    if (pin && covered && Date.now() > holdUntil) { video.pause(); held = true; }
+  });
+  function toReel() {
+    hold();
+    var y = pin ? top : (phone.matches ? 0 : pageY(reel));
+    if (Math.abs((window.scrollY || 0) - y) > 2) go(y);
+  }
+  if (big) big.addEventListener("click", toReel);
+  [].slice.call(document.querySelectorAll("[data-seek]")).forEach(function (b) { b.addEventListener("click", hold); });
+
+  function fade(el, t, d) {
+    el.style.opacity = t.toFixed(3);
+    el.style.transform = t < 1 ? "translateY(" + (d * (1 - t)).toFixed(1) + "px)" : "";
+  }
+  function clear() {
+    [reel, copy, photo, proofH].concat(proofN).forEach(function (el) {
+      if (!el) return;
+      el.style.opacity = ""; el.style.transform = ""; el.style.pointerEvents = "";
+    });
+    reel.style.webkitMaskImage = ""; reel.style.maskImage = "";
+    if (proof) proof.style.display = "";
+    covered = false;
+  }
+  function render(p, y) {
+    if (!pin) return;
+    q = clamp((y - top) / Math.max(1, H - vh));
+    var a = io(seg(q, 0.1, 0.4)), b = io(seg(q, 0.55, 0.85));
+    /* the reel lifts off the stage like a curtain, from the floor up,
+       with a soft edge */
+    var edge = (-14 + 114 * a).toFixed(2), mask = a > 0 ? "linear-gradient(to top, transparent " + edge + "%, #000 " + (+edge + 14).toFixed(2) + "%)" : "";
+    reel.style.webkitMaskImage = mask; reel.style.maskImage = mask;
+    reel.style.pointerEvents = a > 0.5 ? "none" : "";
+    if (photo) photo.style.transform = "scale(" + (1.06 - 0.06 * a + 0.03 * b).toFixed(4) + ")";
+    /* the hero copy rises in, then lifts away for the figures */
+    var cin = out(seg(a, 0.35, 1)), cout = io(seg(b, 0, 0.45));
+    copy.style.opacity = (cin * (1 - cout)).toFixed(3);
+    copy.style.transform = "translateY(" + (28 * (1 - cin) - 36 * cout).toFixed(1) + "px)";
+    copy.style.pointerEvents = cin * (1 - cout) < 0.5 ? "none" : "";
+    if (proof) {
+      /* kept out of the layout until it starts to show, so the figures
+         count up when they are seen (js/main.js) */
+      proof.style.display = b > 0.02 ? "" : "none";
+      if (proofH) fade(proofH, out(seg(b, 0.4, 0.75)), 24);
+      proofN.forEach(function (li, i) { fade(li, out(seg(b, 0.48 + 0.08 * i, 0.78 + 0.08 * i)), 24); });
+    }
+    covered = a >= 0.98;
+    if (covered && !video.paused && Date.now() > holdUntil) { video.pause(); held = true; }
+    else if (!covered && held) {
+      held = false;
+      var pr = video.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    }
+    if (!swept && a >= 0.5) { swept = true; document.dispatchEvent(new CustomEvent("spk:hero-copy")); }
+  }
+  function measure() {
+    vh = window.innerHeight || 1;
+    top = pageY(hero);
+    H = track ? track.offsetHeight : hero.offsetHeight;
+  }
+  function setPin(on) {
+    if (on === pin) return;
+    pin = on;
+    hero.classList.toggle("is-pin", pin);
+    if (proof && main) {
+      if (pin) main.appendChild(proof);
+      else proofHome.insertBefore(proof, proofNext);
+      spoken.classList.toggle("is-moved", pin);
+    }
+    if (!pin) clear();
+    if (window.spkSpine) window.spkSpine.measure();
+  }
+  function want() { return !reduce && wide.matches && !phone.matches && !!(stage && main && copy && reel); }
+
+  /* set now, so js/main.js measures the page in its final shape */
+  setPin(want());
+
+  /* focus brings its layer into view */
+  reel.addEventListener("focusin", function () { if (pin && q > 0.1) go(at(0), true); });
+  main.addEventListener("focusin", function (e) {
+    if (!pin || (proof && proof.contains(e.target))) return;
+    if (q < 0.4 || q > 0.55) go(at(0.47), true);
+  });
+  /* the links to the figures land where they are on the stage */
+  var hash = spoken && spoken.id ? "#" + spoken.id : null;
+  document.addEventListener("click", function (e) {
+    var a = pin && hash && e.target.closest && e.target.closest('a[href$="' + hash + '"]');
+    if (!a) return;
+    e.preventDefault();
+    e.stopPropagation();
+    go(at(0.93));
+  }, true);
+
+  function init() {
+    if (!window.spkSpine) { setPin(false); return; }
+    window.spkSpine.add({
+      start: function () { measure(); return top; },
+      end: function () { return top + Math.max(1, H - vh); },
+      update: render
+    });
+    function onWidth() { setPin(want()); }
+    [wide, phone].forEach(function (mq) {
+      if (mq.addEventListener) mq.addEventListener("change", onWidth);
+      else if (mq.addListener) mq.addListener(onWidth);
+    });
+    if (pin && hash && location.hash === hash) {
+      window.addEventListener("load", function () { measure(); go(at(0.93), true); });
     }
   }
-  /* nothing plays at rest: a start the page made by itself is stopped */
-  video.addEventListener("play", function () { if (!isOpen()) video.pause(); });
-  if (big) big.addEventListener("click", openReel);
-  [].slice.call(document.querySelectorAll("[data-seek]")).forEach(function (b) {
-    b.addEventListener("click", openReel);
-  });
-  if (closeBtn) closeBtn.addEventListener("click", function () { closeReel(true); });
-  video.addEventListener("ended", function () { closeReel(false); });
-  document.addEventListener("keydown", function (e) {
-    if ((e.key === "Escape" || e.key === "Esc") && isOpen() && !document.querySelector("dialog[open]")) closeReel(true);
-  });
+  /* the spine is set up by js/main.js, which runs after this file */
+  if (window.spkSpine) init();
+  else document.addEventListener("DOMContentLoaded", init);
 })();
 
 /* 6 first, so the joined words are in place before the heading is split.
@@ -327,7 +482,11 @@
   }
   var cap = new Promise(function (r) { setTimeout(r, 800); });
   var fonts = document.fonts && document.fonts.ready ? document.fonts.ready : cap;
-  Promise.race([fonts, cap]).then(function () { requestAnimationFrame(run); });
+  var ready = Promise.race([fonts, cap]);
+  function go() { ready.then(function () { requestAnimationFrame(run); }); }
+  var hero = h.closest(".spk-hero");
+  if (hero && hero.classList.contains("is-pin")) document.addEventListener("spk:hero-copy", go, { once: true });
+  else go();
 })();
 
 /* 5. The close heading is written in once as it arrives: a soft edge

@@ -1,5 +1,5 @@
 /* Home sections (hm-*): entrances, the through-line, what people say, the
-   count-up, the credibility ribbon and the booking steps. Progressive
+   count-up, the credibility wall and the booking steps. Progressive
    enhancement; all motion respects prefers-reduced-motion. The hidden
    entrance states in css/home-sections.css apply only once html.hm-js is
    set, as the last line here. */
@@ -301,178 +301,177 @@
   });
 })();
 
-/* ===== Credibility ribbon: drifting lanes, timed spotlight =====
-   Each lane drifts. The highlight is a timed tick with two slots, so a
-   mark lights, holds and fades on its own clock and two never light at
-   once. Lane two runs half a tick out of phase with lane one. */
+/* ===== Credibility wall: two rows of tiles, then the seam opens =====
+   768px and up with motion: the section is a pinned track on the page's
+   scroll spine (js/main.js). The first lane's rows drift in opposite
+   directions across the whole pass; each tile's cover lifts away as the
+   section arrives, in a stagger along the row; then the rows part to the
+   stage's top and bottom, the first heading leaves, and the second lane
+   opens out of the seam, its heading and tiles rising in turn. All of it
+   is scrubbed, so it runs backwards on the way up.
+   Every tile answers with the card: hover or focus on a pointer device,
+   a tap on touch. Phones and reduced motion: no pin, plain rows. */
 (function () {
   "use strict";
-  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var lanes = [].slice.call(document.querySelectorAll(".hm-cred__lane"));
-  if (!lanes.length) return;
+  var sec = document.querySelector(".hm-orgband");
+  if (!sec) return;
+  var stage = sec.querySelector(".hm-orgband__stage");
+  var card = sec.querySelector(".hm-card");
+  var wall = sec.querySelector(".hm-wall"), seen = sec.querySelector(".hm-seen");
+  var tiles = [].slice.call(sec.querySelectorAll(".hm-tile"));
+  if (!stage || !card || !tiles.length) return;
+  var cName = card.querySelector("b"), cQuote = card.querySelector("p"), cBy = card.querySelector("cite");
 
-  var small = window.matchMedia("(max-width: 700px)").matches;
-  var TICK  = small ? 1000 : 1100;   /* ms between ignitions on a lane */
-  var SPELL = 2200;                  /* ms a mark stays lit */
-  /* small screens hold two or three marks at once, so the candidate band
-     opens wider there */
-  var INNER = small ? 0.92 : 0.76;   /* candidates sit inside this much of the viewport */
-  var HISTORY = 3;                   /* never relight one of the last 3 */
-  var FADE  = 640;                   /* ms a mark takes to fall back to rest */
+  function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+  function seg(p, a, b) { return clamp((p - a) / (b - a)); }
 
-  lanes.forEach(function (lane, laneIndex) {
-    var vp = lane.querySelector(".hm-cred__viewport");
-    var track = lane.querySelector(".hm-cred__track");
-    if (!vp || !track || !track.children.length) return;
-    var speed = parseFloat(lane.getAttribute("data-speed"));
-    if (isNaN(speed)) speed = 0.3;
-
-    /* repeat the set until it covers the viewport twice over, so the wrap
-       never opens a gap */
-    var originalCount = track.children.length;
-    var originals = [].slice.call(track.children);
-    function addSet() {
-      for (var k = 0; k < originalCount; k++) {
-        var c = originals[k].cloneNode(true);
-        c.setAttribute("aria-hidden", "true");
-        c.setAttribute("alt", "");
-        track.appendChild(c);
-      }
+  /* ---- the card ---- */
+  var cur = null, curBy = "";
+  function lifted(t) { var c = parseFloat(t.style.getPropertyValue("--cover")); return !(c > 0.5); }
+  function place(t) {
+    var s = stage.getBoundingClientRect(), r = t.getBoundingClientRect();
+    var w = card.offsetWidth, h = card.offsetHeight;
+    var x = Math.max(8, Math.min(r.left - s.left + r.width / 2 - w / 2, s.width - w - 8));
+    var above = r.top - s.top - h - 10;
+    var y = above > 0 ? above : r.bottom - s.top + 10;
+    card.style.transform = "translate(" + Math.round(x) + "px," + Math.round(y) + "px)";
+  }
+  function show(t, by) {
+    if (t && !lifted(t)) t = null;
+    if (cur === t) { if (t) curBy = by; return; }
+    if (cur) cur.classList.remove("on");
+    cur = t; curBy = t ? by : "";
+    card.classList.toggle("on", !!t);
+    sec.classList.toggle("is-card", !!t);
+    if (!t) return;
+    t.classList.add("on");
+    cName.textContent = t.getAttribute("data-n") || "";
+    cQuote.textContent = t.getAttribute("data-q") || "";
+    cBy.textContent = t.getAttribute("data-by") || "";
+    place(t);
+  }
+  tiles.forEach(function (t) {
+    t.addEventListener("pointerenter", function (e) { if (e.pointerType === "mouse") show(t, "pointer"); });
+    t.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse" && curBy === "pointer") show(null); });
+    t.addEventListener("click", function () { show(cur === t && !t.matches(":hover") ? null : t, "tap"); });
+    if (t.tagName === "BUTTON") {
+      t.addEventListener("focus", function () { if (t.matches(":focus-visible")) show(t, "focus"); });
+      t.addEventListener("blur", function () { if (cur === t) show(null); });
     }
-    addSet();
-    var guard = 0;
-    while (track.scrollWidth < vp.clientWidth * 2 + 40 && guard++ < 8) addSet();
-    var imgs = [].slice.call(track.children);
-    var setW = 0, pos = 0, rafId = null;
-
-    function measure() {
-      setW = imgs[originalCount].offsetLeft - imgs[0].offsetLeft;
-      for (var i = 0; i < imgs.length; i++) imgs[i]._cx = imgs[i].offsetLeft + imgs[i].offsetWidth / 2;
-    }
-    function frame() {
-      pos -= speed;
-      if (setW > 0) { if (pos <= -setW) pos += setW; else if (pos > 0) pos -= setW; }
-      track.style.transform = "translate3d(" + pos.toFixed(2) + "px,0,0)";
-      rafId = requestAnimationFrame(frame);
-    }
-
-    measure();
-    window.addEventListener("resize", function () { measure(); });
-    imgs.forEach(function (im) { if (!im.complete) im.addEventListener("load", measure); });
-
-    if (reduce) return;
-
-    var slots = [null, null];
-    var recent = [];
-    var timers = [];
-    var tickId = null, phaseId = null, tickCount = 0;
-    var hoverHeld = null;
-
-    function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
-    function isLit(el) { return el && el.classList.contains("lit"); }
-    /* lit, held by the pointer, or still on its way back down */
-    function isBusy(el) {
-      if (!el) return false;
-      if (isLit(el) || el === hoverHeld) return true;
-      return !!el._fadeUntil && el._fadeUntil > now();
-    }
-    function extinguish(slot) {
-      var el = slots[slot];
-      if (!el) return;
-      slots[slot] = null;
-      if (el === hoverHeld) return;
-      el.classList.remove("lit");
-      el._fadeUntil = now() + FADE;
-      setTimeout(function () { if (!el.classList.contains("lit")) el.classList.remove("next"); }, FADE);
-    }
-    function pick() {
-      var r = vp.getBoundingClientRect();
-      if (!r.width) return null;
-      var centre = r.width / 2;
-      var lo = r.width * (1 - INNER) / 2, hi = r.width - lo;
-      var best = null, bestD = Infinity;
-      for (var i = 0; i < imgs.length; i++) {
-        var el = imgs[i];
-        if (isBusy(el)) continue;
-        if (recent.indexOf(el) > -1) continue;
-        if (isBusy(imgs[i - 1]) || isBusy(imgs[i + 1])) continue;
-        var x = pos + el._cx;
-        if (x < lo || x > hi) continue;
-        var d = Math.abs(x - centre);
-        if (d < bestD) { bestD = d; best = el; }
-      }
-      return best;
-    }
-    function ignite(slot) {
-      var el = pick();
-      if (!el) return;
-      extinguish(slot);
-      slots[slot] = el;
-      recent.push(el);
-      while (recent.length > HISTORY) recent.shift();
-      /* queued first, so the compositing hint lands a frame before the move */
-      el.classList.add("next");
-      requestAnimationFrame(function () {
-        if (slots[slot] !== el) return;
-        el._fadeUntil = 0;
-        el.classList.add("lit");
-        el.classList.remove("next");
-      });
-      timers.push(setTimeout(function () { if (slots[slot] === el) extinguish(slot); }, SPELL));
-      if (timers.length > 8) timers.splice(0, timers.length - 8);
-    }
-    function tick() { ignite(tickCount++ % 2); }
-    function startTicks() {
-      if (tickId || phaseId) return;
-      var offset = laneIndex % 2 ? Math.round(TICK / 2) : 0;
-      phaseId = setTimeout(function () {
-        phaseId = null;
-        tick();
-        tickId = setInterval(tick, TICK);
-      }, offset);
-    }
-    function stopTicks() {
-      if (phaseId) { clearTimeout(phaseId); phaseId = null; }
-      if (tickId) { clearInterval(tickId); tickId = null; }
-      timers.forEach(clearTimeout); timers = [];
-      extinguish(0); extinguish(1);
-    }
-
-    /* on a pointer device, hover takes a mark and holds it */
-    if (window.matchMedia("(hover: hover)").matches) {
-      imgs.forEach(function (el) {
-        el.addEventListener("pointerenter", function (e) {
-          if (e.pointerType === "touch") return;
-          hoverHeld = el;
-          el.classList.add("lit");
-        });
-        el.addEventListener("pointerleave", function () {
-          if (hoverHeld !== el) return;
-          hoverHeld = null;
-          if (slots[0] !== el && slots[1] !== el) {
-            el.classList.remove("lit");
-            el._fadeUntil = now() + FADE;
-          }
-        });
-      });
-    }
-
-    var inView = false;
-    function sync() {
-      var run = inView && !document.hidden;
-      if (run) {
-        if (rafId == null) { measure(); rafId = requestAnimationFrame(frame); }
-        startTicks();
-      } else {
-        if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
-        stopTicks();
-      }
-    }
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(function (e) { inView = e[0].isIntersecting; sync(); }, { threshold: 0 }).observe(lane);
-    } else { inView = true; sync(); }
-    document.addEventListener("visibilitychange", sync);
   });
+  document.addEventListener("keydown", function (e) { if (cur && (e.key === "Escape" || e.key === "Esc")) show(null); });
+  document.addEventListener("pointerdown", function (e) { if (cur && !e.target.closest(".hm-tile")) show(null); }, { passive: true });
+  /* the tiles move with the page, so a card from the pointer or a tap lets
+     go as soon as it scrolls; one from the keyboard follows its tile */
+  function onMove() {
+    if (!cur) return;
+    if (curBy === "focus") place(cur); else show(null);
+  }
+  window.addEventListener("scroll", onMove, { passive: true });
+  [].slice.call(sec.querySelectorAll(".hm-wall__row, .hm-seen__tiles")).forEach(function (row) {
+    row.addEventListener("scroll", onMove, { passive: true });
+  });
+
+  /* ---- the pinned pass ---- */
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var wide = window.matchMedia("(min-width: 768px)");
+  var rows = wall ? [].slice.call(wall.querySelectorAll(".hm-wall__row")) : [];
+  var title = wall && wall.querySelector(".hm-orgband__h");
+  var seenH = seen && seen.querySelector(".hm-orgband__h");
+  var seenTiles = seen ? [].slice.call(seen.querySelectorAll(".hm-tile")) : [];
+  var covered = [];
+  rows.forEach(function (row) {
+    [].slice.call(row.children).forEach(function (t, i) { covered.push({ el: t, s: (i % 6) * 0.12, v: -1 }); });
+  });
+  if (reduce || rows.length < 2 || !seen) return;
+
+  function quart(t) { return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2; }
+  function cubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function out(t) { return 1 - Math.pow(1 - t, 3); }
+  function pageY(el) { var y = 0; for (var n = el; n; n = n.offsetParent) y += n.offsetTop; return y; }
+
+  var pin = false;
+  var vh = 1, top = 0, H = 1, wA = 0, wB = 0, mA = 0, mB = 0, eT = 0, eB = 0, Hh = 1;
+  function measure() {
+    vh = window.innerHeight || 1;
+    top = pageY(sec); H = sec.offsetHeight;
+    if (!pin) return;
+    var box = rows[0].parentNode, nav = document.querySelector(".nav");
+    wA = rows[0].scrollWidth; wB = rows[1].scrollWidth;
+    Hh = stage.clientHeight;
+    mA = box.offsetTop + rows[0].offsetTop + rows[0].offsetHeight / 2;
+    mB = box.offsetTop + rows[1].offsetTop + rows[1].offsetHeight / 2;
+    eT = (nav ? nav.offsetHeight : 64) + 24 + rows[0].offsetHeight / 2;
+    eB = rows[1].offsetHeight / 2 + 24;
+  }
+  function fade(el, t, d) {
+    el.style.opacity = t.toFixed(3);
+    el.style.transform = t < 1 ? "translateY(" + (d * (1 - t)).toFixed(1) + "px)" : "";
+  }
+  function clear() {
+    rows.concat(title ? [title] : [], seenH ? [seenH] : [], seenTiles).forEach(function (el) {
+      el.style.transform = ""; el.style.opacity = "";
+    });
+    seen.style.clipPath = "";
+    covered.forEach(function (o) { o.el.style.removeProperty("--cover"); o.v = -1; });
+  }
+  function render(p, y) {
+    if (!pin) return;
+    /* the drift: across the whole pass, the rows in opposite directions */
+    var xa = -0.3 * wA * p, xb = -0.3 * wB * (1 - p);
+    /* the covers: from the section's top at mid-screen to half a screen
+       past the top, each tile in its turn along the row */
+    var ct = clamp((y - (top - vh * 0.5)) / vh) * 1.1;
+    for (var i = 0; i < covered.length; i++) {
+      var o = covered[i], v = Math.round((1 - cubic(clamp((ct - o.s) / 0.5))) * 1000) / 1000;
+      if (v !== o.v) { o.v = v; o.el.style.setProperty("--cover", v); }
+    }
+    /* the hand-off, while the stage is held */
+    var q = clamp((y - top) / Math.max(1, H - vh));
+    var e = quart(seg(q, 0.26, 0.6)), et = quart(seg(q, 0.26, 0.54));
+    rows[0].style.transform = "translate3d(" + xa.toFixed(1) + "px," + ((eT - mA) * e).toFixed(1) + "px,0)";
+    rows[1].style.transform = "translate3d(" + xb.toFixed(1) + "px," + ((Hh - eB - mB) * e).toFixed(1) + "px,0)";
+    if (title) { title.style.transform = "translateY(" + ((eT - mA - 40) * et).toFixed(1) + "px)"; title.style.opacity = (1 - et).toFixed(3); }
+    var c = (50 * (1 - e)).toFixed(2);
+    seen.style.clipPath = "inset(" + c + "% 0 " + c + "% 0)";
+    if (seenH) fade(seenH, out(seg(q, 0.4, 0.56)), 14);
+    seenTiles.forEach(function (t, k) { fade(t, out(seg(q, 0.46 + 0.035 * k, 0.6 + 0.035 * k)), 16); });
+  }
+  function setPin() {
+    var on = wide.matches && !!window.spkSpine;
+    if (on === pin) return;
+    pin = on;
+    sec.classList.toggle("is-pin", pin);
+    if (!pin) clear();
+    show(null);
+    if (window.spkSpine) window.spkSpine.measure();
+  }
+  /* a keyboard visitor reaching the second lane is taken to where it is open */
+  seen.addEventListener("focusin", function () {
+    if (!pin) return;
+    var y = top + 0.8 * (H - vh), now = window.scrollY || 0;
+    if (now >= y - 4) return;
+    if (window.spkLenis && window.spkLenis.scrollTo) window.spkLenis.scrollTo(y, { immediate: true });
+    else window.scrollTo(0, y);
+  });
+  function init() {
+    if (!window.spkSpine) return;
+    setPin();
+    window.spkSpine.add({
+      start: function () { measure(); return top - vh; },
+      end: function () { return top + H; },
+      update: render
+    });
+    if (wide.addEventListener) wide.addEventListener("change", setPin);
+    else if (wide.addListener) wide.addListener(setPin);
+    tiles.forEach(function (t) {
+      var im = t.querySelector("img");
+      if (im && !im.complete) im.addEventListener("load", function () { if (pin) window.spkSpine.measure(); });
+    });
+  }
+  /* the spine is set up by js/main.js, which runs after this file */
+  if (window.spkSpine) init();
+  else document.addEventListener("DOMContentLoaded", init);
 })();
 
 document.documentElement.classList.add("hm-js");

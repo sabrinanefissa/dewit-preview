@@ -293,43 +293,100 @@ html #main > section.hm-stats.hm.hm { border-top: 1px solid var(--hm-line-inv); 
 .hm-stats [data-hm-count] { font-variant-numeric: tabular-nums lining-nums; }
 
 /* =====================================================================
-   Credibility ribbon: label above each lane, timed spotlight
+   Credibility wall. Every logo sits on its own ivory tile in its true
+   colours. At rest (no script, reduced motion) each lane is a heading
+   over a row of tiles. With .is-pin (js/home-sections.js, 768px and up)
+   the section is a pinned track: the first lane's two rows drift in
+   opposite directions with the scroll while each tile's cover lifts away,
+   then the rows part to the stage's edges and the second lane opens out
+   of the seam. Phones: each lane is a swipeable row of tiles.
    ===================================================================== */
-html #main > section.hm-orgband.hm.hm { padding-block: clamp(3.2rem,6vw,5.5rem); overflow:hidden; }
-.hm-cred__lane { display:block; }
-.hm-cred__lane + .hm-cred__lane { margin-top: clamp(2rem,4vw,3.4rem); }
+html #main > section.hm-orgband.hm.hm { padding-block: clamp(3.2rem,6vw,5.5rem); overflow-x:hidden; overflow-x:clip; overflow-y:visible; }
+html #main > section.hm-orgband.hm.hm.is-card { z-index:3; }
+html #main > section.hm-orgband.hm.hm { background: #1A1026 url("../assets/img/spk-velvet-1536.webp") 50% 50% / cover no-repeat; }
+.hm-orgband__stage { position:relative; }
+.hm-orgband__h { width: var(--wrap); margin: 0 auto; text-align:center;
+  font-size: var(--step-3); font-weight:340; line-height:1.05; letter-spacing:-0.025em;
+  color: var(--hm-tx-inv); text-wrap: balance; }
+.hm-seen { margin-top: clamp(3rem,6vw,5rem); }
 
-.hm-cred__label { display:block; width: var(--wrap); margin: 0 auto clamp(.9rem,1.6vw,1.3rem);
-  padding-bottom: .55rem; border-bottom: 1px solid rgba(227,169,60,.30);
-  font-family: var(--f-text); font-size: var(--step--1); font-weight:500;
-  letter-spacing:.22em; text-transform:uppercase; color: var(--hm-tx-inv-soft); line-height:1.3; }
+.hm-wall__rows { position:relative; margin-top: clamp(1.6rem,3vw,2.4rem); }
+.hm-wall__row, .hm-seen__tiles { display:flex; flex-wrap:wrap; justify-content:center; gap:16px;
+  width: var(--wrap); margin-inline:auto; }
+.hm-seen__tiles { margin-top: clamp(1.6rem,3vw,2.4rem); }
+.hm-wall__row--b, .hm-tile--copy { display:none; }
 
-/* The viewport is padded so a lit mark grown to 2.15x is never clipped */
-.hm-cred__viewport { position:relative; overflow:hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
-          mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
-.hm-cred__track { display:flex; align-items:center; gap: clamp(4.2rem,5vw,5.5rem);
-  width:max-content; padding-block: 2.2rem; background: var(--hm-plum);
-  will-change:transform; }
-/* Each mark is sized by its optical area (--s) and painted cream */
-.hm-cred__track img { height: calc(clamp(26px,3vw,42px) * var(--s, 1)); width:auto; max-width:none;
-  object-fit:contain; flex:0 0 auto; user-select:none; position:relative; z-index:1;
-  filter: brightness(0) invert(1) opacity(.42);
-  transition: filter 640ms cubic-bezier(.4,0,.2,1), transform 640ms cubic-bezier(.4,0,.2,1); }
-.hm-cred__lane--sm .hm-cred__track img { height: calc(clamp(20px,2.4vw,32px) * var(--s, 1)); }
-.hm-cred__track img.lit, .hm-cred__track img.next { will-change: transform, filter; }
-.hm-cred__track img.lit { filter: brightness(0) invert(1); z-index:2;
-  transform-origin: 50% 60%; transform: translateY(-8px) scale(1.9);
-  transition: filter 520ms cubic-bezier(.22,1,.36,1), transform 520ms cubic-bezier(.22,1,.36,1); }
-.hm-cred__lane--sm .hm-cred__track img.lit { transform: translateY(-8px) scale(2.15); }
+.hm-tile { position:relative; flex:none; display:grid; place-items:center; width:200px; height:86px;
+  padding:0; border:0; border-radius: var(--radius); background: var(--hm-tx-inv); overflow:hidden;
+  box-shadow: 0 0 0 1px rgba(26,16,38,.08); cursor:default; color:inherit;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out); }
+.hm-tile img { grid-area:1/1; display:block; width:auto; height:auto;
+  max-width: min(164px, calc(150px * var(--s, 1))); max-height: min(62px, calc(52px * var(--s, 1)));
+  object-fit:contain; user-select:none; -webkit-user-drag:none; }
+/* the cover: a block of plum, violet or ivory that lifts off the tile */
+.hm-tile::after { content:""; position:absolute; inset:0; background:#2C1A33;
+  transform-origin:50% 0; transform: scaleY(var(--cover, 0)); pointer-events:none; }
+.hm-tile:nth-child(3n+1)::after { background: var(--hm-violet); }
+.hm-tile:nth-child(5n+3)::after { background:#E6DACB; }
+.hm-tile.on { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--hm-violet-300), 0 10px 24px rgba(8,4,14,.45); }
+.hm-tile:focus-visible { outline:2px solid var(--hm-violet-300); outline-offset:3px; }
+.hm-tile:active { transform: scale(.97); }
 
-@media (max-width: 700px) {
-  .hm-cred__track img.lit,
-  .hm-cred__lane--sm .hm-cred__track img.lit { transform: translateY(-8px) scale(1.5); }
+/* the answer: the organisation, and its review where there is one */
+.hm-card { position:absolute; left:0; top:0; z-index:5; width:min(340px, calc(100vw - 32px)); padding:14px 16px 15px;
+  border-radius: var(--radius); color: var(--hm-tx-inv);
+  background: #1A1026 url("../assets/img/spk-velvet-768.webp") 50% 50% / cover no-repeat;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(244,236,222,.22), 0 14px 32px rgba(8,4,14,.5);
+  opacity:0; visibility:hidden; pointer-events:none; text-align:left;
+  transition: opacity .18s ease, visibility 0s linear .18s; }
+.hm-card.on { opacity:1; visibility:visible; transition: opacity .18s ease, visibility 0s; }
+.hm-card b { display:block; font-family: var(--f-display); font-weight:400; font-size:1.25rem; line-height:1.2; text-wrap: balance; }
+.hm-card p { margin-top:8px; font-size:.95rem; line-height:1.45; text-wrap: pretty; quotes: "\201C" "\201D"; }
+.hm-card p::before { content: open-quote; }
+.hm-card p::after { content: close-quote; }
+.hm-card cite { display:block; margin-top:8px; font-style:normal; font-size:.8125rem; line-height:1.4; font-weight:600; text-wrap: pretty; }
+.hm-card p:empty, .hm-card cite:empty { display:none; }
+
+/* ---- pinned (768px and up, motion allowed) ---- */
+html #main > section.hm-orgband.hm.hm.is-pin { padding-block:0; overflow:visible; overflow:clip; }
+.hm-orgband.is-pin .hm-orgband__track { height:300vh; }
+.hm-orgband.is-pin .hm-orgband__stage { position:sticky; top:0; height:100vh; overflow:hidden; }
+.hm-orgband.is-pin .hm-wall { position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; justify-content:center;
+  pointer-events:none; }
+.hm-orgband.is-pin .hm-wall .hm-tile { pointer-events:auto; }
+.hm-orgband.is-pin .hm-wall__rows { margin-top: clamp(1.6rem,3.4vh,2.4rem); }
+.hm-orgband.is-pin .hm-wall__row { flex-wrap:nowrap; justify-content:flex-start; width:max-content; margin:0;
+  padding-right:16px; will-change:transform; }
+.hm-orgband.is-pin .hm-wall__row + .hm-wall__row { margin-top:16px; }
+.hm-orgband.is-pin .hm-wall__row--b, .hm-orgband.is-pin .hm-tile--copy { display:grid; }
+.hm-orgband.is-pin .hm-wall__row--b { display:flex; }
+.hm-orgband.is-pin .hm-seen { position:absolute; inset:0; z-index:1; margin:0; display:flex; flex-direction:column;
+  justify-content:center; align-items:center; clip-path: inset(50% 0 50% 0); }
+.hm-orgband.is-pin .hm-seen__tiles { width:auto; max-width: var(--wrap); display:grid; grid-template-columns: repeat(3, 200px); }
+@media (min-width: 1360px) { .hm-orgband.is-pin .hm-seen__tiles { grid-template-columns: repeat(6, 200px); } }
+html #main > section.hm-orgband.hm.hm.is-pin { background-image: none; }
+.hm-orgband.is-pin .hm-orgband__stage { background: #1A1026 url("../assets/img/spk-velvet-1672.webp") 50% 50% / cover no-repeat; }
+.hm-orgband.is-pin .hm-seen { background: none; }
+
+/* ---- phones: one swipeable row per lane, tap for the answer ---- */
+@media (max-width: 767px) {
+  html #main > section.hm-orgband.hm.hm { padding-block: 3.25rem; }
+  html #main > section.hm-orgband.hm.hm { background-image: url("../assets/img/spk-velvet-1152.webp"); }
+  .hm-orgband__h { width:auto; padding-inline: var(--gutter); font-size: var(--step-2); }
+  .hm-seen { margin-top: 2.75rem; }
+  .hm-wall__row, .hm-seen__tiles { flex-wrap:nowrap; justify-content:flex-start; gap:10px; width:auto; margin:0;
+    padding: 4px var(--gutter) 6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity;
+    scroll-padding-inline: var(--gutter); scrollbar-width:none; }
+  .hm-wall__row::-webkit-scrollbar, .hm-seen__tiles::-webkit-scrollbar { display:none; }
+  .hm-wall__rows, .hm-seen__tiles { margin-top: 1.25rem; }
+  .hm-tile { width:132px; height:58px; scroll-snap-align:start; }
+  .hm-tile img { max-width: min(108px, calc(98px * var(--s, 1))); max-height: min(42px, calc(34px * var(--s, 1))); }
+  .hm-tile.on { transform:none; box-shadow: 0 0 0 2px var(--hm-violet-300); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hm-cred__track { transform:none !important; }
-  .hm-cred__track img, .hm-cred__track img.lit { filter: brightness(0) invert(1) opacity(.75); transition:none; transform:none !important; }
+  .hm-tile, .hm-card, .hm-card.on { transition:none; }
+  .hm-tile::after { display:none; }
 }
 
 /* =====================================================================

@@ -616,6 +616,7 @@ collections:
                   - { label: "720p file", name: src720, widget: file, media_folder: "/assets/video" }
                   - { label: "Mobile file", name: srcMobile, widget: file, media_folder: "/assets/video" }
                   - { label: "Autoplay on mobile (only if the mobile file is under 10 MB)", name: mobileAutoplay, widget: select, options: ["true", "false"], default: "true" }
+                  - { label: "Phones: start at (seconds, the first lit frame)", name: start, widget: number, value_type: float, required: false }
               - label: Captions
                 name: captions
                 widget: object
@@ -623,7 +624,6 @@ collections:
                   - { label: Captions file (.vtt), name: src, widget: file, media_folder: "/assets/video" }
                   - { label: Language code, name: srclang, widget: string, default: en }
                   - { label: Language label, name: label, widget: string, default: English }
-              - { label: "Small line above the heading (optional)", name: eyebrow, widget: string, required: false }
               - { label: "Heading (the page's h1)", name: heading, widget: string, hint: "Allows *emphasis*." }
               - { label: "Line under the heading (optional)", name: line, widget: string, required: false }
               - label: "Button beside the line (optional)"

@@ -1,15 +1,46 @@
-  {# Credibility ribbon: each lane drifts sideways and lights one mark at a time #}
+  {# Credibility wall: the first lane's logos run in two rows that drift
+     apart with the scroll, each tile's cover lifting as the section
+     arrives; then the rows part and the second lane opens out of the seam.
+     Every tile answers on hover, focus or tap with the organisation's name
+     and, where there is one, its review (js/home-sections.js). Phones and
+     reduced motion: each lane is a plain row of tiles. #}
+  {%- macro tile(logo, live, r) -%}
+    {%- set data %} data-n="{{ (logo.name or logo.alt) | plain }}"{% if logo.quote %} data-q="{{ logo.quote | plain }}"{% endif %}{% if logo.by %} data-by="{{ logo.by | plain }}"{% endif %}{% endset -%}
+    {%- set size %}{% if logo.scale %} style="--s:{{ logo.scale | plain }}"{% endif %}{% endset -%}
+    {%- if live -%}
+    <button type="button" class="hm-tile"{{ data | safe }}><img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}"{{ size | safe }} decoding="async"></button>
+    {%- else -%}
+    <span class="hm-tile hm-tile--copy" aria-hidden="true"{{ data | safe }}><img src="{{ logo.src | root(r) }}" alt=""{{ size | safe }} decoding="async"></span>
+    {%- endif -%}
+  {%- endmacro %}
+  {%- set wall = block.lanes[0] %}
+  {%- set seen = block.lanes[1] %}
   <section class="hm hm-orgband"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-label="{{ block.ariaLabel | inline() }}">
-  {%- for lane in block.lanes %}
-    <div class="hm-cred__lane{% if not loop.first %} hm-cred__lane--sm{% endif %}" data-speed="{{ lane.speed }}">
-      <p class="hm-cred__label">{{ lane.label | inline() }}</p>
-      <div class="hm-cred__viewport">
-        <div class="hm-cred__track">
-        {%- for logo in lane.logos %}
-          <img src="{{ logo.src | root(r) }}" alt="{{ logo.alt | inline() }}"{% if logo.scale %} style="--s:{{ logo.scale | plain }}"{% endif %} decoding="async">
-        {%- endfor %}
+    <div class="hm-orgband__track">
+      <div class="hm-orgband__stage">
+        {%- if wall %}
+        <div class="hm-wall">
+          <h2 class="hm-orgband__h">{{ wall.label | inline() }}</h2>
+          <div class="hm-wall__rows">
+            <div class="hm-wall__row">
+              {%- for logo in wall.logos %}{{ tile(logo, true, r) }}{% endfor %}
+              {%- for k in range(0, 2) %}{% for logo in wall.logos %}{{ tile(logo, false, r) }}{% endfor %}{% endfor %}
+            </div>
+            <div class="hm-wall__row hm-wall__row--b" aria-hidden="true">
+              {%- for k in range(0, 3) %}{% for i in range(wall.logos.length - 1, -1, -1) %}{{ tile(wall.logos[i], false, r) }}{% endfor %}{% endfor %}
+            </div>
+          </div>
         </div>
+        {%- endif %}
+        {%- if seen %}
+        <div class="hm-seen">
+          <h2 class="hm-orgband__h">{{ seen.label | inline() }}</h2>
+          <div class="hm-seen__tiles">
+            {%- for logo in seen.logos %}{{ tile(logo, true, r) }}{% endfor %}
+          </div>
+        </div>
+        {%- endif %}
+        <div class="hm-card" role="status" aria-live="polite"><b></b><p></p><cite></cite></div>
       </div>
     </div>
-  {%- endfor %}
   </section>

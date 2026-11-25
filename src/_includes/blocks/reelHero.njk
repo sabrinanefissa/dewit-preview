@@ -1,24 +1,23 @@
   {# ==============================================================
-       1. HERO - a stage photo (block.photo: the wide one, and the tall one
-       for phones) with the eyebrow, the h1, its line and the two buttons
-       set in the stage dark, and the links to the page's sections as chips
-       under them. Nothing moves at rest.
-       "Play with sound" opens the reel in place, with sound: the photo
-       gives way to the video and one slim bar along its foot carries the
-       small controls, the chapters (a sheet) and Close. The photo returns
-       when the reel is closed or ends (js/speaking.js).
-       Swap the clip by editing the data-src-* paths and the poster.
+       1. HERO - the reel, then the stage photo (block.photo: the wide
+       one, and the tall one for phones) with the h1, its line, the two
+       buttons and the links to the page's sections as chips.
+       768px and up with motion: one pinned stage (js/speaking.js). The
+       reel plays muted, full screen, with its controls; the first scroll
+       turns it into the stage photo and the hero copy; the second
+       replaces that copy with the next section's heading and figures.
+       Phones and reduced motion: the same three in a plain stack.
+       "Play with sound" brings the reel back and plays it from the start
+       with sound. Swap the clip by editing the data-src-* paths and the
+       poster.
        ============================================================== #}
   {%- set ch = block.chapters %}
   {%- set hasCh = ch and ch.items and ch.items.length %}
   {%- set chTitle = (ch.heading ~ ': ' ~ ch.items.length ~ ' ' ~ (ch.countLabel or 'chapters')) if hasCh else '' %}
   {%- set ph = block.photo or {} %}
   <section class="spk-hero"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
-    <picture class="spk-hero__photo">
-      {%- if ph.phone %}<source media="(max-width: 767px)" srcset="{{ ph.phone | srcset(r) }}" sizes="100vw">{% endif %}
-      <img src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="120vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" fetchpriority="high" decoding="async">
-    </picture>
-
+    <div class="spk-hero__track">
+    <div class="spk-hero__stage">
     <div class="spk-hero__reel" id="{{ block.id }}-reel">
       <video class="spk-hero__video" playsinline muted preload="none"
              poster="{{ block.video.poster | root(r) }}"
@@ -26,7 +25,8 @@
              data-src-1080="{{ block.video.src1080 | root(r) }}"
              data-src-720="{{ block.video.src720 | root(r) }}"
              data-src-mobile="{{ block.video.srcMobile | root(r) }}"
-             data-mobile-autoplay="{{ block.video.mobileAutoplay or 'false' }}">
+             data-mobile-autoplay="{{ block.video.mobileAutoplay or 'false' }}"{% if block.video.start %}
+             data-start="{{ block.video.start }}"{% endif %}>
         <track kind="captions" srclang="{{ block.captions.srclang }}" label="{{ block.captions.label }}" src="{{ block.captions.src | root(r) }}">
       </video>
 
@@ -66,15 +66,17 @@
           </button>
           {%- endif %}
         </div>
-        <button type="button" class="spk-bar__close" data-reel-close>{{ site.ui.drawerClose }}</button>
       </div>
     </div>
 
+    <div class="spk-hero__main">
+    <picture class="spk-hero__photo">
+      {%- if ph.phone %}<source media="(max-width: 767px)" srcset="{{ ph.phone | srcset(r) }}" sizes="100vw">{% endif %}
+      <img src="{{ ph.src | root(r) }}" {%- set ss1 = ph.src | srcset(r) %}{% if ss1 %} srcset="{{ ss1 }}" sizes="120vw"{% endif %} alt="{{ (ph.alt or '') | plain }}" fetchpriority="high" decoding="async">
+    </picture>
+
     <div class="spk-hero__copy">
       <div class="spk-hero__head">
-        {%- if block.eyebrow %}
-        <p class="spk-hero__eyebrow">{{ block.eyebrow | inline() }}</p>
-        {%- endif %}
         <h1 class="spk-hero__h" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h1>
         {%- if block.line %}
         <p class="spk-hero__line">{{ block.line | inline() }}</p>
@@ -99,6 +101,9 @@
         </ul>
       </nav>
       {%- endif %}
+    </div>
+    </div>
+    </div>
     </div>
 
     <p class="spk-sr" id="{{ block.id }}-live" aria-live="polite" aria-atomic="true"></p>

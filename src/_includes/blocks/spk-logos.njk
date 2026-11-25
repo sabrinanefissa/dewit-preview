@@ -5,7 +5,10 @@
        wall from a real photo (block.band) carrying the logos in their
        own colours, grouped by sector, each over its organisation's name.
        A logo without a full-colour file shows its name only. scale
-       evens out visual weight.
+       evens out visual weight. The sector names are for screen readers.
+       768px and up with motion, the heading and the figures are moved
+       onto the hero's pinned stage and this section shows only the band
+       (js/speaking.js).
        ============================================================== #}
   {%- set ph = block.photo or {} %}
   <section class="spk-spoken"{% if block.id and block.anchor !== false %} id="{{ block.id }}"{% endif %} aria-labelledby="{{ block.id }}-h" data-scheme="dark">
@@ -31,7 +34,7 @@
       <div class="spk-band__row">
       {%- for s in block.sectors %}
         <div class="spk-sector">
-          <h3 class="spk-sector__h">{{ s.label | inline() }}</h3>
+          <h3 class="spk-sr">{{ s.label | inline() }}</h3>
           <ul class="spk-sector__logos">
           {%- for logo in s.logos %}
             <li class="spk-logo">

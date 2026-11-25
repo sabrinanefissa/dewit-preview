@@ -23,7 +23,7 @@
         <h2 class="spk-h2" id="{{ block.id }}-h">{{ block.heading | inline('spk-em') }}</h2>
         <p class="spk-planners__lead">{{ block.lead | inline() }}{% if block.contact and block.contact.href %}&nbsp;<a class="spk-planners__mail" href="{{ block.contact.href }}">{{ block.contact.label | inline() }}</a>{% endif %}</p>
         <div class="spk-kit" id="{{ block.id }}-downloads">
-          <h3 class="spk-kit__h">{{ block.downloads.heading | inline() }}</h3>
+          <h3 class="spk-sr">{{ block.downloads.heading | inline() }}</h3>
           <ul class="spk-dl">
           {%- for d in block.downloads.items %}
             <li class="spk-dl__row">
@@ -49,7 +49,7 @@
 
       <div class="spk-planners__right">
         <div class="spk-shots-wrap" id="{{ block.id }}-headshots">
-          <h3 class="spk-kit__h">{{ block.headshots.heading | inline() }}</h3>
+          <h3 class="spk-sr">{{ block.headshots.heading | inline() }}</h3>
           <ul class="spk-shots" data-lenis-prevent>
           {%- for h in block.headshots.items %}
             <li class="spk-shot">

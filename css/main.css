@@ -2299,7 +2299,7 @@ body { --fill-stagger: 0.12; }
    ===================================================================== */
 .pinskip { position:fixed; right: max(16px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom));
   z-index:80; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:0;
-  min-width:44px; min-height:44px; padding:6px 10px; border:0; border-radius:12px; background: transparent;
+  min-width:44px; min-height:44px; padding:6px 10px; border:0; border-radius: var(--radius); background: transparent;
   color: var(--accent); cursor:pointer;
   opacity:0; transform: translateY(6px); pointer-events:none;
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), background-color .3s var(--ease-out); }

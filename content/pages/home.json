@@ -302,93 +302,99 @@
       "lanes": [
         {
           "label": "Where Stephen has spoken",
-          "speed": 0.35,
           "logos": [
             {
               "src": "assets/logos/Reckitt-Logo-ko.png",
               "alt": "Reckitt",
-              "scale": "1.03"
+              "scale": "1"
             },
             {
               "src": "assets/logos/mdrt-logo-ko.png",
               "alt": "MDRT",
-              "scale": "0.76"
+              "name": "Million Dollar Round Table",
+              "quote": "Your participation was instrumental in making the Annual Meeting a wonderful experience for our members. The Program Development Committee spent a great deal of time selecting the right people for our program. We are so grateful they selected YOU!",
+              "by": "Michelle L. Hoesly, President, Million Dollar Round Table",
+              "scale": "1"
             },
             {
               "src": "assets/logos/U-of-T-Logo-Blue-Horiz-ko.png",
               "alt": "University of Toronto",
-              "scale": "0.93"
+              "scale": "1"
             },
             {
-              "src": "assets/logos/tmu-mark-white.png",
+              "src": "assets/logos/tmu.png",
               "alt": "Toronto Metropolitan University",
-              "scale": "1.18"
+              "quote": "Your high energy, engaging and interactive delivery had our participants both learning and laughing. You were able to create a comfortable and safe space for people to share and ask questions. We have had nothing but positive feedback from the attendees.",
+              "by": "Luisa Barton, Faculty & Coordinator, PHCNP Program, Graduate Studies, Toronto Metropolitan University",
+              "scale": "1"
             },
             {
-              "src": "assets/logos/george-brown-mark-white.png",
+              "src": "assets/logos/george-brown-college.svg",
               "alt": "George Brown College",
-              "scale": "1.22"
+              "scale": "1"
             },
             {
               "src": "assets/logos/laurentian-university-vector-logo-ko.png",
               "alt": "Laurentian University",
-              "scale": "0.63"
+              "scale": "1.1"
             },
             {
-              "src": "assets/logos/Lakeridge-mark.png",
+              "src": "assets/logos/lakeridge-health.png",
               "alt": "Lakeridge Health",
-              "scale": "1.09"
+              "scale": "1.2"
             },
             {
               "src": "assets/logos/toronto-academy-of-dentistry-ko.png",
               "alt": "Toronto Academy of Dentistry",
-              "scale": "1.12"
+              "scale": "1.2"
             },
             {
               "src": "assets/logos/NESO_Logo_Vert_CMYK-ko.png",
               "alt": "NESO",
-              "scale": "1.02"
+              "name": "Northeastern Society of Orthodontists",
+              "scale": "1"
             },
             {
-              "src": "assets/logos/OSOT-mark.png",
+              "src": "assets/logos/osot.png",
               "alt": "Ontario Society of Occupational Therapists",
-              "scale": "0.66"
+              "scale": "1.1"
             }
           ]
         },
         {
           "label": "As seen on",
-          "speed": -0.28,
           "logos": [
             {
               "src": "assets/logos/CBC-ko.png",
               "alt": "CBC",
-              "scale": "0.81"
+              "name": "Canadian Broadcasting Corporation",
+              "scale": "1"
             },
             {
-              "src": "assets/logos/GMA-mark.png",
+              "src": "assets/logos/gma.webp",
               "alt": "Good Morning America",
-              "scale": "1.76"
+              "scale": "1.2"
             },
             {
               "src": "assets/logos/Showtime.svg.png",
               "alt": "Showtime",
-              "scale": "0.81"
+              "scale": "1"
             },
             {
               "src": "assets/logos/Men_s_Health.svg.png",
               "alt": "Men's Health",
-              "scale": "0.80"
+              "scale": "1"
             },
             {
-              "src": "assets/logos/TGAM-wordmark-mark.png",
+              "src": "assets/logos/globe-and-mail.webp",
               "alt": "The Globe and Mail",
-              "scale": "1.35"
+              "scale": "1.2"
             },
             {
               "src": "assets/logos/1200px-Marilyn_Logo.svg.png",
               "alt": "Marilyn",
-              "scale": "0.67"
+              "name": "The Marilyn Denis Show",
+              "scale": "1.1"
             }
           ]
         }

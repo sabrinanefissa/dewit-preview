@@ -1507,6 +1507,7 @@ var UI = (function () {
         video.muted = false;
         try { video.currentTime = 0; } catch (err) {}
         soundGesture();
+        holdAway = Date.now() + 1800;   /* the page may scroll back up to the reel */
         tryPlay();
         awayPaused = false;
         hideBig();
@@ -1571,8 +1572,8 @@ var UI = (function () {
     }
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (e) {
-        if (e[0].intersectionRatio < 0.35) away(); else back();
-      }, { threshold: [0, 0.35, 1] }).observe(hero);
+        if (e[0].intersectionRatio < 0.25) away(); else back();
+      }, { threshold: [0, 0.25, 1] }).observe(part(".spk-hero__reel") || hero);
     }
     document.addEventListener("visibilitychange", function () {
       if (document.hidden) away(); else back();
@@ -3478,7 +3479,7 @@ var UI = (function () {
 (function () {
   "use strict";
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var SEL = ".thread__track, .spk-chap__track, .spk-formats__track, .tstrip__track, .steps__track";
+  var SEL = ".thread__track, .spk-chap__track, .spk-formats__track, .tstrip__track, .steps__track, .spk-hero__track, .hm-orgband__track";
   var tracks = [].slice.call(document.querySelectorAll(SEL));
   if (!tracks.length) return;
 
